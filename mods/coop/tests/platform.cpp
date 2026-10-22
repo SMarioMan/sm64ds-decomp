@@ -11,6 +11,7 @@
 #include <thread>
 #include <dlfcn.h>
 #include <unistd.h>
+#include <cstdlib>
 
 namespace melonDS::Platform {
 static FILE* fp(FileHandle* p) { return reinterpret_cast<FILE*>(p); }
@@ -66,12 +67,26 @@ void WriteNDSSave(const u8*,u32,u32,u32,void*) {}
 void WriteGBASave(const u8*,u32,u32,u32,void*) {}
 void WriteFirmware(const Firmware&,u32,u32,void*) {}
 void WriteDateTime(int,int,int,int,int,int,void*) {}
+// Optional raw trace of actual local-wireless traffic for protocol debugging.
+// No packets are changed, synthesized or injected by this frontend.
+static void tracePacket(u32 kind, void *peer, const u8 *data, u32 size, u64 stamp) {
+    static std::mutex lock;
+    static FILE *file=[] { const char *path=std::getenv("COOP_PACKET_LOG");return path?fopen(path,"wb"):nullptr; }();
+    static unsigned count=0;
+    if(!file)return;
+    std::lock_guard guard(lock);
+    if(count++>=100000)return;
+    u32 header[5]={kind,u32(instance(peer)),size,u32(stamp),u32(stamp>>32)};
+    fwrite(header,sizeof(header),1,file);
+    fwrite(data,1,size,file);
+    fflush(file);
+}
 void MP_Begin(void* p) { bus().Begin(instance(p)); }
 void MP_End(void* p) { bus().End(instance(p)); }
-int MP_SendPacket(u8* d,int n,u64 t,void* p) { return bus().SendPacket(instance(p),d,n,t); }
+int MP_SendPacket(u8* d,int n,u64 t,void* p) { tracePacket(3,p,d,n,t);return bus().SendPacket(instance(p),d,n,t); }
 int MP_RecvPacket(u8* d,u64* t,void* p) { return bus().RecvPacket(instance(p),d,t); }
-int MP_SendCmd(u8* d,int n,u64 t,void* p) { return bus().SendCmd(instance(p),d,n,t); }
-int MP_SendReply(u8* d,int n,u64 t,u16 a,void* p) { return bus().SendReply(instance(p),d,n,t,a); }
+int MP_SendCmd(u8* d,int n,u64 t,void* p) { tracePacket(1,p,d,n,t);return bus().SendCmd(instance(p),d,n,t); }
+int MP_SendReply(u8* d,int n,u64 t,u16 a,void* p) { tracePacket(2,p,d,n,t);return bus().SendReply(instance(p),d,n,t,a); }
 int MP_SendAck(u8* d,int n,u64 t,void* p) { return bus().SendAck(instance(p),d,n,t); }
 int MP_RecvHostPacket(u8* d,u64* t,void* p) { return bus().RecvHostPacket(instance(p),d,t); }
 u16 MP_RecvReplies(u8* d,u64 t,u16 a,void* p) { return bus().RecvReplies(instance(p),d,t,a); }

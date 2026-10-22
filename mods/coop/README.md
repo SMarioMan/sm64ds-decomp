@@ -75,12 +75,62 @@ dspatch -s /workspace/inputs/download-station.nds \
   -o build/coop/haxxstation-package-smoke.nds
 ```
 
-That output is a packaging experiment. An integrated exploit boot stage must
-load a child with updated overlay authentication data and connect it to the
-SM64DS parent's wireless/filesystem session. The Download Station server itself
-is not an SM64DS co-op host. That handoff is not implemented here. The Wii sender
-also needs its Wii runtime; compiling/packaging it alone cannot supply the DS
-host handoff.
+That output alone does not supply the game-session handoff. The bootstrap work
+below exercises the exploit separately and integrates the signed loader into
+the SM64DS parent. Returning its clients to the game's wireless/filesystem
+session is still unfinished. The Wii sender needs its Wii runtime.
+
+## Integrated HaxxStation bootstrap experiments
+
+The bootstrap uses the supplied Download Station Volume 1 client without
+changing its Nintendo-signed SRL or signature. A heap-loaded parent service
+replaces the initial image offered by SM64DS with that signed client, then
+implements its ports 13–15 menu and payload transfers. The host remains in the
+SM64DS lobby throughout. Four unused VS archives hold bootstrap assets;
+the original fixed-extent patch restrictions above apply only to the base
+experimental ROM, not this separate bootstrap variant.
+
+```bash
+source /workspace/setup/activate.sh
+python mods/coop/bootstrap/build_probe.py
+python mods/coop/bootstrap/build_host.py
+python mods/coop/bootstrap/smoke.py --parent station --probe \
+  --output /workspace/runtime/haxxstation-probe
+python mods/coop/bootstrap/smoke.py --parent native --probe \
+  --output /workspace/runtime/native-haxxstation-probe
+```
+
+The first smoke has executed modified SM64DS ARM9 on a cartridge-free client:
+RAM `0x02000000` contains `COOP` and `0x02000004` contains boot kind 2. This
+establishes unsigned execution through the real exploit, **not gameplay**.
+Evidence is in `/workspace/runtime/haxx-boot-probe/full-replay-yes.log`.
+The native parent has booted the signed loader and delivered its menu, but
+its unsigned payload transfer currently stalls and the corresponding smoke
+fails. Changing the second-stage sender does not change Nintendo's signature.
+
+An additional builder prepares a game executable with overlay 75's updated
+HMAC, preserving verification and checking all 103 overlay hashes before
+stripping the files that the parent will eventually serve:
+
+```bash
+python mods/coop/bootstrap/build_client.py
+python mods/coop/bootstrap/build_host.py \
+  --package build/coop/bootstrap/haxxstation-game-client.nds \
+  --output build/coop/bootstrap/sm64ds-haxxstation-game-handoff.nds
+```
+
+This image is a handoff experiment, not a playable wireless release. Its files
+must come from the matching parent; a successful hash audit does not prove
+that the native filesystem session has connected. `game-client.json` records
+the parent hash, changed overlay hashes and audit result.
+
+For debugging, `COOP_PACKET_LOG=/absolute/path.bin` records actual transmitted
+wireless frames without changing or injecting packets. Records contain five
+little-endian 32-bit fields (kind, console, byte length, timestamp low/high),
+followed by frame bytes. Kinds 1/2/3 are MP commands, replies and ordinary
+wireless packets. The log stops after 100,000 records. Driver transcripts,
+screenshots, RAM snapshots and register dumps distinguish transfer progress
+from successful execution.
 
 ## Emulator verification
 
@@ -151,7 +201,10 @@ experimental ROM SHA-256 is
 | Modified native Download Play stage | **Failed**, three clients in fatal loop |
 | Retail overlay HMAC audit | 103/103 valid |
 | Modified overlay HMAC audit | 102/103 valid; overlay 75 rejected |
-| HaxxStation package parsing | Passed; exploit boot/handoff unverified |
+| HaxxStation unsigned ARM9 probe, Download Station parent | Passed, one cartridge-free client |
+| Signed Download Station loader/menu, SM64DS parent | Passed, one cartridge-free client |
+| Unsigned payload transfer, SM64DS parent | **Failed**, stalls before execution |
+| Game-client updated overlay HMAC audit | 103/103 valid; game handoff unverified |
 | Full source-control behavior | **Failed**, white screen |
 
 ## Runtime and remaining work

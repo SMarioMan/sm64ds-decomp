@@ -60,6 +60,13 @@ int main(int argc,char** argv) try {
         a.Firmware.GetHeader().MacAddr[5]+=i;
         a.Firmware.UpdateChecksums();
         a.JIT=std::nullopt;
+#ifdef GDBSTUB_ENABLED
+        if(i==2)if(const char* port=std::getenv("COOP_GDB_START_ARM9")) {
+            GDBArgs debug;
+            debug.PortARM9=std::stoi(port);
+            a.GDB=debug;
+        }
+#endif
         auto ds=std::make_unique<NDS>(std::move(a),reinterpret_cast<void*>(uintptr_t(i-1)));
         if(std::string(argv[i])!="-") {
             auto rom=readfile(argv[i]);
@@ -115,10 +122,14 @@ int main(int argc,char** argv) try {
             if(cmd=="touch") { unsigned x,y;if(!(s>>x>>y)||x>255||y>191)throw std::runtime_error("Bad touch");ds.TouchScreen(x,y); }
             else if(cmd=="release")ds.ReleaseScreen();
             else if(cmd=="keys") { unsigned k;if(!(s>>std::hex>>k))throw std::runtime_error("Bad key mask");ds.SetKeyMask(k); }
+#ifdef GDBSTUB_ENABLED
+            else if(cmd=="gdb") { unsigned port;if(!(s>>port)||port>65535)throw std::runtime_error("Bad GDB port");GDBArgs args;args.PortARM9=port;ds.SetGdbArgs(args); }
+#endif
             else if(cmd=="screen") { std::string p;s>>p;image(ds,p); }
             else if(cmd=="read") { unsigned addr,n;s>>std::hex>>addr>>std::dec>>n;if(addr<0x02000000||addr+n>0x02400000||n>1024)throw std::runtime_error("Read outside main RAM");std::cout<<"RAM "<<i<<" "<<std::hex<<addr<<":";for(unsigned j=0;j<n;j++)std::cout<<" "<<unsigned(ds.MainRAM[(addr+j)&ds.MainRAMMask]);std::cout<<std::dec<<"\n"; }
             else if(cmd=="regs") {
                 for(int reg=0;reg<16;reg++)std::cout<<"r"<<reg<<"="<<std::hex<<ds.ARM9.R[reg]<<" ";
+                std::cout<<"arm7:";for(int reg=0;reg<16;reg++)std::cout<<" r"<<reg<<"="<<std::hex<<ds.ARM7.R[reg]<<" ";
                 std::cout<<"dtcm="<<ds.ARM9.DTCMBase<<std::dec<<"\n";
                 u32 sp=ds.ARM9.R[13];
                 for(unsigned word=0;word<64;word++) {
