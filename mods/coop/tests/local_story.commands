@@ -1,0 +1,39 @@
+# Single-console story-hook diagnostic. This is not a multiplayer test.
+run 300
+touch 0 128 120
+run 12
+release 0
+run 300
+touch 0 32 170
+run 12
+release 0
+run 240
+touch 0 32 170
+run 12
+release 0
+run 240
+touch 0 128 170
+run 12
+release 0
+run 120
+touch 0 80 170
+run 12
+release 0
+run 240
+touch 0 32 72
+run 12
+release 0
+run 120
+touch 0 128 20
+run 12
+release 0
+run 300
+screen 0 build/coop/local-story.ppm
+dump 0 build/coop/local-before.ram
+keys 0 fef
+run 60
+keys 0 fff
+run 60
+screen 0 build/coop/local-moved.ppm
+dump 0 build/coop/local-after.ram
+status
