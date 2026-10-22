@@ -384,13 +384,19 @@ extern int data_ov006_0213aee8[12];
 }
 }
 
+/* Model's vtable as far as the one slot called here. Model.h names these; the
+   file's own non-virtual `struct Model` cannot make a virtual call, and one
+   shared view changes codegen (see the note at the top of the file), so each
+   function keeps its own. Shapes and parameter spellings are unchanged -- the
+   TU's generated-name counter runs on declaration order. */
 struct Obj {
-    virtual void f0() = 0;
-    virtual void f1() = 0;
-    virtual void f2() = 0;
-    virtual void f3() = 0;
-    virtual void f4() = 0;
-    virtual void f5(int a) = 0;
+    virtual void Destructor1() = 0; /* slot 0 */
+    virtual void Destructor0() = 0; /* slot 1 */
+    virtual void DoSetFile() = 0;   /* slot 2 */
+    virtual void UpdateVerts() = 0; /* slot 3 */
+    virtual void Virtual10() = 0;   /* slot 4 */
+    /* slot 5. The null scale is spelled as an int here, not Vector3 *. */
+    virtual void Render(int a) = 0;
 };
 
 extern "C" void FlowerFace_Draw(void *self) {
@@ -414,7 +420,7 @@ extern "C" void FlowerFace_Draw(void *self) {
 
     *(struct Matrix4x3 *)FLOWERFACE(c)->mMatrix = *(struct Matrix4x3 *)data_ov006_0213aee8;
 
-    ((Obj *)FLOWERFACE(c)->mModel)->f5(0);
+    ((Obj *)FLOWERFACE(c)->mModel)->Render(0);
 
     i = 0;
     {
@@ -757,13 +763,18 @@ namespace s020c35a8 {
 // @symbol FallingPetal_Draw
 extern "C" {}
 
+/* Model's vtable as far as the one slot called here. Model.h names these; the
+   file's own non-virtual `struct Model` cannot make a virtual call, and one
+   shared view changes codegen (see the note at the top of the file), so each
+   function keeps its own. Shapes and parameter spellings are unchanged -- the
+   TU's generated-name counter runs on declaration order. */
 struct Obj {
-    virtual void m0();
-    virtual void m1();
-    virtual void m2();
-    virtual void m3();
-    virtual void m4();
-    virtual void m5(Vector3 *v);
+    virtual void Destructor1();      /* slot 0 */
+    virtual void Destructor0();      /* slot 1 */
+    virtual void DoSetFile();        /* slot 2 */
+    virtual void UpdateVerts();      /* slot 3 */
+    virtual void Virtual10();        /* slot 4 */
+    virtual void Render(Vector3 *v); /* slot 5 */
 };
 extern "C" void FallingPetal_Draw(char *c) {
     FallingPetal_UpdateMatrix(c);
@@ -771,7 +782,7 @@ extern "C" void FallingPetal_Draw(char *c) {
     v.z = 0x1000;
     v.y = 0x1000;
     v.x = 0x1000;
-    ((Obj *)PETAL(c)->mModel)->m5(&v);
+    ((Obj *)PETAL(c)->mModel)->Render(&v);
 }
 }
 
@@ -1042,14 +1053,20 @@ extern "C" {
 extern char sPresenterScale;
 }
 }
+/* Model's vtable as far as the one slot called here. Model.h names these; the
+   file's own non-virtual `struct Model` cannot make a virtual call, and one
+   shared view changes codegen (see the note at the top of the file), so each
+   function keeps its own. Shapes and parameter spellings are unchanged -- the
+   TU's generated-name counter runs on declaration order. */
 struct Obj {
     void *vt;
-    virtual void v0();
-    virtual void v1();
-    virtual void v2();
-    virtual void v3();
-    virtual void v4();
-    virtual void m(void *arg);
+    virtual void Destructor1(); /* slot 0 */
+    virtual void Destructor0(); /* slot 1 */
+    virtual void DoSetFile();   /* slot 2 */
+    virtual void UpdateVerts(); /* slot 3 */
+    virtual void Virtual10();   /* slot 4 */
+    /* slot 5; the scale argument stays void * here. */
+    virtual void Render(void *arg);
 };
 extern "C" void Presenter_Draw(char *c) {
     int v0[3];
@@ -1089,8 +1106,8 @@ extern "C" void Presenter_Draw(char *c) {
     *(int *)(((int)p + 0x108)) += PRESENTER(c)->mSway[3];
     *(int *)(((int)p + 0x134)) += PRESENTER(c)->mSway[0];
     *(int *)(((int)p + 0x138)) += PRESENTER(c)->mSway[1];
-    ((Obj *)PRESENTER(c)->mFace)->m(0);
-    ((Obj *)PRESENTER(c)->mBack)->m(&sPresenterScale);
+    ((Obj *)PRESENTER(c)->mFace)->Render(0);
+    ((Obj *)PRESENTER(c)->mBack)->Render(&sPresenterScale);
 }
 }
 
@@ -1571,11 +1588,16 @@ extern Matrix4x3 data_020a0e68;
 }
 }
 
+/* Model's vtable as far as the one slot called here. Model.h names these; the
+   file's own non-virtual `struct Model` cannot make a virtual call, and one
+   shared view changes codegen (see the note at the top of the file), so each
+   function keeps its own. Shapes and parameter spellings are unchanged -- the
+   TU's generated-name counter runs on declaration order. */
 struct Vtbl {
-    virtual void v0();
-    virtual void v1();
-    virtual void v2();
-    virtual void v3(); // offset 0xc
+    virtual void Destructor1(); /* slot 0 */
+    virtual void Destructor0(); /* slot 1 */
+    virtual void DoSetFile();   /* slot 2 */
+    virtual void UpdateVerts(); /* slot 3 -> offset 0xc */
 };
 
 /* The bone matrices, read at bone 6 (0x120 = 6 * 0x30), the head. */
@@ -1589,7 +1611,7 @@ extern "C" void Mascot_UpdateMatrix(char *c) {
                               MASCOT(c)->mPos.z);
     Matrix4x3_ApplyInPlaceToRotationY(&data_020a0e68, MASCOT(c)->mRot[1]);
     *(Matrix4x3 *)MASCOT(c)->mMatrix = data_020a0e68;
-    ((Vtbl *)MASCOT(c)->mModel)->v3();
+    ((Vtbl *)MASCOT(c)->mModel)->UpdateVerts();
     data_020a0e68 = ((Sub *)MASCOT(c)->mBoneMatrices)->m;
     Matrix4x3_ApplyInPlaceToRotationX(&data_020a0e68, MASCOT(c)->mHeadYaw);
     Matrix4x3_ApplyInPlaceToRotationZ(&data_020a0e68, MASCOT(c)->mHeadPitch);
@@ -1830,13 +1852,19 @@ namespace s020c1804 {
 
 extern "C" {}
 
+/* Model's vtable as far as the one slot called here. Model.h names these; the
+   file's own non-virtual `struct Model` cannot make a virtual call, and one
+   shared view changes codegen (see the note at the top of the file), so each
+   function keeps its own. Shapes and parameter spellings are unchanged -- the
+   TU's generated-name counter runs on declaration order. */
 struct Obj {
-    virtual void f0() = 0;
-    virtual void f1() = 0;
-    virtual void f2() = 0;
-    virtual void f3() = 0;
-    virtual void f4() = 0;
-    virtual void f5(int a) = 0;
+    virtual void Destructor1() = 0; /* slot 0 */
+    virtual void Destructor0() = 0; /* slot 1 */
+    virtual void DoSetFile() = 0;   /* slot 2 */
+    virtual void UpdateVerts() = 0; /* slot 3 */
+    virtual void Virtual10() = 0;   /* slot 4 */
+    /* slot 5. The null scale is spelled as an int here, not Vector3 *. */
+    virtual void Render(int a) = 0;
 };
 
 extern "C" void Dealer_Draw(void *self) {
@@ -1886,9 +1914,9 @@ extern "C" void Dealer_Draw(void *self) {
     func_020169d8(DEALER(c)->mTable, 4, 0x6318);
     func_020169d8(DEALER(c)->mTable, 5, (unsigned short)(b[1] | (b[2] << 5) | (b[0] << 10)));
 
-    ((Obj *)DEALER(c)->mModel)->f5(0);
+    ((Obj *)DEALER(c)->mModel)->Render(0);
     MascotWalker_Draw((char *)DEALER(c)->mWalker);
-    ((Obj *)DEALER(c)->mTable)->f5(0);
+    ((Obj *)DEALER(c)->mTable)->Render(0);
 
     dExtShadowModel_c::RenderAll();
 }
@@ -2021,10 +2049,11 @@ struct V {
     virtual void v18();
     virtual void v19();
     virtual void v20();
-    virtual void v21();
+    virtual void OnDealDone(); /* slot 21 */
 };
 
-/* local extern: only slot 21 is called, through the view V above. */
+/* local extern: only slot 21, dScMgBase_c::OnDealDone, is called, through
+   the view V above. */
 extern "C" {
 extern V *gMgScene;
 }
@@ -2060,7 +2089,7 @@ extern "C" void Dealer_StateShuffle(char *c) {
     if (DEALER(c)->mShuffleLeft == DEALER(c)->mDealDoneAt) {
         V *o = gMgScene;
         if (o)
-            o->v21();
+            o->OnDealDone();
     }
 }
 }
@@ -2654,16 +2683,21 @@ extern "C" {
 extern Matrix4x3 data_020a0e68;
 }
 
+/* Model's vtable as far as the one slot called here. Model.h names these; the
+   file's own non-virtual `struct Model` cannot make a virtual call, and one
+   shared view changes codegen (see the note at the top of the file), so each
+   function keeps its own. Shapes and parameter spellings are unchanged -- the
+   TU's generated-name counter runs on declaration order. */
 struct Base {
-    virtual void v0();
-    virtual void v1();
-    virtual void v2();
-    virtual void m(); // slot 3 -> offset 0xc
+    virtual void Destructor1(); /* slot 0 */
+    virtual void Destructor0(); /* slot 1 */
+    virtual void DoSetFile();   /* slot 2 */
+    virtual void UpdateVerts(); /* slot 3 -> offset 0xc */
 };
 
 extern "C" void MascotWalker_UpdateMatrix(char *thiz) {
     char *c = thiz;
-    ((Base *)WALKER(c)->mModel)->m();
+    ((Base *)WALKER(c)->mModel)->UpdateVerts();
     /* Bone 6 of mBoneMatrices takes the head angle. */
     {
         Matrix4x3 *m = (Matrix4x3 *)WALKER(c)->mBoneMatrices;

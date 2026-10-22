@@ -63,28 +63,28 @@
       "ordinal": 5
     },
     {
-      "symbol": "func_02037e38",
+      "symbol": "_ZNK4CLPS14GetSurfaceTypeEv",
       "address": "0x02037e38",
       "size": "0x00000010",
       "legacy_source": "src/func_02037e38.c",
       "ordinal": 6
     },
     {
-      "symbol": "func_02037e48",
+      "symbol": "_ZNK4CLPS13func_02037e48Ev",
       "address": "0x02037e48",
       "size": "0x00000010",
       "legacy_source": "src/unnamed/arm9/0203/func_02037e48.c",
       "ordinal": 7
     },
     {
-      "symbol": "func_02037e58",
+      "symbol": "_ZNK4CLPS13GetFloorClassEv",
       "address": "0x02037e58",
       "size": "0x00000010",
       "legacy_source": "src/unnamed/arm9/0203/func_02037e58.c",
       "ordinal": 8
     },
     {
-      "symbol": "func_02037e68",
+      "symbol": "_ZNK4CLPS13func_02037e68Ev",
       "address": "0x02037e68",
       "size": "0x00000010",
       "legacy_source": "src/unnamed/arm9/0203/func_02037e68.c",
@@ -98,14 +98,14 @@
       "ordinal": 10
     },
     {
-      "symbol": "func_02037e84",
+      "symbol": "_ZNK4CLPS13func_02037e84Ev",
       "address": "0x02037e84",
       "size": "0x0000000c",
       "legacy_source": "src/unnamed/arm9/0203/func_02037e84.c",
       "ordinal": 11
     },
     {
-      "symbol": "func_02037e90",
+      "symbol": "_ZNK4CLPS13func_02037e90Ev",
       "address": "0x02037e90",
       "size": "0x0000000c",
       "legacy_source": "src/unnamed/arm9/0203/func_02037e90.c",

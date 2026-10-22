@@ -208,8 +208,6 @@ extern void *_ZN9dBgCh_GndC1Ev(void* r);
 extern void _ZN9dBgCh_GndD1Ev(void* r);
 extern int SurfaceInfo_TestFlag0x20(void* p);
 extern int data_0209f32c;
-extern int func_02037e38(void* p);
-extern int func_02037e58(void* p);
 extern signed char data_0209f2f8;
 extern void SetStarMarker(int i, int v1, int v2);
 extern int IsStarCollectedInCurLevel(int starID);
@@ -2385,7 +2383,7 @@ void daStar_c::func_ov002_020e88a8() {
         mHorzSpeed = 0xc000;
         mVertSpeed = 0x17000;
     }
-    r = func_02037e38(&((dBgPi *)mWithMeshClsn.GetFloorResult())->surface);
+    r = ((dBgPi *)mWithMeshClsn.GetFloorResult())->surface.clps.GetSurfaceType();
     if (r == 1 || r == 9) {
         w.x = mSafePosX;
         w.y = mSafePosY;
@@ -2413,7 +2411,7 @@ void daStar_c::func_ov002_020e88a8() {
         mPrevAngleY = Vec3_HorzAngle(&v, &mPos);
         if (mFloorNormalY >= *(short*)(data_02082714 + 0x56)) {
             if (data_0209f2f8 != 0x1d) return;
-            if (func_02037e58(&((dBgPi *)mWithMeshClsn.GetFloorResult())->surface) != 5)
+            if (((dBgPi *)mWithMeshClsn.GetFloorResult())->surface.clps.GetFloorClass() != 5)
                 return;
         }
         {

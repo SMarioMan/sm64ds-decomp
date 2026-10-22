@@ -1499,49 +1499,10 @@ src/game/stages/d_s_mb.cpp:
     complete
     .text start:0x02034a78 end:0x02035354
 
-src/_ZNK5dBgCh9IsOwnedByEP8dActor_c.cpp:
-    complete
-    .text start:0x02035354 end:0x02035394
-
-src/_ZN5dBgChaSERKS_.cpp:
-    complete
-    .text start:0x02035394 end:0x020353b0
-
-src/_ZN5dBgCh8SetActorEP8dActor_c.cpp:
-    complete
-    .text start:0x020353b0 end:0x020353d4
-
-src/_ZNK5dBgCh21IsIgnoringType14WallsEv.cpp:
-    complete
-    .text start:0x020353d4 end:0x020353e0
-
-src/_ZN5dBgCh23StopIgnoringType14WallsEv.cpp:
-    complete
-    .text start:0x020353e0 end:0x020353f4
-
-src/_ZN5dBgCh24StartIgnoringType14WallsEv.cpp:
-    complete
-    .text start:0x020353f4 end:0x02035408
-
-src/_ZNK5dBgCh24IsIgnoringVanishSurfacesEv.cpp:
-    complete
-    .text start:0x02035408 end:0x02035414
-
-src/_ZN5dBgCh26StopIgnoringVanishSurfacesEv.cpp:
-    complete
-    .text start:0x02035414 end:0x02035428
-
-src/_ZN5dBgCh27StartIgnoringVanishSurfacesEv.cpp:
-    complete
-    .text start:0x02035428 end:0x0203543c
-
-src/func_0203543c.c:
-    complete
-    .text start:0x0203543c end:0x02035448
-
 src/engine/collision/d_bg_ch.cpp:
     complete
-    .text start:0x02035448 end:0x0203553c
+    .text start:0x02035354 end:0x0203553c
+    .data start:0x020991c0 end:0x020991e0
 
 src/engine/collision/d_bg_ch_actr.cpp:
     complete

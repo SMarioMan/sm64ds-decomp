@@ -39,6 +39,10 @@
 struct dActor_c;
 struct fBase_c;
 struct Vector3;
+/* Declared, not included: ModelAnim2.h carries an inline operator delete, and
+   any function body in a header this widely consumed renumbers every
+   consumer's compiler temporaries. mBodyModels only needs the name. */
+struct ModelAnim2;
 
 struct Player : dActor_c {
     /* 0x000..0x0cf is dActor_c's, inherited rather than duplicated. It used to be
@@ -113,14 +117,18 @@ struct Player : dActor_c {
        walks this run as `*(this + i * 4 + 0xdc)` for `i < 4` and calls each
        element's deleting destructor; Player::Render indexes it with
        GetBodyModelID(mBodyModelId, 1) and TurnOffToonShading with
-       GetBodyModelID(j, 0). The element type is ModelAnim, and the matched
-       bodies pin every part of it: they reach +0x08 (Model's ModelComponents),
-       +0x14 (Model::mat4x3), +0x50 (the dExtFrameCtrl_c base) and +0x58 (its
-       currFrame), and they call vtable slots 5 (Render) and 6 (Virtual18).
+       GetBodyModelID(j, 0). The element type is ModelAnim2, not ModelAnim:
+       func_ov002_020e5948 allocates every slot with operator new(0x78), which
+       is sizeof(ModelAnim2), and builds it with _ZN10ModelAnim2C1Ev, and the
+       only methods called on the elements by their own class are ModelAnim2's
+       (Func_020162C4, Copy). The matched bodies' other accesses all land in
+       the ModelAnim base: +0x08 (Model's ModelComponents), +0x14
+       (Model::mat4x3), +0x50 (the dExtFrameCtrl_c base) and +0x58 (its
+       currFrame), and vtable slots 5 (Render) and 6 (Virtual18).
        FIVE slots: GetBodyModelID returns 4 while mIsMetal is set, and
        func_ov002_020e5948 builds [4] from wario_metal_model.bmd (arc0 0x54c).
        CleanupResources deletes [4] on its own after the `i < 4` loop. */
-    ModelAnim *mBodyModels[5]; /* 0x0dc */
+    ModelAnim2 *mBodyModels[5]; /* 0x0dc */
     /* ~Player calls _ZN9ModelAnimD1Ev on this LAST of the two, and ModelAnim
        asserts 0x64 -- 0x0f0..0x154, closing exactly at mHeadModels. The markers
        this replaces are its own sub-objects: mAnimation1 at 0x140 was the
@@ -140,9 +148,15 @@ struct Player : dActor_c {
        bone 15 (face_1). */
     ModelAnim *mHeadModels[8]; /* 0x154 */
     /* The other ModelAnim, destroyed FIRST of the two. 0x174..0x1d8, closing
-       exactly at unk_1d8; mAnimation2 at 0x1c4 was its dExtFrameCtrl_c base. */
+       exactly at mSleepBubbleModel; mAnimation2 at 0x1c4 was its dExtFrameCtrl_c base. */
     ModelAnim mModelAnim4;            /* 0x174 */
-    u8  unk_1d8;            /* 0x1d8 */
+    /* A Model *, though still declared u8 (every site reads the word through a
+       cast). func_ov002_020e5948 news a 0x50-byte Model here and SetFiles it
+       from data_ov002_0210da38 (file 0x8004, the bubble d_a_pkn also sleeps
+       with); func_ov002_020e444c places it in front of the face, Render draws
+       it at mSleepBubbleScale while func_ov002_020d225c (Yoshi, sleep stage 2)
+       holds, and CleanupResources deletes it. */
+    u8 mSleepBubbleModel; /* 0x1d8 */
     u8  pad_1d9[0x3];
     /* The three __cxa_vec_cleanup calls in ~Player, in the order it makes them
        (last array first). Both element types assert 0x14, which is exactly
@@ -217,7 +231,7 @@ struct Player : dActor_c {
     s32 mPreClsnPosZ;            /* 0x550 */
     /* Floor normal, fx12 (1.0 == 0x1000 -- already rescaled from KCL's 0x400).
      * Stored as three consecutive words by Player::SetFloorSurfaceInfo
-     * (func_ov002_020c16ec) at 0x020c1768 / 0x020c1770 / 0x020c1778, sourced
+     * (0x020c16ec) at 0x020c1768 / 0x020c1770 / 0x020c1778, sourced
      * from SurfaceInfo::CopyNormalTo (func_02037dcc). 0x554 and 0x55c were
      * marked padding until those stores were disassembled.
      * mFloorNormalY is the slope-test input: func_ov002_020f035c compares it
@@ -238,9 +252,15 @@ struct Player : dActor_c {
     s32 mWallNormalX;            /* 0x560 */
     s32 mWallNormalY;            /* 0x564 */
     s32 mWallNormalZ;            /* 0x568 */
-    s32 unk_56c;            /* 0x56c */
-    s32 unk_570;            /* 0x570 */
-    s32 unk_574;            /* 0x574 */
+    /* The sleep bubble's scale, fx12, the Vector3 Render passes to the bubble
+       model's draw. func_ov002_020d228c and St_Wait_Main zero all three as
+       they enter sleep stage 2; func_ov002_020d2f24 (Yoshi only) shrinks it by 0x180
+       over breath frames 6..0x1c and grows it over 0x24..0x3a, clamped to
+       0x400..0x4000. St_Wait_Main wakes the player once X reaches 0x3000, and
+       func_ov002_020e444c pushes the bubble out by Z * 0x2400. */
+    s32 mSleepBubbleScaleX; /* 0x56c */
+    s32 mSleepBubbleScaleY; /* 0x570 */
+    s32 mSleepBubbleScaleZ; /* 0x574 */
     /* A 50-entry trail buffer, built by InitResources (new Vector3[50], new
        u8[50]). func_ov002_020bf13c writes entry 0 for Yoshi only: a point 0x78
        behind him, and speed/airborne/moving flags. No other reader in the ROM. */
@@ -249,6 +269,10 @@ struct Player : dActor_c {
     u8  pad_580[0x8];
     s32 mHeldObjQueue;            /* 0x588 */
     u8  pad_58c[0x74];
+    /* Not a field of its own: byte 0x14 of the head Matrix4x3 at 0x5ec..0x61c
+       that func_ov002_020e4768 stores (body matrix times bone 15) and
+       d_a_bmb.cpp's func_ov102_0214b53c copies out. Nothing reads 0x600 alone;
+       the matrix still straddles pad_58c, this byte and pad_601. */
     u8  unk_600;            /* 0x600 */
     u8  pad_601[0x1b];
     /* Yoshi's per-player material word for VS mode. func_ov002_020e5948 sets it
@@ -293,7 +317,7 @@ struct Player : dActor_c {
        |dist| >> 3 while it is nonzero, and ChangeState zeroes it. */
     s32 mTongueHitDist; /* 0x654 */
     /* --- Unpacked CLPS (collision property) fields ---------------------
-     * Player::SetFloorSurfaceInfo (func_ov002_020c16ec) calls one bitfield
+     * Player::SetFloorSurfaceInfo (0x020c16ec) calls one bitfield
      * getter per field on the floor's CLPS and stores each result here. The
      * getters are 3-instruction accessors at 0x02037e14..0x02037e90; the
      * bit extents below are read off those instructions, so the mapping is
@@ -307,16 +331,16 @@ struct Player : dActor_c {
      * triangle in the collision data rather than derived from a surface ID.
      * NOTE the latch at 0x020c1738: if mFloorClass is already 1 the function
      * returns early, refreshing neither the class nor the floor normal. */
-    s32 mFloorClass;            /* 0x658  CLPS bits 12-14, getter func_02037e58 */
-    s32 mClpsBits15_18;            /* 0x65c  getter func_02037e48 */
-    s32 mClpsBits6_11;            /* 0x660  getter func_02037e68 */
-    s32 mSurfaceType;            /* 0x664  CLPS bits 19-23, getter func_02037e38; values 6..9 are the quicksand tiers */
+    s32 mFloorClass;    /* 0x658  CLPS bits 12-14, getter CLPS::GetFloorClass */
+    s32 mClpsBits15_18; /* 0x65c  CLPS bits 15-18, getter CLPS::func_02037e48 */
+    s32 mClpsBits6_11;  /* 0x660  CLPS bits 6-11, getter CLPS::func_02037e68 */
+    s32 mSurfaceType; /* 0x664  CLPS bits 19-23, getter CLPS::GetSurfaceType; values 6..9 are the quicksand tiers */
     /* mSurfaceType as func_ov002_020c14b8's floor probe left it (0 on a
        miss), kept beside mProbedGroundY. func_ov002_020c0fb4 tests it == 1,
        the lava floor: within 0x2000 of mProbedGroundY it starts St_BurnLava. */
     s32 mProbedSurfaceType;          /* 0x668 */
-    s32 mGroundSoundType;            /* 0x66c  CLPS bits 0-4, getter func_02037e84 */
-    s32 mClpsWord1Lo;            /* 0x670  CLPS word1 bits 0-7, getter func_02037e90 */
+    s32 mGroundSoundType;            /* 0x66c  CLPS bits 0-4, getter CLPS::func_02037e84 */
+    s32 mClpsWord1Lo;                /* 0x670  CLPS word1 bits 0-7, getter CLPS::func_02037e90 */
     s32 mHurtDamage;            /* 0x674 */
     /* Two music layers over the level music, both Sound::SetMusic ids.
        func_ov002_020bd9ec(id) starts a power-up's music in mPowerupMusic
@@ -347,7 +371,17 @@ struct Player : dActor_c {
      * whether a slope speeds you up or slows you down. */
     s16 mFloorAngle;            /* 0x69a */
     s16 mAngleYSpeed;            /* 0x69c */
-    s16 unk_69e;            /* 0x69e */
+    /* X-axis counterpart of mAngleYSpeed. St_Fly_Init zeroes both, and
+       func_ov002_020df8f0 eases this one toward a stick-times-speed target
+       and adds it to mPrevAngleX (clamped to +-0x2aaa) as mAngleYSpeed is
+       added to mPrevAngleY. St_Balloon_Init sets both to 0x100, and
+       St_Balloon_Main runs (mAngleX, mAngleXSpeed) and (mAngleZ,
+       mAngleYSpeed) through func_ov002_020de3d0. Other code borrows the
+       slot: St_Swim_Main loads it from mAngleZ, func_ov002_020cd448 eases
+       it toward mAngleZ by 0x200 and writes it back, and TryEnterStarDoor
+       stores its `kind` here as the yaw func_ov002_020c8a4c rotates the
+       approach offset by. */
+    s16 mAngleXSpeed;                /* 0x69e */
     u16 mInvincibleTimer;            /* 0x6a0 */
     u16 mPrevAreaId;            /* 0x6a2 */
     u16 mStateTimer;            /* 0x6a4 */
@@ -415,6 +449,7 @@ struct Player : dActor_c {
        costs 0x100 health on reaching 0xf0 (0x50 in those levels); reset to
        0 otherwise. */
     u16 mAirDrainCounter;   /* 0x6ca */
+    /* St_Jump_Init zeroes it; no reader in the matched code. */
     u16 unk_6cc;            /* 0x6cc */
     u16 mStateFlags;            /* 0x6ce */
     u16 mMegaKillCount;            /* 0x6d0 */
@@ -460,6 +495,8 @@ struct Player : dActor_c {
        0x1e000, and clears it when the flag drops. While it is nonzero,
        St_Walk_Init and St_Crouch_Init play a voice. */
     u8 mDashBoostTimer;     /* 0x6ed */
+    /* St_YoshiPower_Main sets it to 1 when the swallowed object's v18() is
+       4 or 2, St_YoshiPower_Init clears it; no reader in the matched code. */
     u8  unk_6ee;            /* 0x6ee */
     u8 pad_6ef[0x1];
     /* Turn ramp in func_ov002_020d3b9c's walk turning (input mode byte
@@ -577,11 +614,32 @@ struct Player : dActor_c {
     u8 mEventStep;              /* 0x71f */
     u8 mEventWait;              /* 0x720 */
     u8  mSleepStage;            /* 0x721 */
-    u8  unk_722;            /* 0x722 */
-    u8  unk_723;            /* 0x723 */
-    u8  unk_724;            /* 0x724 */
-    u8  unk_725;            /* 0x725  latch: St_Talk_Cleanup reloads music layer 1 when set */
-    s8  unk_726;            /* 0x726 */
+    /* func_ov002_020c8b78 holds the music at volume 0x14 while its animation
+       runs, then sets this and opens message 0x188 (0x29); St_Talk_Main
+       calls Sound::ChangeMusicVolume(0x7f, ...) each frame while it is set
+       and clears it once the volume is back. */
+    u8 mRestoreMusicVolume; /* 0x722 */
+    /* While set, St_Wait_Main skips the two sleep voices (0x2a in step 2,
+       0x2b in step 4). daC_Jugem_c::StateArriveMain sets it on the closest
+       player at its first tick and clears it at tick 0x82. */
+    u8 mMuteSleepVoice; /* 0x723 */
+    /* St_Owl_Main sets it in step 1 once mPosY is below mAttachOffsetY -
+       0xed8000, calls func_0201f32c(0xa3) and hands the camera to
+       func_0200d3f8 with no look target; it clears it in step 3 once camera
+       flag 0x8000 is clear. That camera state's main, func_02005110, pulls
+       the eye out to 0xd0000 instead of 0x48000 while it is set. */
+    u8 mOwlFarCamera; /* 0x724 */
+    /* func_ov002_020c44c4 sets it when it opens the one-time message 0x177;
+       St_Talk_Cleanup then calls Sound::LoadAndSetMusic_Layer1(0x39) and
+       clears it. */
+    u8 mPlayMusicAfterTalk; /* 0x725 */
+    /* Set on both players when their attacks meet: func_ov002_020d8944
+       (two facing players, actor 0xbf) knocks both back and spawns clash
+       particles 0x12a/0x12b, and func_ov002_020d8360/func_ov002_020d8854
+       latch it on both sides. While it is set, func_ov002_020d8360 ignores
+       that player's hit and func_ov002_020d8a50 skips the attack update.
+       St_PunchKick_Init, St_SweepKick_Init and ChangeState clear it. */
+    s8 mAttackClashed; /* 0x726 */
     /* The scripted animation sequence the Kuppa script started. Command
        func_ov002_020bd20c stores its parameter byte here (1-based, 0 for
        none) and zeroes mAnimScriptStep, after func_ov002_020bd06c has
@@ -1031,6 +1089,8 @@ struct Player : dActor_c {
     void func_ov002_020c1234();
     void func_ov002_020c133c();
     void func_ov002_020c14b8();
+    /* Unnamed parameter on purpose; see the Kuppa note above. */
+    void SetFloorSurfaceInfo(const dBgPi &);
     int func_ov002_020c19d0(int, int);
     int func_ov002_020c1ad8(int);
     int func_ov002_020c1c84(int);

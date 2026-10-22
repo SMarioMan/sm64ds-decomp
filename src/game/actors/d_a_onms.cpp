@@ -113,8 +113,6 @@ void dBgCh_Actr_UpdateContinuous_Veneer(void *self);
 void _ZN8dActor_c10EarthquakeERK7Vector35Fix12IiE(void *v, int f);
 /* Sound::Play(3, id, pos). The overlay calls this wrapper, not Sound::Play. */
 void func_02012694(unsigned int id, const Vector3 *v);
-int func_02037e38(unsigned int *p);
-int func_02037e84(int *p);
 /* Stores mRadius: p[6] = value, the word at dBgCh_Actr + 0x18. */
 void func_0203568c(void *p, int v);
 void *_ZN8Particle6System9NewSimpleEj5Fix12IiES2_S2_(unsigned int a, int b, int cc, int d);
@@ -255,12 +253,12 @@ void daOnms_c::StateKnocked()
        hoisted-address probe differed by 13 words. */
     dBgPi *floor = (dBgPi *)mWithMeshClsn.GetFloorResult();
 
-    if (func_02037e38(&floor->surface.clps.w0) == 9) {
+    if (floor->surface.clps.GetSurfaceType() == 9) {
         mMoveDir = kDirSink;
         mHorzSpeed = 0;
         mVertSpeed = 0;
         func_02012694(0x178, CamPos(this));
-    } else if (func_02037e84((int *)&floor->surface.clps.w0) == 8) {
+    } else if (floor->surface.clps.func_02037e84() == 8) {
         /* The player's position is read through p: reading o->mPosX
            directly changes the code. */
         dActor_c *o;

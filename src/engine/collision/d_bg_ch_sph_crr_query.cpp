@@ -687,14 +687,14 @@ extern "C" void func_02037e9c(CLPS *clps) {
     clps->w1 = 0xff;
 }
 
-// @symbol func_02037e90
-extern "C" int func_02037e90(int *p) {
-    return p[1] & 0xff;
+// @symbol _ZNK4CLPS13func_02037e90Ev
+int CLPS::func_02037e90() const {
+    return w1 & 0xff;
 }
 
-// @symbol func_02037e84
-extern "C" int func_02037e84(int *p) {
-    return p[0] & 0x1f;
+// @symbol _ZNK4CLPS13func_02037e84Ev
+int CLPS::func_02037e84() const {
+    return w0 & 0x1f;
 }
 
 // @symbol SurfaceInfo_TestFlag0x20
@@ -702,24 +702,24 @@ extern "C" int SurfaceInfo_TestFlag0x20(int *p) {
     return p[0] & 0x20;
 }
 
-// @symbol func_02037e68
-extern "C" int func_02037e68(unsigned int *p) {
-    return (p[0] >> 6) & 0x3f;
+// @symbol _ZNK4CLPS13func_02037e68Ev
+int CLPS::func_02037e68() const {
+    return (w0 >> 6) & 0x3f;
 }
 
-// @symbol func_02037e58
-extern "C" int func_02037e58(unsigned int *p) {
-    return (p[0] >> 12) & 0x7;
+// @symbol _ZNK4CLPS13GetFloorClassEv
+int CLPS::GetFloorClass() const {
+    return (w0 >> 12) & 0x7;
 }
 
-// @symbol func_02037e48
-extern "C" int func_02037e48(unsigned int *p) {
-    return (p[0] >> 15) & 0xf;
+// @symbol _ZNK4CLPS13func_02037e48Ev
+int CLPS::func_02037e48() const {
+    return (w0 >> 15) & 0xf;
 }
 
-// @symbol func_02037e38
-extern "C" int func_02037e38(unsigned int *p) {
-    return (p[0] >> 19) & 0x1f;
+// @symbol _ZNK4CLPS14GetSurfaceTypeEv
+int CLPS::GetSurfaceType() const {
+    return (w0 >> 19) & 0x1f;
 }
 
 // @symbol func_02037e2c

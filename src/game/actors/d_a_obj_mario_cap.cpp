@@ -241,7 +241,6 @@ extern "C" {
 void  func_02013a88(void);
 short func_02010844(void *self, void *v, short angle);
 void  func_020167a4(void *p);
-int   func_02037e58(void *p);
 void  func_ov002_020f030c(int x);
 
 unsigned short DecIfAbove0_Short(unsigned short *p);
@@ -1007,7 +1006,7 @@ int daObjMarioCap_c::InitSlide()
  * and drives the blink (mBlinkHidden) from the low bits of the timer: bit 2
  * while the timer is under half of mStartTimer, bit 1 once it is under a
  * quarter. Type 18 then stops (speed 0). The rest slide: the floor surface
- * (func_02037e58 on the floor result's surface info, which sits 4 bytes into the result) picks a push of
+ * (CLPS::GetFloorClass on the floor result's surface info, which sits 4 bytes into the result) picks a push of
  * 0x5000..0xa000 (5..10 units a frame; func_ov002_020f02c8, which maps the
  * surface value to it), aimed along mSlopeAngle and scaled by the horizontal
  * length of the floor normal. That is added to the cap's own velocity
@@ -1065,7 +1064,7 @@ int daObjMarioCap_c::Slide()
     }
     fr = (char *)mWithMeshClsn.GetFloorResult();
     ((SurfaceInfo *)(fr + 4))->CopyNormalTo(*(Vector3 *)&mFloorNormalX);
-    surface = func_02037e58(fr + 4);
+    surface = ((SurfaceInfo *)(fr + 4))->clps.GetFloorClass();
     mSlopeAngle = _ZN4cstd5atan2E5Fix12IiES1_(mFloorNormalX, mFloorNormalZ);
     slopePush = func_ov002_020f02c8(surface);
     func_ov002_020f030c(surface);

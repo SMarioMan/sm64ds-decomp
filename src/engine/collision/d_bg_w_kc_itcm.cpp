@@ -57,11 +57,10 @@ bool func_020397b8(int x);                      /* wall-facing test */
 int func_02039794(int x);                       /* slope-band classify */
 
 /* CLPS helpers (src/engine/collision/d_bg_ch_sph_crr_query.cpp): the entry
-   lookup, the CLPS type getter, and the SurfaceInfo write, which takes the
-   entry by value into 0x0 and the normal into 0x8.
+   lookup and the SurfaceInfo write, which takes the entry by value into 0x0
+   and the normal into 0x8.
    local extern: no header in include/ declares them. */
 void func_020381cc(void *block, int idx, void **out);
-int func_02037e58(unsigned int *p);
 void func_02037eb0(SurfaceInfo *info, CLPS clps, Vector3 *normal);
 
 /* local extern: dBgPc's real ctor/dtor (include/dBgPc.h), called explicitly
@@ -200,7 +199,7 @@ static inline s32 SqrtRaw(u64 x, s32 zval, s32 one)
 #define EDGE_FILTER(d, zval, hypv)                                                 \
     if (!(sphere.flags & 2)) {                                                     \
         if (cls == 1) {                                                            \
-            if (func_02037e58((unsigned int *)&data_020a0cec) == 1) {              \
+            if (data_020a0cec.clps.GetFloorClass() == 1) {                         \
                 if ((d) > (faceDot >> edgeToleranceShift))                         \
                     continue;                                                      \
             } else if (tolerantWallEdges) {                                        \

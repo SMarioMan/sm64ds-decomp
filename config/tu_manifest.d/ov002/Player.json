@@ -627,7 +627,7 @@
       "ordinal": 84
     },
     {
-      "symbol": "func_ov002_020c16ec",
+      "symbol": "_ZN6Player19SetFloorSurfaceInfoERK5dBgPi",
       "address": "0x020c16ec",
       "size": "0x000000b0",
       "legacy_source": "src/func_ov002_020c16ec.c",

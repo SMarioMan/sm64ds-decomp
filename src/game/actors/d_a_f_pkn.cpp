@@ -146,7 +146,7 @@ void _ZN8dActor_c10SpawnCoinsERK7Vector3j5Fix12IiEs(void *self, const void *pos,
 
 extern SharedFilePtr data_ov084_02130dfc;   /* the plant's model */
 extern SharedFilePtr *data_ov084_021302f4[];/* the six shared animation handles */
-extern SharedFilePtr data_ov002_0210da38;   /* the blue-coin model, out of ov002 */
+extern SharedFilePtr data_ov002_0210da38;   /* the sleep-bubble model, out of ov002 */
 extern PknSharedFile data_ov084_02130df4;   /* idle animation */
 extern PknSharedFile data_ov084_02130e04;   /* spit animation */
 extern PknSharedFile data_ov084_02130e14;   /* grow-in lunge animation */

@@ -36,9 +36,8 @@ typedef char CameraView_angle_y_must_be_at_0x17c[(((int)(&((CameraView *)0)->mAn
 #endif
 
 /* The target player's position and facing, as include/dActor_c.h's C view
- * places them. Its u8 at 0x724 (Player.h's unk_724) stays raw: Player.cpp
- * sets it at one state step and clears it at a later one, which does not
- * yet name it. */
+ * places them. Its u8 at 0x724 is Player.h's mOwlFarCamera, read raw: this
+ * is a C file and cannot include the C++-only Player.h. */
 typedef struct {
     u8 pad_000[0x5c];
     struct Vec3 mPos; /* 0x05c */

@@ -83,7 +83,6 @@ void  Matrix4x3_ApplyInPlaceToRotationX(void *m, s16 angX);
 
 void  func_0201267c(int id, void *pos);
 void  func_02012694(int id, void *pos);
-int   func_02037e38(unsigned int *p);
 
 void  dBgCh_Actr_UpdateDiscreteNoLava_veneer(void *p);
 
@@ -690,7 +689,8 @@ int Scuttlebug::func_ov071_0211f7d4()
     dBgCh_Actr_UpdateDiscreteNoLava_veneer(&mWithMeshClsn);
     mAngleX = mAngleX + 0x1000;
     if (mWithMeshClsn.JustHitGround()) {
-        if (func_02037e38((unsigned int *)((char *)mWithMeshClsn.GetFloorResult() + 4)) == 4) {
+        if (((SurfaceInfo *)((char *)mWithMeshClsn.GetFloorResult() + 4))->clps.GetSurfaceType() ==
+            4) {
             func_ov071_0211f498();
         } else {
             mVertSpeed = (mVertSpeed * -0x3c) / 0x64;

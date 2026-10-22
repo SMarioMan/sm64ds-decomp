@@ -528,13 +528,13 @@ int daC_Jugem_c::StateArriveMain()
     _ZN5Sound7PlaySubEjjj5Fix12IiEb(0x4b, 0x14, 0x7f, 0x15666, false);
     switch (mTimer) {
     case 1:
-        p->unk_723 = 1;
+        p->mMuteSleepVoice = 1;
         break;
     case 0x78:
         func_0201f32c(1);
         break;
     case 0x82:
-        p->unk_723 = 0;
+        p->mMuteSleepVoice = 0;
         break;
     case 0xb4:
         data_0209d66c = 1;

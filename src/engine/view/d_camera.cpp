@@ -153,7 +153,7 @@ extern void func_0200d954(char *c, short arg);
 /* Opaque camera-side records used by the older handlers. The ground-query
    shadow retains its measured 0x54-byte frame; clsnY at 0x44 is the floor
    height, as in dBgCh_Gnd.h, and the words from 0x14 are the hit record
-   func_02037e48/func_02037e68 read. Line queries use the real dBgCh_Lin class
+   CLPS::func_02037e48/func_02037e68 read. Line queries use the real dBgCh_Lin class
    above. The remaining records are typedef'd for the cplusplus-off regions. */
 typedef struct dBgCh_Gnd {
     int _[0x11];
@@ -1262,8 +1262,8 @@ extern "C" int func_0200c66c(void *self_, void *pos_, int *out2_, int *out1_, in
             col2 = 0x3f;
         } else {
             hval = ground.clsnY;
-            col1 = func_02037e48((u32*)&ground._[5]) & 0xff;
-            col2 = func_02037e68((u32*)&ground._[5]) & 0xff;
+            col1 = ((const CLPS *)&ground._[5])->func_02037e48() & 0xff;
+            col2 = ((const CLPS *)&ground._[5])->func_02037e68() & 0xff;
         }
         _ZN9dBgCh_GndD1Ev(&ground);
 

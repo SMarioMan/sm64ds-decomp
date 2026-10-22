@@ -98,7 +98,6 @@ extern int GiveRedCoins(int i, int amt);
 extern s8 NumRedCoins(void);
 extern unsigned int func_02012790(unsigned int a);
 extern void func_02012694(unsigned int id, const Vector3 *v);
-extern int func_02037e58(unsigned int *p);
 extern int SurfaceInfo_TestFlag0x20(void* p);
 extern void _ZN5Sound9PlayBank3EjRK7Vector3(unsigned int id, const Vector3 &pos);
 extern void _ZN8Particle6System12NewBigSplashE5Fix12IiES2_S2_(int a, int b, int c);
@@ -672,7 +671,7 @@ void daCoin_c::func_ov002_020b1cc0()
         return;
 
     floor = (char *)mWithMeshClsn.GetFloorResult();
-    floorClass = func_02037e58((unsigned int*)(floor + 4));
+    floorClass = ((SurfaceInfo *)(floor + 4))->clps.GetFloorClass();
     ((SurfaceInfo*)(floor + 4))->CopyNormalTo(normal);
 
     if (mWithMeshClsn.JustHitGround() != 0) {

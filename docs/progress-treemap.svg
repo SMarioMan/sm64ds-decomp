@@ -5309,19 +5309,19 @@ matched: yes</title></rect><rect x="73.53" y="464.60" width="6.05" height="1.33"
 module: arm9
 addr: 0x02037e2c
 size: 12 bytes
-matched: yes</title></rect><rect x="79.57" y="464.60" width="8.06" height="1.33" fill="#3fa75a" stroke="#2c7a41" stroke-width="0.4"><title>func_02037e38
+matched: yes</title></rect><rect x="79.57" y="464.60" width="8.06" height="1.33" fill="#3fa75a" stroke="#2c7a41" stroke-width="0.4"><title>_ZNK4CLPS14GetSurfaceTypeEv
 module: arm9
 addr: 0x02037e38
 size: 16 bytes
-matched: yes</title></rect><rect x="87.63" y="464.60" width="8.06" height="1.33" fill="#3fa75a" stroke="#2c7a41" stroke-width="0.4"><title>func_02037e48
+matched: yes</title></rect><rect x="87.63" y="464.60" width="8.06" height="1.33" fill="#3fa75a" stroke="#2c7a41" stroke-width="0.4"><title>_ZNK4CLPS13func_02037e48Ev
 module: arm9
 addr: 0x02037e48
 size: 16 bytes
-matched: yes</title></rect><rect x="95.69" y="464.60" width="8.06" height="1.33" fill="#3fa75a" stroke="#2c7a41" stroke-width="0.4"><title>func_02037e58
+matched: yes</title></rect><rect x="95.69" y="464.60" width="8.06" height="1.33" fill="#3fa75a" stroke="#2c7a41" stroke-width="0.4"><title>_ZNK4CLPS13GetFloorClassEv
 module: arm9
 addr: 0x02037e58
 size: 16 bytes
-matched: yes</title></rect><rect x="103.76" y="464.60" width="8.06" height="1.33" fill="#3fa75a" stroke="#2c7a41" stroke-width="0.4"><title>func_02037e68
+matched: yes</title></rect><rect x="103.76" y="464.60" width="8.06" height="1.33" fill="#3fa75a" stroke="#2c7a41" stroke-width="0.4"><title>_ZNK4CLPS13func_02037e68Ev
 module: arm9
 addr: 0x02037e68
 size: 16 bytes
@@ -5329,11 +5329,11 @@ matched: yes</title></rect><rect x="111.82" y="464.60" width="6.05" height="1.33
 module: arm9
 addr: 0x02037e78
 size: 12 bytes
-matched: yes</title></rect><rect x="117.86" y="464.60" width="6.05" height="1.33" fill="#3fa75a" stroke="#2c7a41" stroke-width="0.4"><title>func_02037e84
+matched: yes</title></rect><rect x="117.86" y="464.60" width="6.05" height="1.33" fill="#3fa75a" stroke="#2c7a41" stroke-width="0.4"><title>_ZNK4CLPS13func_02037e84Ev
 module: arm9
 addr: 0x02037e84
 size: 12 bytes
-matched: yes</title></rect><rect x="123.91" y="464.60" width="6.05" height="1.33" fill="#3fa75a" stroke="#2c7a41" stroke-width="0.4"><title>func_02037e90
+matched: yes</title></rect><rect x="123.91" y="464.60" width="6.05" height="1.33" fill="#3fa75a" stroke="#2c7a41" stroke-width="0.4"><title>_ZNK4CLPS13func_02037e90Ev
 module: arm9
 addr: 0x02037e90
 size: 12 bytes
@@ -14537,7 +14537,7 @@ matched: yes</title></rect><rect x="499.76" y="233.32" width="23.37" height="16.
 module: ov002
 addr: 0x020c14b8
 size: 564 bytes
-matched: yes</title></rect><rect x="523.13" y="233.32" width="7.29" height="16.07" fill="#3fa75a" stroke="#2c7a41" stroke-width="0.4"><title>func_ov002_020c16ec
+matched: yes</title></rect><rect x="523.13" y="233.32" width="7.29" height="16.07" fill="#3fa75a" stroke="#2c7a41" stroke-width="0.4"><title>_ZN6Player19SetFloorSurfaceInfoERK5dBgPi
 module: ov002
 addr: 0x020c16ec
 size: 176 bytes

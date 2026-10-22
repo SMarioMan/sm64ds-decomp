@@ -16,16 +16,16 @@
 #include "dBgW.h"
 #include "dBgW_Kc.h"
 #include "dBgCh.h"
+#include "CLPS.h"
 #include "dScStage_c.h"
 #include "dActor_c.h"
 #include "decl_common.h"
 
 extern "C" {
-/* local extern: no header declares the CLPS word accessors (CLPS.h only
-   documents them); d_bg_ch_sph_crr_query.cpp defines both with these
-   signatures. */
+/* local extern: no header declares the CLPS water test (CLPS.h only
+   documents it); d_bg_ch_sph_crr_query.cpp defines it with this
+   signature. */
 extern int SurfaceInfo_TestFlag0x20(int *clpsWords);
-extern int func_02037e38(unsigned int *clpsWords);
 }
 
 /* Preserve the address-based helper ABI while using the declared callback
@@ -121,12 +121,12 @@ bool dBgCh::ShouldPassThroughImpl(void *unused, const CLPS &surfaceProperties, c
         if (func_0203545c(queryBytes) == 0)
             return true;
     }
-    if (func_02037e38((unsigned int *)clpsWords) == 0x11) {
+    if (surfaceProperties.GetSurfaceType() == 0x11) {
         ruleApplies = true;
         if (query.IsIgnoringVanishSurfaces())
             return true;
     }
-    if (checkType14 && func_02037e38((unsigned int *)clpsWords) == 0x14) {
+    if (checkType14 && surfaceProperties.GetSurfaceType() == 0x14) {
         ruleApplies = true;
         if (query.IsIgnoringType14Walls())
             return true;

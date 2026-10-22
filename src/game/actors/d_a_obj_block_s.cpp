@@ -150,8 +150,6 @@ extern void _ZN10dCcAcPos_c4InitEP8dActor_cRK7Vector35Fix12IiES6_jj(
 extern void dBgCh_Actr_UpdateContinuous_Veneer(void *p);
 extern int SurfaceInfo_TestFlag0x20(int *p);
 extern int func_0203567c(int p);
-extern int func_02037e38(u32 *p);
-extern int func_02037e58(u32 *p);
 extern int func_ov002_020ef228(void *c, int arg);
 extern int func_ov002_020f030c(int x);
 extern int func_ov002_020e496c(char *c);
@@ -948,7 +946,7 @@ void daObjBlockS_c::func_ov098_021390ec()
  * units per frame (-0xb000) calls Kill, and the step carries on.
  *
  * The slide: CopyNormalTo fills mFloorNormalX/Y/Z, n is the floor's CLPS
- * type (func_02037e58; include/Player.h calls it the slipperiness class),
+ * floor class (CLPS::GetFloorClass; include/Player.h calls it the slipperiness class),
  * hl its slide acceleration (func_ov002_020f02c8). a1 is the current
  * velocity (mHorzSpeed along mPrevAngleY, through the sin / cos table at
  * data_02082214), a2 is hl in the direction atan2 of the normal's x and z
@@ -987,7 +985,7 @@ int daObjBlockS_c::func_ov098_02139228()
         return 0;
 
     fr = mWithMeshClsn.GetFloorResult();
-    switch (func_02037e38((u32 *)((char *)fr + 4))) {
+    switch (((SurfaceInfo *)((char *)fr + 4))->clps.GetSurfaceType()) {
     case 6:
         mClsnYOffsetTarget = 0x1e000;
         break;
@@ -1019,7 +1017,7 @@ int daObjBlockS_c::func_ov098_02139228()
     }
 
     ((SurfaceInfo *)((char *)fr + 4))->CopyNormalTo(*(Vector3 *)&mFloorNormalX);
-    n = func_02037e58((u32 *)((char *)fr + 4));
+    n = ((SurfaceInfo *)((char *)fr + 4))->clps.GetFloorClass();
     ang = _ZN4cstd5atan2E5Fix12IiES1_(mFloorNormalX, mFloorNormalZ);
     hl = func_ov002_020f02c8(n);
     func_ov002_020f030c(n);

@@ -250,6 +250,14 @@
       "evidence": "src/_ZN10dScEntry_c13InitResourcesEv.cpp on main line 95; include/dScEntry_c.h line 33 (`u8 unk_287; /* 0x287 */`); ROM ov075 dScEntry_c::InitResources TEXT-VERIFIED in ov075/d_s_entry_methods"
     },
     {
+      "path": "src/game/stages/d_s_entry_methods.cpp",
+      "rule": "handspelled-member",
+      "match": "_ZN3OAM6RenderEbP7OamAttriiii5Fix12IiES3_ii",
+      "count": 2,
+      "reason": "OAM::Render's scaled overload takes two Fix12<int> by value, and include/OAM.h deliberately leaves the by-value Fix12 overloads out (the Fix12 wall). dScEntry_c::RenderCourseSelectTitle calls it once; the other occurrence is its extern \"C\" declaration. Both are carried verbatim from src/_ZN10dScEntry_c23RenderCourseSelectTitleEv.cpp, which this fold retires. Follow-up: retire it together with the other Fix12-by-value walls once a Fix12 spelling that passes in registers exists.",
+      "evidence": "include/OAM.h (by-value Fix12 overloads not declared); src/_ZN10dScEntry_c23RenderCourseSelectTitleEv.cpp on main (2 occurrences); ov075/d_s_entry_methods prepush linkcheck 36/36 verified"
+    },
+    {
       "path": "src/Message2.cpp",
       "rule": "handspelled-member",
       "match": "_ZN3OAM6RenderEbP7OamAttriiii5Fix12IiES3_ii",

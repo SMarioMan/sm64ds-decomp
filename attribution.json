@@ -3199,7 +3199,7 @@
     "src/game/player/Player.cpp#func_ov002_020c70ac": "tangosdev",
     "src/game/player/Player.cpp#_ZN6Player19func_ov002_020c70acEv": "tangosdev",
     "src/game/player/Player.cpp#_ZN6Player14St_OnWall_MainEv": "noreply",
-    "src/game/player/Player.cpp#func_ov002_020c16ec": "tangosdev",
+    "src/game/player/Player.cpp#_ZN6Player19SetFloorSurfaceInfoERK5dBgPi": "tangosdev",
     "src/game/player/Player.cpp#func_ov002_020c8a4c": "tangosdev",
     "src/game/player/Player.cpp#_ZN6Player19func_ov002_020c8a4cEv": "tangosdev",
     "src/game/player/Player.cpp#func_ov002_020bec9c": "tangosdev",

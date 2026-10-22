@@ -46,7 +46,6 @@ extern void func_0204dab4(void* system, void* records, int count,
 /* This initializer's 0xc-byte layout is evidenced, but its original class
  * name is not. Keep that single unresolved ABI boundary explicit. */
 extern void func_0204dc84(char* record);
-extern int func_02037e38(unsigned int *p);
 extern u8 DecIfAbove0_Byte(u8* value);
 extern void func_02049d60(
     Particle::Manager *manager, Particle::System *system);
@@ -196,7 +195,7 @@ void dPa_c::level_c::checkYoganCallback_c::SpawnParticles(
         v.y = vy;
         v.z = sz << 3;
         rg.SetObjAndPos(v, 0);
-        if (rg.DetectClsn() == 0 || func_02037e38((u32 *)&rg.surface) != 1) {
+        if (rg.DetectClsn() == 0 || rg.surface.clps.GetSurfaceType() != 1) {
             particle->age = particle->lifetime;
         } else {
             particle->offsetAsr3.y =

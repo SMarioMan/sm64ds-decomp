@@ -15,6 +15,16 @@
  * - SetAnim, Particle::System::New, Particle::System::NewSimple, cstd::atan2,
  *   Sound::PlaySub and Sound::ChangeMusicVolume stay mangled. The symbol
  *   carries 5Fix12IiE. Sound.h does not declare the last two.
+ *   All 16 body-local declarations of Particle::System::New use ONE spelling:
+ *       u32 (u32 handle, u32 kind, Fix12i x, Fix12i y, Fix12i z,
+ *            const void *dir, void *callback)
+ *   The mangled name gives the real types of the last two -- const Vector3_16f *
+ *   and Particle::Callback * -- but the call sites pass several different
+ *   three-by-s16 shapes, so they stay void pointers until those are unified.
+ *   Fix12i is a scalar typedef, so it costs nothing here; the by-value
+ *   Fix12<int> the symbol names is still the wall (notes/mwccarm-codegen.md
+ *   6az). Keep them identical: 16 spellings of one symbol is how a wrong
+ *   return type or argument order hides.
  * - func_020731dc is __register_global_object. The relocation rows name the
  *   retail symbol.
  * - The constructor is still the free _ZN6PlayerC1Ev, walking members from
@@ -34,6 +44,7 @@
 #include "types.h"
 #include "common.h"
 #include "Player.h"
+#include "ModelAnim2.h"
 #include "PlayerInput.h"
 #include "SharedFilePtr.h"
 #include "PathPtr.h"
@@ -56,27 +67,33 @@
 bool ApproachLinear(short &value, short target, short step);
 
 /* ---------------------------------------------------------------------------
- * Shadow types that cannot live inside a function body.
+ * Shadow types and ABI stand-ins that cannot live inside a function body.
+ *
+ * Everything here is either hoisted for the C++ rule spelled out further down
+ * or load-bearing for codegen.  It is NOT a parking lot for POD twins of real
+ * types: Vector3 is usable directly, including its (x, y, z) constructor, as
+ * long as the locals keep the ROM's declaration order.  The exception is the
+ * one include/types.h records at Vector3's constructors: a whole-struct copy
+ * can lower memberwise instead of as a block move, and there a twin can still
+ * be load-bearing.
  * ------------------------------------------------------------------------- */
-struct Ret;
 struct V3Quad { Vector3 a; Vector3 d; Vector3 e; Vector3 b; };
+/* A stand-in for Fix12<int>, and load-bearing as a CLASS rather than as a
+ * name: func_ov002_020bf800 builds three of these and passes each as an int
+ * read through its address. The ROM stores x, y and z to sp+0xc..0x14 and
+ * reloads x and y from there for the call (z goes out from a register). Plain Fix12i
+ * locals -- or passing xv/yv/zv straight to the callee -- keep all three in
+ * registers and shrink that function from 140 bytes to 120. Measured both
+ * ways; it stays until Fix12<int> itself is reconstructed. */
 struct Fix12v { int v; Fix12v(int a) : v(a) {} };
 namespace Sound { void PlayBank0(unsigned int, const Vector3 &); }
-struct V3a {
- int x, y, z;
- void set(int x_, int y_, int z_) { x = x_; y = y_; z = z_; }
-};
-namespace Particle { extern "C" void _ZN8Particle6System3NewEjj5Fix12IiES2_S2_PK11Vector3_16fPNS_8CallbackE(unsigned int, unsigned int, int, int, int, const void *, void *); }
-typedef struct {
- int unk0, unk4, unk8, unkC;
-} Arg1;
-struct State3i { int a, b, c; };
-struct V3 {
- int x, y, z;
- V3(int x, int y, int z) : x(x), y(y), z(z) {}
- V3() {}
-};
 struct Ret { int pad; int y; };
+/* A shadow scaffold, and the one hoist C++ requires even without the extern
+ * rule below: every virtual of a LOCAL class must be defined in the same body,
+ * because a local class vtable can have nowhere else to come from.  Arg is
+ * never constructed -- it exists only to give the call in
+ * func_ov002_020caf98 the ROM vtable-slot shape -- so at file scope the
+ * declarations are enough and no vtable is emitted on either compiler. */
 struct Arg {
  virtual void *m0();
  virtual void *m1();
@@ -111,21 +128,6 @@ struct State2i { int a; int b; };
 struct S18a { short f0; char pad[0x16]; };
 struct S18b { u16 f0; char pad[0x16]; };
 struct S18b2 { short a; short b; int c[5]; };
-/* Two shadow scaffolds, hoisted for the same reason as the block above and one
- * more: C++ requires every virtual of a LOCAL class to be defined in the same
- * body, because a local class's vtable can have nowhere else to come from.
- * Neither scaffold is ever constructed -- each exists only to give a call
- * through a pointer the ROM's vtable-slot shape (see the note on
- * Player::CanEnterDoor) -- so at file scope the declarations are enough and
- * no vtable is emitted on either compiler. */
-struct StarDoor {
- virtual int v00(); virtual int v01(); virtual int v02(); virtual int v03();
- virtual int v04(); virtual int v05(); virtual int v06(); virtual int v07();
- virtual int v08(); virtual int v09(); virtual int v10(); virtual int v11();
- virtual int v12(); virtual int v13(); virtual int v14(); virtual int v15();
- virtual int v16(); virtual int v17();
- virtual int GetType();
-};
 /* The Kuppa-script command table at the head of the file holds pointers to
  * members of one signature. */
 typedef int (Player::*ScriptCommand)(unsigned char *, int, int);
@@ -189,7 +191,8 @@ void func_ov002_020bcdf0(char *self)
     extern AnimEntry27 *data_ov002_0210a7a0[];
     extern void _ZN6Player7SetAnimEji5Fix12IiEj(void *self, unsigned int id, int val, int fix, unsigned int flags);
     extern void _ZN8Particle6System9NewSimpleEj5Fix12IiES2_S2_(unsigned int id, int x, int y, int z);
-    extern int _ZN8Particle6System3NewEjj5Fix12IiES2_S2_PK11Vector3_16fPNS_8CallbackE(unsigned int handle, unsigned int type, int x, int y, int z, void *vec, void *cb);
+    extern u32 _ZN8Particle6System3NewEjj5Fix12IiES2_S2_PK11Vector3_16fPNS_8CallbackE(
+        u32 handle, u32 kind, Fix12i x, Fix12i y, Fix12i z, const void *dir, void *callback);
     AnimEntry27 *base;
     AnimEntry27 cur;
     int id;
@@ -284,7 +287,7 @@ void Player::func_ov002_020bd06c(unsigned int state2)
 {
     extern void _ZN7fBase_c18MarkForDestructionEv(void *thiz);
     extern dActor_c *_ZN8dActor_c5SpawnEjjRK7Vector3PK10Vector3_16as(
-        u32 actorID, u32 param1, const struct Vector3 *pos, const struct Vector3_16 *rot, s8 areaID,
+        u32 actorID, u32 param1, const Vector3 *pos, const Vector3_16 *rot, s8 areaID,
         s16 deathTableID);
 
     extern Player::State data_ov002_02110154;
@@ -815,16 +818,11 @@ void Player::func_ov002_020bdc18() {
 /* recovered: named members + shared header, real C++ method */
 extern "C" {
 void Player::IncMegaKillCount() {
-    struct Vec3 {
-        int x;
-        int y;
-        int z;
-    };
     extern void *_ZN8dActor_c5SpawnEjjRK7Vector3PK10Vector3_16as(unsigned int id, unsigned int p,
                                                                  void *, void *, int a, int b);
     extern void GiveLives(int);
     extern void func_ov002_020f0e54(void *, void *);
-    struct Vec3 v;
+    Vector3 v;
     char *new_var2;
     int new_var3;
     char *a;
@@ -1596,6 +1594,12 @@ void _ZN6Player7SetAnimEji5Fix12IiEj(char *self, u32 a, int b, Fix12i c, u16 d)
 extern "C" {
 void Player::func_ov002_020bf13c()
 {
+    /* Stays a POD twin of Vector3, measured: v never escapes, and the ROM keeps
+       all three components in registers -- the frame here is 0x10, which is just
+       the volatile pad[4] below. Vector3 declares a destructor, so the object
+       must have an address, and that pushes v onto the stack and grows the frame
+       to 0x20. No other instruction in the function changes. This is a second
+       reason for a twin, besides the copy lowering include/types.h describes. */
     typedef struct { int x, y, z; } Vec3b;
     extern short data_02082214[];
     volatile int pad[4];
@@ -1739,10 +1743,10 @@ int Player::func_ov002_020bf40c() {
     extern int _ZN9dBgCh_Gnd10DetectClsnEv(void *);
     extern void _ZN9dBgCh_GndD1Ev(void *);
     extern void *data_0209f318;
-    extern struct Vector3 data_ov002_0210a590;
-    extern void func_0200d858(void *, const struct Vector3 *);
-    struct Vector3 pos;
-    struct Vector3 off;
+    extern Vector3 data_ov002_0210a590;
+    extern void func_0200d858(void *, const Vector3 *);
+    Vector3 pos;
+    Vector3 off;
     struct dBgCh_Gnd rg;
     if (NumStars() < 0x50 || param1 != 0) {
         AddVec3(&mPos, &data_ov002_0210a590, &mPos);
@@ -1829,17 +1833,14 @@ int func_ov002_020bf56c(void* a, int b){
 extern "C" {
 void Player::func_ov002_020bf5e0()
 {
-    typedef struct {
-        int x, y, z;
-    } V3b;
     extern void Vec3_RotateYAndTranslate(void*, void*, short angle, void*);
     extern void _ZN8Particle6System9NewSimpleEj5Fix12IiES2_S2_(unsigned int id, int x, int y, int z);
     extern u32 func_02022d00(u32 uniqueID, u32 effectID, int x, int y, int z, void*);
     extern int data_0209f32c;
     int flag;
     int id;
-    V3b out;
-    V3b src;
+    Vector3 out;
+    Vector3 src;
     int target;
     int newId;
     int state;
@@ -1918,7 +1919,8 @@ void func_ov002_020bf800(char *c, Vector3_16f v)
 {
     typedef unsigned int u32;
     typedef short s16;
-    extern unsigned int _ZN8Particle6System3NewEjj5Fix12IiES2_S2_PK11Vector3_16fPNS_8CallbackE(unsigned int a, unsigned int b, int c, int d, int e, void const *f, void*);
+    extern u32 _ZN8Particle6System3NewEjj5Fix12IiES2_S2_PK11Vector3_16fPNS_8CallbackE(
+        u32 handle, u32 kind, Fix12i x, Fix12i y, Fix12i z, const void *dir, void *callback);
     Player *player = (Player *)c;
     int xv = player->mPosX - v.x * 0x2bc;
     int zv = player->mPosZ - v.z * 0x2bc;
@@ -2177,15 +2179,14 @@ int Player::func_ov002_020c0108(int p1)
     typedef short s16;
     typedef unsigned int u32;
     typedef int s32;
-    typedef struct { s32 x, y, z; } Vec3i;
     typedef struct { void *a; u32 b; } PathPtr;
     extern void *_ZN7PathPtrC1Ev(void*);
     extern void _ZN7PathPtr6FromIDEj(void*, u32 id);
     extern int _ZNK7PathPtr8NumNodesEv(void*);
     extern void _ZNK7PathPtr7GetNodeER7Vector3j(void*, void*, u32 idx);
     extern u32 _ZNK7PathPtr9GetUnk004Ev(void*);
-    extern int Vec3_HorzAngle(const Vec3i *v0, const Vec3i *v1);
-    extern int Vec3_VertAngle(const Vec3i *v1, const Vec3i *v0);
+    extern int Vec3_HorzAngle(const Vector3 *v0, const Vector3 *v1);
+    extern int Vec3_VertAngle(const Vector3 *v1, const Vector3 *v0);
     extern Player::State data_ov002_02110304;
     extern Player::State data_ov002_0211025c;
     extern s32 data_ov002_020ff200[];
@@ -2204,7 +2205,7 @@ int Player::func_ov002_020c0108(int p1)
         int numNodes;
         int i;
         int aH, aV;
-        Vec3i nodes[3];
+        Vector3 nodes[3];
         PathPtr path;
 
         _ZN7PathPtrC1Ev(&path);
@@ -2406,6 +2407,13 @@ extern "C" {
 int Player::func_ov002_020c06fc(int arg)
 {
     char *c = (char *)this;
+    /* Stays a POD twin of Vector3, and this is the strongest case in the file:
+       Vec3 is a MEMBER of the local struct Frame below, so a non-POD element
+       gives Frame an implicit destructor, and mwccarm emits that as a new
+       compiler-numbered local-class symbol -- measured as
+       _ZN6Player20Frame$2583Player_cppD1Ev. This TU emits no @NNNN/$NNN symbols
+       at all today, and such a name depends on declaration order (compare
+       Bundle$902d_a_mky_cpp in AGENTS.md). Frame has to stay POD. */
     struct Vec3 { s32 x, y, z; };
     extern int func_ov002_020f030c(unsigned int sel);
     extern int func_ov002_020f02c8(unsigned int sel);
@@ -2639,18 +2647,13 @@ int Player::func_ov002_020c0d90(int y)
 extern "C" {
 int Player::func_ov002_020c0fb4() {
     char *c = (char *)this;
-    typedef struct Vec3i {
-        int x;
-        int y;
-        int z;
-    } Vec3i;
     extern int func_ov002_020dec70(void *);
     extern void _ZN5Timer10ResetTimerEv(void *);
     extern void _ZN5Timer10StartTimerEv(void *);
     extern void _ZN5Timer9StopTimerEv(void *);
     extern unsigned long long _ZN5Timer7GetTimeEv(void *);
     extern int _ZN8dActor_c5SpawnEjjRK7Vector3PK10Vector3_16as(
-        unsigned int, unsigned int, const Vec3i *, const void *, int, int);
+        unsigned int, unsigned int, const Vector3 *, const void *, int, int);
     extern int func_ov002_020d06c0(void *);
     extern unsigned char data_ov002_02111184[];
     extern unsigned char data_0209d4c8[];
@@ -2701,7 +2704,7 @@ int Player::func_ov002_020c0fb4() {
             }
         }
         {
-            Vec3i pos;
+            Vector3 pos;
             int px;
             int py;
             int pz;
@@ -2797,10 +2800,12 @@ extern "C" {
 void Player::func_ov002_020c133c()
 {
     typedef unsigned char u8;
-    typedef struct Vec3i { int x, y, z; } Vec3i;
     extern int func_ov002_020d82f0(void*);
-    extern unsigned int _ZN5Sound8PlayLongEjjjRK7Vector3s(unsigned int a, unsigned int b, unsigned int c, Vec3i const *v, unsigned int d);
-    extern int _ZN6Player4HurtERK7Vector3j5Fix12IiEjjj(void*, Vec3i const *v, unsigned int b, int c, unsigned int d, unsigned int e, unsigned int f);
+    extern unsigned int _ZN5Sound8PlayLongEjjjRK7Vector3s(
+        unsigned int a, unsigned int b, unsigned int c, Vector3 const *v, unsigned int d);
+    extern int _ZN6Player4HurtERK7Vector3j5Fix12IiEjjj(void *, Vector3 const *v, unsigned int b,
+                                                       int c, unsigned int d, unsigned int e,
+                                                       unsigned int f);
     extern int func_ov002_020d91e0(void*, int damage, int doPre);
     if (mIsMetal != 0) return;
     {
@@ -2811,14 +2816,14 @@ void Player::func_ov002_020c133c()
     if (!func_ov002_020d82f0(this)) return;
     if (mIsAirborne != 0) return;
     if (this->GetHealth() <= 2)
-        mSurfaceSoundHandle = _ZN5Sound8PlayLongEjjjRK7Vector3s(mSurfaceSoundHandle, 2, 0x27,
-                                                                (Vec3i *)&mCamSpacePos, 0);
+        mSurfaceSoundHandle =
+            _ZN5Sound8PlayLongEjjjRK7Vector3s(mSurfaceSoundHandle, 2, 0x27, &mCamSpacePos, 0);
     if (mDamageTickTimer != 0) {
         mDamageTickTimer--;
         return;
     }
     {
-        Vec3i v;
+        Vector3 v;
         v.x = this->mPosX;
         v.y = this->mPosY;
         v.z = this->mPosZ;
@@ -2847,7 +2852,6 @@ void Player::func_ov002_020c14b8()
         int f1c, f20, f24;
     } ClsnResultTmp;
     extern int _ZN6Player12Unk_020c9e5cEh(void *, unsigned char state);
-    extern void func_ov002_020c16ec(Player *, const dBgPi *);
     extern void _ZN5dBgPiD1Ev(void *);
     extern int SurfaceInfo_TestFlag0x20(void*);
     extern int func_02037e20(void *);
@@ -2899,7 +2903,7 @@ void Player::func_ov002_020c14b8()
         tmp.f1c = rg.clsnID;
         tmp.f20 = (int)rg.owner;
         tmp.f24 = (int)rg.collider;
-        func_ov002_020c16ec(this, (const dBgPi *)&tmp);
+        SetFloorSurfaceInfo((const dBgPi &)tmp);
         _ZN5dBgPiD1Ev(&tmp);
         mProbedGroundY = rg.clsnY;
         mGroundY = mProbedGroundY;
@@ -2930,33 +2934,24 @@ void Player::func_ov002_020c14b8()
 }
 }
 
-// @symbol func_ov002_020c16ec
-/* recovered: shared common types, declarations from a shared header */
-/* recovered: shared common types */
+// @symbol _ZN6Player19SetFloorSurfaceInfoERK5dBgPi
 extern "C" {
-void func_ov002_020c16ec(Player *player, const dBgPi *hit) {
-    extern int func_02037e38(const void *);
-    extern int func_02037e58(const void *);
-    extern void _ZNK11SurfaceInfo12CopyNormalToER7Vector3(const void *, void *);
+void Player::SetFloorSurfaceInfo(const dBgPi &hit) {
     extern int _ZN4cstd5atan2E5Fix12IiES1_(int y, int x);
-    extern int func_02037e90(const void *);
-    extern int func_02037e48(const void *);
-    extern int func_02037e68(const void *);
-    extern int func_02037e84(const void *);
-    struct Vector3 v;
-    player->mClpsWord1Lo = func_02037e90(&hit->surface.clps);
-    player->mSurfaceType = func_02037e38(&hit->surface.clps);
-    player->mClpsBits15_18 = func_02037e48(&hit->surface.clps);
-    player->mClpsBits6_11 = func_02037e68(&hit->surface.clps);
-    player->mGroundSoundType = func_02037e84(&hit->surface.clps);
-    if (player->mFloorClass == 1)
+    Vector3 v;
+    mClpsWord1Lo = hit.surface.clps.func_02037e90();
+    mSurfaceType = hit.surface.clps.GetSurfaceType();
+    mClpsBits15_18 = hit.surface.clps.func_02037e48();
+    mClpsBits6_11 = hit.surface.clps.func_02037e68();
+    mGroundSoundType = hit.surface.clps.func_02037e84();
+    if (mFloorClass == 1)
         return;
-    player->mFloorClass = func_02037e58(&hit->surface.clps);
-    _ZNK11SurfaceInfo12CopyNormalToER7Vector3(&hit->surface, &v);
-    player->mFloorNormalX = v.x;
-    player->mFloorNormalY = v.y;
-    player->mFloorNormalZ = v.z;
-    player->mFloorAngle = _ZN4cstd5atan2E5Fix12IiES1_(player->mFloorNormalX, player->mFloorNormalZ);
+    mFloorClass = hit.surface.clps.GetFloorClass();
+    hit.surface.CopyNormalTo(v);
+    mFloorNormalX = v.x;
+    mFloorNormalY = v.y;
+    mFloorNormalZ = v.z;
+    mFloorAngle = _ZN4cstd5atan2E5Fix12IiES1_(mFloorNormalX, mFloorNormalZ);
 }
 }
 
@@ -3011,7 +3006,6 @@ int func_ov002_020c179c(char* self, int angle) {
 extern "C" {
 void func_ov002_020c18b0(char *self, int p1)
 {
-    typedef struct { int x, y, z; } Vec3i;
     extern int func_ov002_020c179c(void*, int angle);
     extern int func_02010844(void*, void*, short angle);
     extern int Player_ScaleByCharFactor(void*, int a);
@@ -3028,7 +3022,7 @@ void func_ov002_020c18b0(char *self, int p1)
         int sinv = data_02082214[idx * 2 + 1];
         int f554 = p->mFloorNormalX;
         int f55c = p->mFloorNormalZ;
-        Vec3i v;
+        Vector3 v;
         v.x = f554;
         v.y = sinv;
         v.z = f55c;
@@ -3051,17 +3045,15 @@ int Player::func_ov002_020c19d0(int arg1, int arg2) {
     char* self = (char*)this;
     extern void _ZNK11SurfaceInfo12CopyNormalToER7Vector3(void*, void*);
     extern s16 data_02082214[];
-    V3a v1;
-    V3a v2;
-    V3a nrm;
     int angle = (unsigned short)mAngleY;
     dBgCh_Lin line;
     int k = angle >> 4;
     int cs = data_02082214[k * 2];
     int sn = data_02082214[k * 2 + 1];
-    v1.set(this->mPosX, this->mPosY + (arg2 << 12), this->mPosZ);
-    v2.set(arg1 * cs + this->mPosX, this->mPosY + (arg2 << 12), arg1 * sn + this->mPosZ);
-    line.SetObjAndLine(*(Vector3*)&v1, *(Vector3*)&v2, (dActor_c*)self);
+    Vector3 v1(this->mPosX, this->mPosY + (arg2 << 12), this->mPosZ);
+    Vector3 v2(arg1 * cs + this->mPosX, this->mPosY + (arg2 << 12), arg1 * sn + this->mPosZ);
+    Vector3 nrm;
+    line.SetObjAndLine(v1, v2, (dActor_c *)self);
     if (!line.DetectClsn()) {
         return 0;
     }
@@ -3195,6 +3187,8 @@ void Player::func_ov002_020c1eb4(int dmg) {
     extern short data_02082214[];
     extern Player::State data_ov002_02110094;
     extern int func_ov002_020d91e0(void*, int damage, int doPre);
+    extern u32 _ZN8Particle6System3NewEjj5Fix12IiES2_S2_PK11Vector3_16fPNS_8CallbackE(
+        u32 handle, u32 kind, Fix12i x, Fix12i y, Fix12i z, const void *dir, void *callback);
     Vector3 out;
     Vector3 offset;
     Vector3_16 vec;
@@ -3224,7 +3218,8 @@ void Player::func_ov002_020c1eb4(int dmg) {
         vec.x = data_02082214[idx * 2];
         vec.z = data_02082214[idx * 2 + 1];
         vec.y = 0;
-        Particle::_ZN8Particle6System3NewEjj5Fix12IiES2_S2_PK11Vector3_16fPNS_8CallbackE(0, 0xc8, out.x, out.y, out.z, &vec, 0);
+        _ZN8Particle6System3NewEjj5Fix12IiES2_S2_PK11Vector3_16fPNS_8CallbackE(
+            0, 0xc8, out.x, out.y, out.z, &vec, 0);
     }
     func_ov002_020d91e0((char *)this, 0, 1);
 }
@@ -3294,12 +3289,11 @@ return this->func_ov002_020c1ad8(ang);
 /* recovered: shared common types */
 extern "C" {
 int func_ov002_020c2270(void* c, void* p1, void* p2) {
-    extern int func_02037e58(void*);
     extern int func_ov002_020c2270(void*, void*, void*);
     dBgCh_Lin line;
     line.SetObjAndLine(*(Vector3*)p1, *(Vector3*)p2, (dActor_c*)c);
     if (line.DetectClsn()) {
-        if (func_02037e58((unsigned int*)&line.surface) == 1) {
+        if (line.surface.clps.GetFloorClass() == 1) {
             ::Vector3 clsnPos = line.GetClsnPos();
             ((Player *)c)->mPosX = clsnPos.x;
             ((Player *)c)->mPosY = clsnPos.y;
@@ -3329,8 +3323,8 @@ int Player::func_ov002_020c231c()
     extern s16 data_02082214[];
     extern Player::State data_ov002_02110184;
     extern int func_ov002_020c2270(void*, void*, void*);
-    struct Vector3 tmp;
-    struct Vector3 pos;
+    Vector3 tmp;
+    Vector3 pos;
     u8 f70f;
     s32 p60;
     s32 d;
@@ -3345,11 +3339,11 @@ int Player::func_ov002_020c231c()
         if (f70f == 0)
             return 0;
 
-        SubVec3(&mPos, (struct Vector3 *)&mPreClsnPosX, &tmp);
+        SubVec3(&mPos, (Vector3 *)&mPreClsnPosX, &tmp);
         tmp.x >>= 1;
         tmp.y >>= 1;
         tmp.z >>= 1;
-        AddVec3((struct Vector3 *)&mPreClsnPosX, &tmp, &mPos);
+        AddVec3((Vector3 *)&mPreClsnPosX, &tmp, &mPos);
         func_ov002_020c14b8();
 
         if (mGroundY == (s32)0x80000000)
@@ -3403,9 +3397,6 @@ int Player::func_ov002_020c25a8(int arg1)
 {
     void *arg0 = (void *)this;
     typedef struct {
-        int x, y, z;
-    } Vector3i;
-    typedef struct {
         int a, b;
     } Pair2i;
     typedef struct {
@@ -3443,9 +3434,7 @@ int Player::func_ov002_020c25a8(int arg1)
     extern int _ZNK10dBgCh_Actr8IsOnWallEv(void*);
     extern int func_02035638(void*);
     extern void func_020371fc(void *);
-    extern void func_ov002_020c16ec(Player *, const dBgPi *);
     extern void _ZN5dBgPiD1Ev(void*);
-    extern int func_02037e58(void*);
     extern void _ZNK11SurfaceInfo12CopyNormalToER7Vector3(void*, void*);
     extern int _ZN4cstd4fdivEii(int a, int b);
     extern int func_020356c8(void*);
@@ -3458,8 +3447,8 @@ int Player::func_ov002_020c25a8(int arg1)
     extern int data_02099368;
     char *c = (char*)arg0;
     int ret;
-    Vector3i v;
-    Vector3i wn;
+    Vector3 v;
+    Vector3 wn;
     ClsnResultTmp tmp;
     dBgPi *fr;
     int *dst;
@@ -3550,11 +3539,11 @@ int Player::func_ov002_020c25a8(int arg1)
         tmp.f20 = (int)fr->owner;
         tmp.f24 = (int)fr->collider;
 
-        func_ov002_020c16ec(this, (const dBgPi *)&tmp);
+        SetFloorSurfaceInfo((const dBgPi &)tmp);
         _ZN5dBgPiD1Ev(&tmp);
 
         mGroundY = mPosY;
-        ret = func_02037e58(&fr->surface);
+        ret = fr->surface.clps.GetFloorClass();
 
         if (mIsUnderwater == 0 && ret != 1) {
             _ZNK11SurfaceInfo12CopyNormalToER7Vector3(&fr->surface, &v);
@@ -3619,7 +3608,6 @@ extern "C" {
 void Player::func_ov002_020c29d4()
 {
     extern int Player_ScaleByCharFactor(void*, int a);
-    extern int func_02037e38(void*);
     extern dBgPi *_ZNK10dBgCh_Actr14GetFloorResultEv(const dBgCh_Actr *self);
     extern Player::State data_ov002_0211013c;
     extern Player::State data_ov002_021101b4;
@@ -3639,9 +3627,7 @@ void Player::func_ov002_020c29d4()
         mQuicksandRunFlags = 0x80;
     } else if (flags & 0x80) {
         if (mMeshClsn.IsOnGround()) {
-            int r = func_02037e38(
-                (unsigned int *)&((dBgPi *)_ZNK10dBgCh_Actr14GetFloorResultEv(&mMeshClsn))
-                    ->surface.clps);
+            int r = _ZNK10dBgCh_Actr14GetFloorResultEv(&mMeshClsn)->surface.clps.GetSurfaceType();
             if (r >= 6 && r <= 9) return;
             mQuicksandRunFlags = 0;
             mQuicksandRunTimer = 0;
@@ -3874,8 +3860,8 @@ extern "C" {
 int Player::func_ov002_020c2fec(int *out)
 {
     extern struct Anim2fec data_ov002_0210a8b8[];
-    extern void func_ov002_020c3160(void*, void*);
-    int tmp[4];
+    extern void func_ov002_020c3160(Player *, Fix12i *);
+    Fix12i tmp[4];
     int i;
     int ret;
     struct Anim2fec *row;
@@ -3929,7 +3915,10 @@ static inline int FX(int a, int b) {
     return FX_MUL((a), (b));
 }
 
-void func_ov002_020c3160(Player *self, Arg1 *out) {
+/* The uniform cubic B-spline basis at mSplineT, four weights for the four
+   control points func_ov002_020c2fec then blends; mSplineSpan picks the
+   clamped-end variant. The caller passes a Fix12i[4]. */
+void func_ov002_020c3160(Player *self, Fix12i *out) {
     typedef long long s64;
     int t = self->mSplineT;
     int u = 0x1000 - t;
@@ -3944,46 +3933,46 @@ void func_ov002_020c3160(Player *self, Arg1 *out) {
         int a = FX(t, 0x3000);
         int b = FX(t3, 0x1c00);
         int c = FX(t2, 0x4800);
-        out->unk0 = u3;
-        out->unk4 = a + (b - c);
-        out->unk8 = FX(t2, 0x1800) - FX(t3, 0xeaa);
-        out->unkC = FX(t3, 0x2aa);
+        out[0] = u3;
+        out[1] = a + (b - c);
+        out[2] = FX(t2, 0x1800) - FX(t3, 0xeaa);
+        out[3] = FX(t3, 0x2aa);
         break;
     }
     case 2: {
         int k1400 = 0x1400;
         s64 p955 = (s64)t3 * 0x955;
         s64 p1400 = (s64)t2 * k1400;
-        out->unk0 = FX(u3, 0x400);
+        out[0] = FX(u3, 0x400);
         {
             int b = FX(t, 0x400);
             int c = (int)((p955 + 0x800) >> 12);
             int d = (int)((p1400 + 0x800) >> 12);
-            out->unk4 = b + (c - d) + 0x955;
+            out[1] = b + (c - d) + 0x955;
         }
-        out->unk8 = FX(t, 0x800) + (FX(t2, 0x800) - FX(t3, 0x800)) + 0x2aa;
-        out->unkC = FX(t3, 0x2aa);
+        out[2] = FX(t, 0x800) + (FX(t2, 0x800) - FX(t3, 0x800)) + 0x2aa;
+        out[3] = FX(t3, 0x2aa);
         break;
     }
     case 3: {
-        out->unk0 = FX(u3, 0x2aa);
-        out->unk4 = FX(t3, 0x800) - t2 + 0xaaa;
-        out->unk8 = FX(t, 0x800) + (FX(t2, 0x800) - FX(t3, 0x800)) + 0x2aa;
-        out->unkC = FX(t3, 0x2aa);
+        out[0] = FX(u3, 0x2aa);
+        out[1] = FX(t3, 0x800) - t2 + 0xaaa;
+        out[2] = FX(t, 0x800) + (FX(t2, 0x800) - FX(t3, 0x800)) + 0x2aa;
+        out[3] = FX(t3, 0x2aa);
         break;
     }
     case 4: {
-        out->unk0 = FX(u3, 0x2aa);
-        out->unk4 = FX(u, 0x800) + (FX(u2, 0x800) - FX(u3, 0x800)) + 0x2aa;
-        out->unk8 = FX(u, 0x400) + (FX(u3, 0x955) - FX(u2, 0x1400)) + 0x955;
-        out->unkC = FX(t3, 0x400);
+        out[0] = FX(u3, 0x2aa);
+        out[1] = FX(u, 0x800) + (FX(u2, 0x800) - FX(u3, 0x800)) + 0x2aa;
+        out[2] = FX(u, 0x400) + (FX(u3, 0x955) - FX(u2, 0x1400)) + 0x955;
+        out[3] = FX(t3, 0x400);
         break;
     }
     case 5: {
-        out->unk0 = FX(u3, 0x2aa);
-        out->unk4 = FX(u2, 0x1800) - FX(u3, 0xeaa);
-        out->unk8 = FX(u, 0x3000) + (FX(u3, 0x1c00) - FX(u2, 0x4800));
-        out->unkC = t3;
+        out[0] = FX(u3, 0x2aa);
+        out[1] = FX(u2, 0x1800) - FX(u3, 0xeaa);
+        out[2] = FX(u, 0x3000) + (FX(u3, 0x1c00) - FX(u2, 0x4800));
+        out[3] = t3;
         break;
     }
     }
@@ -3997,13 +3986,13 @@ void Player::func_ov002_020c37a4(char *arg) {
     extern void MulVec3Mat4x3(void *, void *, void *);
     extern void Vec3_MulScalar(void *, void *, int s);
     extern void Vec3_RotateYAndTranslate(void *, void *, int ang, void *);
-    extern void *_ZN8Particle6System3NewEjj5Fix12IiES2_S2_PK11Vector3_16fPNS_8CallbackE(
-        unsigned int a, unsigned int b, int c, int d, int e, const void *f, void *);
+    extern u32 _ZN8Particle6System3NewEjj5Fix12IiES2_S2_PK11Vector3_16fPNS_8CallbackE(
+        u32 handle, u32 kind, Fix12i x, Fix12i y, Fix12i z, const void *dir, void *callback);
     unsigned int id = this->GetBodyModelID(param1 & 0xff, 0);
     Matrix4x3 *bone = &mBodyModels[id]->data.transforms[8];
     unsigned int id2 = this->GetBodyModelID(param1 & 0xff, 0);
-    struct Vector3 v;
-    struct Vector3 s;
+    Vector3 v;
+    Vector3 s;
     MulVec3Mat4x3(&bone->m[9], &mBodyModels[id2]->mat4x3, &v);
     Vec3_MulScalar(&s, &v, 0x8000);
     v = s;
@@ -4550,17 +4539,17 @@ int Player::func_ov002_020c44c4()
     extern void func_020731dc(void *object, void *destructor, void *node);
     extern void Vec3_RotateYAndTranslate(void*, void*, short angle, void*);
     extern int _ZN6Player11ShowMessageER7fBase_cjPK7Vector3hh(void*, void*, unsigned int id, const void* pos, unsigned int a, unsigned int b);
-    extern void func_02012694(unsigned int id, const struct Vector3* v);
+    extern void func_02012694(unsigned int id, const Vector3 *v);
     extern unsigned int func_02012790(unsigned int a);
     extern void _ZN6Player7SetAnimEji5Fix12IiEj(void*, unsigned int a, int b, int fix, unsigned int d);
     extern unsigned int _ZN8SaveData26CountStarsCollectedInLevelEj(unsigned int);
     extern int SublevelToLevel(int);
     extern u32 data_ov002_0210e14c;
-    extern struct Vector3 data_ov002_0210f3b0;
+    extern Vector3 data_ov002_0210f3b0;
     extern void*data_ov002_0210f350;
     extern void func_ov100_02145070(int);
     extern int func_ov100_02145014(void);
-    struct Vector3 pos;
+    Vector3 pos;
     int state;
     int r4val;
     u8 f2d8;
@@ -4605,7 +4594,7 @@ cont:
             func_ov100_02145070(0x1e);
             func_ov100_02145014();
             func_02012694(0xb8, &mCamSpacePos);
-            unk_725 = 1;
+            mPlayMusicAfterTalk = 1;
             return 1;
         }
         break;
@@ -4674,9 +4663,9 @@ int Player::St_Talk_Cleanup()
     mFlags &= ~0x800000;
     data_0209b454 &= ~0x800000;
     ((dCamera_c *)data_0209f318)->mFlags &= ~8;
-    if (unk_725) {
+    if (mPlayMusicAfterTalk) {
         Sound::LoadAndSetMusic_Layer1(0x39);
-        unk_725 = 0;
+        mPlayMusicAfterTalk = 0;
     }
     return 1;
 }
@@ -4737,9 +4726,9 @@ int Player::St_Talk_Main()
     extern void func_0201fc88(s16);
     extern void func_0200d7a4(void*, u8);
     extern int func_ov100_02144fcc(void);
-    if (unk_722 != 0) {
+    if (mRestoreMusicVolume != 0) {
         if (_ZN5Sound17ChangeMusicVolumeEj5Fix12IiE(0x7f, 0x7222) != 0)
-            unk_722 = 0;
+            mRestoreMusicVolume = 0;
     }
 
     if (mNoCtrlKind == 0) {
@@ -5068,16 +5057,19 @@ ret0:
 
 // @symbol func_ov002_020c51d0
 extern "C" {
-int func_ov002_020c51d0(char* c, State3i* st){
+/* The look-at target: daTrs_c passes its own mPos with x negated and y raised
+   by 0xc8000, and daHanachan_c passes the segment it wants Mario to face. */
+int func_ov002_020c51d0(char *c, Vector3 *st) {
     extern int _ZN6Player7IsStateERNS_5StateE(void*, void*);
-    extern State3i data_ov002_0211046c;
-    extern int func_ov002_020c51d0(void*, void*);
+    extern Player::State data_ov002_0211046c;
     Player *player = (Player *)c;
     if (!_ZN6Player7IsStateERNS_5StateE(c, &data_ov002_0211046c))
         return 0;
     if (player->mStateStep != 0)
         return 0;
-    *(State3i *)&((Player *)c)->mStateTargetX = *st;
+    player->mStateTargetX = st->x;
+    player->mStateTargetY = st->y;
+    player->mStateTargetZ = st->z;
     player->mStateWork = 1;
     return 1;
 }
@@ -5641,11 +5633,11 @@ int Player::func_ov002_020c607c(int p1, int p2, int *outptr)
 
     dBgCh_Lin rc;
 
-    V3 a(this->mPosX, p1, this->mPosZ);
-    V3 b(this->mPosX, p2, this->mPosZ);
-    rc.SetObjAndLine(*(Vector3*)&a, *(Vector3*)&b, (dActor_c *)self);
+    Vector3 a(this->mPosX, p1, this->mPosZ);
+    Vector3 b(this->mPosX, p2, this->mPosZ);
+    rc.SetObjAndLine(a, b, (dActor_c *)self);
     if (rc.DetectClsn() != 0) {
-        ::Vector3 pos = rc.GetClsnPos();
+        Vector3 pos = rc.GetClsnPos();
         *outptr = pos.y;
         if (rc.GetClsnID() != -1) {
             dActor_c *found = dActor_c::FindWithID((u32)rc.GetClsnID());
@@ -6364,8 +6356,6 @@ void Player::func_ov002_020c7350()
     typedef unsigned short u16;
     typedef unsigned int u32;
     typedef signed char s8;
-    typedef struct { int x, y, z; } Vec3i;
-    typedef struct { short x, y, z; } Vector3_16;
     extern void _ZN6Player7SetAnimEji5Fix12IiEj(void*, unsigned int anim, int a, int b, unsigned int d);
     extern void *_ZN8dActor_c5SpawnEjjRK7Vector3PK10Vector3_16as(unsigned int a, unsigned int b, void*, void*, int e, int f);
     extern void _ZN10daObjKey_c19func_ov089_0213115cEi(void*, int i);
@@ -6413,8 +6403,8 @@ void Player::func_ov002_020c7350()
         if (st == 0x10 || st == 0x12) {
             void *actor;
             _ZN6Player7SetAnimEji5Fix12IiEj(this, 0x94, 0x40000000, 0x1000, 0);
-            actor = _ZN8dActor_c5SpawnEjjRK7Vector3PK10Vector3_16as(
-                0x11a, mKeyModelId, (Vec3i *)&mPos, &mAngle, this->mAreaId, -1);
+            actor = _ZN8dActor_c5SpawnEjjRK7Vector3PK10Vector3_16as(0x11a, mKeyModelId, &mPos,
+                                                                    &mAngle, this->mAreaId, -1);
             if (param1 == 2) {
                 _ZN10daObjKey_c19func_ov089_0213115cEi(actor, 4);
             } else {
@@ -6988,21 +6978,16 @@ int Player::St_NoControl_Main()
 extern "C" {
 unsigned char Player::func_ov002_020c84b0() {
     char *c = (char *)this;
-    typedef struct {
-        int x;
-        int y;
-        int z;
-    } Vec3i;
-    extern short Vec3_VertAngle(const Vec3i *v1, const Vec3i *v0);
+    extern short Vec3_VertAngle(const Vector3 *v1, const Vector3 *v0);
     extern void _Z15ApproachLinear2Rsss(void *, short t, short s);
-    Vec3i v;
+    Vector3 v;
     short ang;
 dummy_label_675641:;
     v.x = this->mPosX;
     v.y = this->mPosY;
     v.z = this->mPosZ;
     v.y += 0x64000;
-    ang = Vec3_VertAngle((Vec3i *)&mStateTargetX, &v);
+    ang = Vec3_VertAngle((Vector3 *)&mStateTargetX, &v);
     _Z15ApproachLinear2Rsss(&this->mAngleYSpeed, -ang, 0x400);
     mHeadRot[0] = 0;
     mHeadRot[1] = 0;
@@ -7089,7 +7074,8 @@ int Player::func_ov002_020c8714()
 {
     extern void _ZN5Sound17ChangeMusicVolumeEj5Fix12IiE(int, int);
     extern void _ZN6Player7SetAnimEji5Fix12IiEj(void*, unsigned int, int, int, unsigned int);
-    extern int _ZN8Particle6System3NewEjj5Fix12IiES2_S2_PK11Vector3_16fPNS_8CallbackE(int, unsigned int, int, int, int, int, int);
+    extern u32 _ZN8Particle6System3NewEjj5Fix12IiES2_S2_PK11Vector3_16fPNS_8CallbackE(
+        u32 handle, u32 kind, Fix12i x, Fix12i y, Fix12i z, const void *dir, void *callback);
     extern int _ZN8dActor_c5SpawnEjjRK7Vector3PK10Vector3_16as(int, int, void*, int, int, int);
     extern void _ZN8daStar_c19func_ov002_020e7090Ei(int, void*);
     volatile int v[3];
@@ -7219,8 +7205,8 @@ int Player::func_ov002_020c8a4c() {
                 func_020731dc(data_ov002_0210f8cc, (void*)_ZN7Vector3D1Ev, &data_ov002_0210f89c);
                 data_ov002_0210e150 |= 1;
             }
-            Vec3_RotateYAndTranslate((Vector3 *)&mStateTargetX, (Vector3 *)&mStateAnchorX, unk_69e,
-                                     (Vector3 *)data_ov002_0210f8cc);
+            Vec3_RotateYAndTranslate((Vector3 *)&mStateTargetX, (Vector3 *)&mStateAnchorX,
+                                     mAngleXSpeed, (Vector3 *)data_ov002_0210f8cc);
         } else {
             func_ov002_020ca108();
         }
@@ -7269,7 +7255,7 @@ int Player::func_ov002_020c8b78() {
             data_ov002_0210e154 |= 1;
         }
         Vec3_RotateYAndTranslate(&v, &mPos, this->mAngleY, data_ov002_0210f824);
-        unk_722 = 1;
+        mRestoreMusicVolume = 1;
         {
             u16 *fl = &this->mStateFlags;
             *fl |= 0x400;
@@ -7313,7 +7299,7 @@ int Player::func_ov002_020c8d14()
     extern int func_ov002_020d22ec(void*, int arg);
     extern Player::State data_ov002_021106ac;
     extern Player::State data_ov002_0211013c;
-    struct Vector3 v;
+    Vector3 v;
     int val;
     int id;
     char *anim;
@@ -7428,11 +7414,6 @@ int Player::func_ov002_020c904c() {
     typedef unsigned int u32;
     typedef int s32;
     typedef unsigned char u8;
-    struct Vector3 {
-        s32 x;
-        s32 y;
-        s32 z;
-    };
     extern void _Z14ApproachLinearRiii(void *, int target, int step);
     extern int Math_Function_0203b14c(void *, int a, int b, int c, int d);
     extern void _ZN6Player7SetAnimEji5Fix12IiEj(void *, u32 anim, int a, int fix, u32 b);
@@ -7805,7 +7786,8 @@ extern "C" {
 void func_ov002_020c9998(void* c) {
     typedef int Fix12i;
     extern int _ZN6Player7SetAnimEji5Fix12IiEj(void*, unsigned int, int, Fix12i, unsigned int);
-    extern int _ZN8dActor_c5SpawnEjjRK7Vector3PK10Vector3_16as(unsigned int, unsigned int, const struct Vector3*, const struct Vector3_16*, int, int);
+    extern int _ZN8dActor_c5SpawnEjjRK7Vector3PK10Vector3_16as(
+        unsigned int, unsigned int, const Vector3 *, const Vector3_16 *, int, int);
     Player *p = (Player *)c;
     p->mStateStep = 0x12;
     _ZN6Player7SetAnimEji5Fix12IiEj(c, 0x92, 0x40000000, 0x1000, 0);
@@ -7823,7 +7805,7 @@ void Player::func_ov002_020c9a04()
 {
     extern void _ZN6Player7SetAnimEji5Fix12IiEj(void*, unsigned int a, int b, int f, unsigned int g);
     extern void _ZN8Particle6System9NewSimpleEj5Fix12IiES2_S2_(unsigned int id, int x, int y, int z);
-    struct Vector3 v;
+    Vector3 v;
 
     mStateStep = 0x11;
     _ZN6Player7SetAnimEji5Fix12IiEj(this, 0x9a, 0x40000000, 0x1000, 0);
@@ -8289,7 +8271,7 @@ int Player::TryEnterStarDoor(Vector3 & pos_, short kind)
             mStateAnchorX = pos[0];
             mStateAnchorY = pos[1];
             mStateAnchorZ = pos[2];
-            unk_69e = kind;
+            mAngleXSpeed = kind;
             mStateArg = 0;
             if (!(data_ov002_0210e164 & 1)) {
                 data_ov002_0210f344[0] = 0;
@@ -8298,7 +8280,8 @@ int Player::TryEnterStarDoor(Vector3 & pos_, short kind)
                 func_020731dc(data_ov002_0210f344, (void *)_ZN7Vector3D1Ev, (void **)&data_ov002_0210f308);
                 data_ov002_0210e164 |= 1;
             }
-            Vec3_RotateYAndTranslate(&mStateTargetX, &mStateAnchorX, unk_69e, data_ov002_0210f344);
+            Vec3_RotateYAndTranslate(&mStateTargetX, &mStateAnchorX, mAngleXSpeed,
+                                     data_ov002_0210f344);
             mAngleY = Vec3_HorzAngle(pos, &mPosX) + 0x8000;
             return 1;
         }
@@ -8310,36 +8293,42 @@ int Player::TryEnterStarDoor(Vector3 & pos_, short kind)
 // @symbol _ZN6Player12CanEnterDoorEh
 /* recovered: named members + shared header, real C++ method */
 // Player::CanEnterDoor(unsigned char door)
-// The +0x48 vcall must be spelled as a real C++ virtual call (dummy-virtual
-// struct, slot 18): the C function-pointer cast perturbs callee-saved homing
-// rank to this=r4/door=r5, while virtual dispatch keeps the natural
-// reverse-arg homing (door=r4, this=r5) the ROM has. See
+// The +0x48 vcall on the held actor is dActor_c::OnYoshiTryEat (slot 18), and
+// it must be spelled as a real C++ virtual call: the C function-pointer cast
+// perturbs callee-saved homing rank to this=r4/door=r5, while virtual dispatch
+// keeps the natural reverse-arg homing (door=r4, this=r5) the ROM has. See
 // notes/mwccarm-codegen.md 6bc.
 extern "C" {
-int Player::CanEnterDoor(unsigned char door)
-{
-    extern int _ZN6Player17SetNoControlStateEhih(void*, unsigned char, int, unsigned char);
+int Player::CanEnterDoor(unsigned char door) {
+    extern int _ZN6Player17SetNoControlStateEhih(void *, unsigned char, int, unsigned char);
     extern int data_ov002_0211022c[];
     extern int data_ov002_0211013c[];
     extern int data_ov002_02110154[];
     extern int data_ov002_0211043c[];
     extern Player::State data_ov002_0211004c;
-  if (IsState(*(State *)data_ov002_0211022c)) {
-    if (!(mStateStep == 0x13 && mIsOpeningBigDoor != 0))
-      return 0;
-  }
-  if (IsState(*(State *)data_ov002_0211013c) || IsState(*(State *)data_ov002_02110154) || IsState(*(State *)data_ov002_0211022c) || IsState(*(State *)data_ov002_0211043c)) {
-    if (*(struct StarDoor **)&mObjInMouth != 0) {
-      if ((*(struct StarDoor **)&mObjInMouth)->GetType() == 6 || (*(struct StarDoor **)&mObjInMouth)->GetType() == 1) {
-        this->ChangeState(data_ov002_0211004c);
-      }
-      return 0;
+    if (IsState(*(State *)data_ov002_0211022c)) {
+        if (!(mStateStep == 0x13 && mIsOpeningBigDoor != 0))
+            return 0;
     }
-    mStateStep = door;
-    if (_ZN6Player17SetNoControlStateEhih(this, 7, -1, 1) != 0)
-      return 1;
-  }
-  return 0;
+    if (IsState(*(State *)data_ov002_0211013c) || IsState(*(State *)data_ov002_02110154) ||
+        IsState(*(State *)data_ov002_0211022c) || IsState(*(State *)data_ov002_0211043c)) {
+        /* Yoshi with something in his mouth cannot take a door. If its
+           OnYoshiTryEat() code is 6 (enemies such as daKrb_c and Scuttlebug,
+           and the small crate daObjBlockS_c) or 1 (daBttBk_c, or another
+           Player), he spits it out first; any other code (4 for a coin, a
+           cap, a key or a star; 5; ...) just refuses the door. */
+        if (mObjInMouth != 0) {
+            if (((dActor_c *)mObjInMouth)->OnYoshiTryEat() == 6 ||
+                ((dActor_c *)mObjInMouth)->OnYoshiTryEat() == 1) {
+                this->ChangeState(data_ov002_0211004c);
+            }
+            return 0;
+        }
+        mStateStep = door;
+        if (_ZN6Player17SetNoControlStateEhih(this, 7, -1, 1) != 0)
+            return 1;
+    }
+    return 0;
 }
 }
 
@@ -8917,8 +8906,8 @@ int func_ov002_020cb400(char *c) {
 extern "C" {
 void func_ov002_020cb474(char *c) {
     Player *self = (Player *)c;
-    extern void *_ZN8Particle6System3NewEjj5Fix12IiES2_S2_PK11Vector3_16fPNS_8CallbackE(
-        unsigned int a, unsigned int b, int c, int d, int e, const void *f, void *);
+    extern u32 _ZN8Particle6System3NewEjj5Fix12IiES2_S2_PK11Vector3_16fPNS_8CallbackE(
+        u32 handle, u32 kind, Fix12i x, Fix12i y, Fix12i z, const void *dir, void *callback);
     extern signed char data_0209f2f8;
     dCc_c *r1 = self->mClimbClsn;
     if ((r1->flags & 0x1000000) == 0)
@@ -9429,7 +9418,6 @@ int Player::St_Shell_Main()
     extern void func_ov002_020eeca8(void*, int arg);
     extern int _ZNK10dBgCh_Actr8IsOnWallEv(void*);
     extern int _ZN4cstd5atan2E5Fix12IiES1_(int a, int b);
-    extern int func_02037e58(void*);
     extern void ApproachAngle(void*, short target, int divisor, int band, int maxStep);
     extern void _Z14ApproachLinearRiii(void*, int b, int c);
     extern void func_ov002_020e25f0(void*, int a);
@@ -9469,9 +9457,8 @@ int Player::St_Shell_Main()
     if (_ZNK10dBgCh_Actr8IsOnWallEv((void*)((char*)&mMeshClsn))) {
         int ang = _ZN4cstd5atan2E5Fix12IiES1_(mWallNormalX, mWallNormalZ);
         if (AngleDiff(ang, mPrevAngleY) > 0x6000) {
-            if (func_02037e58((u32 *)&((dBgPi *)_ZNK10dBgCh_Actr13GetWallResultEv(
-                                           (void *)((char *)&mMeshClsn)))
-                                  ->surface.clps) != 1) {
+            if (((dBgPi *)_ZNK10dBgCh_Actr13GetWallResultEv((void *)((char *)&mMeshClsn)))
+                    ->surface.clps.GetFloorClass() != 1) {
                 flag = 1;
             }
         }
@@ -10058,8 +10045,8 @@ void func_ov002_020cd448(char* self) {
         }
     }
 tail:
-    _Z15ApproachLinear2Rsss(player->unk_69e, player->mAngleZ, 0x200);
-    player->mAngleZ = player->unk_69e;
+    _Z15ApproachLinear2Rsss(player->mAngleXSpeed, player->mAngleZ, 0x200);
+    player->mAngleZ = player->mAngleXSpeed;
 }
 }
 
@@ -10237,7 +10224,7 @@ int Player::St_Swim_Main()
     if (func_ov002_020cec2c(this) != 0) return 1;
 
     t4 = (*(unsigned short*)((char*)&data_0209f49c + gActivePlayerSlot * 0x18)) & 0x802;
-    unk_69e = mAngleZ;
+    mAngleXSpeed = mAngleZ;
     func_ov002_020cd71c(this);
     func_ov002_020cd550(this);
 
@@ -10461,7 +10448,6 @@ int func_ov002_020ce324(char* c)
     Player *player = (Player *)c;
     typedef unsigned char u8;
     typedef unsigned short u16;
-    typedef struct Vec3i { int x, y, z; } Vec3i;
     typedef struct dActor_c dActor_c;
     extern struct S18b data_0209f49e[];
     extern struct S18a data_0209f4a4[];
@@ -10470,13 +10456,14 @@ int func_ov002_020ce324(char* c)
     extern int func_ov002_020ceb54(void*);
     extern void *_ZN9dBgCh_LinC1Ev(void*);
     extern void _ZN9dBgCh_LinD1Ev(void*);
-    extern void _ZN9dBgCh_Lin13SetObjAndLineERK7Vector3S2_P8dActor_c(void*, const Vec3i* a, const Vec3i* b, void*);
+    extern void _ZN9dBgCh_Lin13SetObjAndLineERK7Vector3S2_P8dActor_c(void *, const Vector3 *a,
+                                                                     const Vector3 *b, void *);
     extern int _ZN9dBgCh_Lin10DetectClsnEv(void*);
     extern void _ZNK11SurfaceInfo12CopyNormalToER7Vector3(const void* self, void*);
     extern int _ZN4cstd5atan2E5Fix12IiES1_(int a, int b);
     extern int AngleDiff(int a, int b);
     extern int func_ov002_020ce324(void*);
-    Vec3i a1, a2, b1, b2, nrm;
+    Vector3 a1, a2, b1, b2, nrm;
     char rl1[0x78];
     int ok;
 
@@ -10585,7 +10572,7 @@ int func_ov002_020ce5f8(char* c) {
     extern Player::State data_ov002_0211013c;
     extern int func_ov002_020ce5f8(void*);
     int y, threshold;
-    struct Vector3 pos;
+    Vector3 pos;
 
     threshold = data_0209f32c - 0x50000;
     y = self->mPosY;
@@ -10647,15 +10634,15 @@ int func_ov002_020ce5f8(char* c) {
 extern "C" {
 void func_ov002_020ce798(char* c)
 {
-    typedef struct Vec3i { int x, y, z; } Vec3i;
     typedef struct dActor_c dActor_c;
     extern int data_0209f32c;
     extern char data_ov002_0211067c;
     extern int _ZN6Player7IsStateERNS_5StateE(void*, void*);
-    extern void _ZN9dBgCh_Lin13SetObjAndLineERK7Vector3S2_P8dActor_c(void*, const Vec3i* a, const Vec3i* b, void*);
+    extern void _ZN9dBgCh_Lin13SetObjAndLineERK7Vector3S2_P8dActor_c(void *, const Vector3 *a,
+                                                                     const Vector3 *b, void *);
     extern int _ZN9dBgCh_Lin10DetectClsnEv(void*);
     Player *player = (Player *)c;
-    Vec3i v1, v2;
+    Vector3 v1, v2;
 
     if (!_ZN6Player7IsStateERNS_5StateE(c, &data_ov002_0211067c)) return;
 
@@ -10823,7 +10810,8 @@ void func_ov002_020ceb7c(struct CameraRaw *c)
 extern "C" {
 int func_ov002_020cec2c(char *self)
 {
-    extern unsigned int _ZN5Sound8PlayLongEjjjRK7Vector3s(unsigned int a, unsigned int b, unsigned int c, const struct Vector3 *v, unsigned int d);
+    extern unsigned int _ZN5Sound8PlayLongEjjjRK7Vector3s(
+        unsigned int a, unsigned int b, unsigned int c, const Vector3 *v, unsigned int d);
     extern int func_ov002_020d91e0(void*, int damage, int doPre);
     extern void func_ov002_020da9d4(void*);
     extern s8 data_0209f2f8;
@@ -10959,7 +10947,6 @@ int func_ov002_020cef84(char *self)
     extern int _ZN6Player7IsInAirEv(void*);
     extern int _ZN6Player7IsStateERNS_5StateE(void*, void*);
     extern void _ZN6Player11ChangeStateERNS_5StateE(void*, void*);
-    extern int func_02037e38(void*);
     extern unsigned _ZNK5dBgPi9GetClsnIDEv(void*);
     extern void _ZN5dBgPiD1Ev(void*);
     extern char data_ov002_0211001c;
@@ -11000,7 +10987,7 @@ int func_ov002_020cef84(char *self)
     line.SetObjAndLine(v1, v2, (dActor_c*)self);
     if (line.DetectClsn()) {
         ::Vector3 cp = line.GetClsnPos();
-        if (func_02037e38((unsigned int *)&line.surface) == 3) {
+        if (line.surface.clps.GetSurfaceType() == 3) {
             int t2 = p->mHeldObj != 0;
             if (t2 == false) {
                 _ZN6Player11ChangeStateERNS_5StateE(self, &data_ov002_0211001c);
@@ -11049,8 +11036,6 @@ int func_ov002_020cef84(char *self)
 extern "C" {
 int func_ov002_020cf20c(char* c) {
     Player *self = (Player *)c;
-    extern int func_02037e38(void*);
-    extern int func_02037e48(void*);
     extern void func_0200ca14(void*, unsigned char b, int c);
     extern void* data_0209f318[];
     extern int func_ov002_020cf20c(void*);
@@ -11069,10 +11054,10 @@ int func_ov002_020cf20c(char* c) {
     v2.y = y2 + 0xb4000;
     line.SetObjAndLine(v1, v2, (dActor_c*)c);
     if (line.DetectClsn()) {
-        if (func_02037e38((unsigned int*)&line.surface) == 3) {
+        if (line.surface.clps.GetSurfaceType() == 3) {
             ::Vector3 clsnPos = line.GetClsnPos();
             void* cam = data_0209f318[0];
-            int t = func_02037e48((unsigned int*)&line.surface);
+            int t = line.surface.clps.func_02037e48();
             func_0200ca14(cam, self->mPlayerNo, t);
             int ret = clsnPos.y;
             return ret;
@@ -11512,7 +11497,6 @@ extern "C" {
 int func_ov002_020cfea4(char *self)
 {
     Player *p = (Player *)self;
-    struct Vector3 { int x, y, z; };
     extern void *_ZNK10dBgCh_Actr14GetFloorResultEv(void *self);
     extern int _ZNK5dBgPi9GetClsnIDEv(void *self);
     extern int AngleDiff(int a, int b);
@@ -11623,22 +11607,21 @@ int func_ov002_020cfea4(char *self)
 extern "C" {
 int func_ov002_020d0178(char* c, int arg1, int flag)
 {
-    typedef struct Vec3 {
-        int x, y, z;
-    } Vec3;
-    extern void _ZN9dBgCh_Gnd12SetObjAndPosERK7Vector3P8dActor_c(void* self, Vec3* pos, void* actor);
+    extern void _ZN9dBgCh_Gnd12SetObjAndPosERK7Vector3P8dActor_c(void *self, Vector3 *pos,
+                                                                 void *actor);
     extern int _ZN9dBgCh_Gnd10DetectClsnEv(void *self);
-    extern void _ZN9dBgCh_Lin13SetObjAndLineERK7Vector3S2_P8dActor_c(void* self, Vec3* a, Vec3* b, void* actor);
+    extern void _ZN9dBgCh_Lin13SetObjAndLineERK7Vector3S2_P8dActor_c(void *self, Vector3 *a,
+                                                                     Vector3 *b, void *actor);
     extern int _ZN9dBgCh_Lin10DetectClsnEv(void* self);
-    extern void _ZNK11SurfaceInfo12CopyNormalToER7Vector3(void* self, Vec3* out);
+    extern void _ZNK11SurfaceInfo12CopyNormalToER7Vector3(void *self, Vector3 *out);
     extern int _ZN4cstd5atan2E5Fix12IiES1_(int x, int z);
     extern int AngleDiff(int a, int b);
     extern s16 data_02082214[];
     Player *p = (Player *)c;
 
-    Vec3 normal;
-    Vec3 pos1;
-    Vec3 lineStart;
+    Vector3 normal;
+    Vector3 pos1;
+    Vector3 lineStart;
     dBgCh_Gnd rg;
     int ang;
     int gy;
@@ -11738,7 +11721,7 @@ int func_ov002_020d0178(char* c, int arg1, int flag)
         return 0;
     }
     lineStart.y = p->mPosY;
-    Vec3 line2;
+    Vector3 line2;
     line2.x = p->mPosX;
     line2.y = p->mPosY;
     line2.z = p->mPosZ;
@@ -12009,6 +11992,13 @@ int Player::St_LedgeHang_Main()
 /* recovered: named members + shared header, real C++ method */
 extern "C" {
 int Player::St_LedgeHang_Init() {
+    /* Stays a POD twin of Vector3, measured: `Vec3 z3 = {0, 0, 0}` on a POD
+       lowers to `add r1, sp, #4` plus three stores through that pointer and
+       two reloads, which is what the ROM does. Vector3 has a constructor, so every
+       non-POD spelling constant-folds the zeros into the later stores and the
+       function loses 12 bytes. Tested as Vector3(0,0,0), default plus three
+       stores, copy-assignment, member-wise construction, Vector3(), and stores
+       through a plain and a volatile pointer -- none reproduce it. */
     struct Vec3 {
         int x, y, z;
     };
@@ -12881,9 +12871,9 @@ void func_ov002_020d228c(char* c)
     ((Player *)c)->ChangeState(data_ov002_02110154);
     _ZN6Player7SetAnimEji5Fix12IiEj(c, 9, 0, 0x1000, 0);
     player->mStateStep = 4;
-    *(int *)(c + 0x56c) = 0;
-    *(int *)(c + 0x570) = 0;
-    *(int *)(c + 0x574) = 0;
+    player->mSleepBubbleScaleX = 0;
+    player->mSleepBubbleScaleY = 0;
+    player->mSleepBubbleScaleZ = 0;
     player->mSleepStage = 2;
     player->mStateArg = 0;
 }
@@ -13121,7 +13111,8 @@ int Player::St_Wait_Main()
     }
 
     case 2: {
-        if (unk_723 == 0 && mBodyModels[this->GetBodyModelID(param1 & 0xff, 0)]->WillHitFrame(1)) {
+        if (mMuteSleepVoice == 0 &&
+            mBodyModels[this->GetBodyModelID(param1 & 0xff, 0)]->WillHitFrame(1)) {
             Sound::PlayCharVoice(mCharacter, 0x2a, mCamSpacePos);
         }
         {
@@ -13156,9 +13147,9 @@ int Player::St_Wait_Main()
         if (this->FinishedAnim()) {
             _ZN6Player7SetAnimEji5Fix12IiEj(((char*)this), 9, 0, 0x1000, 0);
             mStateStep = 4;
-            unk_56c = 0;
-            unk_570 = 0;
-            unk_574 = 0;
+            mSleepBubbleScaleX = 0;
+            mSleepBubbleScaleY = 0;
+            mSleepBubbleScaleZ = 0;
             mSleepStage = 2;
             mStateArg = 1;
         }
@@ -13181,7 +13172,7 @@ int Player::St_Wait_Main()
     case 4: {
         if (mStatePhase == 0) {
             func_ov002_020d2f24(((char*)this));
-            if (unk_723 == 0 &&
+            if (mMuteSleepVoice == 0 &&
                 mBodyModels[this->GetBodyModelID(param1 & 0xff, 0)]->WillHitFrame(0xd)) {
                 Sound::PlayCharVoice(mCharacter, 0x2b, mCamSpacePos);
             }
@@ -13194,8 +13185,8 @@ int Player::St_Wait_Main()
                 int b4b = (f2d8_4 == 2);
                 if (b4b != false) break;
             }
-            if (func_ov002_020d2da0(((char*)this))==1 || unk_56c >= 0x3000 || mIsInShallowWater!=0 ||
-                (unsigned short)(mStateFlags&4)) {
+            if (func_ov002_020d2da0(((char *)this)) == 1 || mSleepBubbleScaleX >= 0x3000 ||
+                mIsInShallowWater != 0 || (unsigned short)(mStateFlags & 4)) {
                 func_ov002_020d2e74(((char*)this));
                 mSleepStage = 0;
                 _ZN6Player7SetAnimEji5Fix12IiEj(((char*)this), 8, 0x40000000, 0x1000, 0);
@@ -13272,11 +13263,12 @@ int func_ov002_020d2da0(char *c) {
 /* recovered: shared common types */
 extern "C" {
 void func_ov002_020d2e74(Player *p) {
-    extern void Vec3_RotateYAndTranslate(struct Vector3 *out, const struct Vector3 *base, s16 ang, const struct Vector3 *off);
+    extern void Vec3_RotateYAndTranslate(Vector3 * out, const Vector3 *base, s16 ang,
+                                         const Vector3 *off);
     extern void _ZN8Particle6System9NewSimpleEj5Fix12IiES2_S2_(u32 a, int b, int c, int d);
 
-    struct Vector3 v;
-    struct Vector3 off;
+    Vector3 v;
+    Vector3 off;
     if (p->mIsInShallowWater != 0)
         return;
     if (p->param1 != 3)
@@ -13306,7 +13298,7 @@ void func_ov002_020d2f24(char* thiz)
     id = player->param1;
     if (id != 3) return;
 
-    r4 = *(int*)(thiz + 0x56c);
+    r4 = player->mSleepBubbleScaleX;
     id = _ZNK6Player14GetBodyModelIDEjb(thiz, id & 0xff, 0);
     {
         /* q is the frame controller; m->currFrame would fold the split +0x50. */
@@ -13333,9 +13325,9 @@ void func_ov002_020d2f24(char* thiz)
 store:
     if (r4 < 0x400) r4 = 0x400;
     if (r4 > 0x4000) r4 = 0x4000;
-    *(int*)(thiz + 0x56c) = r4;
-    *(int*)(thiz + 0x570) = r4;
-    *(int*)(thiz + 0x574) = r4;
+    player->mSleepBubbleScaleX = r4;
+    player->mSleepBubbleScaleY = r4;
+    player->mSleepBubbleScaleZ = r4;
 }
 }
 
@@ -14359,7 +14351,7 @@ int Player::St_Bonk_Main()
     struct dCamera_c;
     extern void _Z14ApproachLinearRiii(int* a, int b, int c);
     extern void Player_AdvanceAnims(void* c);
-    extern void func_0200d8c8(struct dCamera_c* cam, const struct Vector3* v, int strength);
+    extern void func_0200d8c8(struct dCamera_c * cam, const Vector3 *v, int strength);
     extern struct dCamera_c* data_0209f318;
     extern Player::State data_ov002_0211013c;
     int rate;
@@ -14481,7 +14473,8 @@ int Player::St_BurnLava_Main()
     extern s16 data_02082214[];
     extern Player::State data_ov002_0211013c;
     extern void KillPlayer(void);
-    extern int _ZN8Particle6System3NewEjj5Fix12IiES2_S2_PK11Vector3_16fPNS_8CallbackE(int, unsigned int, int, int, int, s16 *, void *);
+    extern u32 _ZN8Particle6System3NewEjj5Fix12IiES2_S2_PK11Vector3_16fPNS_8CallbackE(
+        u32 handle, u32 kind, Fix12i x, Fix12i y, Fix12i z, const void *dir, void *callback);
     extern int _ZN5Sound8PlayLongEjjjRK7Vector3s(int, unsigned int, unsigned int, void *, unsigned int);
     extern void func_ov002_020e28d4(void *, int, int);
     extern void _ZN6Player7SetAnimEji5Fix12IiEj(void *, unsigned int, int, int, unsigned int);
@@ -14623,8 +14616,8 @@ int Player::St_BurnFire_Main()
     extern s16 data_0209f4a0[];
     extern void func_02012694(unsigned int id, const void *v);
     extern int func_ov002_020d91e0(void *thiz, int damage, int doPre);
-    extern int _ZN8Particle6System3NewEjj5Fix12IiES2_S2_PK11Vector3_16fPNS_8CallbackE(
-        unsigned int sys, unsigned int id, int x, int y, int z, const s16 *vec, void *cb);
+    extern u32 _ZN8Particle6System3NewEjj5Fix12IiES2_S2_PK11Vector3_16fPNS_8CallbackE(
+        u32 handle, u32 kind, Fix12i x, Fix12i y, Fix12i z, const void *dir, void *callback);
     extern int _ZN5Sound8PlayLongEjjjRK7Vector3s(unsigned int handle, unsigned int id, unsigned int vol, const void *vec, unsigned int flags);
     extern void _ZN6Player7SetAnimEji5Fix12IiEj(void *c, unsigned int anim, int a, int b, unsigned int d);
     extern void ApproachAngle(short *cur, short target, int divisor, int band, int maxStep);
@@ -14800,7 +14793,8 @@ extern "C" {
 int Player::St_Electrocute_Main()
 {
     extern u32 _ZN5Sound8PlayLongEjjjRK7Vector3s(u32 a, u32 b, u32 c, Vector3* v, u32 d);
-    extern u32 _ZN8Particle6System3NewEjj5Fix12IiES2_S2_PK11Vector3_16fPNS_8CallbackE(u32 sysHandle, u32 kind, s32 scale, s32 p1, s32 p2, void* pos16, void* cb);
+    extern u32 _ZN8Particle6System3NewEjj5Fix12IiES2_S2_PK11Vector3_16fPNS_8CallbackE(
+        u32 handle, u32 kind, Fix12i x, Fix12i y, Fix12i z, const void *dir, void *callback);
     extern void Player_AdvanceAnims(void* self);
     extern Player::State data_ov002_0211013c;
     extern Player::State data_ov002_0211067c;
@@ -14905,13 +14899,13 @@ extern "C" {
 int func_ov002_020d5ab4(char *self)
 {
     typedef long long s64;
-    typedef struct { int x, y, z; } Vec3;
     extern int _ZN6Player7IsStateERNS_5StateE(char *self, void *state);
-    extern void *_ZN8dActor_c5SpawnEjjRK7Vector3PK10Vector3_16as(unsigned int a, unsigned int b, Vec3 *pos, void *rot, int e, int f);
+    extern void *_ZN8dActor_c5SpawnEjjRK7Vector3PK10Vector3_16as(
+        unsigned int a, unsigned int b, Vector3 *pos, void *rot, int e, int f);
     extern char data_ov002_02110064;
     extern short data_02082214[];
     Player *p = (Player *)self;
-    Vec3 pos;
+    Vector3 pos;
     void *spawned;
     short *rp;
     int *pp;
@@ -15292,14 +15286,14 @@ extern "C" {
 void func_ov002_020d6368(char *self)
 {
     typedef long long s64;
-    typedef struct { int x, y, z; } Vec3;
-    extern void *_ZN8dActor_c5SpawnEjjRK7Vector3PK10Vector3_16as(unsigned int a, unsigned int b, Vec3 *pos, void *rot, int e, int f);
+    extern void *_ZN8dActor_c5SpawnEjjRK7Vector3PK10Vector3_16as(
+        unsigned int a, unsigned int b, Vector3 *pos, void *rot, int e, int f);
     extern short data_02082214[];
     extern int func_ov002_020d6334(void*, int);
     extern void func_ov002_020d6368(char*);
     Player *p = (Player *)self;
-    volatile struct Vector3_16 rot;
-    Vec3 pos;
+    volatile Vector3_16 rot;
+    Vector3 pos;
     void *spawned;
     int a;
     int zero = 0;
@@ -15442,13 +15436,10 @@ void Player::RegisterEggCoinCount(unsigned int count, bool b2, bool b3)
 extern "C" {
 int func_ov002_020d674c(char* c){
     Player *player = (Player *)c;
-    struct O;
-    typedef int (*VFN)(struct O*);
-    struct O { VFN* vt; };
-    struct O *o = (struct O *)player->mObjInMouth;
+    dActor_c *o = (dActor_c *)player->mObjInMouth;
     if (o == 0)
         return 0;
-    return o->vt[0x12](o) == 6;
+    return o->OnYoshiTryEat() == 6;
 }
 }
 
@@ -15457,13 +15448,6 @@ extern "C" {
 int func_ov002_020d6790(char* self)
 {
     Player *p = (Player *)self;
-    struct Obj {
-      virtual int v0(); virtual int v1(); virtual int v2(); virtual int v3();
-      virtual int v4(); virtual int v5(); virtual int v6(); virtual int v7();
-      virtual int v8(); virtual int v9(); virtual int v10(); virtual int v11();
-      virtual int v12(); virtual int v13(); virtual int v14(); virtual int v15();
-      virtual int v16(); virtual int v17(); virtual int v18(); virtual void v19(char* c);
-    };
     extern void _ZN6Player11ChangeStateERNS_5StateE(char* c, void* s);
     extern int _ZN6Player7IsStateERNS_5StateE(char* c, void* s);
     extern void Player_DisableInteraction(char* c);
@@ -15477,10 +15461,10 @@ int func_ov002_020d6790(char* self)
     if (p->mMouthHoldTimer != 0)
         return 0;
 
-    Obj *o = (Obj *)p->mObjInMouth;
+    dActor_c *o = (dActor_c *)p->mObjInMouth;
     if (o == 0) return 0;
 
-    int isbf = (((dActor_c *)o)->actorID == 0xbf);
+    int isbf = (o->actorID == 0xbf);
     if (isbf) {
         if (p->mIsNoControl != 0)
             goto isbf_ret0;
@@ -15499,8 +15483,8 @@ isbf_ret0:
         }
     }
 
-    o = (Obj *)p->mObjInMouth;
-    switch (o->v18()) {
+    o = (dActor_c *)p->mObjInMouth;
+    switch (o->OnYoshiTryEat()) {
     case 2:
     case 4:
         func_ov002_020d7430(*reinterpret_cast<Player*>(self));
@@ -15510,7 +15494,7 @@ isbf_ret0:
         if (eq132) {
             func_ov002_020d8118(self);
         }
-        ((Obj *)p->mObjInMouth)->v19(self);
+        ((dActor_c *)p->mObjInMouth)->OnTurnIntoEgg(*(Player *)self);
         p->mObjInMouth = 0;
         p->mFireBreaths = 1;
         goto ret0;
@@ -15542,34 +15526,14 @@ ret0:
 extern "C" {
 int Player::func_ov002_020d6998()
 {
-    struct VObj {
-        virtual void f00();
-        virtual void f01();
-        virtual void f02();
-        virtual void f03();
-        virtual void f04();
-        virtual void f05();
-        virtual void f06();
-        virtual void f07();
-        virtual void f08();
-        virtual void f09();
-        virtual void f10();
-        virtual void f11();
-        virtual void f12();
-        virtual void f13();
-        virtual void f14();
-        virtual void f15();
-        virtual void f16();
-        virtual void f17();
-        virtual int V18();
-    };
     typedef int (*VFunc)(void*);
     extern int func_ov002_020d6dac(char* self);
     extern void func_ov002_020d71ec(char* self, int arg1);
     extern int func_ov002_020d6c60(char* self, void* other);
-    extern s16 Vec3_HorzAngle(const struct Vector3* v0, const struct Vector3* v1);
+    extern s16 Vec3_HorzAngle(const Vector3 *v0, const Vector3 *v1);
     extern void Vec3_RotateYAndTranslate(int* out, int* in, s16 angle, int* src);
-    extern void _ZN8Particle6System3NewEjj5Fix12IiES2_S2_PK11Vector3_16fPNS_8CallbackE(u32 a, u32 b, int c, int d, int e, const void* pos, void* cb);
+    extern u32 _ZN8Particle6System3NewEjj5Fix12IiES2_S2_PK11Vector3_16fPNS_8CallbackE(
+        u32 handle, u32 kind, Fix12i x, Fix12i y, Fix12i z, const void *dir, void *callback);
     extern int func_ov002_020d7030(char* self, void* other);
     extern void Player_DisableInteraction(char* self);
     extern s16 data_02082214[];
@@ -15608,7 +15572,8 @@ int Player::func_ov002_020d6998()
     if (other == this) goto fail;
 
     if (IsCollectingCap() != 0) goto react;
-    if (((VObj*)other)->V18() == 0) goto react;
+    if (((dActor_c *)other)->OnYoshiTryEat() == 0)
+        goto react;
 
     {
         u8 isType = (((dActor_c *)other)->actorID == 0xbf);
@@ -15617,9 +15582,9 @@ int Player::func_ov002_020d6998()
                 if (func_ov002_020d6c60(self, other) == 0) goto react;
                 return 1;
             } else {
-                struct Vector3 out;
-                struct Vector3_16 pos16;
-                struct Vector3 rotSrc;
+                Vector3 out;
+                Vector3_16 pos16;
+                Vector3 rotSrc;
                 s16 angle;
                 int idx;
 
@@ -15643,7 +15608,7 @@ int Player::func_ov002_020d6998()
         } else {
             int r;
             if (func_ov002_020d7030(self, other) == 0) goto react;
-            r = ((VObj*)other)->V18();
+            r = ((dActor_c *)other)->OnYoshiTryEat();
             if (r == 4) Player_DisableInteraction(self);
             return 1;
         }
@@ -15736,12 +15701,8 @@ extern "C" {
 int func_ov002_020d6dac(char *self)
 {
     Player *player = (Player *)self;
-    struct Vector3 { int x, y, z; };
     typedef struct P2 { int w[2]; } P2;
     typedef struct dBgPi { void *vtb; int s0, s1, s2, s3, s4; u16 f, g; int h, i, j; } dBgPi;
-    typedef struct Vec3_16 {
-        s16 x, y, z;
-    } Vec3_16;
     extern int _ZNK6Player14GetBodyModelIDEjb(void *thiz, unsigned int a, int b);
     extern void MulVec3Mat4x3(void *v, void *m, void *dst);
     extern void Vec3_MulScalarInPlace(int *v, int s);
@@ -15752,13 +15713,13 @@ int func_ov002_020d6dac(char *self)
     extern int func_02053274(int *a, int *b);
     extern void _ZNK11SurfaceInfo12CopyNormalToER7Vector3(void *thiz, void *out);
     extern short _ZN4cstd5atan2E5Fix12IiES1_(int a, int b);
-    extern void *_ZN8Particle6System3NewEjj5Fix12IiES2_S2_PK11Vector3_16fPNS_8CallbackE(
-        unsigned int a, unsigned int b, int x, int y, int z, const void *v, void *cb);
+    extern u32 _ZN8Particle6System3NewEjj5Fix12IiES2_S2_PK11Vector3_16fPNS_8CallbackE(
+        u32 handle, u32 kind, Fix12i x, Fix12i y, Fix12i z, const void *dir, void *callback);
     extern short data_02082214[];
     extern void *data_02099368[];
-    Vec3_16 dir;
-    struct Vector3 p1;
-    struct Vector3 p2;
+    Vector3_16f dir;
+    Vector3 p1;
+    Vector3 p2;
     dBgPi res;
     dBgCh_Lin rl;
     int *d;
@@ -15815,7 +15776,7 @@ int func_ov002_020d6dac(char *self)
 
     ::Vector3 clsnPos = rl.GetClsnPos();
     player->mTongueHitDist = func_02053274((int *)&p1, (int *)&clsnPos);
-    struct Vector3 normal;
+    Vector3 normal;
     _ZNK11SurfaceInfo12CopyNormalToER7Vector3(&rl.surface, &normal);
     ang = _ZN4cstd5atan2E5Fix12IiES1_(normal.x, normal.z);
     idx = (u16)ang >> 4;
@@ -15850,27 +15811,6 @@ int func_ov002_020d7030(char* a, char* b) {
 // @symbol _ZN6Player19func_ov002_020d708cEv
 extern "C" {
 char* Player::func_ov002_020d708c() {
-    struct VObj {
-        virtual void f00();
-        virtual void f01();
-        virtual void f02();
-        virtual void f03();
-        virtual void f04();
-        virtual void f05();
-        virtual void f06();
-        virtual void f07();
-        virtual void f08();
-        virtual void f09();
-        virtual void f10();
-        virtual void f11();
-        virtual void f12();
-        virtual void f13();
-        virtual void f14();
-        virtual void f15();
-        virtual void f16();
-        virtual void f17();
-        virtual int IsTargetable();
-    };
     extern char* _ZN8dActor_c4NextEPKS_(const char* a);
     extern int Vec3_Dist(const void* a, const void* b);
     extern short Vec3_HorzAngle(const void* a, const void* b);
@@ -15884,7 +15824,7 @@ char* Player::func_ov002_020d708c() {
         int thresh = bestAng;
         do {
             if (a != self) {
-                if (((VObj*)a)->IsTargetable()) {
+                if (((dActor_c *)a)->OnYoshiTryEat()) {
                     if (Vec3_Dist(&mPos, &((dActor_c *)a)->mPos) < 0x15e000) {
                         int diff =
                             (short)(this->mAngleY - Vec3_HorzAngle(&mPos, &((dActor_c *)a)->mPos));
@@ -16082,15 +16022,6 @@ struct PVec { int x, y, z; PVec() {} ~PVec() {} };
 extern "C" {
 int Player::St_YoshiPower_Main()
 {
-    struct Vec3 { int x, y, z; };
-    struct Vec3s { short x, y, z; };
-    struct Obj {
-      virtual int v0(); virtual int v1(); virtual int v2(); virtual int v3();
-      virtual int v4(); virtual int v5(); virtual int v6(); virtual int v7();
-      virtual int v8(); virtual int v9(); virtual int v10(); virtual int v11();
-      virtual int v12(); virtual int v13(); virtual int v14(); virtual int v15();
-      virtual int v16(); virtual int v17(); virtual int v18(); virtual void v19(char* c);
-    };
     extern void _Z14ApproachLinearRiii(int*, int, int);
     extern void func_ov002_020d71ec(char*, int);
     extern void _Z15ApproachLinear2Rsss(short*, short, short);
@@ -16101,7 +16032,8 @@ int Player::St_YoshiPower_Main()
     extern void func_ov002_020d7430(Player& player);
     extern void _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(void*, void*, int, int, unsigned int);
     extern void func_ov002_020d5cec(void*);
-    extern void* _ZN8Particle6System3NewEjj5Fix12IiES2_S2_PK11Vector3_16fPNS_8CallbackE(void*, unsigned int, int, int, int, void*, void*);
+    extern u32 _ZN8Particle6System3NewEjj5Fix12IiES2_S2_PK11Vector3_16fPNS_8CallbackE(
+        u32 handle, u32 kind, Fix12i x, Fix12i y, Fix12i z, const void *dir, void *callback);
     extern void func_ov002_020dc09c(char*);
     extern void ApproachAngle(void*, short, int, int, int);
     extern void Player_AdvanceAnims(char *);
@@ -16115,10 +16047,10 @@ int Player::St_YoshiPower_Main()
        thirty-odd call sites. One alias keeps them untouched; the field
        accesses below are the part that needed recovering. */
     char* c = (char*)this;
-    Vec3s dir;
-    Vec3 tmp;
+    Vector3_16f dir;
+    Vector3 tmp;
     PVec pos;
-    Obj* obj0;
+    dActor_c *obj0;
     char* dp;
 
     if (mIsAirborne == 0) {
@@ -16169,22 +16101,23 @@ int Player::St_YoshiPower_Main()
             }
             int id2 = this->GetBodyModelID(this->param1 & 0xff, 0);
             if (mBodyModels[id2]->WillHitFrame(0xa) != 0) {
-                Vec3 *src = (Vec3 *)&mPosX;
+                Vector3 *src = &mPos;
                 dp = (char*)*(void**)(&mObjInMouth);
                 ((dActor_c *)dp)->mPosX = src->x;
                 ((dActor_c *)dp)->mPosY = src->y;
                 ((dActor_c *)dp)->mPosZ = src->z;
-                Obj* o = *(Obj**)(&mObjInMouth);
-                int cond = (((dActor_c *)o)->actorID == 0xbf);
+                dActor_c *o = *(dActor_c **)(&mObjInMouth);
+                int cond = (o->actorID == 0xbf);
                 if (cond != 0) {
-                    ((dActor_c *)o)->mFlags &= ~0x20000;
+                    o->mFlags &= ~0x20000;
                     if (((Player*)(*(void**)(&mObjInMouth)))->func_ov002_020d5ed0() == 0) {
                         func_ov002_020d718c();
                     }
                 } else {
                     ((dActor_c *)o)->mFlags |= 0x40000;
                     ((dActor_c *)mObjInMouth)->mFlags &= ~0x20000;
-                    if ((*(Obj**)(&mObjInMouth))->v18() == 4 || (*(Obj**)(&mObjInMouth))->v18() == 2) {
+                    if ((*(dActor_c **)(&mObjInMouth))->OnYoshiTryEat() == 4 ||
+                        (*(dActor_c **)(&mObjInMouth))->OnYoshiTryEat() == 2) {
                         mStateStep = 3;
                         int f2 = 1;
                         mUseAltBodyModel = f2;
@@ -16200,12 +16133,12 @@ int Player::St_YoshiPower_Main()
                 int id3 = this->GetBodyModelID(this->param1 & 0xff, 0);
                 if (mBodyModels[id3]->WillHitFrame(0xc) != 0) {
                     mUseAltBodyModel = 1;
-                    if ((*(Obj**)(&mObjInMouth))->v18() == 5) {
+                    if ((*(dActor_c **)(&mObjInMouth))->OnYoshiTryEat() == 5) {
                         int cond2 = (((dActor_c *)mObjInMouth)->actorID == 0x132);
                         if (cond2 != 0) {
                             func_ov002_020d8118(c);
                         }
-                        (*(Obj**)(&mObjInMouth))->v19(c);
+                        (*(dActor_c **)(&mObjInMouth))->OnTurnIntoEgg(*(Player *)c);
                         *(void**)(&mObjInMouth) = 0;
                         mFireBreaths = 1;
                     }
@@ -16213,9 +16146,9 @@ int Player::St_YoshiPower_Main()
             }
         }
         if (this->FinishedAnim() != 0) {
-            obj0 = *(Obj**)(&mObjInMouth);
+            obj0 = *(dActor_c **)(&mObjInMouth);
             if (obj0 != 0) {
-                if (obj0->v18() == 3) {
+                if (obj0->OnYoshiTryEat() == 3) {
                     this->ChangeState(data_ov002_02110034);
                     return 1;
                 }
@@ -16285,9 +16218,9 @@ int Player::St_YoshiPower_Main()
         }
         int id7 = this->GetBodyModelID(this->param1 & 0xff, 0);
         if (mBodyModels[id7]->WillHitFrame(4) != 0) {
-            obj0 = *(Obj**)(&mObjInMouth);
+            obj0 = *(dActor_c **)(&mObjInMouth);
             if (obj0 != 0) {
-                int cond3 = (((dActor_c *)obj0)->actorID == 0xbf);
+                int cond3 = (obj0->actorID == 0xbf);
                 if (cond3 != 0) {
                     func_ov002_020d5cec(obj0);
                     mStateFlags &= ~2;
@@ -16321,8 +16254,10 @@ int Player::St_YoshiPower_Main()
                 dir.x = data_02082214[(*(unsigned short*)&mAngleY >> 4) * 2];
                 dir.y = 0;
                 dir.z = data_02082214[(*(unsigned short*)&mAngleY >> 4) * 2 + 1];
-                *(void**)(&mParticle1) = _ZN8Particle6System3NewEjj5Fix12IiES2_S2_PK11Vector3_16fPNS_8CallbackE(*(void**)(&mParticle1), 0x13c, pos.x, pos.y, pos.z, (Vec3s*)((int)&dir), 0);
-                *(void**)(&mParticle2) = _ZN8Particle6System3NewEjj5Fix12IiES2_S2_PK11Vector3_16fPNS_8CallbackE(*(void**)(&mParticle2), 0x13d, pos.x, pos.y, pos.z, &dir, 0);
+                mParticle1 = _ZN8Particle6System3NewEjj5Fix12IiES2_S2_PK11Vector3_16fPNS_8CallbackE(
+                    mParticle1, 0x13c, pos.x, pos.y, pos.z, &dir, 0);
+                mParticle2 = _ZN8Particle6System3NewEjj5Fix12IiES2_S2_PK11Vector3_16fPNS_8CallbackE(
+                    mParticle2, 0x13d, pos.x, pos.y, pos.z, &dir, 0);
                 func_ov002_020dc09c(c);
                 mAttackClsn.Clear();
                 mAttackClsn.Update();
@@ -16580,7 +16515,6 @@ ret1:
 extern "C" {
 int func_ov002_020d8360(void *self, void *other, unsigned int flags)
 {
-    typedef struct Vector3 { int x, y, z; } Vector3;
     extern int func_ov002_020d82f0(void *c);
     extern int func_ov002_020d853c(char *c, char *o);
     extern int func_ov002_020d8944(void *self, char *enemy, char *v1);
@@ -16599,7 +16533,7 @@ int func_ov002_020d8360(void *self, void *other, unsigned int flags)
     }
 
     {
-        unsigned char t = *(unsigned char *)(o + 0x726);
+        unsigned char t = ((Player *)o)->mAttackClashed;
         if (t) return t;
     }
 
@@ -16611,8 +16545,8 @@ int func_ov002_020d8360(void *self, void *other, unsigned int flags)
             int r = func_ov002_020d8944(c, o, c);
             if (r != 0) {
                 r = 1;
-                *(unsigned char *)(o + 0x726) = r;
-                *(unsigned char *)(c + 0x726) = r;
+                ((Player *)o)->mAttackClashed = r;
+                player->mAttackClashed = r;
             }
             return r;
         }
@@ -16795,10 +16729,9 @@ void func_ov002_020d8838(char *self)
 /* recovered: shared common types */
 extern "C" {
 void func_ov002_020d8854(char *self) {
-    extern void Vec3_RotateYAndTranslate(struct Vector3 * out, struct Vector3 * in, int ang,
-                                         struct Vector3 *tr);
+    extern void Vec3_RotateYAndTranslate(Vector3 * out, Vector3 * in, int ang, Vector3 *tr);
     extern int func_ov002_020d8944(char *a, char *b, char *other);
-    extern void func_ov002_020d8d10(char *self, struct Vector3 *v);
+    extern void func_ov002_020d8d10(char *self, Vector3 *v);
     Player *p = (Player *)self;
     char *other = (char *)dActor_c::FindWithID(p->mAttackClsn.otherOwner);
     if (other == 0)
@@ -16811,20 +16744,20 @@ void func_ov002_020d8854(char *self) {
             if ((p->mAttackClsn.hitFlags & 0x3c0) == 0)
                 return;
             if (func_ov002_020d8944(self, self, other) != 0) {
-                *(unsigned char *)(other + 0x726) = 1;
-                *(unsigned char *)(self + 0x726) = 1;
+                ((Player *)other)->mAttackClashed = 1;
+                p->mAttackClashed = 1;
             }
             return;
         }
     }
     {
-        struct Vector3 out;
-        struct Vector3 tr;
-        struct Vector3 cp;
+        Vector3 out;
+        Vector3 tr;
+        Vector3 cp;
         tr.x = 0;
         tr.y = 0x50000;
         tr.z = 0x64000;
-        Vec3_RotateYAndTranslate(&out, (struct Vector3 *)(&p->mPosX), p->mAngleY, &tr);
+        Vec3_RotateYAndTranslate(&out, (Vector3 *)(&p->mPosX), p->mAngleY, &tr);
         cp = out;
         func_ov002_020d8d10(self, &cp);
     }
@@ -16840,10 +16773,10 @@ struct PVec8944 {
 };
 extern "C" {
 int func_ov002_020d8944(void *self, char *enemy, char *v1) {
-    s16 Vec3_HorzAngle(const struct Vector3 *v0, const struct Vector3 *v1);
+    s16 Vec3_HorzAngle(const Vector3 *v0, const Vector3 *v1);
     int AngleDiff(int a, int b);
-    void Vec3_Add(struct Vector3 * out, struct Vector3 * a, struct Vector3 * b);
-    void Vec3_Asr(struct Vector3 * d, struct Vector3 * s, int sh);
+    void Vec3_Add(Vector3 * out, Vector3 * a, Vector3 * b);
+    void Vec3_Asr(Vector3 * d, Vector3 * s, int sh);
     void _ZN8Particle6System9NewSimpleEj5Fix12IiES2_S2_(unsigned int id, int x, int y, int z);
     extern int func_ov002_020d8944(void *self, char *enemy, char *v1);
     PVec8944 p;
@@ -16870,8 +16803,8 @@ int func_ov002_020d8944(void *self, char *enemy, char *v1) {
         p.y += 0x50000;
         _ZN8Particle6System9NewSimpleEj5Fix12IiES2_S2_(0x12a, p.x, p.y, p.z);
         _ZN8Particle6System9NewSimpleEj5Fix12IiES2_S2_(0x12b, p.x, p.y, p.z);
-        *(unsigned char *)(enemy + 0x726) = 1;
-        *(unsigned char *)(v1 + 0x726) = 1;
+        ((Player *)enemy)->mAttackClashed = 1;
+        ((Player *)v1)->mAttackClashed = 1;
         return 1;
     }
     return 0;
@@ -16889,14 +16822,15 @@ void func_ov002_020d8a50(char* self, int which)
     extern int _ZNK6Player14GetBodyModelIDEjb(char* p, unsigned int j, int b);
     extern void func_ov002_020dbf4c(char* c);
     extern void *_ZN9dBgCh_LinC1Ev(struct dBgCh_Lin* r);
-    extern void _ZN9dBgCh_Lin13SetObjAndLineERK7Vector3S2_P8dActor_c(struct dBgCh_Lin* r, struct Vector3* a, struct Vector3* b, void* actor);
+    extern void _ZN9dBgCh_Lin13SetObjAndLineERK7Vector3S2_P8dActor_c(
+        struct dBgCh_Lin * r, Vector3 * a, Vector3 * b, void *actor);
     extern int _ZN9dBgCh_Lin10DetectClsnEv(struct dBgCh_Lin* r);
-    extern void _ZNK11SurfaceInfo12CopyNormalToER7Vector3(void* s, struct Vector3* n);
+    extern void _ZNK11SurfaceInfo12CopyNormalToER7Vector3(void *s, Vector3 *n);
     extern void _ZN9dBgCh_LinD1Ev(struct dBgCh_Lin* r);
     extern s16 data_02082214[];
     extern u16 data_ov002_0210a5cc[];
     extern void func_ov002_020d8854(char*);
-    extern void func_ov002_020d8d10(char*, struct Vector3*);
+    extern void func_ov002_020d8d10(char *, Vector3 *);
     extern void func_ov002_020dbbc0(char*);
     extern void func_ov002_020dbd94(char*);
     extern void func_ov002_020dbe70(char*);
@@ -16918,7 +16852,7 @@ void func_ov002_020d8a50(char* self, int which)
         player->mAttackClsn.Clear();
     }
 
-    if (*(u8*)(self + 0x726) != 0)
+    if ((u8)player->mAttackClashed != 0)
         return;
 
     switch (which) {
@@ -16965,9 +16899,9 @@ void func_ov002_020d8a50(char* self, int which)
     {
         u16 ang = (u16)player->mAngleY;
         struct dBgCh_Lin ray;
-        struct Vector3 v1;
-        struct Vector3 v2;
-        struct Vector3 normal;
+        Vector3 v1;
+        Vector3 v2;
+        Vector3 normal;
         int idx;
 
         _ZN9dBgCh_LinC1Ev(&ray);
@@ -17004,13 +16938,12 @@ void func_ov002_020d8a50(char* self, int which)
  */
 struct Self { char pad0[8]; int state; char pad2[0x82]; s16 angle; };
 extern "C" {
-void func_ov002_020d8d10(struct Self* self, struct Vector3* pos)
-{
+void func_ov002_020d8d10(struct Self *self, Vector3 *pos) {
     struct Callback;
     extern s16 data_02082214[];
     extern u32 _ZN8Particle6System3NewEjj5Fix12IiES2_S2_PK11Vector3_16fPNS_8CallbackE(
-        u32 slot, u32 effect, Fix12i x, Fix12i y, Fix12i z, const void* rot, struct Callback* cb);
-    struct Vector3_16 vec;
+        u32 handle, u32 kind, Fix12i x, Fix12i y, Fix12i z, const void *dir, void *callback);
+    Vector3_16 vec;
 
     vec.x = data_02082214[((unsigned short)(short)(self->angle + 0x8000) >> 4) * 2];
     vec.y = 0;
@@ -17510,10 +17443,10 @@ int Player::St_Hurt_Main()
 /* recovered: shared common types */
 extern "C" {
 void Player::func_ov002_020d98b4() {
-    extern void MulVec3Mat4x3(void *a, void *b, struct Vector3 *out);
-    extern void Vec3_MulScalar(struct Vector3 * out, struct Vector3 * in, int s);
-    extern void *_ZN8Particle6System3NewEjj5Fix12IiES2_S2_PK11Vector3_16fPNS_8CallbackE(
-        unsigned int a, unsigned int b, int c, int d, int e, const void *f, void *g);
+    extern void MulVec3Mat4x3(void *a, void *b, Vector3 *out);
+    extern void Vec3_MulScalar(Vector3 * out, Vector3 * in, int s);
+    extern u32 _ZN8Particle6System3NewEjj5Fix12IiES2_S2_PK11Vector3_16fPNS_8CallbackE(
+        u32 handle, u32 kind, Fix12i x, Fix12i y, Fix12i z, const void *dir, void *callback);
     int t = this->func_ov002_020beb38();
     this->mStateTimer -= t;
     {
@@ -17524,8 +17457,8 @@ void Player::func_ov002_020d98b4() {
         unsigned int id = this->GetBodyModelID(param1 & 0xff, 0);
         Matrix4x3 *bone = &mBodyModels[id]->data.transforms[15];
         unsigned int id2 = this->GetBodyModelID(param1 & 0xff, 0);
-        struct Vector3 v;
-        struct Vector3 s;
+        Vector3 v;
+        Vector3 s;
         MulVec3Mat4x3(&bone->m[9], &mBodyModels[id2]->mat4x3, &v);
         Vec3_MulScalar(&s, &v, 0x8000);
         s.y += 0x50000;
@@ -17809,13 +17742,13 @@ int Player::St_SwingPlayer_Main()
 {
     char* c = (char*)this;
     typedef s32 Fix12;
-    struct Vec3 { int x, y, z; };
     extern void _ZN6Player7SetAnimEji5Fix12IiEj(char* c, u32 anim, int a, s32 b, u16 d);
     extern void func_ov002_020d9c70(char* c);
     extern int func_ov002_020da95c(char* c);
     extern int func_ov002_020da9d4(char* c);
     extern int _Z15ApproachLinear2Rsss(s16* ref, s16 target, s16 step);
-    extern int _ZN8Particle6System3NewEjj5Fix12IiES2_S2_PK11Vector3_16fPNS_8CallbackE(u32 h, u32 id, s32 x, s32 y, s32 z, void* v, void* cb);
+    extern u32 _ZN8Particle6System3NewEjj5Fix12IiES2_S2_PK11Vector3_16fPNS_8CallbackE(
+        u32 handle, u32 kind, Fix12i x, Fix12i y, Fix12i z, const void *dir, void *callback);
     extern u32 _ZN5Sound8PlayLongEjjjRK7Vector3s(u32 h, u32 a, u32 b, void* v, u32 d);
     extern void func_ov002_020dc174(char* c, void* p, int a, int b, u32 e, u32 f);
     extern void Player_AdvanceAnims(char* c);
@@ -17832,7 +17765,7 @@ int Player::St_SwingPlayer_Main()
         break;
     case 1: {
         int arr[3];
-        Vec3 v;
+        Vector3 v;
         if ((*(u16*)((char*)data_0209f49e + gActivePlayerSlot * 0x18) & 1) != 0) {
             char *p = (char *)mHeldObj;
             if (p != 0) {
@@ -18643,7 +18576,7 @@ int Player::St_Grabbed_Init()
 extern "C" {
 extern "C" void func_ov002_020db54c(unsigned char *self, int a, int b, short c)
 {
-    extern void func_02035860(void *a, struct Vector3 *v);
+    extern void func_02035860(void *a, Vector3 *v);
     extern Player::State data_ov002_021101cc;
     Player *p = (Player *)self;
     void *node;
@@ -18654,8 +18587,8 @@ extern "C" void func_ov002_020db54c(unsigned char *self, int a, int b, short c)
     if (node != 0) {
         int bb = (int)(((dActor_c *)node)->actorID == 0xbf);
         if (bb != 0) {
-            struct Vector3 *src = (struct Vector3 *)((int)&((dActor_c *)node)->mPos);
-            struct Vector3 v;
+            Vector3 *src = (Vector3 *)((int)&((dActor_c *)node)->mPos);
+            Vector3 v;
             int ty;
             v.x = src->x;
             ty = src->y;
@@ -18839,37 +18772,34 @@ void Player::func_ov002_020db8d8()
 extern "C" {
 void func_ov002_020dba0c(char *c) {
     Player *player = (Player *)c;
-    struct V3 {
-        int a, b, c;
-    };
     extern unsigned char data_0209f2d8;
-    extern void func_ov002_020dc174(char *c, struct V3 *r1, int r2, int r3, unsigned int a5,
+    extern void func_ov002_020dc174(char *c, void *r1, int r2, int r3, unsigned int a5,
                                     unsigned int a6);
-    struct V3 v;
+    Vector3 v;
     int r2, r3;
     unsigned int a5;
     if ((int)(data_0209f2d8 == 1) != 0) {
-        v.c = 0xa0000;
-        v.a = 0;
+        v.z = 0xa0000;
+        v.x = 0;
         r2 = 0x78000;
-        v.b = 0;
-        v.c = 0x78000;
+        v.y = 0;
+        v.z = 0x78000;
         r3 = 0x50000;
     } else if (player->mIsMega == 0) {
         r2 = 0x78000;
-        v.c = 0x78000;
+        v.z = 0x78000;
         r3 = 0x50000;
-        v.a = 0;
-        v.b = 0;
+        v.x = 0;
+        v.y = 0;
         r2 = r3;
         if (player->param1 == 2) {
-            v.c = 0xa0000;
+            v.z = 0xa0000;
             r2 = 0x78000;
         }
     } else {
-        v.a = 0;
-        v.b = -0x40000;
-        v.c = 0x80000;
+        v.x = 0;
+        v.y = -0x40000;
+        v.z = 0x80000;
         r3 = 0x100000;
         r2 = 0xc0000;
     }
@@ -18884,36 +18814,33 @@ void func_ov002_020dba0c(char *c) {
 extern "C" {
 void func_ov002_020dbaec(char *c) {
     Player *player = (Player *)c;
-    struct V3 {
-        int a, b, c;
-    };
     extern unsigned char data_0209f2d8;
-    extern void func_ov002_020dc174(char *c, struct V3 *r1, int r2, int r3, unsigned int a5,
+    extern void func_ov002_020dc174(char *c, void *r1, int r2, int r3, unsigned int a5,
                                     unsigned int a6);
-    struct V3 v;
+    Vector3 v;
     int r2, r3;
     if ((int)(data_0209f2d8 == 1) != 0) {
-        v.c = 0xa0000;
-        v.a = 0;
+        v.z = 0xa0000;
+        v.x = 0;
         r2 = 0x78000;
-        v.b = 0;
-        v.c = 0x78000;
+        v.y = 0;
+        v.z = 0x78000;
         r3 = 0x50000;
     } else if (player->mIsMega == 0) {
         r2 = 0x78000;
-        v.c = 0x78000;
+        v.z = 0x78000;
         r3 = 0x50000;
-        v.a = 0;
-        v.b = 0;
+        v.x = 0;
+        v.y = 0;
         r2 = r3;
         if (player->param1 == 2) {
-            v.c = 0xa0000;
+            v.z = 0xa0000;
             r2 = 0x78000;
         }
     } else {
-        v.a = 0;
-        v.b = -0x40000;
-        v.c = 0x80000;
+        v.x = 0;
+        v.y = -0x40000;
+        v.z = 0x80000;
         r3 = 0x100000;
         r2 = 0xc0000;
     }
@@ -18925,36 +18852,33 @@ void func_ov002_020dbaec(char *c) {
 extern "C" {
 void func_ov002_020dbbc0(char *c) {
     Player *player = (Player *)c;
-    struct V3 {
-        int a, b, c;
-    };
     extern unsigned char data_0209f2d8;
-    extern void func_ov002_020dc174(char *c, struct V3 *r1, int r2, int r3, unsigned int a5,
+    extern void func_ov002_020dc174(char *c, void *r1, int r2, int r3, unsigned int a5,
                                     unsigned int a6);
-    struct V3 v;
+    Vector3 v;
     int r2, r3;
     if ((int)(data_0209f2d8 == 1) != 0) {
-        v.c = 0xa0000;
-        v.a = 0;
+        v.z = 0xa0000;
+        v.x = 0;
         r2 = 0x78000;
-        v.b = 0;
-        v.c = 0x78000;
+        v.y = 0;
+        v.z = 0x78000;
         r3 = 0x50000;
     } else if (player->mIsMega == 0) {
         r2 = 0x78000;
-        v.c = 0x78000;
+        v.z = 0x78000;
         r3 = 0x50000;
-        v.a = 0;
-        v.b = 0;
+        v.x = 0;
+        v.y = 0;
         r2 = r3;
         if (player->param1 == 2) {
-            v.c = 0xa0000;
+            v.z = 0xa0000;
             r2 = 0x78000;
         }
     } else {
-        v.a = 0;
-        v.b = -0x40000;
-        v.c = 0x80000;
+        v.x = 0;
+        v.y = -0x40000;
+        v.z = 0x80000;
         r3 = 0x100000;
         r2 = 0xc0000;
     }
@@ -18970,7 +18894,7 @@ void func_ov002_020dbc94(char* c) {
     extern unsigned char data_0209f2d8;
     extern void func_ov002_020dc174(char*, void*, int, int, unsigned int, unsigned int);
     Player *player = (Player *)c;
-    struct Vector3 v;
+    Vector3 v;
     int b = (int)(data_0209f2d8 == 1);
     if (b) {
         int r2 = 0x82000;
@@ -18998,35 +18922,32 @@ void func_ov002_020dbc94(char* c) {
 extern "C" {
 void func_ov002_020dbd94(char *c) {
     Player *player = (Player *)c;
-    struct V3 {
-        int a, b, c;
-    };
     extern unsigned char data_0209f2d8;
-    extern void func_ov002_020dc174(char *c, struct V3 *r1, int r2, int r3, unsigned int a5,
+    extern void func_ov002_020dc174(char *c, void *r1, int r2, int r3, unsigned int a5,
                                     unsigned int a6);
-    struct V3 v;
+    Vector3 v;
     int r2, r3;
     if ((int)(data_0209f2d8 == 1) != 0) {
-        v.c = 0x8c000;
-        v.a = 0;
-        v.b = 0xa000;
-        v.c = 0x64000;
+        v.z = 0x8c000;
+        v.x = 0;
+        v.y = 0xa000;
+        v.z = 0x64000;
         r3 = 0xbe000;
         r2 = 0x78000;
     } else if (player->mIsMega == 0) {
-        v.a = 0;
-        v.b = 0xa000;
-        v.c = 0x64000;
+        v.x = 0;
+        v.y = 0xa000;
+        v.z = 0x64000;
         r2 = 0x50000;
         r3 = 0xbe000;
         if (player->param1 == 2) {
-            v.c = 0x8c000;
+            v.z = 0x8c000;
             r2 = 0x78000;
         }
     } else {
-        v.a = 0;
-        v.b = 0x40000;
-        v.c = 0xd0000;
+        v.x = 0;
+        v.y = 0x40000;
+        v.z = 0xd0000;
         r3 = 0x200000;
         r2 = 0x90000;
     }
@@ -19038,35 +18959,32 @@ void func_ov002_020dbd94(char *c) {
 extern "C" {
 void func_ov002_020dbe70(char *c) {
     Player *player = (Player *)c;
-    struct V3 {
-        int a, b, c;
-    };
     extern unsigned char data_0209f2d8;
-    extern void func_ov002_020dc174(char *c, struct V3 *r1, int r2, int r3, unsigned int a5,
+    extern void func_ov002_020dc174(char *c, void *r1, int r2, int r3, unsigned int a5,
                                     unsigned int a6);
-    struct V3 v;
+    Vector3 v;
     int r2, r3;
     if ((int)(data_0209f2d8 == 1) != 0) {
-        v.c = 0x78000;
-        v.a = 0;
-        v.b = 0xa000;
-        v.c = 0x5a000;
+        v.z = 0x78000;
+        v.x = 0;
+        v.y = 0xa000;
+        v.z = 0x5a000;
         r3 = 0x82000;
         r2 = 0x64000;
     } else if (player->mIsMega == 0) {
-        v.a = 0;
-        v.b = 0xa000;
-        v.c = 0x5a000;
+        v.x = 0;
+        v.y = 0xa000;
+        v.z = 0x5a000;
         r2 = 0x46000;
         r3 = 0x82000;
         if (player->param1 == 2) {
-            v.c = 0x78000;
+            v.z = 0x78000;
             r2 = 0x64000;
         }
     } else {
-        v.a = 0;
-        v.b = 0x40000;
-        v.c = 0xe0000;
+        v.x = 0;
+        v.y = 0x40000;
+        v.z = 0xe0000;
         r3 = 0x140000;
         r2 = 0xa0000;
     }
@@ -19078,34 +18996,31 @@ void func_ov002_020dbe70(char *c) {
 extern "C" {
 void func_ov002_020dbf4c(char *c) {
     Player *player = (Player *)c;
-    struct V3 {
-        int a, b, c;
-    };
     extern unsigned char data_0209f2d8;
-    extern void func_ov002_020dc174(char *c, struct V3 *r1, int r2, int r3, unsigned int a5,
+    extern void func_ov002_020dc174(char *c, void *r1, int r2, int r3, unsigned int a5,
                                     unsigned int a6);
-    struct V3 v;
+    Vector3 v;
     int r2, r3;
     if ((int)(data_0209f2d8 == 1) != 0) {
-        v.a = 0;
-        v.b = 0xa000;
-        v.c = 0x50000;
+        v.x = 0;
+        v.y = 0xa000;
+        v.z = 0x50000;
         r3 = 0x6e000;
         r2 = 0x5a000;
     } else if (player->mIsMega == 0) {
-        v.a = 0;
-        v.b = 0xa000;
-        v.c = 0x50000;
+        v.x = 0;
+        v.y = 0xa000;
+        v.z = 0x50000;
         r2 = 0x3c000;
         r3 = 0x46000;
         if (player->param1 == 2) {
-            v.c = 0x6e000;
+            v.z = 0x6e000;
             r2 = 0x5a000;
         }
     } else {
-        v.a = 0;
-        v.b = 0x40000;
-        v.c = 0xc0000;
+        v.x = 0;
+        v.y = 0x40000;
+        v.z = 0xc0000;
         r3 = 0x100000;
         r2 = 0x80000;
     }
@@ -19117,23 +19032,20 @@ void func_ov002_020dbf4c(char *c) {
 extern "C" {
 void func_ov002_020dc020(char *c) {
     Player *player = (Player *)c;
-    struct V3 {
-        int a, b, c;
-    };
-    extern void func_ov002_020dc174(char *c, struct V3 *r1, int r2, int r3, unsigned int a5,
+    extern void func_ov002_020dc174(char *c, void *r1, int r2, int r3, unsigned int a5,
                                     unsigned int a6);
-    struct V3 v;
+    Vector3 v;
     int r2, r3;
     if (player->mIsMega == 0) {
-        v.a = 0;
-        v.b = 0xa000;
-        v.c = 0x3c000;
+        v.x = 0;
+        v.y = 0xa000;
+        v.z = 0x3c000;
         r3 = 0x46000;
         r2 = 0x28000;
     } else {
-        v.a = 0;
-        v.b = 0x40000;
-        v.c = 0xc0000;
+        v.x = 0;
+        v.y = 0x40000;
+        v.z = 0xc0000;
         r3 = 0x100000;
         r2 = 0x80000;
     }
@@ -19149,38 +19061,35 @@ void func_ov002_020dc020(char *c) {
 extern "C" {
 void func_ov002_020dc09c(char *c) {
     Player *player = (Player *)c;
-    struct V3 {
-        int a, b, c;
-    };
-    extern void func_ov002_020dc174(char *c, struct V3 *r1, int r2, int r3, unsigned int a5,
+    extern void func_ov002_020dc174(char *c, void *r1, int r2, int r3, unsigned int a5,
                                     unsigned int a6);
-    struct V3 v;
+    Vector3 v;
     int r2, r3;
     if (player->mIsMega == 0) {
         if (player->mStateTimer & 1) {
             r3 = 0x28000;
-            v.a = 0;
-            v.b = 0x28000;
-            v.c = 0x87000;
+            v.x = 0;
+            v.y = 0x28000;
+            v.z = 0x87000;
             r2 = 0x3c000;
         } else {
             r3 = 0x50000;
-            v.a = 0;
-            v.b = 0x28000;
-            v.c = 0x10e000;
+            v.x = 0;
+            v.y = 0x28000;
+            v.z = 0x10e000;
             r2 = 0x50000;
         }
     } else {
         r2 = 0x80000;
         if (player->mStateTimer & 1) {
-            v.a = 0;
-            v.b = 0x80000;
-            v.c = 0xc0000;
+            v.x = 0;
+            v.y = 0x80000;
+            v.z = 0xc0000;
             r3 = 0x80000;
         } else {
-            v.a = 0;
-            v.b = 0x80000;
-            v.c = 0x1c0000;
+            v.x = 0;
+            v.y = 0x80000;
+            v.z = 0x1c0000;
             r3 = 0x100000;
         }
     }
@@ -19351,7 +19260,7 @@ int Player::St_SweepKick_Init()
     extern int _ZN6Player7SetAnimEji5Fix12IiEj(void*,unsigned int,int,int,unsigned int);
     _ZN6Player7SetAnimEji5Fix12IiEj(this, 0x68, 0x40000000, 0x1000, 0);
     mHorzSpeed = 0;
-    unk_726 = 0;
+    mAttackClashed = 0;
     /* mCamSpacePosX/Y/Z are three consecutive words; dActor_c.h declares them
        individually rather than as one Vector3. */
     Sound::PlayCharVoice(mCharacter, 0xa, mCamSpacePos);
@@ -20030,7 +19939,7 @@ int Player::St_PunchKick_Init()
     extern int _ZN6Player15IsCollectingCapEv(void*);
     extern void func_ov002_020dc020(void*);
   *(int*)((char*)&mPeakY)=*(int*)((char*)&mPosY);
-  *(char*)((char*)&unk_726)=0;
+  mAttackClashed = 0;
   *(short*)((char*)&mStateTimer)=2;
   *(char*)((char*)&mStatePhase)=0;
   if(*(unsigned char*)((char*)&mPunchKickStep)==2 || _ZN6Player15IsCollectingCapEv(((void*)this))) return 1;
@@ -20090,13 +19999,13 @@ void func_ov002_020dd8f4(void* player) {
 /* recovered: shared common types */
 extern "C" {
 void func_ov002_020dd908(char *sb) {
-    extern int Vec3_Dist(const struct Vector3 *a, const struct Vector3 *b);
+    extern int Vec3_Dist(const Vector3 *a, const Vector3 *b);
     extern unsigned char data_0209f2d8;
     extern unsigned char data_0209f21c;
     extern char *data_0209f394[];
     extern void func_ov002_020dd8f4(char *);
     int i;
-    struct Vector3 v;
+    Vector3 v;
     if ((int)(data_0209f2d8 == 1) == 0)
         return;
     for (i = 0; i < data_0209f21c; i++) {
@@ -20503,7 +20412,7 @@ void func_ov002_020de3d0(int a0, short* r1, short* r2){
 /* recovered: shared common types */
 struct dActor_ce428 {
     char pad74[0x74];
-    struct Vector3 vec; /* 0x74 */
+    Vector3 vec; /* 0x74 */
     char pad[0x70c - 0x80];
     unsigned char flag; /* 0x70c */
 };
@@ -20601,7 +20510,7 @@ s32 Player::St_Balloon_Main()
             s32 v = FX_MUL(v1, 0xa0);
             s16 t1 = data_02082214[idx];
             mAngleYSpeed = (s16)FX_MUL(t1, v);
-            unk_69e = (s16)FX_MUL(t0, v);
+            mAngleXSpeed = (s16)FX_MUL(t0, v);
         }
     }
 
@@ -20632,7 +20541,7 @@ s32 Player::St_Balloon_Main()
     _Z15ApproachLinear2Rsss(mAngleY, mPrevAngleY, 0x200);
     _Z14ApproachLinearRiii(mHorzSpeed, func_ov002_020bf224(this, r4, 0), 0x100);
     func_ov002_020de3d0(this, &mAngleZ, &mAngleYSpeed);
-    func_ov002_020de3d0(this, &mAngleX, &unk_69e);
+    func_ov002_020de3d0(this, &mAngleX, &mAngleXSpeed);
     mPrevVertSpeed = mVertSpeed;
     mModelAnim3.Advance();
     return 1;
@@ -20643,27 +20552,29 @@ s32 Player::St_Balloon_Main()
 /* recovered: named members + shared header, real C++ method, declarations from a shared header */
 /* recovered: named members + shared header, real C++ method */
 extern "C" {
-int Player::St_Balloon_Init()
-{
-    extern int Player_ReleaseHeldActor(void*);
+int Player::St_Balloon_Init() {
+    extern int Player_ReleaseHeldActor(void *);
     extern int data_0209f318[];
     extern int data_ov002_0210e750[];
-    extern int _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(void*,void*,int,int,unsigned int);
-    extern void func_0200d63c(void*, unsigned char);
-  Player_ReleaseHeldActor(((char*)this));
-  mIsInAirState=1;
-  mIsFallScreaming=0;
-  if(mVertSpeed >= 0x10000) mVertSpeed=0x10000;
-  if(mVertSpeed <= -0x10000) mVertSpeed=-0x10000;
-  mHorzSpeed=0;
-  mModelOffsetY = 0x64000;
-  func_0200d63c((void*)data_0209f318[0], mPlayerNo);
-  mAngleYSpeed=0x100;
-  unk_69e=0x100;
-  mPrevVertSpeed=mVertSpeed;
-  _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj((void*)((char*)&mModelAnim3), (void*)data_ov002_0210e750[1], 0x40000000, 0x1000, 0);
-  mModelAnim3.currFrame = 0;
-  return 1;
+    extern int _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(void *, void *, int, int, unsigned int);
+    extern void func_0200d63c(void *, unsigned char);
+    Player_ReleaseHeldActor(((char *)this));
+    mIsInAirState = 1;
+    mIsFallScreaming = 0;
+    if (mVertSpeed >= 0x10000)
+        mVertSpeed = 0x10000;
+    if (mVertSpeed <= -0x10000)
+        mVertSpeed = -0x10000;
+    mHorzSpeed = 0;
+    mModelOffsetY = 0x64000;
+    func_0200d63c((void *)data_0209f318[0], mPlayerNo);
+    mAngleYSpeed = 0x100;
+    mAngleXSpeed = 0x100;
+    mPrevVertSpeed = mVertSpeed;
+    _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(
+        (void *)((char *)&mModelAnim3), (void *)data_ov002_0210e750[1], 0x40000000, 0x1000, 0);
+    mModelAnim3.currFrame = 0;
+    return 1;
 }
 }
 
@@ -20699,10 +20610,9 @@ void func_ov002_020de968(char* c){
 extern "C" {
 void Player::InitBalloonMario()
 {
-    struct V3 { int x, y, z; };
     extern void _ZN8Particle6System9NewSimpleEj5Fix12IiES2_S2_(unsigned int id, int x, int y, int z);
     extern Player::State data_ov002_0211028c;
-    struct V3 v;
+    Vector3 v;
 
     if (mIsBalloon != 0) return;
 
@@ -20801,8 +20711,6 @@ extern "C" {
 extern "C" int func_ov002_020dec70(char *c)
 {
     Player *p = (Player *)c;
-    struct Vector3_16f { s16 x, y, z; };
-    struct Vector3 { int x, y, z; };
     void func_ov002_020bf800(char *c, Vector3_16f v);
     u32 _ZN5Sound8PlayLongEjjjRK7Vector3s(u32 a, u32 b, u32 c, Vector3 *v, u32 d);
     int _ZN6Player7IsStateERNS_5StateE(char *c, void *st);
@@ -20821,7 +20729,7 @@ extern "C" int func_ov002_020dec70(char *c)
         func_ov002_020bf800(c, v);
     }
     p->mSurfaceSoundHandle = _ZN5Sound8PlayLongEjjjRK7Vector3s((u32)p->mSurfaceSoundHandle, 3, 0x90,
-                                                               (Vector3 *)&p->mCamSpacePosX, 0);
+                                                               &p->mCamSpacePos, 0);
     if (_ZN6Player7IsStateERNS_5StateE(c, &data_ov002_02110274) ||
         _ZN6Player7IsStateERNS_5StateE(c, &data_ov002_021102d4) ||
         _ZN6Player7IsStateERNS_5StateE(c, &data_ov002_02110244) || p->mIsMetal || p->mIsMega ||
@@ -21143,7 +21051,7 @@ int Player::St_Owl_Main()
         }
         if (mStateStep == 1) {
             if (mAttachOffsetY - 0xed8000 > mPosY) {
-                unk_724 = 1;
+                mOwlFarCamera = 1;
                 func_0201f32c(0xa3);
                 func_0200d3f8(data_0209f318, mPlayerNo, 0);
                 mVertAccel = 0;
@@ -21173,7 +21081,7 @@ int Player::St_Owl_Main()
             mStateStep = 4;
             mStateTimer = 0x3c;
             func_ov002_020c9e18();
-            unk_724 = 0;
+            mOwlFarCamera = 0;
         }
         break;
     }
@@ -21236,9 +21144,9 @@ int func_ov002_020df7f4(char* c) {
 /* recovered: shared common types, declarations from a shared header */
 /* recovered: shared common types */
 extern "C" {
-int func_ov002_020df840(Player *thiz, void *arg1, struct Vector3 *arg2) {
+int func_ov002_020df840(Player *thiz, void *arg1, Vector3 *arg2) {
     extern u16 data_0209f49c[];
-    extern s16 Vec3_HorzAngle(const struct Vector3 *v0, const struct Vector3 *v1);
+    extern s16 Vec3_HorzAngle(const Vector3 *v0, const Vector3 *v1);
     extern Player::State data_ov002_02110244;
     if (thiz->mIsMega != 0 || thiz->mIsBalloon != 0)
         return 0;
@@ -21284,25 +21192,33 @@ void func_ov002_020df8f0(char* c)
         if (v >= 0x8000) v = 0x7fff;
 
         if (v > 0) {
-            if (*(s16*)(c + 0x69e) < 0) {
-                *(s16*)(c + 0x69e) += 0x40;
-                if (*(s16*)(c + 0x69e) > 0x20) *(s16*)(c + 0x69e) = 0x20;
+            if (player->mAngleXSpeed < 0) {
+                player->mAngleXSpeed += 0x40;
+                if (player->mAngleXSpeed > 0x20)
+                    player->mAngleXSpeed = 0x20;
             } else {
                 s16 step;
-                if (*(s16*)(c + 0x69e) < v) step = 0x20; else step = 0x40;
-                _Z15ApproachLinear2Rsss((s16*)(c + 0x69e), (s16)v, step);
+                if (player->mAngleXSpeed < v)
+                    step = 0x20;
+                else
+                    step = 0x40;
+                _Z15ApproachLinear2Rsss(&player->mAngleXSpeed, (s16)v, step);
             }
         } else if (v < 0) {
-            if (*(s16*)(c + 0x69e) > 0) {
-                *(s16*)(c + 0x69e) -= 0x40;
-                if (*(s16*)(c + 0x69e) < -0x20) *(s16*)(c + 0x69e) = -0x20;
+            if (player->mAngleXSpeed > 0) {
+                player->mAngleXSpeed -= 0x40;
+                if (player->mAngleXSpeed < -0x20)
+                    player->mAngleXSpeed = -0x20;
             } else {
                 s16 step;
-                if (*(s16*)(c + 0x69e) < v) step = 0x40; else step = 0x20;
-                _Z15ApproachLinear2Rsss((s16*)(c + 0x69e), (s16)v, step);
+                if (player->mAngleXSpeed < v)
+                    step = 0x40;
+                else
+                    step = 0x20;
+                _Z15ApproachLinear2Rsss(&player->mAngleXSpeed, (s16)v, step);
             }
         } else {
-            _Z15ApproachLinear2Rsss((s16*)(c + 0x69e), 0, 0x40);
+            _Z15ApproachLinear2Rsss(&player->mAngleXSpeed, 0, 0x40);
         }
     }
 
@@ -21368,7 +21284,7 @@ void func_ov002_020df8f0(char* c)
         player->mPrevAngleX += ((player->mPrevVertSpeed - 0x20000) * 0xa) >> 12;
     }
 
-    player->mPrevAngleX += *(s16 *)(c + 0x69e);
+    player->mPrevAngleX += player->mAngleXSpeed;
     if (player->mPrevAngleX > 0x2aaa)
         player->mPrevAngleX = 0x2aaa;
     if (player->mPrevAngleX < (s16)0xd556)
@@ -21405,12 +21321,11 @@ void func_ov002_020df8f0(char* c)
 extern "C" {
 int Player::St_Fly_Main()
 {
-    struct Vec16 { s16 x, y, z; };
-    struct Vec32 { s32 x, y, z; };
     extern void _ZN6Player7SetAnimEji5Fix12IiEj(void *, unsigned int, int, int, unsigned int);
     extern int func_ov002_020d674c(char *);
     extern void func_ov002_020df8f0(void *);
-    extern int _ZN8Particle6System3NewEjj5Fix12IiES2_S2_PK11Vector3_16fPNS_8CallbackE(u32, u32, s32, s32, s32, void *, void *);
+    extern u32 _ZN8Particle6System3NewEjj5Fix12IiES2_S2_PK11Vector3_16fPNS_8CallbackE(
+        u32 handle, u32 kind, Fix12i x, Fix12i y, Fix12i z, const void *dir, void *callback);
     extern void _ZN5Sound9PlayBank0EjRK7Vector3(u32, void *);
     extern void func_ov002_020e25f0(char *, int a);
     extern void MulVec3Mat4x3(void *dst, void *src, void *out);
@@ -21474,8 +21389,8 @@ skip:
         func_ov002_020df8f0(c);
     }
 
-    Vec16 vec16;
-    Vec32 vec32;
+    Vector3_16f vec16;
+    Vector3 vec32;
 #define spC vec16.x
 #define spE vec16.y
 #define sp10 vec16.z
@@ -21551,28 +21466,27 @@ skip:
 // @symbol _ZN6Player11St_Fly_InitEv
 /* recovered: named members + shared header, real C++ method */
 extern "C" {
-int Player::St_Fly_Init()
-{
+int Player::St_Fly_Init() {
     extern int data_0209f318[];
-    extern void Player_ReleaseHeldActor(char*);
-    extern int _ZN6Player7SetAnimEji5Fix12IiEj(void*,unsigned int,int,int,unsigned int);
-    extern void func_0200d6f0(void*,unsigned char);
-  unk_69e=0;
-  mAngleYSpeed=0;
-  mPrevAngleX=0;
-  mPrevAngleZ=0;
-  mPrevAngleY=mAngleY;
-  Player_ReleaseHeldActor(((char*)this));
-  if(mStateStep==0){
-    mVertSpeed=0x5d000;
-    _ZN6Player7SetAnimEji5Fix12IiEj(((char*)this),0x4a,0x40000000,0x1000,0);
-    mTerminalVelocity=-0x4000;
-  } else {
-    mVertAccel=0;
-    _ZN6Player7SetAnimEji5Fix12IiEj(((char*)this),0x49,0,0x1000,0);
-  }
-  func_0200d6f0((void*)data_0209f318[0], mPlayerNo);
-  return 1;
+    extern void Player_ReleaseHeldActor(char *);
+    extern int _ZN6Player7SetAnimEji5Fix12IiEj(void *, unsigned int, int, int, unsigned int);
+    extern void func_0200d6f0(void *, unsigned char);
+    mAngleXSpeed = 0;
+    mAngleYSpeed = 0;
+    mPrevAngleX = 0;
+    mPrevAngleZ = 0;
+    mPrevAngleY = mAngleY;
+    Player_ReleaseHeldActor(((char *)this));
+    if (mStateStep == 0) {
+        mVertSpeed = 0x5d000;
+        _ZN6Player7SetAnimEji5Fix12IiEj(((char *)this), 0x4a, 0x40000000, 0x1000, 0);
+        mTerminalVelocity = -0x4000;
+    } else {
+        mVertAccel = 0;
+        _ZN6Player7SetAnimEji5Fix12IiEj(((char *)this), 0x49, 0, 0x1000, 0);
+    }
+    func_0200d6f0((void *)data_0209f318[0], mPlayerNo);
+    return 1;
 }
 }
 
@@ -22607,8 +22521,8 @@ void func_ov002_020e1c20(char *c) {
     extern void _ZN6Player7SetAnimEji5Fix12IiEj(void *p, unsigned int a, int b, Fix12i c,
                                                 unsigned int d);
     extern int _ZNK6Player14GetBodyModelIDEjb(void *p, unsigned int a, int b);
-    extern int func_02012120(unsigned int p0, unsigned int p1, unsigned int p2,
-                             const struct Vector3 *p3, short p4);
+    extern int func_02012120(unsigned int p0, unsigned int p1, unsigned int p2, const Vector3 *p3,
+                             short p4);
     extern int func_ov002_020bf27c(char *c, int r1);
     extern unsigned char data_0209f49c[];
     extern int data_ov002_021101b4;
@@ -22625,7 +22539,7 @@ void func_ov002_020e1c20(char *c) {
             }
             player->mLoopingSoundHandle =
                 func_02012120(player->mLoopingSoundHandle, player->mCharacter, 0x18,
-                              (const struct Vector3 *)(&player->mCamSpacePosX), 0);
+                              (const Vector3 *)(&player->mCamSpacePosX), 0);
             player->mHorzSpeed = FX_MUL(player->mHorzSpeed, 0xf00);
             if ((player->mVertSpeed) < 0) {
                 int *p = (int *)(((long long)(&player->mVertSpeed)));
@@ -22676,8 +22590,8 @@ void func_ov002_020e1e70(char *c) {
     extern void _ZN6Player7SetAnimEji5Fix12IiEj(void *p, unsigned int a, int b, Fix12i c,
                                                 unsigned int d);
     extern int _ZNK6Player14GetBodyModelIDEjb(void *p, unsigned int a, int b);
-    extern int func_02012120(unsigned int p0, unsigned int p1, unsigned int p2,
-                             const struct Vector3 *p3, short p4);
+    extern int func_02012120(unsigned int p0, unsigned int p1, unsigned int p2, const Vector3 *p3,
+                             short p4);
     extern int func_ov002_020bf27c(char *c, int r1);
     extern int _ZN6Player6IsAnimEj(void *p, unsigned int a);
     extern unsigned char data_0209f49c[];
@@ -22700,7 +22614,7 @@ void func_ov002_020e1e70(char *c) {
         anim.speed = 0x4000;
         player->mLoopingSoundHandle =
             func_02012120(player->mLoopingSoundHandle, player->mCharacter, 0x18,
-                          (const struct Vector3 *)(&player->mCamSpacePosX), 0);
+                          (const Vector3 *)(&player->mCamSpacePosX), 0);
         if ((player->mHasWings) != 0) {
             player->mVertAccel = func_ov002_020bf27c(c, -0x4000) >> 1;
             player->mTerminalVelocity = -0x25800;
@@ -23197,7 +23111,7 @@ int func_ov002_020e2c84(char *self)
     extern int func_ov002_020e2ea0(char *self);
     extern void _ZN6Player11ChangeStateERNS_5StateE(char *self, void *state);
     extern int func_ov002_020d91e0(char *thiz, int damage, int doPre);
-    extern void func_0200d8c8(struct dCamera_c *cam, const struct Vector3 *v, int strength);
+    extern void func_0200d8c8(struct dCamera_c * cam, const Vector3 *v, int strength);
     extern int _ZN6Player7IsStateERNS_5StateE(char *self, void *state);
     extern int _ZN6Player19func_ov002_020c5decEi(char *c, int r1);
     extern void func_ov002_020db8bc(unsigned char *p, unsigned char val);
@@ -23234,7 +23148,7 @@ int func_ov002_020e2c84(char *self)
             return 1;
         }
 
-        func_0200d8c8(data_0209f318, (struct Vector3 *)(&player->mPosX), 0x7d0000);
+        func_0200d8c8(data_0209f318, (Vector3 *)(&player->mPosX), 0x7d0000);
         player->mIsFallScreaming = 0;
         Sound::PlayCharVoice(player->mCharacter, 7, player->mCamSpacePos);
     } else if (diff > 0x47e000) {
@@ -23254,7 +23168,7 @@ int func_ov002_020e2c84(char *self)
 
             func_ov002_020db8bc((unsigned char *)self, 1);
             player->mVertSpeed = 0;
-            func_0200d8c8(data_0209f318, (struct Vector3 *)(&player->mPosX), 0x7d0000);
+            func_0200d8c8(data_0209f318, (Vector3 *)(&player->mPosX), 0x7d0000);
             player->mIsFallScreaming = 0;
             Sound::PlayCharVoice(player->mCharacter, 7, player->mCamSpacePos);
         }
@@ -23459,7 +23373,7 @@ int Player::ChangeState(Player::State &state) {
 
     mIsControlDisabled = 0;
     mDetectWater = 0;
-    unk_726 = 0;
+    mAttackClashed = 0;
 
     mStateFlags &= ~0x200;
 
@@ -23661,7 +23575,7 @@ int Player::CleanupResources()
             if (p != 0)
                 p->v1();
         }
-        p = *(VB **)((char *)&unk_1d8);
+        p = *(VB **)((char *)&mSleepBubbleModel);
         if (p != 0) {
             if (p != 0)
                 p->v1();
@@ -23953,7 +23867,8 @@ int Player::Render()
                 }
                 func_ov002_020e3e00((char *)mHeadModels[i], &mScale, mOpacity);
                 if (func_ov002_020d225c(((char*)this))) {
-                    ((VObj*)*(char**)((char*)&unk_1d8))->m14((char*)&unk_56c);
+                    ((VObj *)*(char **)((char *)&mSleepBubbleModel))
+                        ->m14((char *)&mSleepBubbleScaleX);
                 }
             }
         }
@@ -24238,9 +24153,9 @@ void func_ov002_020e444c(char *c)
         }
 
         if (func_ov002_020d225c(c) != 0) {
-            int z = FX_MUL((*(int *)(c + 0x574)), 0x2400) + 0xc000;
+            int z = FX_MUL(player->mSleepBubbleScaleZ, 0x2400) + 0xc000;
             Matrix4x3_ApplyInPlaceToTranslation(&data_020a0e68, 0, 0x7000, z);
-            char *p = *(char **)(c + 0x1d8);
+            char *p = *(char **)&player->mSleepBubbleModel;
             ((Model *)p)->mat4x3 = data_020a0e68;
         }
     }
@@ -24791,7 +24706,6 @@ extern "C" {
 s32 Player::InitResources()
 {
     struct CAA0 { char pad[8]; int unk8; };
-    struct V3 { int x, y, z; };
     int SublevelToLevel(int s);
     void func_ov002_020e6330(void* p);
     void func_ov002_020e6350(void* p);
@@ -24829,7 +24743,7 @@ s32 Player::InitResources()
        above. One alias keeps every one of those decisions untouched. */
     void* self = (void*)this;
     char* c = (char*)self;
-    V3 pos;
+    Vector3 pos;
     char rc[0x50];
     unsigned int a, b;
     u8 n8;
@@ -25223,7 +25137,7 @@ void func_ov002_020e5948(void* arg0)
         if (p != 0) {
             p = _ZN10ModelAnim2C1Ev(p);
         }
-        player->mBodyModels[i] = (ModelAnim *)p;
+        player->mBodyModels[i] = (ModelAnim2 *)p;
         _ZN9ModelBase7SetFileEP8BMD_Fileii(
             player->mBodyModels[i], _ZN5Model8LoadFileER13SharedFilePtr(data_ov002_0210a68c[i]), 1,
             1);
@@ -25289,8 +25203,10 @@ void func_ov002_020e5948(void* arg0)
             if (p != 0) {
                 p = _ZN5ModelC1Ev(p);
             }
-            *(void**)(c + 0x1D8) = p;
-            _ZN9ModelBase7SetFileEP8BMD_Fileii(*(void**)(c + 0x1D8), _ZN5Model8LoadFileER13SharedFilePtr(data_ov002_0210da38), 1, -1);
+            *(void **)&player->mSleepBubbleModel = p;
+            _ZN9ModelBase7SetFileEP8BMD_Fileii(
+                *(void **)&player->mSleepBubbleModel,
+                _ZN5Model8LoadFileER13SharedFilePtr(data_ov002_0210da38), 1, -1);
 
             if (data_0209f2f8 != 2 && data_0209f2f8 != 5 && data_0209f2f8 != 4) {
                 player->mLoadedResourceFlags |= 0x20;
@@ -25298,7 +25214,7 @@ void func_ov002_020e5948(void* arg0)
                 if (p != 0) {
                     p = _ZN10ModelAnim2C1Ev(p);
                 }
-                player->mBodyModels[4] = (ModelAnim *)p;
+                player->mBodyModels[4] = (ModelAnim2 *)p;
                 _ZN9ModelBase7SetFileEP8BMD_Fileii(
                     player->mBodyModels[4],
                     _ZN5Model8LoadFileER13SharedFilePtr(data_ov002_0210e780), 1, -1);
@@ -25450,7 +25366,6 @@ typedef char PlayerFileBone_size_must_be_0x40[sizeof(PlayerFileBone) == 0x40 ? 1
 extern "C" {
 void func_ov002_020e640c(char *c)
 {
-    typedef struct { s32 x, y, z; } Vector3;
     extern int _ZNK6Player14GetBodyModelIDEjb(void *p, u32 a, int b);
     extern int _Z15ApproachLinear2Rsss(s16 *p, s16 t, s16 step);
     extern void Vec3_RotateYAndTranslate(Vector3 *dst, const Vector3 *src, s16 ang, const Vector3 *t);
@@ -25530,8 +25445,7 @@ void func_ov002_020e640c(char *c)
                 else
                     d.y = (((PlayerBone *)md)[1].transY - ((Player *)c)->mStateTargetY) << 3;
                 d.z = (((PlayerBone *)md)[1].transZ - ((Player *)c)->mStateTargetZ) << 3;
-                Vec3_RotateYAndTranslate((Vector3 *)&player->mPosX, (Vector3 *)&player->mPosX,
-                                         player->mAngleY, &d);
+                Vec3_RotateYAndTranslate(&player->mPos, &player->mPos, player->mAngleY, &d);
                 ((Player *)c)->mStateTargetX = ((PlayerBone *)md)[1].transX;
                 if (((Player *)c)->mRootMotionMode >= 3)
                     ((Player *)c)->mStateTargetY = ((PlayerBone *)md)[1].transY;

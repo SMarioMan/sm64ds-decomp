@@ -5,12 +5,13 @@
  *   run.
  * - This is the upper part of dScEntry_c's translation unit. The
  *   lower part is d_s_entry.cpp (0x02115ab8..0x021165b0). The hole
- *   that still separates them is 0x021165b0..0x021190a4: 37 functions
- *   still in separate sources, including course selection and readiness. No other class's
+ *   that still separates them is 0x021165b0..0x02118a84: 31 functions
+ *   still in separate sources, including the d_s_entry_readiness.cpp
+ *   slice (0x02116c8c..0x02116e00). No other class's
  *   code reaches them. They are called from InitResources, Behavior
  *   or one another, or reached through the step tables that
  *   __sinit_ov075_0211bb00 copies into .bss. That initializer also
- *   builds the graphCallback_c, so it is this unit's. 37 of those
+ *   builds the graphCallback_c, so it is this unit's. 31 of those
  *   helpers remain. A delinks entry is one contiguous .text claim,
  *   so the two parts join only once that remaining hole is folded.
  * - The transition helpers use native Step member-pointer copies.
@@ -37,7 +38,8 @@
  *   their linker names. Naming belongs with recovered members.
  *
  * dScEntry_c, the course-entry / results scene. ov075 .text
- * 0x021190a4..0x0211a854: the player-select and sync steps, the
+ * 0x02118a84..0x0211a854: the course-select and match-loading steps,
+ * the player-select and sync steps, the
  * waiting-text render, the helpers through SetSteps, the
  * six scene methods, the RESULT factory, then the OamAnimation and
  * icon_c constructors. The ENTRY factory at 0x0211a854 is not in
@@ -54,6 +56,8 @@
 #include "decl_common.h"
 #include "dScEntry_c.h"
 #include "dFdBrightness_c.h"
+#include "AsyncJob.h"
+#include "Heap.h"
 
 /* The Nitro SDK's sub-engine palette loader. No header in the tree
  * declares the namespace yet; d_s_star_sel_methods.cpp spells it the
@@ -157,6 +161,213 @@ extern dScEntry_c::StepSet data_ov075_0211d8d0;
 
 /* local extern: OAM.h excludes this Fix12-by-value overload. */
 OamAttr *_ZN3OAM6RenderEbP7OamAttriiii5Fix12IiEi(int, OamAttr *, int, int, int, int, int, int);
+}
+
+/* Course-select and match-loading steps, directly below the player-select
+ * run in ROM order. The declarations below are the union of the six shards'
+ * extern blocks, minus names this file already declares. */
+extern "C" {
+int func_0203d8fc(void);
+int func_0201a1bc(void);
+void func_0203d930(void);
+extern unsigned char EntryCourseLoadStarted;
+void func_0202deac(int level);
+void func_0203d918();
+extern u8 data_0208a0e0;
+u8 func_020202dc(void);
+u8 func_020200b8(void);
+void func_02020078(u32 flags);
+void func_0202029c(u32 idx);
+extern u16 data_020a0e5a[];
+extern s8 data_ov075_0211c6ec[];
+extern u8 data_0209f2d8;
+extern u8 data_0209b2e4;
+}
+
+extern dScEntry_c::StepSet data_ov075_0211d798;
+extern dScEntry_c::StepSet data_ov075_0211d7f8;
+extern struct OamAttr data_ov075_0211cba4[];
+
+// local extern: the Fix12-by-value overload retains its measured scalar ABI bridge.
+extern "C" void _ZN3OAM6RenderEbP7OamAttriiii5Fix12IiES3_ii(int sub, struct OamAttr *data, s32 x,
+                                                            s32 y, s32 palette, s32 priority,
+                                                            s32 scaleX, s32 scaleY, s32 rotation,
+                                                            s32 mode);
+
+// @symbol _ZN10dScEntry_c18UpdateMatchLoadingEv
+void dScEntry_c::UpdateMatchLoading() {
+    if (mSawLoadSignal == 0) {
+        if (func_0203d8fc() != 0)
+            mSawLoadSignal = 1;
+    }
+    if (mStepPhase == MATCH_LOAD_RESOURCES) {
+        if (data_0209fc68 != 0) {
+            if (EntryCourseLoadStarted == 0) {
+                func_0201a244(&dScEntry_c::LoadCourseResources, data_0209b2e4, 0xf, 0, 0x1000);
+                EntryCourseLoadStarted = 1;
+            }
+            if (EntryCourseLoadStarted != 0 && func_0201a1bc() != 0) {
+                mStepPhase = MATCH_LOAD_WAIT_FOR_SIGNAL_CLEAR;
+                EntryCourseLoadStarted = 0;
+                func_0203d930();
+            }
+        } else {
+            mStepPhase = MATCH_LOAD_READY;
+        }
+    }
+    if (mStepPhase == MATCH_LOAD_WAIT_FOR_SIGNAL_CLEAR && mSawLoadSignal != 0) {
+        if (func_0203d8fc() == 0)
+            mStepPhase = MATCH_LOAD_READY;
+    }
+    if (mStepDelay > 0) {
+        mStepDelay -= data_0208ee44;
+    }
+    if (mStepPhase < MATCH_LOAD_READY)
+        return;
+    if (mStepDelay > 0)
+        return;
+    StartMatch();
+    mBehaviorStep = 0;
+}
+
+// @symbol _ZN10dScEntry_c19LoadCourseResourcesEi
+void dScEntry_c::LoadCourseResources(int course) {
+    mHeap::Heap_t *previousHeap = static_cast<mHeap::Heap_t *>(data_020a0eac)->SetDefault();
+    LoadArchive(7);
+    int selectedArchive = course + 2;
+    unsigned int archive;
+    for (archive = 2; archive <= 5; ++archive) {
+        if (archive == (unsigned int)selectedArchive)
+            continue;
+        UnloadArchive(archive);
+    }
+    LoadArchive(selectedArchive);
+    previousHeap->SetDefault();
+    data_0209f2d8 = 1;
+    func_0202deac(data_ov075_0211c6ec[course]);
+}
+
+// @symbol _ZN10dScEntry_c17EnterMatchLoadingEv
+void dScEntry_c::EnterMatchLoading() {
+    mEntObj->func_ov075_02114fa8();
+    mStepDelay = 240;
+    mStepPhase = MATCH_LOAD_RESOURCES;
+    mSawLoadSignal = 0;
+    if (data_0209fc68 != 0)
+        data_0208a0e0 = 4;
+    func_0203d918();
+}
+
+// @symbol _ZN10dScEntry_c23RenderCourseSelectTitleEv
+void dScEntry_c::RenderCourseSelectTitle() {
+    _ZN3OAM6RenderEbP7OamAttriiii5Fix12IiES3_ii(0, data_ov075_0211cba4, 0x80, 0x20, -1, -1, 0x1000,
+                                                0x1000, 0, -1);
+}
+
+// @symbol _ZN10dScEntry_c18UpdateCourseSelectEv
+void dScEntry_c::UpdateCourseSelect() {
+    if (func_0203d974() && func_020202dc() != data_0209b2e4) {
+        data_0209b2e4 = func_020202dc();
+    }
+    if (func_02020168()) {
+        u8 action;
+        func_02020304();
+        func_020200e0();
+        action = func_020200b8();
+        if (action == 0) {
+            int index;
+            func_ov001_020ab3f0(&mIcons[data_0209b2e4]);
+            mIcons[data_0209b2e4].mReady = 0;
+            index = 0;
+            for (; index < 4; index++) {
+                if (index != data_0209b2e4)
+                    mIcons[index].mOn = 0;
+            }
+            SetSteps(&EntryMatchLoadingSteps);
+            func_02012790(0xa0);
+            func_02012790(0x128);
+            return;
+        }
+        if (action == 1) {
+            SetSteps(&data_ov075_0211d798);
+            func_02012790(0x9e);
+            return;
+        }
+        SetSteps(&data_ov075_0211d7f8);
+        func_02012790(0x9f);
+        return;
+    }
+    if (func_0203d9b4()) {
+        if (ArePlayersReady()) {
+            bool touched;
+            int index;
+            touched = false;
+            index = 0;
+            icon_c *icon = mIcons;
+            for (; index < 4; index++) {
+                if (TouchArea_Update((char *)icon, 0)) {
+                    touched = true;
+                    data_0209b2e4 = index;
+                    break;
+                }
+                ++icon;
+            }
+            if (touched) {
+                func_02020078(0);
+                func_02020124();
+            } else {
+                if (data_020a0e5a[gActivePlayerSlot * 2] & 4) {
+                    func_02020078(1);
+                    func_02020124();
+                } else if (data_020a0e5a[gActivePlayerSlot * 2] & 8) {
+                    func_02020078(2);
+                    func_02020124();
+                }
+            }
+            func_0202029c(data_0209b2e4);
+        }
+    }
+    *(u16 *)0x4000050 = 0;
+    if (data_020a0e5a[func_0203da9c() * 2] & ~0xc) {
+        func_02012790(0xe);
+    }
+}
+
+// @symbol _ZN10dScEntry_c17EnterCourseSelectEv
+void dScEntry_c::EnterCourseSelect() {
+    int index;
+    int x;
+    icon_c *icon;
+
+    data_0209d45c &= ~4;
+    data_0209d454 &= ~5;
+    func_ov075_02116028((int *)&data_ov075_0211d71c, 1);
+    func_ov075_02116030((void *)&data_ov075_0211d71c, LoadFile(0x8409));
+    LoadCompressedFileAt(0x8407, (void *)G2S::GetBG3ScrPtr());
+
+    if (func_0203d9b4() != 0)
+        func_020338b0(0x205, 0xb0, 0x21, -1);
+    else
+        func_020338b0(0x225, 0xb0, 0x1d, -1);
+
+    data_0209d454 |= 5;
+
+    icon = mIcons;
+    index = 0;
+    x = 0x20;
+    for (; index < 4; index++) {
+        func_ov075_02115e8c((char *)icon, 7, index, (short)x, 0x48);
+        mIcons[index].mOn = 1;
+        mIcons[index].mPressTime = 8;
+        x += 0x40;
+        ++icon;
+    }
+
+    data_0209b2e4 = 4;
+    func_ov075_02115e8c((char *)&mIcons[4], 0xd, 4, 0x80, -0x14);
+    mIconCount = 5;
+    func_02020334();
+    func_020200e0();
 }
 
 // @symbol _ZN10dScEntry_c23UpdatePlayerSelectIntroEv

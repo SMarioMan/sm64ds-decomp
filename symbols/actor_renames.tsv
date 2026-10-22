@@ -6710,3 +6710,10 @@ arm9	0x020353f4	func_020353f4	_ZN5dBgCh24StartIgnoringType14WallsEv	inferred nam
 arm9	0x02035408	func_02035408	_ZNK5dBgCh24IsIgnoringVanishSurfacesEv	inferred name: tests mDetectFlags 0x20, which ShouldPassThroughImpl reads to pass through CLPS surface type 0x11; set only for a vanished Player and Boos
 arm9	0x02035414	func_02035414	_ZN5dBgCh26StopIgnoringVanishSurfacesEv	inferred name: clears mDetectFlags 0x20 (the vanish-surface pass-through bit)
 arm9	0x02035428	func_02035428	_ZN5dBgCh27StartIgnoringVanishSurfacesEv	inferred name: sets mDetectFlags 0x20 (the vanish-surface pass-through bit); callers gate it on Player::mIsVanish, and daTrs_c sets it always
+arm9	0x02037e38	func_02037e38	_ZNK4CLPS14GetSurfaceTypeEv	inferred name: (w0 >> 19) & 0x1f is the surface type dBgCh::ShouldPassThroughImpl and Player test
+arm9	0x02037e48	func_02037e48	_ZNK4CLPS13func_02037e48Ev	CLPS const member; meaning of (w0 >> 15) & 0xf not yet known
+arm9	0x02037e58	func_02037e58	_ZNK4CLPS13GetFloorClassEv	inferred name: (w0 >> 12) & 0x7 is the floor class include/Player.h traces through five slope/slide tables
+arm9	0x02037e68	func_02037e68	_ZNK4CLPS13func_02037e68Ev	CLPS const member; meaning of (w0 >> 6) & 0x3f not yet known
+arm9	0x02037e84	func_02037e84	_ZNK4CLPS13func_02037e84Ev	CLPS const member; meaning of w0 & 0x1f not yet settled
+arm9	0x02037e90	func_02037e90	_ZNK4CLPS13func_02037e90Ev	CLPS const member; meaning of w1 & 0xff not yet known
+ov002	0x020c16ec	func_ov002_020c16ec	_ZN6Player19SetFloorSurfaceInfoERK5dBgPi	inferred name: unpacks the floor dBgPi CLPS fields and normal into Player (include/Player.h)

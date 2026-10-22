@@ -119,10 +119,15 @@ struct B72 {
    when this wiggler becomes the target and set after the result. */
 typedef dScMgHanachan_c::Wiggler Wiggler;
 
-/* dScMgHanachan_c::InitResources reaches slot 18 polymorphically through this
-   shim.  Slot 18 is a declared method on the class now, but the legacy source
-   dispatched through a 19-slot shim and that is the dispatch the ROM matches.
-   Nothing else in the TU uses it. */
+/* Nothing uses this shim: InitResources reaches slot 18 as StartRound and
+   0xa8/0xac as dScMgBase_c's mCredits/mCreditsShown, which is the same
+   dispatch and the same bytes.  The DECLARATION still has to stay.  mwccarm
+   numbers the TU's compiler-local symbols in declaration order, and the 35
+   native pointer-to-member constants this file emits land on the @NNNN names
+   that dScMgHanachan_c.json's defined_symbol_renames rows are keyed to.
+   Dropping the struct shifts every one of them down by one, which silently
+   renames the wrong constants. Recovering that is matching work, not a
+   rewrite, so the type stays until those rows are re-derived. */
 struct SelfV {
     virtual void v00();
     virtual void v01();
@@ -2223,7 +2228,6 @@ void dScMgHanachan_c::StartRound(int state) {
 s32 dScMgHanachan_c::InitResources() {
     void *a;
     void *b;
-    SelfV *obj = (SelfV *)this;
 
     Hana_LoadBackground();
     a = LoadFile(ASSET_D_2D_MG_HANA_SAGASE_NCG_BIN);
@@ -2234,10 +2238,10 @@ s32 dScMgHanachan_c::InitResources() {
     GX::LoadOBJPltt(b, 0, 0xc0);
     Deallocate(a);
     Deallocate(b);
-    obj->unkA8 = data_ov006_0213c954;
-    obj->unkAC = obj->unkA8;
+    mCredits = data_ov006_0213c954;
+    mCreditsShown = mCredits;
     Mg_SetTopScreenYOffset(0x20);
-    obj->v18(-1);
+    StartRound(-1);
     *sHanaBackgroundParts[0] = (*sHanaBackgroundParts[0] & 0xc1fffcff) | 0x100;
     *sHanaBackgroundParts[1] = (*sHanaBackgroundParts[1] & 0xc1fffcff) | 0x100;
     *sHanaBackgroundParts[2] = (*sHanaBackgroundParts[2] & 0xc1fffcff) | 0x100;

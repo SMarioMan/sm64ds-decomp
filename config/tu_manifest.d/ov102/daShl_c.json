@@ -948,42 +948,42 @@
   ],
   "defined_symbol_renames": [
     {
-      "from": "@735",
+      "from": "@733",
       "to": "@774",
       "evidence": "mwcc numbers this PMF descriptor @721. ov063 already defines @721, and objisolate cannot grow a name, so this row maps the compiled name to the unused same-length @774."
     },
     {
-      "from": "@731",
+      "from": "@729",
       "to": "@768",
       "evidence": "mwcc numbers this PMF descriptor @717. ov002 already defines @717, and objisolate cannot grow a name, so this row maps the compiled name to the unused same-length @768."
     },
     {
-      "from": "@721",
+      "from": "@719",
       "to": "@746",
       "evidence": "mwcc numbers this PMF descriptor @707. ov060 already defines @707, and objisolate cannot grow a name, so this row maps the compiled name to the unused same-length @746."
     },
     {
-      "from": "@733",
+      "from": "@731",
       "to": "@770",
       "evidence": "mwcc numbers this PMF descriptor @719. ov063 already defines @719, and objisolate cannot grow a name, so this row maps the compiled name to the unused same-length @770."
     },
     {
-      "from": "@723",
+      "from": "@721",
       "to": "@750",
       "evidence": "mwcc numbers this PMF descriptor @709. ov060 already defines @709, and objisolate cannot grow a name, so this row maps the compiled name to the unused same-length @750."
     },
     {
-      "from": "@729",
+      "from": "@727",
       "to": "@765",
       "evidence": "mwcc numbers this PMF descriptor @715. ov063 already defines @715, and objisolate cannot grow a name, so this row maps the compiled name to the unused same-length @765."
     },
     {
-      "from": "@725",
+      "from": "@723",
       "to": "@752",
       "evidence": "mwcc numbers this PMF descriptor @711. ov060 already defines @711, and objisolate cannot grow a name, so this row maps the compiled name to the unused same-length @752."
     },
     {
-      "from": "@727",
+      "from": "@725",
       "to": "@754",
       "evidence": "mwcc numbers this PMF descriptor @713. ov060 already defines @713, and objisolate cannot grow a name, so this row maps the compiled name to the unused same-length @754."
     }

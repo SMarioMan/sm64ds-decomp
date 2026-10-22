@@ -1241,7 +1241,7 @@
       "src/ProcessKuppaScript.cpp": [
         "param:#1 unsigned int"
       ],
-      "src/_ZN10dScEntry_c10StartMatchEv.cpp": [
+      "src/game/stages/d_s_entry_readiness.cpp": [
         "param:#1 unsigned int"
       ]
     },
@@ -11722,7 +11722,7 @@
       ]
     },
     "data_02092778": {
-      "src/_ZN10dScEntry_c10StartMatchEv.cpp": [
+      "src/game/stages/d_s_entry_readiness.cpp": [
         "return:unsigned char []"
       ]
     },
@@ -11814,10 +11814,10 @@
       ]
     },
     "data_0209b2e4": {
-      "src/_ZN10dScEntry_c10StartMatchEv.cpp": [
+      "src/unnamed/ov075/func_ov075_02116e00.c": [
         "return:unsigned char []"
       ],
-      "src/unnamed/ov075/func_ov075_02116e00.c": [
+      "src/game/stages/d_s_entry_readiness.cpp": [
         "return:unsigned char []"
       ]
     },
@@ -20339,10 +20339,6 @@
         "param:#1 int",
         "return:void"
       ],
-      "src/_ZN10dScEntry_c16CheckMenuConfirmEi.cpp": [
-        "param:#1 int",
-        "return:void"
-      ],
       "src/unnamed/ov075/func_ov075_02116ebc.c": [
         "param:#1 int",
         "return:void"
@@ -20399,6 +20395,10 @@
         "return:void"
       ],
       "src/unnamed/ov075/func_ov075_02119dc4.cpp": [
+        "param:#1 int",
+        "return:void"
+      ],
+      "src/game/stages/d_s_entry_readiness.cpp": [
         "param:#1 int",
         "return:void"
       ]
@@ -22520,7 +22520,7 @@
       ]
     },
     "func_020201f0": {
-      "src/unnamed/ov075/func_ov075_02116ce4.c": [
+      "src/game/stages/d_s_entry_readiness.cpp": [
         "return:int"
       ]
     },
@@ -22535,7 +22535,7 @@
       ]
     },
     "func_02020364": {
-      "src/_ZN10dScEntry_c15ArePlayersReadyEv.cpp": [
+      "src/game/stages/d_s_entry_readiness.cpp": [
         "return:int"
       ]
     },
