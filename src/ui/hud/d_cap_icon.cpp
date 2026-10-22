@@ -30,6 +30,7 @@
 
 #include "CapIconMgr.h"
 #include "SaveData.h"
+#include "dThIcon_c.h"
 
 extern "C" {
 
@@ -117,14 +118,15 @@ void dCapIcon_c::func_ov001_020ab228(char *a1, int idx, int a3,
 
 // @symbol func_ov001_020ab3f0
 extern "C" void func_ov001_020ab3f0(void *r0) {
-    unsigned char *ptr = (unsigned char *)r0;
-    if (ptr[0x10] != 0) {
-        ptr[0x10] = 0;
+    /* The dThIcon_c press pulse (callers pass &mIcons[i]). */
+    dThIcon_c *icon = (dThIcon_c *)r0;
+    if (icon->mOn != 0) {
+        icon->mOn = 0;
     } else {
-        ptr[0x10] = 1;
+        icon->mOn = 1;
     }
-    ptr[0x11] = 0;
-    *(int *)(ptr + 0xc) = *(int *)(ptr + 0x18);
+    icon->mReady = 0;
+    icon->mPressTimer = icon->mPressTime;
 }
 
 // @symbol _ZN10dCapIcon_cC1Ev

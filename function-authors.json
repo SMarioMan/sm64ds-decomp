@@ -4855,11 +4855,11 @@
     },
     "arm9:0x02035354": {
       "author": "tangosdev",
-      "name": "func_02035354"
+      "name": "_ZNK5dBgCh9IsOwnedByEP8dActor_c"
     },
     "arm9:0x02035394": {
       "author": "tangosdev",
-      "name": "func_02035394"
+      "name": "_ZN5dBgChaSERKS_"
     },
     "arm9:0x020353b0": {
       "author": "tangosdev",
@@ -4867,27 +4867,27 @@
     },
     "arm9:0x020353d4": {
       "author": "tangosdev",
-      "name": "func_020353d4"
+      "name": "_ZNK5dBgCh21IsIgnoringType14WallsEv"
     },
     "arm9:0x020353e0": {
       "author": "lplaat",
-      "name": "func_020353e0"
+      "name": "_ZN5dBgCh23StopIgnoringType14WallsEv"
     },
     "arm9:0x020353f4": {
       "author": "lplaat",
-      "name": "func_020353f4"
+      "name": "_ZN5dBgCh24StartIgnoringType14WallsEv"
     },
     "arm9:0x02035408": {
       "author": "tangosdev",
-      "name": "func_02035408"
+      "name": "_ZNK5dBgCh24IsIgnoringVanishSurfacesEv"
     },
     "arm9:0x02035414": {
       "author": "lplaat",
-      "name": "func_02035414"
+      "name": "_ZN5dBgCh26StopIgnoringVanishSurfacesEv"
     },
     "arm9:0x02035428": {
       "author": "lplaat",
-      "name": "func_02035428"
+      "name": "_ZN5dBgCh27StartIgnoringVanishSurfacesEv"
     },
     "arm9:0x0203543c": {
       "author": "tangosdev",

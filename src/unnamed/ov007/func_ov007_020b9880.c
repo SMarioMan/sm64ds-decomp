@@ -25,15 +25,33 @@ typedef struct Ov007Work {
 
 /* data_ov007_02104ba0: the 0x4c record this function allocates and
  * func_ov007_020b9770 frees. It owns the touch picker func_ov007_020c690c
- * builds (fields named in func_ov007_020c5a6c). +0x14..+0x3b have no evidenced
- * role yet; their sites below stay raw. */
+ * builds (fields named in func_ov007_020c5a6c). springSet and
+ * introVariant as in func_ov007_020ba368,
+ * restartCount/idleFrames as in func_ov007_020b9ca8, and
+ * strokeCount/awaitingTap/strokeTime as in func_ov007_020ba05c. +0x38 stays
+ * raw: only this file and func_ov007_020bbe60 (0x78, or 1.5x that for one
+ * drawing) write it, and no reader shows its role. */
 typedef struct Ov007PickerScene {
     void *picker;              /* 0x00: func_ov007_020c690c; freed by c6684 */
     Ov007MenuState *states[4]; /* 0x04: func_ov007_020c9388; [1] is the main one */
-    char pad_14[0x28];
+    char pad_14[8];
+    /* 0x1c: which six-int row of data_ov007_020d7b80 func_ov007_020ba9bc
+     * installs as the picker's springConstants */
+    int springSet;
+    int introVariant; /* 0x20: func_ov007_020ba368's intro shape */
+    int restartCount; /* 0x24: func_ov007_020ba2e0 counts each restart */
+    int idleFrames;   /* 0x28: frames with no touch and no key */
+    int strokeCount;  /* 0x2c: picker->groupCount once a stroke is committed */
+    /* 0x30: set here for mode 0; the next fresh press clears it and resets
+     * the picker (func_ov007_020ba05c) */
+    int awaitingTap;
+    int strokeTime; /* 0x34: Q12 frames since the stroke began */
+    char pad_38[4];
     s32 tweenOut[2];       /* 0x3c: bound as tweens[i]->out */
     Ov007Tween *tweens[2]; /* 0x44: func_ov007_020c908c */
 } Ov007PickerScene;
+
+typedef char Ov007PickerScene_size_must_be_0x4c[sizeof(Ov007PickerScene) == 0x4c ? 1 : -1];
 
 /* data_ov007_02104b9c: the 0x14 record of the scene's sprites (freed by
  * func_ov007_020b9770). +0x00 is not touched here. */
@@ -83,11 +101,11 @@ void func_ov007_020b9880(int a0, int a1)
     SCENE->states[2] = func_ov007_020c9388(0);
     SCENE->states[3] = func_ov007_020c9388(0);
 
-    *(int *)(data_ov007_02104ba0 + 0x1c) = 0;
-    *(int *)(data_ov007_02104ba0 + 0x20) = 0;
-    *(int *)(data_ov007_02104ba0 + 0x28) = 0;
-    *(int *)(data_ov007_02104ba0 + 0x24) = 0;
-    *(int *)(data_ov007_02104ba0 + 0x2c) = 0;
+    SCENE->springSet = 0;
+    SCENE->introVariant = 0;
+    SCENE->idleFrames = 0;
+    SCENE->restartCount = 0;
+    SCENE->strokeCount = 0;
     *(int *)(data_ov007_02104ba0 + 0x38) = 0;
 
     SCENE->tweens[0] = func_ov007_020c908c(&SCENE->tweenOut[0]);
@@ -151,18 +169,18 @@ void func_ov007_020b9880(int a0, int a1)
     func_ov007_020c43bc(SCENE_SPRITES->sprites[2], (int)WORK->cameras[1]);
     func_ov007_020c43bc(SCENE_SPRITES->sprites[3], (int)WORK->cameras[1]);
 
-    *(int *)(data_ov007_02104ba0 + 0x34) = 0;
+    SCENE->strokeTime = 0;
     SCENE->tweens[0]->to = 0x800;
     SCENE->tweenOut[0] = SCENE->tweens[0]->to;
 
     if (a0 != 0) {
         if (a0 == 1) {
-            *(int *)(data_ov007_02104ba0 + 0x30) = 0;
+            SCENE->awaitingTap = 0;
             SCENE->tweenOut[1] = 0;
             SCENE->states[1]->requestedState = 0;
         }
     } else {
-        *(int *)(data_ov007_02104ba0 + 0x30) = 1;
+        SCENE->awaitingTap = 1;
         SCENE->tweenOut[1] = 0x1000;
         SCENE->states[1]->requestedState = 2;
     }

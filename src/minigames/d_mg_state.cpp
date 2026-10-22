@@ -1088,12 +1088,12 @@ void dMgState_c::DrawScoreDigits() {
     Mg_DrawBigNumber(sMgScoreDigitsX + 0x2c, sMgScoreDigitsY, r % 10, -1, -1, 1, 0);
 
     idx = GetGameLanguage();
-    Mg_RenderSubSpriteMtx((void *)*(int *)(sMgStateTextSpritesByLanguage[idx] + 0xc),
-                          sMgScoreDigitsX - 0x24, sMgScoreDigitsY, 0);
+    Mg_RenderSubSpriteMtx(((void **)sMgStateTextSpritesByLanguage[idx])[3], sMgScoreDigitsX - 0x24,
+                          sMgScoreDigitsY, 0);
 
     idx = GetGameLanguage();
-    Mg_RenderSubSpriteMtx((void *)*(int *)(sMgStateTextSpritesByLanguage[idx] + 0x1c),
-                          sMgScoreDigitsX + 0x10, sMgScoreDigitsY, 0);
+    Mg_RenderSubSpriteMtx(((void **)sMgStateTextSpritesByLanguage[idx])[7], sMgScoreDigitsX + 0x10,
+                          sMgScoreDigitsY, 0);
 }
 
 // @symbol _ZN10dMgState_c15DrawRecordTableEv

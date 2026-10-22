@@ -9,21 +9,23 @@ extern void AddVec3(struct Vector3 *a, struct Vector3 *b, struct Vector3 *c);
 #define DIVR(x) FX_MUL(x, -1000)
 
 /* The 0xd0-byte touch picker func_ov007_020c690c builds; names as in that
- * file and func_ov007_020c684c, only the slots this function touches. The
- * a5 table at +0x18 (six ints, handed in pairs to func_ov007_020c7560 and
- * func_ov007_020c7b2c) and the per-group links at +0x40/+0x44 have no name
- * yet and stay raw on `sb`. */
+ * file and func_ov007_020c684c, only the slots this function touches. */
 typedef struct Ov007Picker {
     char pad_00[4];
     int mode;       /* 0x04: 2 = link mode, posPoint and link are stepped too */
     int groupCount; /* 0x08 */
-    char pad_0c[0x10];
+    char pad_0c[0xc];
+    /* 0x18: three (stiffness, damping) pairs: [0..1] for each point list,
+     * [2..3] for each groupLinks entry, [4..5] for headLinks/tailLinks */
+    int *springConstants;
     char *params; /* 0x1c: a4 of func_ov007_020c690c; +4 is the step stride */
     char pad_20[0x14];
     int **groupLinks; /* 0x34: per group, one link per point */
     char pad_38[4];
     int **pointLists; /* 0x3c: per group */
-    char pad_40[0x2c];
+    void **headLinks; /* 0x40: per group, from its first point */
+    void **tailLinks; /* 0x44: per group, from its last point */
+    char pad_48[0x24];
     int *posPoint; /* 0x6c: the Point over pos */
     Vector3 pos;   /* 0x70 */
     char pad_7c[0xc];
@@ -73,18 +75,19 @@ void func_ov007_020c5188(char *sb, int arg1)
             if (self->groupCount > 0) {
                 do {
                     int *r5 = self->pointLists[fp];
-                    func_ov007_020c7560(r5, ((int *)*(void **)(sb + 0x18))[0], ((int *)*(void **)(sb + 0x18))[1]);
+                    func_ov007_020c7560(r5, self->springConstants[0], self->springConstants[1]);
                     if (fp >= 1) {
-                        func_ov007_020c7b2c((int)((void **)*(void **)(sb + 0x40))[fp], ((int *)*(void **)(sb + 0x18))[4], ((int *)*(void **)(sb + 0x18))[5]);
-                        func_ov007_020c7b2c((int)((void **)*(void **)(sb + 0x44))[fp], ((int *)*(void **)(sb + 0x18))[4], ((int *)*(void **)(sb + 0x18))[5]);
+                        func_ov007_020c7b2c((int)self->headLinks[fp], self->springConstants[4],
+                                            self->springConstants[5]);
+                        func_ov007_020c7b2c((int)self->tailLinks[fp], self->springConstants[4],
+                                            self->springConstants[5]);
                     }
                     r8 = start_r8;
                     if (r5[1] > 0) {
                         do {
                             int *node = ((int **)r5[0])[r8];
-                            func_ov007_020c7b2c(self->groupLinks[fp][r8],
-                                                ((int *)*(void **)(sb + 0x18))[2],
-                                                ((int *)*(void **)(sb + 0x18))[3]);
+                            func_ov007_020c7b2c(self->groupLinks[fp][r8], self->springConstants[2],
+                                                self->springConstants[3]);
                             func_ov007_020c81a0(node, stride, p);
                             {
                                 int *pt = (int *)node[0];

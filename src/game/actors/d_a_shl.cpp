@@ -78,6 +78,16 @@ struct ShlStateEnd {
     ShlStateFn tail[3];
 };
 
+/* The carrying Player seen only as far as Player::mIsAirborne (0x6de):
+   including Player.h renumbers the pinned @NNN statics by 94. */
+struct ShlCarrierView {
+    u8 pad_000[0x6de];
+    u8 mIsAirborne; /* 0x6de */
+};
+#ifndef SM64DS_PLATFORM_PC
+typedef char ShlCarrierView_size_must_be_0x6df[sizeof(ShlCarrierView) == 0x6df ? 1 : -1];
+#endif
+
 extern "C" {
 
 
@@ -559,10 +569,8 @@ void daShl_c::func_ov102_0214c84c()
     pos.trail.y = mPosY;
     pos.trail.z = mPosZ;
 
-    if (mState == &data_ov102_0214ea48
-        && mCarrier != 0
-        && *((u8 *)mCarrier + 0x6de) == 0)  /* Player::mIsAirborne */
-    {
+    if (mState == &data_ov102_0214ea48 && mCarrier != 0 &&
+        ((ShlCarrierView *)mCarrier)->mIsAirborne == 0) {
         dBgCh_Gnd ground;
         ground.StartDetectingWater();
         {

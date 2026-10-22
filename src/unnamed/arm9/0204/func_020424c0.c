@@ -1,14 +1,17 @@
 #include "types.h"
 #pragma opt_propagation off
 #pragma opt_loop_invariants off
+/* data_020a1fc0, the file-sharing work block, under FileShareWork's names
+ * (include/private/arm9_a1fc0_file_share.h); typed here for the allocator
+ * call. Only the fields this function touches are spelled out. */
 typedef struct {
-    int flag;
-    char pad0[0x10];
-    void* (*allocFunc)(void*, u32, u32);
-    void* allocArg;
-    char pad1[4];
-    void* outPtr;
-    u32 outSize;
+    int mIsParent; /* 0x00 */
+    char pad_04[0x10];
+    void *(*mAllocFunc)(void *, u32, u32); /* 0x14 */
+    void *mAllocArg;                       /* 0x18 */
+    char pad_1c[4];
+    void *mTable;   /* 0x20 -- the card header's FAT, FNT and overlay tables */
+    u32 mTableSize; /* 0x24 */
 } WorkInfo;
 
 typedef struct {
@@ -53,10 +56,10 @@ void func_020424c0(void)
     } while (i < 4);
 
     irq = _ZN3IRQ7DisableEv();
-    fp = data_020a1fc0.allocFunc(data_020a1fc0.allocArg, sl, 0);
+    fp = data_020a1fc0.mAllocFunc(data_020a1fc0.mAllocArg, sl, 0);
     _ZN3IRQ7RestoreEj(irq);
 
-    if (data_020a1fc0.flag != 0) {
+    if (data_020a1fc0.mIsParent != 0) {
         void* sb;
         char* buf;
         int roundedSize;
@@ -105,6 +108,6 @@ void func_020424c0(void)
         _ZN4CP1516DrainWriteBufferEv();
     }
 
-    data_020a1fc0.outPtr = fp;
-    data_020a1fc0.outSize = sl;
+    data_020a1fc0.mTable = fp;
+    data_020a1fc0.mTableSize = sl;
 }

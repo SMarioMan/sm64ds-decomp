@@ -33,7 +33,7 @@
  *   - NewSimple keeps its scalar-ABI spelling (wall 6az).
  *   - func_ov062_0211ba84 retains its free-function state entry and C linkage;
  *     its calls and fields now use the class interfaces.
- *     The held-cap byte uses daObjMarioCap_c::unk_403 after the star branch.
+ *     The held-cap byte uses daObjMarioCap_c::mTaken after the star branch.
  *   - the two matrix members are 12-word arrays, not Matrix4x3; see the
  *     header.
  *   - mStateParam, mLeaveDelay, mRiseToFarNode and mPathPickTick are named
@@ -499,7 +499,7 @@ int daJango_c::Behavior()
 
     /* Carry the held actor along: it is moved to mHeldPos every frame. If the
        actor no longer exists, or (when mCarriedItem is not CARRIES_STAR) its
-       unk_403 byte is non-zero, the cargo is let go: mHeldActorID is cleared,
+       mTaken byte is non-zero, the cargo is let go: mHeldActorID is cleared,
        the release sound plays, mTimer is set to 30 frames and the state goes back to
        CIRCLE. A star that still exists is never let go here. */
     unsigned int actorId = mHeldActorID;
@@ -510,8 +510,8 @@ int daJango_c::Behavior()
                 p->mPosX = mHeldPosX;
                 p->mPosY = mHeldPosY;
                 p->mPosZ = mHeldPosZ;
-            } else if (static_cast<daObjMarioCap_c *>(p)->unk_403 == 0) {
-                /* daObjMarioCap_c::unk_403: the cap sets it to 1 in
+            } else if (static_cast<daObjMarioCap_c *>(p)->mTaken == 0) {
+                /* daObjMarioCap_c::mTaken: the cap sets it to 1 in
                    InitTaken, the same function that clears the +0xc8
                    matrix pointer stored below. */
                 p->mPosX = mHeldPosX;

@@ -166,7 +166,7 @@ int daObjRcCarpet_c::InitResources()
     mHorzSpeed = mPathSpeed;
     BaseInitResources();
     mPathDirection = 1;
-    unk_42c = 1;
+    mRespawnAfterFall = 1;
     return 1;
 }
 
@@ -174,9 +174,9 @@ int daObjRcCarpet_c::InitResources()
 int daObjRcCarpet_c::Behavior()
 {
     if (mAfterClsnRan)
-        ApproachLinear(unk_4bc, -0x14000, 0x5000);
+        ApproachLinear(mRideDipY, -0x14000, 0x5000);
     else
-        ApproachLinear(unk_4bc, 0, 0x5000);
+        ApproachLinear(mRideDipY, 0, 0x5000);
     BaseBehavior();
     mModelAnim.Advance();
     func_ov036_021122c0(this);
@@ -213,7 +213,7 @@ extern "C" void func_ov036_021122c0(daObjRcCarpet_c *self)
         &self->mModelAnim.mat4x3,
         self->mAngleX, self->mAngleY, self->mAngleZ);
     self->mModelAnim.mat4x3.m[9] = self->mPosX >> 3;
-    self->mModelAnim.mat4x3.m[10] = (self->mPosY + self->unk_4bc) >> 3;
+    self->mModelAnim.mat4x3.m[10] = (self->mPosY + self->mRideDipY) >> 3;
     self->mModelAnim.mat4x3.m[11] = self->mPosZ >> 3;
 }
 
@@ -222,7 +222,7 @@ extern "C" void func_ov036_0211224c(daObjRcCarpet_c *self)
 {
     self->mClsnMat = self->mModelAnim.mat4x3;
     self->mClsnMat.m[9] = self->mPosX;
-    self->mClsnMat.m[10] = self->mPosY + self->unk_4bc;
+    self->mClsnMat.m[10] = self->mPosY + self->mRideDipY;
     self->mClsnMat.m[11] = self->mPosZ;
     self->mMeshCollider.Transform(self->mClsnMat, self->mAngleY);
 }

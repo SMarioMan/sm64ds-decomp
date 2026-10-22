@@ -1,10 +1,11 @@
 #include "types.h"
 /* func_0200897c @ 0x0200897c, size 0x5c, ARM.
  * dCamera_c-cluster member taking (dCamera_c *self, void *arg).
- * Always runs func_02035414(arg). Then, if the camera's owner dActor_c
- * (self->owner @0x110) has actorID 0xbf (a specific actor type) AND a byte
- * flag at owner+0x6fb is set, runs func_02035428(arg). Finally always runs
- * func_02035468(arg).
+ * arg is a dBgCh query. Always runs dBgCh::StopIgnoringVanishSurfaces on it.
+ * Then, if the camera's owner dActor_c (self->owner @0x110) has actorID 0xbf
+ * (PLAYER) AND Player::mIsVanish (owner+0x6fb) is set, runs
+ * dBgCh::StartIgnoringVanishSurfaces. Finally always runs func_02035468(arg).
+ * This is a C file, so the dBgCh members are called by their mangled names.
  *
  * Codegen note: the (actorID == 0xbf) test is held in an enum-typed boolean.
  * Under -O4 -enum int this materializes the comparison as a full 32-bit 0/1
@@ -27,18 +28,18 @@ typedef struct dCamera_c {
     dActor_c *owner;       /* 0x110 */
 } dCamera_c;
 
-extern void func_02035414(void *arg);
-extern void func_02035428(void *arg);
+extern void _ZN5dBgCh26StopIgnoringVanishSurfacesEv(void *query);
+extern void _ZN5dBgCh27StartIgnoringVanishSurfacesEv(void *query);
 extern void func_02035468(void *arg);
 
 void func_0200897c(dCamera_c *self, void *arg) {
     dActor_c *owner;
     enum Bool isType;
-    func_02035414(arg);
+    _ZN5dBgCh26StopIgnoringVanishSurfacesEv(arg);
     owner = self->owner;
     isType = (enum Bool)(owner->actorID == 0xbf);
     if (isType && owner->flag6fb != 0) {
-        func_02035428(arg);
+        _ZN5dBgCh27StartIgnoringVanishSurfacesEv(arg);
     }
     func_02035468(arg);
 }

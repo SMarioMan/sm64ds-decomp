@@ -562,6 +562,22 @@
       "evidence": "include/OAM.h; notes/mwccarm-codegen.md section 6az; notes/agents/handoffs/entry-sync1018.md; ov075 0x021194e4 size0x15c links exactly with all six destinations verified."
     },
     {
+      "path": "src/unnamed/arm9/0200/func_0200897c.c",
+      "rule": "handspelled-member",
+      "match": "_ZN5dBgCh26StopIgnoringVanishSurfacesEv",
+      "count": 2,
+      "reason": "func_0200897c is a C translation unit (its enum-typed Bool local is the measured -enum int lever), so it cannot name the dBgCh member that clears the vanish-surface pass-through bit; it spells the mangled name once in the extern declaration and once at the call. Follow-up: retire with the C++ migration of this dCamera_c-cluster helper.",
+      "evidence": "The callee was func_02035414/func_02035428 before the dBgCh member rename; arm9 0x0200897c still byte-matches (rombuild 106/106 exact) and prepush_linkcheck resolves the call to the renamed symbol."
+    },
+    {
+      "path": "src/unnamed/arm9/0200/func_0200897c.c",
+      "rule": "handspelled-member",
+      "match": "_ZN5dBgCh27StartIgnoringVanishSurfacesEv",
+      "count": 2,
+      "reason": "func_0200897c is a C translation unit (its enum-typed Bool local is the measured -enum int lever), so it cannot name the dBgCh member that sets the vanish-surface pass-through bit; it spells the mangled name once in the extern declaration and once at the call. Follow-up: retire with the C++ migration of this dCamera_c-cluster helper.",
+      "evidence": "The callee was func_02035414/func_02035428 before the dBgCh member rename; arm9 0x0200897c still byte-matches (rombuild 106/106 exact) and prepush_linkcheck resolves the call to the renamed symbol."
+    },
+    {
       "path": "src/engine/particle/Particle_Manager.cpp",
       "rule": "unknown-field",
       "match": "unk_000",

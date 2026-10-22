@@ -7,8 +7,12 @@
  *   and externalizes it to the existing canonical ROM storage.
  * - decl_common.h stays out. Its spellings of these list heads
  *   disagree with the calls in this file.
- * - Heap locals stay void*. Virtual34 and Virtual38 still read
- *   the flags word at +4 and the heap top at +8.
+ * - Heap locals stay void*, cast to Heap at each use. Virtual34 and
+ *   Virtual38 test bit 4 of heapStart (+4: an arena that does not start
+ *   on a 0x20 boundary gets a 0x10-byte pad allocation) and read
+ *   heapSize (+8) less MaxAllocationUnitSize as the bytes in use. Older
+ *   notes called these the flags word and the heap top; Heap.h's
+ *   constructor evidence names them.
  * - func_0203* and data_020a4b* keep their linker names. They are
  *   the list operations and the four global list heads.
  *
@@ -64,14 +68,12 @@ extern void *func_0206e2f8(void *p, int fill, unsigned int size);
  * caller is emitted above the definition. */
 extern void *func_02043810(void *p);
 
-/* Heap's methods come from include/Heap.h. The heap locals stay `void *`
-   (and are cast at each call), deliberately: Virtual34 and Virtual38 both
-   reach two of its fields by raw offset (`+4` flags word, `+8` top-of-heap)
-   rather than by member, and reconciling those onto named members is a
-   per-function codegen change this round has no reason to risk.
-   include/Heap.h itself declares InitializeSolidHeapAsDefault as returning
-   `void *`. Memory::Deallocate and data_020a0eac come from include/fBase_c.h,
-   which needs them for its inline operator delete. */
+/* Heap's methods and fields come from include/Heap.h. The heap locals stay
+   `void *` (and are cast at each use): Virtual34 and Virtual38 read its
+   heapStart and heapSize through those casts. include/Heap.h itself
+   declares InitializeSolidHeapAsDefault as returning `void *`.
+   Memory::Deallocate and data_020a0eac come from include/fBase_c.h, which
+   needs them for its inline operator delete. */
 extern void *_ZN6Memory8AllocateEjiPN5mHeap6Heap_tE(unsigned int size, int align, void *heap);
 
 }
@@ -476,9 +478,8 @@ extern "C" void *func_02043810(void *base)
  * actor for destruction if none of them works.
  *
  * `this->v15()` in the legacy shadow is slot 15, which the real class names
- * OnHeapCreated -- so this now reads as the virtual it is. The heap's flags
- * word (+4) and top (+8) are still reached by raw offset: see the note on the
- * Heap note above. */
+ * OnHeapCreated -- so this now reads as the virtual it is. The heap's
+ * heapStart and heapSize are read as in the Heap note above. */
 // @symbol _ZN7fBase_c9Virtual34Ejj
 int fBase_c::Virtual34(u32 a, u32 b)
 {
@@ -491,7 +492,7 @@ int fBase_c::Virtual34(u32 a, u32 b)
     if (a != 0) {
         h = Heap::InitializeSolidHeapAsDefault(a, (Heap *)b, 0x20);
         if (h != 0) {
-            u32 flagA = (*(u32 *)((char *)h + 4)) & 0x10;
+            u32 flagA = (u32)((Heap *)h)->heapStart & 0x10;
             if (flagA != 0)
                 _ZN6Memory8AllocateEjiPN5mHeap6Heap_tE(0x10, 4, 0);
             int res = OnHeapCreated();
@@ -507,7 +508,7 @@ int fBase_c::Virtual34(u32 a, u32 b)
                 ((Heap *)h)->_Destroy();
                 h = 0;
             } else {
-                u32 topA = *(u32 *)((char *)h + 8);
+                u32 topA = ((Heap *)h)->heapSize;
                 avail = topA - ((Heap *)h)->MaxAllocationUnitSize();
                 avail = (avail + 0x1f) & ~0x1f;
                 if (a == avail) {
@@ -521,7 +522,7 @@ int fBase_c::Virtual34(u32 a, u32 b)
 
     if (h == 0) {
         h = Heap::InitializeSolidHeapAsDefault((u32)-1, (Heap *)b, 0x20);
-        u32 flagB = (*(u32 *)((char *)h + 4)) & 0x10;
+        u32 flagB = (u32)((Heap *)h)->heapStart & 0x10;
         if (flagB != 0)
             _ZN6Memory8AllocateEjiPN5mHeap6Heap_tE(0x10, 4, 0);
         a = (u32)OnHeapCreated();
@@ -536,13 +537,13 @@ int fBase_c::Virtual34(u32 a, u32 b)
             MarkForDestruction();
             return 0;
         }
-        u32 topB = *(u32 *)((char *)h + 8);
+        u32 topB = ((Heap *)h)->heapSize;
         avail = topB - ((Heap *)h)->MaxAllocationUnitSize();
         avail = (avail + 0x1f) & ~0x1f;
     }
 
     if (h != 0) {
-        u32 topH = *(u32 *)((char *)h + 8);
+        u32 topH = ((Heap *)h)->heapSize;
         void *h2 = 0;
         u32 availInH = topH - ((Heap *)h)->MaxAllocationUnitSize();
         u32 needed = ((availInH + 0xf) & ~0xf) + 0x30;
@@ -596,7 +597,7 @@ int fBase_c::Virtual38(u32 a, u32 b)
         void *h = Heap::InitializeSolidHeapAsDefault(a, (Heap *)b, 0x20);
         if (h != 0) {
             int ok;
-            int flag = (*(int *)((char *)h + 4)) & 0x10;
+            int flag = (int)((Heap *)h)->heapStart & 0x10;
             if (flag != 0)
                 _ZN6Memory8AllocateEjiPN5mHeap6Heap_tE(0x10, 4, 0);
             ok = OnHeapCreated();

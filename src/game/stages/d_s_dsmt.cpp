@@ -262,7 +262,7 @@ s32 dScDSMT_c::InitResources() {
     *(volatile u32 *)0x4001000 |= 0x10000;
     Enable3dEngines();
     ::Initialise3dGraphics(0);
-    data_0209d4a8 = &unk_050;
+    data_0209d4a8 = &mGraphCallback;
     dScene_c::SetFaders(&fader);
     data_0208ee44 = 1;
     GX::DisableAllBanks();

@@ -486,13 +486,13 @@ int daOwl_c::func_ov094_02136024()
 {
     Player *p = ClosestPlayer();
     if (p != 0 && p->mClimbClsn != 0) {
-        char *ip = (char *)&p->mPosX;
+        OwlVec *playerPos = (OwlVec *)&p->mPosX;
         OwlVec pp;
         OwlVec d;
         OwlVec *selfpos = (OwlVec *)&mPosX;
-        pp.x = *(int *)(ip + 0);
-        pp.y = *(int *)(ip + 4);
-        pp.z = *(int *)(ip + 8);
+        pp.x = playerPos->x;
+        pp.y = playerPos->y;
+        pp.z = playerPos->z;
         mPosY = p->mGroundY + 0x190000;
         mTalkTarget = p;
         Vec3_Sub(&d, selfpos, &pp);
@@ -623,8 +623,7 @@ int daOwl_c::Behavior()
     DecIfAbove0_Short(&mStateTimer);
     {
         State *o = mCurrentState;
-        /* Read the handler word. `&o->mMain` materialises the whole pmf. */
-        if (*(int *)((char *)o + 8) != 0) {
+        if (o->mMain != 0) {
             (this->*(o->mMain))();
         }
     }

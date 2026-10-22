@@ -1,4 +1,5 @@
 #include "types.h"
+#include "Ov007Sprite.h"
 extern void MultiStore16(u16 val, s16 *dst, int nbytes);
 extern void func_ov007_020c43bc(char *a, char *b);
 extern void func_ov007_020c4388(char *a, char *b);
@@ -7,6 +8,15 @@ extern char *data_ov007_02103460;
 extern s16 data_ov007_02103484[];
 extern char *data_ov007_0210346c;
 extern char *data_ov007_02103470;
+
+/* The window's two Ov007Sprites, both built by func_ov007_020b8714
+ * (func_ov007_020c44e4): data_ov007_02103460 draws the frame through the
+ * tilemap data_ov007_02103484 (drawFlags 8) that this function lays out,
+ * data_ov007_0210346c is the translucent plain quad inside it, 2 px
+ * smaller. The externs keep the tree's char * spelling; the typed views
+ * are reached through cast macros. */
+#define WINDOW_FRAME ((Ov007Sprite *)data_ov007_02103460)
+#define WINDOW_FILL ((Ov007Sprite *)data_ov007_0210346c)
 
 void func_ov007_020b88c0(void)
 {
@@ -20,9 +30,9 @@ void func_ov007_020b88c0(void)
     int r;
 
     {
-        char *G = data_ov007_02103460;
-        w = *(u16 *)(G + 0xc) >> 3;
-        h = *(u16 *)(G + 0xe) >> 3;
+        Ov007Sprite *G = WINDOW_FRAME;
+        w = G->width >> 3;
+        h = G->height >> 3;
     }
 
     v0 = 0xffff;
@@ -49,10 +59,10 @@ void func_ov007_020b88c0(void)
     data_ov007_02103484[botrow] = 8;
     data_ov007_02103484[(unsigned int)w * h - 1] = 0xa;
 
-    *(int *)(data_ov007_0210346c + 4) = *(int *)(data_ov007_02103460 + 4);
-    *(int *)(data_ov007_0210346c + 8) = *(int *)(data_ov007_02103460 + 8);
-    *(s16 *)(data_ov007_0210346c + 0xc) = (s16)(*(u16 *)(data_ov007_02103460 + 0xc) - 2);
-    *(s16 *)(data_ov007_0210346c + 0xe) = (s16)(*(u16 *)(data_ov007_02103460 + 0xe) - 2);
+    WINDOW_FILL->screenX = WINDOW_FRAME->screenX;
+    WINDOW_FILL->screenY = WINDOW_FRAME->screenY;
+    WINDOW_FILL->width = (s16)(WINDOW_FRAME->width - 2);
+    WINDOW_FILL->height = (s16)(WINDOW_FRAME->height - 2);
 
     func_ov007_020c43bc(data_ov007_0210346c, data_ov007_02103470);
     func_ov007_020c4388(data_ov007_0210346c, data_ov007_02103470);

@@ -42,7 +42,10 @@ struct daBgSnmHed_c : dActor_c {
     s32 mStateValue;                    /* 0x330 */
     u8 mSubstate;                       /* 0x334 */
     u8 mStateTimer;                     /* 0x335 */
-    u8 unk_336;                         /* 0x336 */
+    /* Set to 1 by daBgSnmBdy_c's State3 when the body comes within 380.0
+       of its landing point; State0 then switches to State2, the jump that
+       lands the head on the body. Was unk_336. */
+    u8 mBodyArriving;                   /* 0x336 */
     u8 mPad337;                         /* 0x337 */
 
     virtual ~daBgSnmHed_c();             /* slots 16, 17 */

@@ -920,7 +920,7 @@ int dEntObj_c::CleanupResources() {
         data_ov075_0211d3bc.Release();
         data_ov075_0211d3e4.Release();
     }
-    func_ov075_0211b3b8(&unk_e80);
+    func_ov075_0211b3b8(&mMesh);
     return 1;
 }
 
@@ -942,7 +942,7 @@ int dEntObj_c::Render() {
     if (mAnimActive) {
         mModelAnim.Render(0);
     }
-    func_ov075_0211b3d8(&unk_e80);
+    func_ov075_0211b3d8(&mMesh);
     Particle::RenderAll();
     return 1;
 }
@@ -971,7 +971,7 @@ int dEntObj_c::Behavior() {
                 position[0] = playerPosition->x;
                 position[1] = playerPosition->y;
                 position[2] = playerPosition->z;
-                func_ov075_0211ab38(&unk_e80, position);
+                func_ov075_0211ab38(&mMesh, position);
             }
             if (*present) {
                 if (player->func_ov075_021148f0() == 0)
@@ -1001,7 +1001,7 @@ int dEntObj_c::Behavior() {
             func_ov075_021151b4(localPlayer);
             mModelAnim.Advance();
         }
-        func_ov075_0211b418(&unk_e80);
+        func_ov075_0211b418(&mMesh);
     }
     return 1;
 }
@@ -1062,7 +1062,7 @@ int dEntObj_c::InitResources() {
                                                     0x1000, 0);
     }
 
-    func_ov075_0211b458((char *)&unk_e80, (int *)&data_ov075_0211c654, 0);
+    func_ov075_0211b458((char *)&mMesh, (int *)&data_ov075_0211c654, 0);
     mParticles.Initialise();
 
     player = mPlayers;

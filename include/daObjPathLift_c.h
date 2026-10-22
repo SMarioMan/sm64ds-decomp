@@ -17,9 +17,9 @@
  * include/PathLift.h), so dExtShadowModel_c is this class's only member with a
  * constructor/destructor of its own.
  *
- * unk_428, unk_42c, unk_43c and unk_440 are NOT this class's own fields --
- * they are all < 0x450, inside dPathLiftActor_c's own storage. This class's
- * methods reach them as inherited members.
+ * mWaitTimer, mRespawnAfterFall, mPathDirection and mPathSpeed are NOT this
+ * class's own fields -- they are all < 0x450, inside dPathLiftActor_c's own
+ * storage. This class's methods reach them as inherited members.
  *
  * mShadowMat is the drop-shadow matrix func_ov100_02146e70 fills and hands
  * to dActor_c::DropShadowScaleXYZ; 0x478 + 0x30 = 0x4a8. Kept as s32[12]:

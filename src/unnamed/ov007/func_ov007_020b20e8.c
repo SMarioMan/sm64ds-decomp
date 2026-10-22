@@ -1,16 +1,50 @@
+#include "types.h"
+
+/* The 0xd8-byte camera func_ov007_020c023c builds; names as in
+ * func_ov007_020c0128, only the slots this file touches. */
+typedef struct Ov007Camera {
+    char pad_00[8];
+    Vector3 eye;    /* 0x08 */
+    Vector3 target; /* 0x14 */
+    Vector3 up;     /* 0x20 */
+    int distance;   /* 0x2c */
+    char pad_30[0x14];
+    int viewMatrix[12]; /* 0x44: Matrix4x3 */
+    char pad_74[0x40];
+    int scaleW; /* 0xb4: PerspectiveW_'s scale (func_ov007_020b2160) */
+    char pad_b8[0x1c];
+    unsigned short fovy; /* 0xd4 */
+} Ov007Camera;
+
+typedef char Ov007Camera_fovy_must_be_at_0xd4[(int)&((Ov007Camera *)0)->fovy == 0xd4 ? 1 : -1];
+
+/* data_ov007_0210342c: the overlay's manager; names as in
+ * func_ov007_020b1fa4, only its cameras here. */
+typedef struct Ov007Work {
+    char pad_00[0x30];
+    Ov007Camera *cameras[2]; /* 0x30: func_ov007_020c023c */
+} Ov007Work;
+
 extern char* data_ov007_0210342c;
 extern void func_ov007_020c0128(char* c);
 extern void func_ov007_020bffb8(char* c);
 extern void func_ov007_020c0078(char* c);
 extern void _ZN3G3i7LookAt_EPK7Vector3S2_S2_bP9Matrix4x3(void* a, void* b, void* c, int d, void* e);
+
+/* The extern keeps the tree's char * spelling; the typed view is reached
+ * through a cast macro. */
+#define WORK ((Ov007Work *)data_ov007_0210342c)
+
+/* Resets the second camera and frames it: distance 8, fovy 0x4da, scaleW
+ * 0x12bb, then orbits the eye and rebuilds its view matrix. */
 void func_ov007_020b20e8(void){
-  char* g = data_ov007_0210342c;
-  char* t = *(char**)(g + 0x34);
-  func_ov007_020c0128(t);
-  *(int*)(t+0x2c) = 0x8000;
-  *(short*)(t+0xd4) = 0x4da;
-  *(int*)(t+0xb4) = 0x12bb;
-  func_ov007_020bffb8(t);
-  _ZN3G3i7LookAt_EPK7Vector3S2_S2_bP9Matrix4x3(t+8, t+0x20, t+0x14, 1, t+0x44);
-  func_ov007_020c0078(t);
+    Ov007Camera *cam = WORK->cameras[1];
+    func_ov007_020c0128((char *)cam);
+    cam->distance = 0x8000;
+    cam->fovy = 0x4da;
+    cam->scaleW = 0x12bb;
+    func_ov007_020bffb8((char *)cam);
+    _ZN3G3i7LookAt_EPK7Vector3S2_S2_bP9Matrix4x3(&cam->eye, &cam->up, &cam->target, 1,
+                                                 cam->viewMatrix);
+    func_ov007_020c0078((char *)cam);
 }

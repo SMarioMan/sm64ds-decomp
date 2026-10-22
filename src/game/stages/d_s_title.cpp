@@ -36,7 +36,6 @@
  *   static function takes no arguments. This is a call-site ABI leftover.
  * - The GX/G2 shadow namespaces have no header in the tree yet; they are
  *   carried from the legacy InitResources source unchanged.
- * - unk_050: the one own field, a repeat-delay counter. See dScTitle_c.h.
  */
 
 #include "dScTitle_c.h"
@@ -280,7 +279,7 @@ s32 dScTitle_c::CleanupResources() {
 /* [5] 0x020ad814 -- vtable slot 6. Level-select cursor update: on confirm
  * (or minigame-active flag) starts the scene fade / loads the picked level
  * from sTitleLevelEntries; otherwise moves the
- * cursor by row (+0x35) or column (+1) with repeat delay at unk_050,
+ * cursor by row (+0x35) or column (+1) with repeat delay at mRepeatDelay,
  * wrapping the index modulo 0x36. */
 // @symbol _ZN10dScTitle_c8BehaviorEv
 s32 dScTitle_c::Behavior() {
@@ -308,15 +307,15 @@ s32 dScTitle_c::Behavior() {
         u16 v = data_020a0e58[0];
         if (v & 0x40) {
             int h = data_020a0e58[1] & 0x40;
-            if (h != 0 || unk_050 == 0) {
-                unk_050 = h ? 8 : 2;
+            if (h != 0 || mRepeatDelay == 0) {
+                mRepeatDelay = h ? 8 : 2;
                 data_0209b2f4 += 0x35;
                 func_02012790(0);
             }
         } else if (v & 0x80) {
             int h = data_020a0e58[1] & 0x80;
-            if (h != 0 || unk_050 == 0) {
-                unk_050 = h ? 8 : 2;
+            if (h != 0 || mRepeatDelay == 0) {
+                mRepeatDelay = h ? 8 : 2;
                 data_0209b2f4 += 1;
                 func_02012790(0);
             }
@@ -324,7 +323,7 @@ s32 dScTitle_c::Behavior() {
     }
 
     data_0209b2f4 = data_0209b2f4 % 0x36;
-    DecIfAbove0_Short(&unk_050);
+    DecIfAbove0_Short(&mRepeatDelay);
     func_ov003_020ad6ec(this);
     return 1;
 }

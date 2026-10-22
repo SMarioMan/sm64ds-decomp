@@ -67,9 +67,13 @@ struct daMip_c : dEnemyBase_c {
     s32                          mColorVariant;         /* 0x420 */
     /* HorzAngle target; ApproachAngle reads it (StateSaveTalkMain / StateIdleMain). */
     s16                          mTargetAngY;           /* 0x424 */
-    u8                           unk_426;               /* 0x426 -- set to 2 the frame Yoshi eats it;
-                                                            read only as `!= 0`, to force the idle
-                                                            state and zero mHorzSpeed */
+    /* How the rabbit was caught: 0 still wild, 1 caught and set down
+       (StateReleasedInit), 2 eaten by Yoshi (Behavior's UpdateYoshiEat
+       branch). UpdateGrab sends a nonzero rabbit to Released instead of
+       Caught; Behavior forces it back into Caught and zeroes mHorzSpeed;
+       StateCaughtMain turns it to face the player, and at 2 it talks
+       without being held. */
+    u8 mCatchState; /* 0x426 */
     /* The talk sequence: 0 offers the message, 1 waits for the player's talk
        state to end, 2 is done. Behavior walks it in exactly that order. */
     u8                           mTalkState;            /* 0x427 */

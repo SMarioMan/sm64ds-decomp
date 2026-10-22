@@ -38,7 +38,7 @@
  *    func_ov060_021140c0; the new_var2 temp in func_ov060_02114858; the volatile locals in func_ov060_021135fc,
  *    func_ov060_021132a4, func_ov060_02112ee0 and func_ov060_02112bfc; the gotos
  *    in func_ov060_02115c1c; the data_ov060_02119294/6/8 + offset reads; and the
- *    opaque Obj view in Bowser_IsAnimAtLastFrame.
+ *    `obj` copy of this in Bowser_IsAnimAtLastFrame.
  *  - Callees known only by address, whose purpose this file does not establish:
  *    func_020092c4, func_0200fa04, func_ov002_020c56f0, func_ov060_02117a3c,
  *    func_02038408, func_02011d50, func_02011cfc. Likewise the trailing arguments
@@ -236,16 +236,6 @@ enum Bowser_CcFlag {
  *   0x18, 0x19, 0x1a charge      0x1b PLAY_ANIM_1B */
 enum Bowser_Anim {
     BOWSER_ANIM_IDLE = 0x10
-};
-
-/* The opaque view of the object that Bowser_IsAnimAtLastFrame walks: the
- * dExtFrameCtrl_c at 0x124 (the frame controller inside mModelAnim), typed
- * with the real class from dExtFrameCtrl_c.h. Calling through mModelAnim
- * instead reproduces the function but draws one @NNN fewer, renumbering
- * every pinned @NNN in this TU (measured). */
-struct Obj {
-    char pad[0x124];
-    dExtFrameCtrl_c anim;
 };
 
 /* Remaining local views and scalar ABI bridges from the legacy shards.
@@ -1126,11 +1116,14 @@ void daKpa_c::func_ov060_02115a84(char* counter){
 /*
 True once the model's animation has reached its last frame or will reach it on
 the coming advance (dExtFrameCtrl_c::Finished, or WillHitFrame(frame count - 1)).
-Takes the actor as the opaque Obj view; the dExtFrameCtrl_c sits at +0x124. */
+Reads mModelAnim through a copy of this: the plain this->mModelAnim form builds
+the same code but draws one @NNN fewer, renumbering every pinned @NNN in this
+TU (measured). */
 // Bowser_IsAnimAtLastFrame at 0x02115a30 -- matched byte-for-byte with mwccarm 1.2/sp2p3 (ov060).
 bool daKpa_c::Bowser_IsAnimAtLastFrame(){
-    Obj *obj = (Obj *)this;
-    return obj->anim.Finished() || obj->anim.WillHitFrame((unsigned short)(obj->anim.GetFrameCount() - 1));
+    daKpa_c *obj = this;
+    return obj->mModelAnim.Finished() ||
+           obj->mModelAnim.WillHitFrame((unsigned short)(obj->mModelAnim.GetFrameCount() - 1));
 }
 
 /* -------------------------------------------------------------------------- */

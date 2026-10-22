@@ -216,7 +216,7 @@ int daBgSnmHed_c::State0()
 {
     ApproachLinear(mAngleY, -0x4000, 0x514);
     mTextureSequence.Advance();
-    if (unk_336) {
+    if (mBodyArriving) {
         SetState(2);
         return 1;
     }

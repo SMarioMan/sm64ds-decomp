@@ -115,8 +115,10 @@ struct daObjMarioCap_c : dEnemyBase_c {
        starts at 0 and chases mPopScale, which itself settles to 1.0. Cleared
        once the cap is on the ground at full scale. */
     u8  mPopIn;                                 /* 0x402 */
-    /* Written 1 on entering the taken state; nothing in this file reads it. */
-    u8  unk_403;                                /* 0x403 */
+    /* 1 once the cap has entered the taken state: InitTaken stores it.
+       daJango_c reads it (d_a_jango.cpp) to let go of a carried cap that
+       has been taken. Was unk_403. */
+    u8 mTaken; /* 0x403 */
     /* Copy of the timer the sliding state's enter function loads into
        mStateTimer (types 5/7/9: 210 frames in game mode 1, otherwise 120;
        type 18: 300; type 11: 180). The blink compares against it. */

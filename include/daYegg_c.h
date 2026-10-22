@@ -115,8 +115,11 @@ struct daYegg_c : dEnemyBase_c {
     u8  mTargetedCount;                         /* 0x41c */
     u8  mWobbling;                              /* 0x41d -- state 2: the tilt is being
                                                    damped back to level */
-    u8  unk_41e;                                /* 0x41e -- DecIfAbove0_Byte countdown
-                                                   in state 0; only ever cleared here */
+    /* State 0 (func_ov002_020ed0d4) rebuilds the hold target and goal angles
+       only while DecIfAbove0_Byte finds this at 0, so a nonzero count holds
+       them frozen; the rebuild clears it. Nothing in the tree loads it
+       nonzero (medium confidence). Was unk_41e. */
+    u8 mHoldFreezeTimer; /* 0x41e */
     /* func_ov002_020ed6cc reloads this to 0xf whenever the egg moved 50 units or
        more since its last call, and counts it down otherwise. */
     u8  mStallTimer;                            /* 0x41f */

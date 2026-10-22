@@ -156,7 +156,7 @@ int daObjPathLift_c::InitResources()
         mGroundY = pos.y;
         if (rg.DetectClsn() != 0)
             mGroundY = rg.clsnY;
-        unk_42c = 1;
+        mRespawnAfterFall = 1;
         b = (data_0209f2d8 == 1);
         if (b)
             mTimer = 0xb4;

@@ -127,7 +127,13 @@ struct dEntObj_c : dBase_c {
     Model mModel;                    /* 0x86c */
     ModelAnim mModelAnim;            /* 0x8bc */
     UnknownVsPlayer mPlayers[4];     /* 0x920 */
-    u8 unk_e80;                      /* 0xe80 */
+    /* 0xe80 -- the 0xa8-byte entry-menu grid mesh (EntryMesh,
+       include/private/ov075_entry_mesh.h), spelled as its first byte plus
+       pad_e81. Every use passes its address to the mesh functions:
+       func_ov075_0211b458 (init), 0211b418 (behavior), 0211b3d8 (render),
+       0211ab38 (touch) and 0211b3b8 (cleanup: hands mVertices to
+       func_0203cbc0). Was unk_e80. */
+    u8 mMesh;
     u8 pad_e81[0xa7];
     s32 mCamPosX;      /* 0xf28 */
     s32 mCamPosY;      /* 0xf2c */

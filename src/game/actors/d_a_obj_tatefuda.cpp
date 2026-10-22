@@ -39,11 +39,6 @@
  *   block moves under 2004/b56.
  * - Behavior's `enum Bool` casts are a measured codegen view: plain `int`
  *   spellings size-DIFF under 2004/b56.
- * - Still raw: the holder's word at +0xc8 (Behavior, Render; inside
- *   dActor_c's unnamed 0xc5..0xcb padding), and the offsets into the holder's
- *   body Model (the func_ov002_020e496c result) in AttachToHolder: +0x14
- *   (ModelBase.h's data.transforms), +0x1c (mat4x3), +0x58 (the animation's
- *   current frame, per Player.h) and +0x2a0 (the matrix of bone 14).
  * - Unrecovered meanings: mFlags bits 0x100, 0x400, 0x2000, 0x4000 and
  *   0x4000000 as this class uses them, hit-flag bit 0x8000000 and bits
  *   0x2000/0x4000000 of mdCcAc_c.flags, the global words data_0209b454,
@@ -309,8 +304,8 @@ int daObjTatefuda_c::InitResources()
  *  1. If this sign's mFlags bit 0x4000000 and the same bit of the global word
  *     data_0209b454 are both set while a player holds it, tell that player to
  *     let go (Player::DropActor).
- *  2. If there is a holder, mFlags bit 0x4000 is set and the holder's word at
- *     +0xc8 is non-zero: put the sign on the holder (AttachToHolder), clip radius
+ *  2. If there is a holder, mFlags bit 0x4000 is set and the holder's
+ *     mCarryMatrix is non-zero: put the sign on the holder (AttachToHolder), clip radius
  *     0x20000 (32 units), and set mFlags bit 0x4000000. Otherwise clip radius
  *     0x10000 (16 units) and clear that bit.
  *  3. A hidden sign, or one that is fully pounded in (mPoundsLeft == 0), counts
@@ -1122,12 +1117,12 @@ int daObjTatefuda_c::OnAttacked1(dActor_c &other)
 /* -------------------------------------------------------------------------- */
 // @symbol AttachToHolder
 /* Put the sign on its holder (Behavior's step 2 and Render both call this).
- * `result` is the holder's current body model, from the shared helper
- * func_ov002_020e496c; m2 is the pointer stored at +0x14 of it, and the
- * Matrix4x3 at m2 + 0x2a0 is multiplied in. r4 picks a pose, 0 or 1: 1 when
+ * `body` is the holder's current body ModelAnim, from the shared helper
+ * func_ov002_020e496c; its mat4x3 is copied out and the matrix of bone 14
+ * (data.transforms[14]) is multiplied in. r4 picks a pose, 0 or 1: 1 when
  * the holder is front-sliding, or has lost its grabbed object while the body
- * model's word at +0x58 (the dExtFrameCtrl_c base's current frame, per Player.h)
- * satisfies (word << 4) >> 16 < 0xe. The X angle approaches data_ov002_020ff0d0[r4] by 0x1000 per call;
+ * animation's currFrame satisfies (frame << 4) >> 16 < 0xe. The X angle
+ * approaches data_ov002_020ff0d0[r4] by 0x1000 per call;
  * the sign copies the holder's Y angle (into mAngleY and mPrevAngleY); the
  * matrix is built from a translation, a pivot offset of 0x8c00 up and back, the
  * sign's rotation (Matrix4x3_ApplyInPlaceToRotationXYZExt), and a per-pose offset taken from the three tables at
@@ -1138,14 +1133,14 @@ void AttachToHolder(struct daObjTatefuda_c *self)
 {
     struct Vec3 v;
     struct Vec3 lo;
-    char *result = func_ov002_020e496c(self->mHoldingPlayer);
-    char *m2 = *(char **)(result + 0x14);
+    ModelAnim *body = (ModelAnim *)func_ov002_020e496c(self->mHoldingPlayer);
+    Matrix4x3 *bones = body->data.transforms;
     int r4 = 0;
 
     if (self->mHoldingPlayer->IsFrontSliding())
         r4 = 1;
     if (self->mHoldingPlayer->LostGrabbedObject()) {
-        if ((unsigned int)(*(int *)(result + 0x58) << 4) >> 0x10 < 0xe)
+        if ((unsigned int)(body->currFrame << 4) >> 0x10 < 0xe)
             r4 = 1;
     }
 
@@ -1154,8 +1149,8 @@ void AttachToHolder(struct daObjTatefuda_c *self)
     ((int *)&v)[0] = 0;
     ((int *)&v)[1] = 0;
     ((int *)&v)[2] = 0;
-    *(struct RawMatrix4x3 *)&data_020a0e68 = *(struct RawMatrix4x3 *)(result + 0x1c);
-    MulMat4x3Mat4x3(m2 + 0x2a0, &data_020a0e68, &data_020a0e68);
+    *(struct RawMatrix4x3 *)&data_020a0e68 = *(struct RawMatrix4x3 *)&body->mat4x3;
+    MulMat4x3Mat4x3(&bones[14], &data_020a0e68, &data_020a0e68);
     v.x = data_020a0e68.t.x;
     v.y = data_020a0e68.t.y;
     v.z = data_020a0e68.t.z;

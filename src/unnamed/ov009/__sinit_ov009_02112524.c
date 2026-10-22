@@ -1,8 +1,15 @@
+#include "types.h"
+
 /* Runtime asset handles resolved through the overlay 0 file table. */
 enum sinit_ov009_02112524_AssetId {
     ASSET_MC_WATER_BMD = 0x0693,
     ASSET_MC_WATER_KCL = 0x0694
 };
+
+/* These ov009 globals are Vector3s (x, y, z in fx32): each one is registered
+ * for destruction with Vector3's destructor below. Most blocks keep their `p`
+ * local: spelling them through VEC3() like the others changes the .text bytes. */
+#define VEC3(v) ((Vector3 *)(v))
 
 extern void func_02017acc(void*, int);
 extern void func_02017b4c(void*, int);
@@ -63,146 +70,146 @@ void __sinit_ov009_02112524(void)
     func_020731dc(data_ov009_02113c68, func_02017ab4, data_ov009_02113c78);
     func_02017b4c(data_ov009_02113c70, ASSET_MC_WATER_KCL);
     func_020731dc(data_ov009_02113c70, SharedFilePtr_Destruct_Clsn, data_ov009_02113cc0);
-    *(unsigned int*)data_ov009_02113d8c = 0xfe94e000;
-    *(unsigned int*)((char*)data_ov009_02113d8c + 4) = (unsigned int)-0x5a000;
-    *(unsigned int*)((char*)data_ov009_02113d8c + 8) = 0xff60a000;
+    VEC3(data_ov009_02113d8c)->x = 0xfe94e000;
+    VEC3(data_ov009_02113d8c)->y = (unsigned int)-0x5a000;
+    VEC3(data_ov009_02113d8c)->z = 0xff60a000;
     func_020731dc(data_ov009_02113d8c, _ZN7Vector3D1Ev, data_ov009_02113d74);
     {
-        unsigned int *p = (unsigned int*)data_ov009_02113d98;
-        p[0] = 0xfea20000;
-        p[1] = (unsigned int)-0x5a000;
-        p[2] = 0xff52e000;
+        Vector3 *p = (Vector3 *)data_ov009_02113d98;
+        p->x = 0xfea20000;
+        p->y = (unsigned int)-0x5a000;
+        p->z = 0xff52e000;
         func_020731dc(p, _ZN7Vector3D1Ev, data_ov009_02113d80);
     }
     {
-        unsigned int *p = (unsigned int*)data_ov009_02113da4;
-        p[0] = (unsigned int)-0x1540000;
-        p[1] = (unsigned int)-0x5a000;
-        p[2] = 0xff43e000;
+        Vector3 *p = (Vector3 *)data_ov009_02113da4;
+        p->x = (unsigned int)-0x1540000;
+        p->y = (unsigned int)-0x5a000;
+        p->z = 0xff43e000;
         func_020731dc(p, _ZN7Vector3D1Ev, data_ov009_02113d08);
     }
     {
-        unsigned int *p = (unsigned int*)data_ov009_02113db0;
-        p[0] = 0xfeb56000;
-        p[1] = (unsigned int)-0x5a000;
-        p[2] = 0xff344000;
+        Vector3 *p = (Vector3 *)data_ov009_02113db0;
+        p->x = 0xfeb56000;
+        p->y = (unsigned int)-0x5a000;
+        p->z = 0xff344000;
         func_020731dc(p, _ZN7Vector3D1Ev, data_ov009_02113d14);
     }
     {
-        unsigned int *p = (unsigned int*)data_ov009_02113dbc;
-        p[0] = 0xfebb0000;
-        p[1] = (unsigned int)-0x5a000;
-        p[2] = 0xff236000;
+        Vector3 *p = (Vector3 *)data_ov009_02113dbc;
+        p->x = 0xfebb0000;
+        p->y = (unsigned int)-0x5a000;
+        p->z = 0xff236000;
         func_020731dc(p, _ZN7Vector3D1Ev, data_ov009_02113d5c);
     }
     {
-        unsigned int *p = (unsigned int*)data_ov009_02113dc8;
-        p[0] = 0xfebe2000;
-        p[1] = (unsigned int)-0x5a000;
-        p[2] = 0xff114000;
+        Vector3 *p = (Vector3 *)data_ov009_02113dc8;
+        p->x = 0xfebe2000;
+        p->y = (unsigned int)-0x5a000;
+        p->z = 0xff114000;
         func_020731dc(p, _ZN7Vector3D1Ev, data_ov009_02113d50);
     }
     {
-        unsigned int *p = (unsigned int*)data_ov009_02113dd4;
-        p[0] = 0xfebe2000;
-        p[1] = (unsigned int)-0x5a000;
-        p[2] = 0xfeff2000;
+        Vector3 *p = (Vector3 *)data_ov009_02113dd4;
+        p->x = 0xfebe2000;
+        p->y = (unsigned int)-0x5a000;
+        p->z = 0xfeff2000;
         func_020731dc(p, _ZN7Vector3D1Ev, data_ov009_02113d44);
     }
     {
-        *(unsigned int*)((char*)data_ov009_02113e34 + 0) = 0xfead4000;
-        *(unsigned int*)((char*)data_ov009_02113e34 + 4) = (unsigned int)-0x320000;
-        *(unsigned int*)((char*)data_ov009_02113e34 + 8) = 0xff682000;
+        VEC3(data_ov009_02113e34)->x = 0xfead4000;
+        VEC3(data_ov009_02113e34)->y = (unsigned int)-0x320000;
+        VEC3(data_ov009_02113e34)->z = 0xff682000;
         func_020731dc(data_ov009_02113e34, _ZN7Vector3D1Ev, data_ov009_02113d2c);
     }
     {
-        unsigned int *p = (unsigned int*)data_ov009_02113e40;
-        p[0] = 0xfebb0000;
-        p[1] = (unsigned int)-0x320000;
-        p[2] = 0xff5ba000;
+        Vector3 *p = (Vector3 *)data_ov009_02113e40;
+        p->x = 0xfebb0000;
+        p->y = (unsigned int)-0x320000;
+        p->z = 0xff5ba000;
         func_020731dc(p, _ZN7Vector3D1Ev, data_ov009_02113d20);
     }
     {
-        unsigned int *p = (unsigned int*)data_ov009_02113e4c;
-        p[0] = 0xfec5a000;
-        p[1] = (unsigned int)-0x320000;
-        p[2] = 0xff4d4000;
+        Vector3 *p = (Vector3 *)data_ov009_02113e4c;
+        p->x = 0xfec5a000;
+        p->y = (unsigned int)-0x320000;
+        p->z = 0xff4d4000;
         func_020731dc(p, _ZN7Vector3D1Ev, data_ov009_02113c90);
     }
     {
-        unsigned int *p = (unsigned int*)data_ov009_02113e58;
-        p[0] = 0xfecdc000;
-        p[1] = (unsigned int)-0x320000;
-        p[2] = (unsigned int)-0xc30000;
+        Vector3 *p = (Vector3 *)data_ov009_02113e58;
+        p->x = 0xfecdc000;
+        p->y = (unsigned int)-0x320000;
+        p->z = (unsigned int)-0xc30000;
         func_020731dc(p, _ZN7Vector3D1Ev, data_ov009_02113c84);
     }
     {
-        unsigned int *p = (unsigned int*)data_ov009_02113e64;
-        p[0] = 0xfed54000;
-        p[1] = (unsigned int)-0x320000;
-        p[2] = 0xff2cc000;
+        Vector3 *p = (Vector3 *)data_ov009_02113e64;
+        p->x = 0xfed54000;
+        p->y = (unsigned int)-0x320000;
+        p->z = 0xff2cc000;
         func_020731dc(p, _ZN7Vector3D1Ev, data_ov009_02113cfc);
     }
     {
-        unsigned int *p = (unsigned int*)data_ov009_02113e70;
-        p[0] = 0xfed54000;
-        p[1] = (unsigned int)-0x320000;
-        p[2] = 0xff25e000;
+        Vector3 *p = (Vector3 *)data_ov009_02113e70;
+        p->x = 0xfed54000;
+        p->y = (unsigned int)-0x320000;
+        p->z = 0xff25e000;
         func_020731dc(p, _ZN7Vector3D1Ev, data_ov009_02113cf0);
     }
     {
-        unsigned int *p = (unsigned int*)data_ov009_02113e7c;
-        p[0] = 0xfed68000;
-        p[1] = (unsigned int)-0x320000;
-        p[2] = 0xff1aa000;
+        Vector3 *p = (Vector3 *)data_ov009_02113e7c;
+        p->x = 0xfed68000;
+        p->y = (unsigned int)-0x320000;
+        p->z = 0xff1aa000;
         func_020731dc(p, _ZN7Vector3D1Ev, data_ov009_02113cb4);
     }
     {
-        *(unsigned int*)((char*)data_ov009_02113de0 + 0) = 0xfeb2e000;
-        *(unsigned int*)((char*)data_ov009_02113de0 + 4) = 0xffbd2000;
-        *(unsigned int*)((char*)data_ov009_02113de0 + 8) = (unsigned int)-0x960000;
+        VEC3(data_ov009_02113de0)->x = 0xfeb2e000;
+        VEC3(data_ov009_02113de0)->y = 0xffbd2000;
+        VEC3(data_ov009_02113de0)->z = (unsigned int)-0x960000;
         func_020731dc(data_ov009_02113de0, _ZN7Vector3D1Ev, data_ov009_02113ccc);
     }
     {
-        unsigned int *p = (unsigned int*)data_ov009_02113dec;
-        p[0] = 0xfebf6000;
-        p[1] = 0xffbd2000;
-        p[2] = 0xff5ce000;
+        Vector3 *p = (Vector3 *)data_ov009_02113dec;
+        p->x = 0xfebf6000;
+        p->y = 0xffbd2000;
+        p->z = 0xff5ce000;
         func_020731dc(p, _ZN7Vector3D1Ev, data_ov009_02113cd8);
     }
     {
-        unsigned int *p = (unsigned int*)data_ov009_02113df8;
-        p[0] = 0xfec96000;
-        p[1] = 0xffbd2000;
-        p[2] = 0xff4e8000;
+        Vector3 *p = (Vector3 *)data_ov009_02113df8;
+        p->x = 0xfec96000;
+        p->y = 0xffbd2000;
+        p->z = 0xff4e8000;
         func_020731dc(p, _ZN7Vector3D1Ev, data_ov009_02113ce4);
     }
     {
-        unsigned int *p = (unsigned int*)data_ov009_02113e04;
-        p[0] = 0xfed0e000;
-        p[1] = 0xffbd2000;
-        p[2] = 0xff3ee000;
+        Vector3 *p = (Vector3 *)data_ov009_02113e04;
+        p->x = 0xfed0e000;
+        p->y = 0xffbd2000;
+        p->z = 0xff3ee000;
         func_020731dc(p, _ZN7Vector3D1Ev, data_ov009_02113d68);
     }
     {
-        unsigned int *p = (unsigned int*)data_ov009_02113e10;
-        p[0] = 0xfed7c000;
-        p[1] = 0xffbd2000;
-        p[2] = 0xff2f4000;
+        Vector3 *p = (Vector3 *)data_ov009_02113e10;
+        p->x = 0xfed7c000;
+        p->y = 0xffbd2000;
+        p->z = 0xff2f4000;
         func_020731dc(p, _ZN7Vector3D1Ev, data_ov009_02113ca8);
     }
     {
-        unsigned int *p = (unsigned int*)data_ov009_02113e1c;
-        p[0] = 0xfed9a000;
-        p[1] = 0xffbd2000;
-        p[2] = 0xff1e6000;
+        Vector3 *p = (Vector3 *)data_ov009_02113e1c;
+        p->x = 0xfed9a000;
+        p->y = 0xffbd2000;
+        p->z = 0xff1e6000;
         func_020731dc(p, _ZN7Vector3D1Ev, data_ov009_02113d38);
     }
     {
-        unsigned int *p = (unsigned int*)data_ov009_02113e28;
-        p[0] = 0xfed72000;
-        p[1] = 0xffbd2000;
-        p[2] = 0xff0ce000;
+        Vector3 *p = (Vector3 *)data_ov009_02113e28;
+        p->x = 0xfed72000;
+        p->y = 0xffbd2000;
+        p->z = 0xff0ce000;
         func_020731dc(p, _ZN7Vector3D1Ev, data_ov009_02113c9c);
     }
 }

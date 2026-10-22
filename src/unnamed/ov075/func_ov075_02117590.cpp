@@ -1,4 +1,5 @@
 //cpp
+#include "dScEntry_c.h"
 typedef int Fix12;
 struct OamAttr;
 struct OAM {
@@ -19,11 +20,11 @@ extern "C" char data_ov075_0211c790[];
 extern "C" void func_ov075_02117590(char* c)
 {
     int* tbl = data_ov075_0211c9cc[func_0200f0bc()];
-    OamAttr* attr = (OamAttr*)tbl[*(int*)(c + 0x268)];
+    OamAttr *attr = (OamAttr *)tbl[((dScEntry_c *)c)->mStepWork[0]];
     _ZN3OAM6RenderEbP7OamAttriiii5Fix12IiES3_ii(false, attr, 0x80, 0x60, -1, -1, 0x1000, (OamAttr*)0x1000, 0, -1);
 
     int a1, a2;
-    unsigned char idx = *(unsigned char*)(c + 0x281);
+    unsigned char idx = ((dScEntry_c *)c)->mSelectedIcon;
     if (idx < 3) {
         a2 = (short)(idx * 0x28 + 0x30);
         a1 = 0x26;

@@ -23,8 +23,8 @@
  *   struct, so no shared spelling agrees with them yet.
  * - data_ov002_0210d9f0 is a SharedFilePtr, read here through a local
  *   PathStuff struct because include/SharedFilePtr.h declares no fields.
- * - unk_42c is the respawn-after-fall flag (see include/PathLift.h); the
- *   rename, and IsUnk42cSet's with it, reach into the leaf actors' files.
+ * - IsUnk42cSet keeps its symbol-bound name; the field it reads is
+ *   mRespawnAfterFall (see include/PathLift.h).
  * - StateFall keeps two views of mFallAngle: a signed read and an
  *   (int)-laundered unsigned read-modify-write. Collapsing both into
  *   mFallAngle makes mwcc reuse the signed load and drops 12 bytes.
@@ -518,7 +518,7 @@ int dPathLiftActor_c::Param08ModeIs1Or2() const
 /* The byte local is load-bearing: without it the TU's compiler-numbered
    objects come out one short of the @851..@861 the manifest renames. */
 int dPathLiftActor_c::IsUnk42cSet() const {
-    u8 respawn = unk_42c;
+    u8 respawn = mRespawnAfterFall;
     return respawn != 0;
 }
 

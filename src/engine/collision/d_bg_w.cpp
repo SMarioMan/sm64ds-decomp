@@ -5,9 +5,9 @@
  * derived colliders. Their original member/free-function form is not
  * established by the address names. Definitions retain their source order.
  * ShouldPassThroughImpl keeps the int* view of CLPS and the unsigned char*
- * view of the query. data_020a0c80 (declared in dBgW.h) is the 0x18-entry
- * enabled-collider table Enable fills and dScStage_c::ResetMeshColliders
- * clears.
+ * view of the query for the flag tests that are still free functions.
+ * data_020a0c80 (declared in dBgW.h) is the 0x18-entry enabled-collider
+ * table Enable fills and dScStage_c::ResetMeshColliders clears.
  */
 /* dBgW: root of the KCL collider family. Type name 0x02099370, typeinfo
  * 0x02099378, vtable 0x02099388, 13 slots. This TU also defines
@@ -92,10 +92,11 @@ bool dBgCh::ShouldPassThroughImpl(void *unused, const CLPS &surfaceProperties, c
                                   bool checkType14) {
     /* Each special surface asks whether the query detects its kind, through
        dBgCh::mDetectFlags: a water surface (CLPS 0x20) needs the water bit
-       (2), CLPS bit 0x02000000 needs the toxic bit (8). A surface no rule
-       covers stops only queries that detect ordinary ground (bit 1). The
-       CLPS predicates and the checkType14 tests are C helpers taking raw word and
-       byte views. */
+       (2), CLPS bit 0x02000000 needs the toxic bit (8). Surface types 0x11
+       and 0x14 run the other way: the query passes through them when it is
+       ignoring them. A surface no rule covers stops only queries that detect
+       ordinary ground (bit 1). The CLPS predicates and the remaining flag
+       tests are C helpers taking raw word and byte views. */
     int *clpsWords = (int *)&surfaceProperties;
     unsigned char *queryBytes = (unsigned char *)&query;
     bool ruleApplies = false;
@@ -122,12 +123,12 @@ bool dBgCh::ShouldPassThroughImpl(void *unused, const CLPS &surfaceProperties, c
     }
     if (func_02037e38((unsigned int *)clpsWords) == 0x11) {
         ruleApplies = true;
-        if (func_02035408(queryBytes) != 0)
+        if (query.IsIgnoringVanishSurfaces())
             return true;
     }
     if (checkType14 && func_02037e38((unsigned int *)clpsWords) == 0x14) {
         ruleApplies = true;
-        if (func_020353d4(queryBytes) != 0)
+        if (query.IsIgnoringType14Walls())
             return true;
     }
     if (!ruleApplies && func_020354b0(queryBytes) == 0)

@@ -71,7 +71,11 @@ typedef struct FileShareParentArea {
     /* 0x270c -- children owed a reply, by AID bit (func_020412f0,
      * func_02041d28 set; func_02041e14 sends and clears) */
     int mReplyPending;
-    unsigned char pad_2710[0x4];
+    /* 0x2710 -- children answered as one group, by AID bit: func_02041e14
+     * sends to exactly this set once all of it is in mReplyPending, leaves
+     * it out of any other send, and clears it when a member's reply no
+     * longer matches; func_02040c34 zeroes it */
+    int mReplyGroup;
     /* 0x2714 -- func_02041e14 sets it after a send and waits; the send
      * callback func_02042160 clears it */
     int mReplySending;

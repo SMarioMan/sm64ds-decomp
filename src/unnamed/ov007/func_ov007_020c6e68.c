@@ -42,9 +42,8 @@ typedef struct Ov007Camera {
 } Ov007Camera;
 
 /* The 0xd0-byte touch picker func_ov007_020c690c builds (names as in that
- * file). +0x40/+0x44, the per-group links appended after the per-point ones,
- * have no reader yet and stay raw; so do params' first word (handed to
- * func_ov007_020c798c) and its +0x1c factor. */
+ * file). params' first word (handed to func_ov007_020c798c) and its +0x1c
+ * factor have no reader that names them and stay raw. */
 typedef struct Ov007Picker {
     char pad_00[0x1c];
     char *params; /* 0x1c: a4 of func_ov007_020c690c */
@@ -55,11 +54,17 @@ typedef struct Ov007Picker {
     void ***groupLinks;          /* 0x34: per group, one link per point from posPoint */
     Ov007StrokePath **groups;    /* 0x38: committed strokes (func_ov007_020c6d20) */
     Ov007PointList **pointLists; /* 0x3c: func_ov007_020c798c, per group */
-    char pad_40[0x2c];
+    /* 0x40: per group, the link appended here after the per-point ones;
+     * func_ov007_020c6174 measures it from the group's first point */
+    void **headLinks;
+    void **tailLinks; /* 0x44: likewise from the group's last point */
+    char pad_48[0x24];
     void *posPoint; /* 0x6c: func_ov007_020c844c's Point over pos */
     char pad_70[0x38];
     Ov007Camera *camera; /* 0xa8 */
 } Ov007Picker;
+
+typedef char Ov007Picker_camera_must_be_at_0xa8[(int)&((Ov007Picker *)0)->camera == 0xa8 ? 1 : -1];
 
 /* The parameter keeps func_ov007_020c6d20's char * spelling (the
  * declaration-agreement gate); the typed view is a local. */
@@ -135,7 +140,7 @@ void func_ov007_020c6e68(char *picker, int idx) {
         } while (i < count);
     }
 
-    (*(void ***)(picker + 0x40))[idx] = func_ov007_020c80a4();
-    (*(void ***)(picker + 0x44))[idx] = func_ov007_020c80a4();
+    self->headLinks[idx] = func_ov007_020c80a4();
+    self->tailLinks[idx] = func_ov007_020c80a4();
     func_ov007_020c7804(sb);
 }

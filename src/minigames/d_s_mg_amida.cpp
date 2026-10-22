@@ -1578,7 +1578,7 @@ void dScMgAmida_c::SetupRound() {
     if (IsVariant2() != 0) {
         mWalkerCount = 4;
     } else {
-        mWalkerCount = *(int *)(sAmidaPatterns + mPatternIndex * 0x1c);
+        mWalkerCount = ((AmidaPattern *)sAmidaPatterns)[mPatternIndex].walkerCount;
     }
 
     mScrollSpeed = ((*(int *)(sAmidaPatternSpeeds + mPatternIndex * 0x1c) - 1) * 5) + 0xb;

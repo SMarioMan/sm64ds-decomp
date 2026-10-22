@@ -4781,11 +4781,11 @@ matched: yes</title></rect><rect x="307.61" y="433.87" width="13.82" height="7.7
 module: arm9
 addr: 0x020352b4
 size: 160 bytes
-matched: yes</title></rect><rect x="5.00" y="441.63" width="14.80" height="2.90" fill="#3fa75a" stroke="#2c7a41" stroke-width="0.4"><title>func_02035354
+matched: yes</title></rect><rect x="5.00" y="441.63" width="14.80" height="2.90" fill="#3fa75a" stroke="#2c7a41" stroke-width="0.4"><title>_ZNK5dBgCh9IsOwnedByEP8dActor_c
 module: arm9
 addr: 0x02035354
 size: 64 bytes
-matched: yes</title></rect><rect x="19.80" y="441.63" width="6.48" height="2.90" fill="#3fa75a" stroke="#2c7a41" stroke-width="0.4"><title>func_02035394
+matched: yes</title></rect><rect x="19.80" y="441.63" width="6.48" height="2.90" fill="#3fa75a" stroke="#2c7a41" stroke-width="0.4"><title>_ZN5dBgChaSERKS_
 module: arm9
 addr: 0x02035394
 size: 28 bytes
@@ -4793,27 +4793,27 @@ matched: yes</title></rect><rect x="26.28" y="441.63" width="8.33" height="2.90"
 module: arm9
 addr: 0x020353b0
 size: 36 bytes
-matched: yes</title></rect><rect x="34.61" y="441.63" width="2.78" height="2.90" fill="#3fa75a" stroke="#2c7a41" stroke-width="0.4"><title>func_020353d4
+matched: yes</title></rect><rect x="34.61" y="441.63" width="2.78" height="2.90" fill="#3fa75a" stroke="#2c7a41" stroke-width="0.4"><title>_ZNK5dBgCh21IsIgnoringType14WallsEv
 module: arm9
 addr: 0x020353d4
 size: 12 bytes
-matched: yes</title></rect><rect x="37.38" y="441.63" width="4.63" height="2.90" fill="#3fa75a" stroke="#2c7a41" stroke-width="0.4"><title>func_020353e0
+matched: yes</title></rect><rect x="37.38" y="441.63" width="4.63" height="2.90" fill="#3fa75a" stroke="#2c7a41" stroke-width="0.4"><title>_ZN5dBgCh23StopIgnoringType14WallsEv
 module: arm9
 addr: 0x020353e0
 size: 20 bytes
-matched: yes</title></rect><rect x="42.01" y="441.63" width="4.63" height="2.90" fill="#3fa75a" stroke="#2c7a41" stroke-width="0.4"><title>func_020353f4
+matched: yes</title></rect><rect x="42.01" y="441.63" width="4.63" height="2.90" fill="#3fa75a" stroke="#2c7a41" stroke-width="0.4"><title>_ZN5dBgCh24StartIgnoringType14WallsEv
 module: arm9
 addr: 0x020353f4
 size: 20 bytes
-matched: yes</title></rect><rect x="46.63" y="441.63" width="2.78" height="2.90" fill="#3fa75a" stroke="#2c7a41" stroke-width="0.4"><title>func_02035408
+matched: yes</title></rect><rect x="46.63" y="441.63" width="2.78" height="2.90" fill="#3fa75a" stroke="#2c7a41" stroke-width="0.4"><title>_ZNK5dBgCh24IsIgnoringVanishSurfacesEv
 module: arm9
 addr: 0x02035408
 size: 12 bytes
-matched: yes</title></rect><rect x="49.41" y="441.63" width="4.63" height="2.90" fill="#3fa75a" stroke="#2c7a41" stroke-width="0.4"><title>func_02035414
+matched: yes</title></rect><rect x="49.41" y="441.63" width="4.63" height="2.90" fill="#3fa75a" stroke="#2c7a41" stroke-width="0.4"><title>_ZN5dBgCh26StopIgnoringVanishSurfacesEv
 module: arm9
 addr: 0x02035414
 size: 20 bytes
-matched: yes</title></rect><rect x="54.04" y="441.63" width="4.63" height="2.90" fill="#3fa75a" stroke="#2c7a41" stroke-width="0.4"><title>func_02035428
+matched: yes</title></rect><rect x="54.04" y="441.63" width="4.63" height="2.90" fill="#3fa75a" stroke="#2c7a41" stroke-width="0.4"><title>_ZN5dBgCh27StartIgnoringVanishSurfacesEv
 module: arm9
 addr: 0x02035428
 size: 20 bytes

@@ -13,6 +13,18 @@ extern u32 data_0209287c[];
 extern u32 data_0209fd5c[];
 extern u32 data_0209283c[];
 
+/* The current message's 8-byte table entry (data_0209fd00 points into the
+ * table at data_0209fd08, idx * 8; Message3.cpp sets it). Message3.cpp reads
+ * +4 as the box width in pixels ((width + 7) / 8 tile columns into
+ * data_0209fc78) and +6 as the number of text lines: it counts lines against
+ * it and sizes the box from (lineCount * 2 + 1) * 8. Here each line is two
+ * tile rows. Only the fields these readers touch are spelled out. */
+typedef struct MessageEntry {
+    s32 textOffset; /* 0x0 */
+    u16 width;      /* 0x4 */
+    u8 lineCount;   /* 0x6 */
+} MessageEntry;
+
 void func_02031428(void)
 {
     int cnt;
@@ -23,7 +35,7 @@ void func_02031428(void)
 
     base = func_02054d88() + 0x4000;
 
-    cnt = (int)(*(u8 *)(data_0209fd00 + 6)) << 1;
+    cnt = (int)((MessageEntry *)data_0209fd00)->lineCount << 1;
     i = 0;
     if (cnt > 0) {
         do {
@@ -31,22 +43,23 @@ void func_02031428(void)
             j = 0;
             if (rows > 0) {
                 do {
-                    MultiCopy_Int((int *)(base + 0x10), (int *)base, 0x10);
-                    if (i == (((int)(*(u8 *)(data_0209fd00 + 6)) << 1) - 1)) {
-                        *(int *)(base + 0x10) = 0;
-                        *(int *)(base + 0x14) = 0;
-                        *(int *)(base + 0x18) = 0;
-                        *(int *)(base + 0x1c) = 0;
+                    /* scroll the tile up four pixel rows (4 bytes per 4bpp row) */
+                    MultiCopy_Int(&((int *)base)[4], (int *)base, 0x10);
+                    if (i == (((int)((MessageEntry *)data_0209fd00)->lineCount << 1) - 1)) {
+                        ((int *)base)[4] = 0;
+                        ((int *)base)[5] = 0;
+                        ((int *)base)[6] = 0;
+                        ((int *)base)[7] = 0;
                     } else {
                         int rc2 = data_0209fc78;
-                        MultiCopy_Int((int *)(base + rc2 * 0x20), (int *)(base + 0x10), 0x10);
+                        MultiCopy_Int((int *)(base + rc2 * 0x20), &((int *)base)[4], 0x10);
                     }
                     rows = data_0209fc78;
                     j++;
                     base += 0x20;
                 } while (j < rows);
             }
-            cnt = (int)(*(u8 *)(data_0209fd00 + 6)) << 1;
+            cnt = (int)((MessageEntry *)data_0209fd00)->lineCount << 1;
             i++;
         } while (i < cnt);
     }
@@ -83,10 +96,12 @@ void func_02031428(void)
                 i3 = rowIdx + 3;
                 *(u32 *)(((u64)(int)((char *)&dst[wordIdx] + 12) & ~0ULL)) = (data_0209287c[rem] & data_0209fd5c[i3]) | *(u32 *)(((u64)(int)((char *)&dst[wordIdx] + 12) & ~0ULL));
                 if (rem != 0) {
-                    *(u32 *)((char *)&dst[wordIdx] + 0x20) = data_0209283c[rem] & data_0209fd5c[rowIdx + 0];
-                    *(u32 *)((char *)&dst[wordIdx] + 0x24) = data_0209283c[rem] & data_0209fd5c[rowIdx + 1];
-                    *(u32 *)((char *)&dst[wordIdx] + 0x28) = data_0209283c[rem] & data_0209fd5c[i2];
-                    *(u32 *)((char *)&dst[wordIdx] + 0x2c) = data_0209283c[rem] & data_0209fd5c[i3];
+                    /* the next tile's first four rows (8 words on); dst[wordIdx + 8]
+                     * builds 28 bytes longer */
+                    (&dst[wordIdx])[8] = data_0209283c[rem] & data_0209fd5c[rowIdx + 0];
+                    (&dst[wordIdx])[9] = data_0209283c[rem] & data_0209fd5c[rowIdx + 1];
+                    (&dst[wordIdx])[10] = data_0209283c[rem] & data_0209fd5c[i2];
+                    (&dst[wordIdx])[11] = data_0209283c[rem] & data_0209fd5c[i3];
                 }
                 col = (col + *inc) & 0xff;
                 rowIdx += 0x10;

@@ -94,7 +94,10 @@ struct daObjFallBlock_c : dBgActor_c {
     u8   mShakeRequested;               /* 0x33e */
     u8   mRespawnDelay;                 /* 0x33f */
     u8   mReady;                        /* 0x340 */
-    u8   unk_341;                       /* 0x341 -- grouping latch, written by daObjFallBlock_c_LinkGroup */
+    /* daObjFallBlock_c_LinkGroup returns at once while this is set and sets
+       it after linking mPrevInGroup/mNextInGroup, so the group is linked
+       once. Was unk_341. */
+    u8 mGroupLinked;                    /* 0x341 */
     u8   mSuppressed;                   /* 0x342 */
     u8   pad_343[0x1];
     daObjFallBlock_c *mPrevInGroup;     /* 0x344 */
@@ -191,7 +194,7 @@ struct daObjFallBlock_c {
     u8  mShakeRequested;    /* 0x33e */
     u8  mRespawnDelay;      /* 0x33f */
     u8  mReady;             /* 0x340 */
-    u8  unk_341;            /* 0x341 */
+    u8 mGroupLinked;        /* 0x341 */
     u8  mSuppressed;        /* 0x342 */
     u8  pad_343[0x1];
     struct daObjFallBlock_c *mPrevInGroup;      /* 0x344 */

@@ -87,6 +87,26 @@ enum d_a_trs_trap_AssetId {
 #include "dBgW.h"
 #include "Sound.h"
 
+/* daBook_c::mLinkedActorID (daBook_c.h, 0x418): the BOOK_SWITCH (0xd5)
+   looks its trap up by this ID (daBook_c's FindWithID calls). Seen through
+   a local view: including daBook_c.h renumbers this TU's @NNN labels. */
+struct BookSwitchView {
+    u8 head[0x418];
+    u32 mLinkedActorID;
+};
+typedef char BookSwitchView_size_must_be_0x41c[sizeof(BookSwitchView) == 0x41c ? 1 : -1];
+
+/* SharedFilePtr's fields, which SharedFilePtr.h leaves undeclared; the
+   names are src/SharedFilePtr.cpp's. filePtr is the loaded file. */
+struct SharedFileView {
+    u16 fileID;    /* 0x00 */
+    u8 numRefs;    /* 0x02 */
+    void *filePtr; /* 0x04 */
+};
+#ifndef SM64DS_PLATFORM_PC
+typedef char SharedFileView_size_must_be_0x8[sizeof(SharedFileView) == 8 ? 1 : -1];
+#endif
+
 #pragma defer_codegen off
 
 /* The per-trap resource rows, indexed by mIndex: the model handle, the
@@ -534,12 +554,12 @@ int daTrsTrap_c::InitResources()
         int m = mIndex;
         if (m == 3) {
             _ZN10dBgW_KcMbg7SetFileEP8KCL_FileRK9Matrix4x35Fix12IiEsR10CLPS_Block(
-                &mMovingMeshCollider, *(void **)((char *)data_ov063_0211e28c[m] + 4), &mClsnMat,
-                0x1000, mAngleY, data_ov063_0211e9e8[m]);
+                &mMovingMeshCollider, ((SharedFileView *)data_ov063_0211e28c[m])->filePtr,
+                &mClsnMat, 0x1000, mAngleY, data_ov063_0211e9e8[m]);
         } else {
             _ZN10dBgW_KcMbg7SetFileEP8KCL_FileRK9Matrix4x35Fix12IiEsR10CLPS_Block(
-                &mMovingMeshCollider, *(void **)((char *)data_ov063_0211e28c[m] + 4), &mClsnMat,
-                0x199, mAngleY, data_ov063_0211e9e8[m]);
+                &mMovingMeshCollider, ((SharedFileView *)data_ov063_0211e28c[m])->filePtr,
+                &mClsnMat, 0x199, mAngleY, data_ov063_0211e9e8[m]);
         }
     }
 
@@ -566,7 +586,7 @@ int daTrsTrap_c::InitResources()
             base.y = mHomePosY + data_ov063_0211e9f8[odd];
             base.z = mHomePosZ - 0xb4000;
             sp = dActor_c::Spawn(actorId, j, base, &v16, mAreaId, neg1);
-            *(s32 *)((char *)sp + 0x418) = uniqueID;
+            ((BookSwitchView *)sp)->mLinkedActorID = uniqueID;
             even += 2; odd += 2;
         }
         mSavedAreaId = mAreaId;

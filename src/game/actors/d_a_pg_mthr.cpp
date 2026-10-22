@@ -411,22 +411,21 @@ int daPgMthr_c::func_ov018_02111e28()
 // @symbol _ZN10daPgMthr_c19func_ov018_02111d28Ev
 void daPgMthr_c::func_ov018_02111d28()
 {
+    /* Unused, but deleting this local DIFFs. */
     char *s = (char *)this;
     Matrix4x3_FromRotationY(&mModelAnim.mat4x3, mAngleY);
-    /* 0x114/0x118/0x11c are mat4x3's translation (pos >> 3). Writing those
-       through m[] and passing the member into DropShadow, then storing the
-       bone back through the same pointer, was 0xfc. ROM is 0x100. */
-    *(int *)(s + 0x114) = mPosX >> 3;
-    *(int *)(s + 0x118) = mPosY >> 3;
-    *(int *)(s + 0x11c) = mPosZ >> 3;
+    /* m[9..11] are mat4x3's translation (pos >> 3). */
+    mModelAnim.mat4x3.m[9] = mPosX >> 3;
+    mModelAnim.mat4x3.m[10] = mPosY >> 3;
+    mModelAnim.mat4x3.m[11] = mPosZ >> 3;
     _ZN8dActor_c19DropShadowRadHeightER17dExtShadowModel_cR9Matrix4x35Fix12IiES5_j(
-        this, mShadowModel, *(Matrix4x3 *)(s + 0xf0), 0x140000, 0x50000, 0xf);
+        this, mShadowModel, mModelAnim.mat4x3, 0x140000, 0x50000, 0xf);
     if (mLookAngX != 0 || mLookAngY != 0) {
         Matrix4x3 *bone = &mModelAnim.data.transforms[LOOK_BONE];
         data_020a0e68 = *bone;
         Matrix4x3_ApplyInPlaceToRotationY(&data_020a0e68, mLookAngY);
         Matrix4x3_ApplyInPlaceToRotationX(&data_020a0e68, mLookAngX);
-        *(Matrix4x3 *)((*(char **)(s + 0xe8)) + 0xf0) = data_020a0e68;
+        mModelAnim.data.transforms[LOOK_BONE] = data_020a0e68;
     }
 }
 

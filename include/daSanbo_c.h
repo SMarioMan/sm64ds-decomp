@@ -69,10 +69,12 @@ struct daSanbo_c : dActor_c {
        func_ov096_02136434 / func_ov096_02135948. */
     s32 mParticle0;             /* 0x3a0 */
     s32 mParticle1;             /* 0x3a4 */
-    /* Set by the head after loading the blue-coin model. func_ov096_0213670c
-       reads it through the head to choose a zero or 90-frame regrowth delay;
-       func_ov096_021365d4 clears it after the segment count reaches three. */
-    u8  unk_3a8;            /* 0x3a8 */
+    /* Head only. InitResources sets it; while it is set,
+       func_ov096_0213670c gives a new segment no delay and full scale
+       instead of a 90-frame wait, so the initial stack sprouts at once.
+       func_ov096_021365d4 clears it once three segments exist, so later
+       regrowth waits. */
+    u8 mInstantSprout; /* 0x3a8 */
     u8  pad_3a9[0x1];
     /* Heading copied from the previous segment + 0x13000; feeds the sin table
        that fills mOffset*. */

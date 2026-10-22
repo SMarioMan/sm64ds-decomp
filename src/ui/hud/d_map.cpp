@@ -20,10 +20,11 @@
  *   at is reached through vtable slot 5 alone (dMeter_c cuts the same slice).
  * - The camera's follow word is mTargetPlayer in dCamera_c.h, typed s32;
  *   this TU reads it as the object the map follows.
- * - focusPos/playerPos keep their (int)o + 0x5c integer launders: the
- *   ROM forms the copy source with `add r, o, #0x5c` plus three offset
- *   loads; an o->mPos copy uses [r8,#0x5c] addressing and
- *   shortens the copy.
+ * - The player-list copy keeps an (int) launder on &o->mPos: the ROM
+ *   forms the copy source with `add r, o, #0x5c` plus three offset loads;
+ *   a plain `playerPos = o->mPos` uses [r8,#0x5c] addressing and shortens
+ *   Behavior by 4 bytes. The focus copy already goes through a pointer
+ *   local, so `&focus->mPos` needs no launder.
  * - GetMinimapID's extern keeps GetMinimapID.c's own `struct Obj` slice
  *   spelling; the Obj tag is only a forward here so the declaration agrees.
  * - struct Vec3 stays the launder for the two projection helpers; their
@@ -730,7 +731,7 @@ L4d8:
         this->mMapCenterOffset +
         ((FX_MUL(((Vector3 *)&this->mMapCenterWorldX)->z, this->mScale) + 0x800) >> 12);
 
-    focusPosSrc = (Vector3 *)(((int)focus + 0x5c));
+    focusPosSrc = &focus->mPos;
     focusPos = *focusPosSrc;
     FixTHIPaintingRoomPos(focusPos);
     _ZN6dMap_c15GetPosOnMinimapER7Vector3S1_5Fix12IiEsS1_(&focusPos, (Vector3*)&this->mMapCenterWorldX, this->mCurrentScale, this->mAngle, &miniPos);
@@ -774,7 +775,8 @@ L738:
     for (i = 0; i < 4; i++) {
         Player *o = (Player *)data_0209f394[i];
         if (o != 0) {
-            playerPos = *(Vector3 *)(((int)o + 0x5c));
+            /* the (int) launder keeps the ROM's precomputed copy source */
+            playerPos = *(Vector3 *)((int)&o->mPos);
             FixTHIPaintingRoomPos(playerPos);
             _ZN6dMap_c15GetPosOnMinimapER7Vector3S1_5Fix12IiEsS1_(&playerPos, (Vector3*)&this->mMapCenterWorldX, this->mCurrentScale, this->mAngle, &miniPos);
             this->mPlayerIconX[i] = (miniPos.x + 0x800) >> 12;

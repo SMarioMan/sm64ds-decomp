@@ -22,12 +22,14 @@
  * deslop leftovers:
  * - SetNodeID keeps its documented two-step addressing: `Inner* p = this+0x24`
  *   then `p->id` is load-bearing -- flattening to this+0x34 diffs by three
- *   words (the shard's own measurement, #1221; re-measured: `mNodeID` read and
+ *   words (the shard's own measurement; re-measured: `mNodeID` read and
  *   written directly still diffs by three).
- * - The constructor writes mNodeID/mFlags2/mFirstNode/mLastNode through its
- *   `nodeList` view of this+0x24: spelling those stores as members re-bases
- *   them on `this` and diffs (two words for the list pair, five with all
- *   four).
+ * - The constructor writes mNodeID/mFlags2 and the two list pairs through
+ *   its `nodeList` NodeList view of this+0x24: spelling those stores as
+ *   members of `this` re-bases them and diffs (re-measured). It passes the
+ *   heap's first byte as `nodeList + 1` (this+0x38); `this + 1` also diffs.
+ *   Deallocate likewise reaches the in-use list through its NodeList view;
+ *   `&mUsedFirstNode` diffs.
  * - The AllocateForwards/AllocateBackwards NodeList overlay stays: it spells
  *   the header's mFirstNode..mFlags2 from this+0x24, but both searches
  *   also pass `c` onward to AllocateNode as the list sentinel -- one object
@@ -152,22 +154,22 @@ void *ExpandingHeapAllocator::CreateNode(MemoryNode::Target *extent, u16 t)
 // @symbol _ZN22ExpandingHeapAllocatorC1EPvj
 ExpandingHeapAllocator::ExpandingHeapAllocator(void *heapEnd, u32 flags)
 {
-    char *nodeList = (char *)&mFirstNode;
+    NodeList *nodeList = (NodeList *)&mFirstNode;
     MemoryNode::Target extent;
     MemoryNode *node;
 
-    func_0204df54(this, 0x45585048, nodeList + 0x14, heapEnd, flags);
-    *(u16 *)(nodeList + 0x10) = 0;
-    *(u16 *)(nodeList + 0x12) = 0;
-    *(u16 *)(nodeList + 0x12) &= ~1;
+    func_0204df54(this, 0x45585048, nodeList + 1, heapEnd, flags);
+    nodeList->mNodeID = 0;
+    nodeList->mFlags2 = 0;
+    nodeList->mFlags2 &= ~1;
 
     extent.start = (char *)mStart;
     extent.end = (char *)mEnd;
     node = (MemoryNode *)CreateNode(&extent, 0x4652);
-    *(MemoryNode **)(nodeList + 0x0) = node;
-    *(MemoryNode **)(nodeList + 0x4) = node;
-    *(u32 *)(nodeList + 0x8) = 0;
-    *(u32 *)(nodeList + 0xc) = 0;
+    nodeList->mFirstNode = node;
+    nodeList->mLastNode = node;
+    nodeList->mUsedFirstNode = 0;
+    nodeList->mUsedLastNode = 0;
 }
 
 // @symbol _ZN22ExpandingHeapAllocator12AllocateNodeEP10MemoryNodeS1_Pvjt
@@ -225,7 +227,7 @@ void *ExpandingHeapAllocator::AllocateNode(MemoryNode *c, MemoryNode *node,
     void *allocNode = CreateNode(&t2, 0x5544);
 
     unsigned short *flagsPtr = &((MemoryNode *)allocNode)->flags;
-    void *usedList = (char *)c + 8;
+    void *usedList = &((NodeList *)c)->mUsedFirstNode;
     *flagsPtr &= ~0x8000;
     *flagsPtr |= (z & 1) << 15;
     int t0e = (int)t0.end;
@@ -478,13 +480,13 @@ u32 ExpandingHeapAllocator::Reallocate(void *ptrRaw, u32 size)
  * 8 past the embedded bookkeeping at this+0x24. */
 int ExpandingHeapAllocator::Deallocate(void *ptr)
 {
-    char *inner;
+    NodeList *inner;
     MemoryNode *node;
 
     node = (MemoryNode *)((char *)ptr - 0x10);
-    inner = (char *)&mFirstNode;
+    inner = (NodeList *)&mFirstNode;
     MemoryNode::Target target(node);
-    UnlinkNode((MemoryNode *)(inner + 8), node);
+    UnlinkNode((MemoryNode *)&inner->mUsedFirstNode, node);
     return FreeNode((MemoryNode *)inner, &target);
 }
 

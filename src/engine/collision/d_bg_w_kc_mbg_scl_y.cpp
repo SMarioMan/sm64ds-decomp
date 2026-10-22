@@ -33,10 +33,6 @@ int func_02053200(int v);
    d_bg_w_kc_mbg.cpp that no header declares. */
 void func_02039db8(dBgW_KcMbg *self, Vector3 *v, Vector3 *res);
 
-/* Collision-query plumbing shared with the KcMbg checkers.
-   local extern: no header in include/ declares it. */
-void func_02035394(void *dst, void *src);
-
 /* local extern: the radius is Fix12 by value, so the call spells the symbol. */
 void _ZN12dBgCh_SphCrr15SetObjAndSphereERK7Vector35Fix12IiEP8dActor_c(dBgCh_SphCrr *sphere,
                                                                       const Vector3 *localCentre,
@@ -137,7 +133,7 @@ int dBgW_KcMbgSclY::DetectClsn(dBgCh_Gnd &ground) {
 
     dBgCh_Lin ray;
     ray.SetObjAndLine(localStart, localEnd, 0);
-    func_02035394(&ray, &ground);
+    (dBgCh &)ray = ground;
 
     int hit = dBgW_Kc::DetectClsn(ray);
     if (hit != 0) {
@@ -183,7 +179,7 @@ int dBgW_KcMbgSclY::DetectClsn(dBgCh_SphCrr &sphere) {
                                                                      localRadius, 0);
     localSphere.mWallRejectHalfExtent = localExtraExtent;
     localSphere.func_02037940(sphere.flags);
-    func_02035394(&localSphere, &sphere);
+    (dBgCh &)localSphere = sphere;
     hit = dBgW_Kc::DetectClsn(localSphere);
     if (hit) {
         localSphere.GetPushOutBounds((Vector3 *)&bounds.localMin, (Vector3 *)&bounds.localMax);
@@ -238,7 +234,7 @@ int dBgW_KcMbgSclY::DetectClsn(dBgCh_Lin &ray) {
     data_020a0d0c.SetObjAndLine(start, end, 0);
     if (hadClsn != 0)
         data_020a0d0c.hasClsn = 1;
-    func_02035394(&data_020a0d0c, &ray);
+    (dBgCh &)data_020a0d0c = ray;
 
     int hit = dBgW_Kc::DetectClsn(data_020a0d0c);
     if (hit != 0) {

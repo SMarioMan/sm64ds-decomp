@@ -18,14 +18,18 @@
  * at 0x450 is this class's only constructed member (D1 calls
  * _ZN9ModelAnimD1Ev once, then inlines the base teardown).
  *
- * unk_4bc is this class's Y accumulator for ApproachLinear;
- * 0x4bc + 4 = 0x4c0. pad_4b4 is unwitnessed in this TU.
+ * mRideDipY (0x4bc) + 4 = 0x4c0. pad_4b4 is unwitnessed in this TU.
  */
 
 struct daObjRcCarpet_c : dPathLiftActor_c {
     ModelAnim mModelAnim;      /* 0x450 */
     u8  pad_4b4[0x8];
-    s32 unk_4bc;               /* 0x4bc */
+    /* How far the carpet sags under a rider: Behavior eases it toward
+       -0x14000 (20 units down) at 0x5000 a frame while mAfterClsnRan is
+       set and back toward 0 otherwise; func_ov036_021122c0 and
+       func_ov036_0211224c add it to mPosY for the model and collision
+       matrices. Was unk_4bc. */
+    s32 mRideDipY; /* 0x4bc */
 
     /* Inline plus vtable instantiation is load-bearing: mwcc emits
        retail's D1 then D0 pair, with no homeless D2. */

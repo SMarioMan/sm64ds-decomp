@@ -128,12 +128,13 @@ void daObjFallBlock_c_EmitDestructor(daObjFallBlock_c *p)
 }
 
 // @symbol daObjFallBlock_c_LinkGroup
-/* Once (unk_341). Same-id neighbours closer than 0x96000 become
+/* Once (mGroupLinked). Same-id neighbours closer than 0x96000 become
    mNextInGroup when they sit within a quarter-turn of mAngleY, and
    mPrevInGroup otherwise. Vec3_HorzAngle / Vec3_Dist / AngleDiff. */
 void daObjFallBlock_c_LinkGroup(daObjFallBlock_c *c)
 {
-    if (c->unk_341 != 0) return;
+    if (c->mGroupLinked != 0)
+        return;
     dActor_c *r = dActor_c::FindWithActorID(c->actorID, 0);
     while (r) {
         if (r != (dActor_c *)c) {
@@ -149,7 +150,7 @@ void daObjFallBlock_c_LinkGroup(daObjFallBlock_c *c)
         }
         r = dActor_c::FindWithActorID(c->actorID, r);
     }
-    c->unk_341 = 1;
+    c->mGroupLinked = 1;
 }
 
 // @symbol daObjFallBlock_c_PollLinkedStar

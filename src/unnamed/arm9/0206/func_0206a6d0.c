@@ -12,10 +12,52 @@ extern void _ZN4CP1527FlushAndInvalidateDataCacheEv(void);
 extern void func_0206a318(void *arg);
 extern void WaitByLoop(int n);
 
+/* NitroSDK CTRDGHeader: the GBA cartridge header at 0x08000000. data_020a9e00
+ * is a 0xc0-byte copy of it; the DMA below fills its last 0x40 bytes (+0x80)
+ * from the cartridge, and the BIOS logo goes into nintendoLogo
+ * (data_020a9e04). */
+typedef struct {
+    unsigned int startAddress; /* 0x00 */
+    u8 nintendoLogo[0x9c];     /* 0x04 */
+    char titleName[12];        /* 0xa0 */
+    unsigned int gameCode;     /* 0xac */
+    u16 makerCode;             /* 0xb0 */
+    u8 isRomCode;              /* 0xb2 */
+    u8 machineCode;            /* 0xb3 */
+    u8 deviceType;             /* 0xb4 */
+    u8 exLsiID[3];             /* 0xb5 */
+    u8 reserved_A[4];          /* 0xb8 */
+    u8 softVersion;            /* 0xbc */
+    u8 complement;             /* 0xbd */
+    u16 moduleID;              /* 0xbe */
+} CTRDGHeader;
+
+/* NitroSDK CTRDGModuleInfo, at HW_CTRDG_MODULE_INFO_BUF (0x027ffc30): the
+ * header fields this function copies out of the CTRDGHeader above. */
+typedef struct {
+    u16 moduleID;          /* 0x0 */
+    u8 exLsiID[3];         /* 0x2 */
+    u8 flags;              /* 0x5 -- isAgbCartridge, detectPullOut bits */
+    u16 makerCode;         /* 0x6 */
+    unsigned int gameCode; /* 0x8 */
+} CTRDGModuleInfo;
+
+/* The cartridge work at data_020a9de0: func_0206a5c0 clears all four bytes
+ * and stores the lock id at +2; the PXI callback func_0206a694 sets the
+ * first halfword to 1 when the ARM7 answers. */
+typedef struct {
+    volatile u16 mSubpAck; /* 0x0 */
+    u16 mLockId;           /* 0x2 */
+} CtrdgWork;
+
 extern int data_020a9de4;
 extern unsigned short data_020a9de0;
 extern int data_020a9e00;
 extern int data_020a9e04;
+
+#define CTRDG_WORK (*(CtrdgWork *)&data_020a9de0)
+#define CTRDG_MODULE_INFO ((volatile CTRDGModuleInfo *)0x27ffc30)
+#define CTRDG_HEADER (*(CTRDGHeader *)&data_020a9e00)
 
 #pragma opt_strength_reduction off
 
@@ -36,15 +78,15 @@ void func_0206a6d0(void)
     irq = _ZN3IRQ7SetIRQsEj(0x40000);
     save208 = *(volatile u16 *)0x4000208;
     *(volatile u16 *)0x4000208 = 1;
-    func_0206a3a4(*(unsigned short *)((char *)&data_020a9de0 + 2), sp);
+    func_0206a3a4(CTRDG_WORK.mLockId, sp);
     flag = ((int)*(volatile u16 *)0x4000204 & 0x8000) >> 15;
     func_0206a458(sp + 2);
     *(volatile u16 *)0x4000204 &= ~0x8000;
-    DMASyncHalfTransfer(0, (void *)0x8000080, (void *)((char *)&data_020a9e00 + 0x80), 0x40);
+    DMASyncHalfTransfer(0, (void *)0x8000080, (void *)((char *)&CTRDG_HEADER + 0x80), 0x40);
     *(volatile u16 *)0x4000204 = (*(volatile u16 *)0x4000204 & ~0x8000) | (flag << 15);
     func_0206a424(sp + 2);
-    func_0206a37c(*(unsigned short *)((char *)&data_020a9de0 + 2), sp);
-    *(volatile u16 *)0x27ffc30 = *(u16 *)((char *)&data_020a9e00 + 0xbe);
+    func_0206a37c(CTRDG_WORK.mLockId, sp);
+    CTRDG_MODULE_INFO->moduleID = CTRDG_HEADER.moduleID;
     for (i = 0; i < 3; i++)
         /* Indexed off a typed pointer, not `*(volatile u8 *)(0x27ffc32 + i)`. Under
            2004/b56 the integer form parks the whole address in the literal pool and
@@ -52,20 +94,22 @@ void func_0206a6d0(void)
            immediates and puts 0xc32 in the store's 12-bit displacement -- one more
            instruction and one FEWER literal. That single pool entry shifts every
            pc-relative load in the function by 4, which is the whole 52-word diff. */
-        ((volatile u8 *)0x27ffc32)[i] = *(u8 *)((char *)&data_020a9e00 + i + 0xb5);
+        CTRDG_MODULE_INFO->exLsiID[i] = CTRDG_HEADER.exLsiID[i];
     {
-        volatile u16 *p6 = (volatile u16 *)0x27ffc30;
-        p6[3] = *(u16 *)((char *)&data_020a9e00 + 0xb0);
-        *(volatile unsigned int *)((char *)p6 + 8) = *(unsigned int *)((char *)&data_020a9e00 + 0xac);
+        /* Through a local: writing these two through CTRDG_MODULE_INFO as
+           well moves the bytes. */
+        volatile CTRDGModuleInfo *info = CTRDG_MODULE_INFO;
+        info->makerCode = CTRDG_HEADER.makerCode;
+        info->gameCode = CTRDG_HEADER.gameCode;
     }
     MultiCopy_Int((int *)0xffff0020, &data_020a9e04, 0x9c);
     _ZN4CP1527FlushAndInvalidateDataCacheEv();
     arg = (void *)((((unsigned int)&data_020a9e00 + 0xfe000000) >> 5) << 6 | 1);
     func_0206a318(arg);
-    if (data_020a9de0 != 1) {
+    if (CTRDG_WORK.mSubpAck != 1) {
         do {
             WaitByLoop(1);
-        } while (data_020a9de0 != 1);
+        } while (CTRDG_WORK.mSubpAck != 1);
     }
     (void)*(volatile u16 *)0x4000208;
     *(volatile u16 *)0x4000208 = save208;

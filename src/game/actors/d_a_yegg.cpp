@@ -58,8 +58,7 @@
  * - the DOSUN byte at +0x3a2 in func_ov002_020ec670 remains a raw offset.
  *   Spawned coins use dActor_c's existing previous-angle and horizontal-speed fields.
  * - mSpawnPos is named in daYegg_c.h but its purpose is not known
- *   (written once, never read here); unk_41e and the 4-byte gap at 0x3f8 are
- *   unnamed.
+ *   (written once, never read here); the 4-byte gap at 0x3f8 is unnamed.
  * - this list is representative, not exhaustive: the flag and mask
  *   literals (mFlags 0x40000/0x10000000/0x8, the hit flags 0x8000/0x26fe0,
  *   the cylinder words 0x202000/0x200002/0xa08000) are also left numeric, and
@@ -747,7 +746,7 @@ void daYegg_c::func_ov002_020ecfc8() {
 /* (obsolete provenance) daWarpkun_c::Kill - recovered from vtable slot identity */
 /* State 0 (FOLLOW_PLAYER), execute. `com` is the followed Player. Each call:
  *  - copies the Player's 0xa4/0xa8/0xac words and its horizontal speed;
- *  - while unk_41e is zero (nothing in this file sets it nonzero, so every
+ *  - while mHoldFreezeTimer is zero (nothing in this file sets it nonzero, so every
  *    call) rebuilds the hold target and the goal angles. The target is the
  *    Player's position plus the vector (0, 0, mHoldOffsetZ = -104 units)
  *    rotated by the egg's eased angles. If the Player's word at +0x37c or
@@ -791,7 +790,7 @@ void daYegg_c::func_ov002_020ed0d4()
     mSpeedZ = p[2];
     mHorzSpeed = com->mHorzSpeed;
 
-    if (DecIfAbove0_Byte(&unk_41e) == 0) {
+    if (DecIfAbove0_Byte(&mHoldFreezeTimer) == 0) {
         in.x = 0; in.y = 0; in.z = 0;
         out.x = 0; out.y = 0; out.z = 0;
         in.z = mHoldOffsetZ;
@@ -843,7 +842,7 @@ void daYegg_c::func_ov002_020ed0d4()
             mHoldTargetY = sumC.y;
             mHoldTargetZ = sumC.z;
         }
-        unk_41e = 0;
+        mHoldFreezeTimer = 0;
     }
 
     {

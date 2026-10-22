@@ -28,13 +28,6 @@
 
 extern "C" {
 
-/* dBgCh's unnamed flag helpers, from the run just below this one. Each of
-   the four fan-out workers below calls one of them on both sub-objects. */
-void func_020353e0(char *self);
-void func_020353f4(char *self);
-void func_02035414(char *self);
-void func_02035428(char *self);
-
 /* Checker-family helpers shared across the collision TUs, spelled as
    defined. */
 int  func_02037dc4(int p);   /* SurfaceInfo * -> Vector3 * (the hit normal) */
@@ -954,29 +947,29 @@ void dBgCh_Actr::StopDetectingWater()
 // @symbol func_02035800
 extern "C" void func_02035800(dBgCh_Actr *self)
 {
-    func_02035428((char *)&self->mRaycastLine);
-    func_02035428((char *)&self->mSphereClsn);
+    self->mRaycastLine.StartIgnoringVanishSurfaces();
+    self->mSphereClsn.StartIgnoringVanishSurfaces();
 }
 
 // @symbol func_020357e0
 extern "C" void func_020357e0(dBgCh_Actr *self)
 {
-    func_02035414((char *)&self->mRaycastLine);
-    func_02035414((char *)&self->mSphereClsn);
+    self->mRaycastLine.StopIgnoringVanishSurfaces();
+    self->mSphereClsn.StopIgnoringVanishSurfaces();
 }
 
 // @symbol func_020357c0
 extern "C" void func_020357c0(dBgCh_Actr *self)
 {
-    func_020353f4((char *)&self->mRaycastLine);
-    func_020353f4((char *)&self->mSphereClsn);
+    self->mRaycastLine.StartIgnoringType14Walls();
+    self->mSphereClsn.StartIgnoringType14Walls();
 }
 
 // @symbol func_020357a0
 extern "C" void func_020357a0(dBgCh_Actr *self)
 {
-    func_020353e0((char *)&self->mRaycastLine);
-    func_020353e0((char *)&self->mSphereClsn);
+    self->mRaycastLine.StopIgnoringType14Walls();
+    self->mSphereClsn.StopIgnoringType14Walls();
 }
 
 // @symbol func_02035798

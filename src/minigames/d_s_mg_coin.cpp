@@ -840,7 +840,9 @@ void dScMgCoin_c::Coin_StateWaitTouch(int idx) {
         return;
 
     n = idx * 0x18;
-    p1 = (int *)(self + 0x4ac4 + n);
+    /* mCoins[idx].y as `&mCoins[0].y + n`, the ROM's this + field + record
+       order; the landY copy below must use the same spelling to CSE it. */
+    p1 = (int *)((char *)&mCoins[0].y + n);
     p0 = &mCoins[idx].x;
     q1 = *p1;
     ax = gTouchX[gActivePlayerSlot * 4];
@@ -861,7 +863,7 @@ void dScMgCoin_c::Coin_StateWaitTouch(int idx) {
     ((dScMgCoin_c *)(self + n))->mCoins[0].collected = 1;
     if (((dScMgCoin_c *)(self + n))->mCoins[0].value != 0) {
         ((dScMgCoin_c *)(self + n))->mCoins[0].state = 1;
-        ((dScMgCoin_c *)(self + n))->mCoins[0].landY = *(int *)(self + 0x4ac4 + n);
+        ((dScMgCoin_c *)(self + n))->mCoins[0].landY = *(int *)((char *)&mCoins[0].y + n);
         ((dScMgCoin_c *)(self + n))->mCoins[0].vy = -0x3000;
         ((dScMgCoin_c *)(self + n))->mCoins[0].bounces = 0;
         this->KickBlockUnderCoin(idx);
@@ -882,7 +884,7 @@ void dScMgCoin_c::Coin_StateWaitTouch(int idx) {
     func_020127a4(2, 0xee, 0xffff, ang);
     Sound::PlayBank2_2D(0xf2);
 
-    *(u8 *)(self + 0x4000 + idx * 0x18 + 0xad0) = 2;
+    *((u8 *)&mCoins[0].state + idx * 0x18) = 2;
     stars = (gMgScene != 0) ? gMgScene->mCredits : 0;
     need = mPlayerScore;
     if (stars > need)

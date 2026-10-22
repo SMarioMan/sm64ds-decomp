@@ -2,9 +2,29 @@
  * Maps an input code to a result code via a jump-table switch, then tail-calls
  * func_ov007_020bdeb0 with it.
  */
+#include "Ov007MenuState.h"
 
 extern char *data_ov007_0210342c;
 extern int func_ov007_020bdeb0(int a);
+
+/* data_ov007_0210342c: the overlay's manager; names as in
+ * func_ov007_020afc44 and func_ov007_020ae070, only the slots this file
+ * reads. The settings record's first word (a record with a byte at +9 read
+ * here) stays raw, as in func_ov007_020afc44. */
+typedef struct Ov007Work {
+    char pad_00[4];
+    Ov007MenuState *states[3]; /* 0x04: func_ov007_020c9388; [1] is the main one */
+    char pad_10[0x18];
+    struct Ov007Settings *settings; /* 0x28: func_ov007_020b6a84 */
+    char pad_2c[0x2c];
+    int selectedSlot; /* 0x58: -1 = none (func_ov007_020b0244) */
+} Ov007Work;
+
+typedef char Ov007Work_size_must_be_0x5c[sizeof(Ov007Work) == 0x5c ? 1 : -1];
+
+/* The extern keeps the tree's char * spelling; the typed view is reached
+ * through a cast macro. */
+#define WORK ((Ov007Work *)data_ov007_0210342c)
 
 int func_ov007_020b6208(int code)
 {
@@ -23,9 +43,9 @@ int func_ov007_020b6208(int code)
     case 14:
     case 15:
     case 16: {
-        char *p0 = data_ov007_0210342c;
+        Ov007Work *p0 = WORK;
         int r3 = code - 0xe;
-        switch (*(short *)(*(char **)(p0 + 8))) {
+        switch (p0->states[1]->currentState) {
         case 0:
             r1 = 6;
             break;
@@ -34,15 +54,15 @@ int func_ov007_020b6208(int code)
             r1 = 7;
             break;
         case 7: {
-            int f58 = *(int *)(p0 + 0x58);
-            if (f58 == -1)
+            int slot = p0->selectedSlot;
+            if (slot == -1)
                 r1 = 8;
             else
-                r1 = (r3 == f58) ? 0xc : 9;
+                r1 = (r3 == slot) ? 0xc : 9;
             break;
         }
         case 9:
-            if (*(int *)(p0 + 0x58) == -1)
+            if (p0->selectedSlot == -1)
                 r1 = 0xd;
             break;
         case 1:
@@ -63,16 +83,16 @@ int func_ov007_020b6208(int code)
         r1 = 0x16;
         break;
     case 12: {
-        char *p0 = data_ov007_0210342c;
-        if (*(unsigned char *)(*(char **)(*(char **)(p0 + 0x28)) + 9) != 0)
+        Ov007Work *p0 = WORK;
+        if (*(unsigned char *)(*(char **)p0->settings + 9) != 0)
             r1 = 0x19;
         else
             r1 = 0x18;
         break;
     }
     case 13: {
-        char *p0 = data_ov007_0210342c;
-        if (*(unsigned char *)(*(char **)(*(char **)(p0 + 0x28)) + 9) == 0)
+        Ov007Work *p0 = WORK;
+        if (*(unsigned char *)(*(char **)p0->settings + 9) == 0)
             r1 = 0x19;
         else
             r1 = 0x18;
@@ -83,8 +103,8 @@ int func_ov007_020b6208(int code)
         break;
     case 22:
     case 23: {
-        char *p0 = data_ov007_0210342c;
-        switch (*(short *)(*(char **)(p0 + 8))) {
+        Ov007Work *p0 = WORK;
+        switch (p0->states[1]->currentState) {
         case 7:
             r1 = (code == 22) ? 0xa : 0xb;
             break;

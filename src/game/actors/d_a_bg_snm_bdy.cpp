@@ -9,7 +9,7 @@
  * course point the sinit stores at data_ov072_02122b40, IsPlayerNearCenter);
  * otherwise State4 rolls on until it falls below Y 0xfe363c80. State3 turns
  * toward the landing point at data_ov072_02122b58, and within 380.0 flags
- * BIG_SNOWMAN_HEAD (0x111, unk_336 = 1), jumps, and on landing sets off an
+ * BIG_SNOWMAN_HEAD (0x111, mBodyArriving = 1), jumps, and on landing sets off an
  * Earthquake and snaps onto that point. State5 waits until its home is well
  * away from the camera, then respawns there in State0.
  *
@@ -430,7 +430,7 @@ int daBgSnmBdy_c::State3()
             if (distToLanding < 0x17c000) {
                 daBgSnmHed_c *head =
                     (daBgSnmHed_c *)dActor_c::FindWithActorID(0x111, 0); /* BIG_SNOWMAN_HEAD */
-                head->unk_336 = 1;
+                head->mBodyArriving = 1;
                 func_0201267c(0x114, &mCamSpacePos);
                 mVertSpeed = 0x1d000;
                 mHorzSpeed = 0xe000;

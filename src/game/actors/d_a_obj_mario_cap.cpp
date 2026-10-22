@@ -104,7 +104,8 @@
  *   Unrecovered meaning: most mType values (only 4, 6..9 and 19 are named in
  *   the header), what the animations behind the 0210de* handles contain (the
  *   file ids 0x8012 / 0x8013 and 0x476..0x480 are in __sinit_ov002_02101064), what func_ov002_020f030c's result (unused here) is, and the
- *   fields unk_403 and unk_408, which are written and never read in this file.
+ *   field unk_408, which is written and never read in this file (mTaken is
+ *   likewise only written here; daJango_c reads it).
  *   mStateEntry stays an s32 because the member-pointer record is spelled by
  *   the file-local CapStateRec / CapEnterSelf stand-ins.
  *   The SharedFilePtr header has no fields; CleanupResources still casts the
@@ -1103,7 +1104,7 @@ int daObjMarioCap_c::Slide()
 
 /* df54's enter function: the taken state. Zeroes the velocity words and
  * mVertAccel, clears mTakenStep, mBlinkHidden and the override matrix, sets
- * unk_403, drops the Yoshi-mouth bit 0x40000 from mFlags and the 0x8000 bit
+ * mTaken, drops the Yoshi-mouth bit 0x40000 from mFlags and the 0x8000 bit
  * from vulnFlags, and binds the nearest player if none is bound yet. In
  * modes other than 1 (CURRENT_GAMEMODE), when that player's mCharacter is 3
  * and mModelIndex equals the player's param1, plays the 1-up sound, gives one
@@ -1119,7 +1120,7 @@ int daObjMarioCap_c::InitTaken()
     mTakenStep = 0;
     mBlinkHidden = 0;
     mCarryMatrix = 0;
-    unk_403 = 1;
+    mTaken = 1;
 
     /* (int)self + off is the MATCH form; mFlags &= / vulnFlags &= CSE. */
     *(u32 *)(((int)&mFlags)) &= ~0x40000u;

@@ -63,11 +63,12 @@
 struct dScDSMT_c : dScene_c {
 
     class graphCallback_c;
-    u8  unk_050[0x4];  /* 0x050 -- opaque; the graphCallback_c sub-object,
-                                    whose own layout is a later pass. The
-                                    constructor writes a base-then-derived
-                                    vptr pair here and touches nothing else
-                                    below 0x54 -- see the note above */
+    /* 0x050 -- the graphCallback_c sub-object, still opaque bytes (its
+       layout is a later pass). The constructor writes its base-then-derived
+       vptr pair here and touches nothing else below 0x54 (see the note
+       above), and InitResources publishes its address as the active graph
+       callback, data_0209d4a8. Was unk_050. */
+    u8 mGraphCallback[0x4];
     dFdDummy_c fader;  /* 0x054 -- member. The cartridge's own ~dScDSMT_c
                                     calls _ZN10dFdDummy_cD1Ev at +0x054
                                     (D0/D1), a relocation the ROM build
@@ -92,7 +93,7 @@ struct dScDSMT_c : dScene_c {
 /* The nested class the ROM's type graph records for this scene
    (_ZTIN9dScDSMT_c15graphCallback_cE, ov007), deriving from
    dGraph_c::callback_c. Declaring it adds no storage -- the sub-object
-   itself is the vptr-only span already held as unk_050 below, whose own
+   itself is the vptr-only span already held as mGraphCallback above, whose own
    internal layout stays a later pass.
 
    The slots are declared virtual, matching dGraph_c::callback_c's own

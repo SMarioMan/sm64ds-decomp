@@ -108,7 +108,7 @@ struct daShark_c {
     u8  unk_0a4;            /* 0x0a4 */
     u8  pad_0a5[0x3];
     s32 mVertSpeed;            /* 0x0a8 */
-    s32 unk_0ac;            /* 0x0ac */
+    s32 mSpeedZ;               /* 0x0ac -- dActor_c::mSpeedZ (dActor_c.h). Was unk_0ac. */
     u8  pad_0b0[0x50];
     u8  mStateTimer;            /* 0x100 */
     u8  pad_101[0xf];

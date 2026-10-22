@@ -275,11 +275,11 @@ extern "C" void MgCoins_DrawDelta(int arg)
     if (arg >= 0) {
         int idx = GetGameLanguage();
         r4 = 0x14;
-        gfx = *(int *)(sMgCoinsDeltaSprites[idx] + 0x34);
+        gfx = ((int *)sMgCoinsDeltaSprites[idx])[13];
     } else {
         int idx = GetGameLanguage();
         r4 = 0x28;
-        gfx = *(int *)(sMgCoinsDeltaSprites[idx] + 0x38);
+        gfx = ((int *)sMgCoinsDeltaSprites[idx])[14];
     }
 
     Mg_DrawCreditsIcon(0x6e, 0x60, 0, -1);

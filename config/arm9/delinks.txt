@@ -1499,11 +1499,11 @@ src/game/stages/d_s_mb.cpp:
     complete
     .text start:0x02034a78 end:0x02035354
 
-src/unnamed/arm9/0203/func_02035354.c:
+src/_ZNK5dBgCh9IsOwnedByEP8dActor_c.cpp:
     complete
     .text start:0x02035354 end:0x02035394
 
-src/unnamed/arm9/0203/func_02035394.c:
+src/_ZN5dBgChaSERKS_.cpp:
     complete
     .text start:0x02035394 end:0x020353b0
 
@@ -1511,27 +1511,27 @@ src/_ZN5dBgCh8SetActorEP8dActor_c.cpp:
     complete
     .text start:0x020353b0 end:0x020353d4
 
-src/func_020353d4.c:
+src/_ZNK5dBgCh21IsIgnoringType14WallsEv.cpp:
     complete
     .text start:0x020353d4 end:0x020353e0
 
-src/unnamed/arm9/0203/func_020353e0.c:
+src/_ZN5dBgCh23StopIgnoringType14WallsEv.cpp:
     complete
     .text start:0x020353e0 end:0x020353f4
 
-src/unnamed/arm9/0203/func_020353f4.c:
+src/_ZN5dBgCh24StartIgnoringType14WallsEv.cpp:
     complete
     .text start:0x020353f4 end:0x02035408
 
-src/func_02035408.c:
+src/_ZNK5dBgCh24IsIgnoringVanishSurfacesEv.cpp:
     complete
     .text start:0x02035408 end:0x02035414
 
-src/unnamed/arm9/0203/func_02035414.c:
+src/_ZN5dBgCh26StopIgnoringVanishSurfacesEv.cpp:
     complete
     .text start:0x02035414 end:0x02035428
 
-src/unnamed/arm9/0203/func_02035428.c:
+src/_ZN5dBgCh27StartIgnoringVanishSurfacesEv.cpp:
     complete
     .text start:0x02035428 end:0x0203543c
 

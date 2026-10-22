@@ -385,6 +385,17 @@ struct Obj {
 };
 */
 
+/* SharedFilePtr's fields, which SharedFilePtr.h leaves undeclared; the
+ * names are src/SharedFilePtr.cpp's. filePtr is the loaded file. */
+struct SharedFileView {
+    u16 fileID;    /* 0x00 */
+    u8 numRefs;    /* 0x02 */
+    void *filePtr; /* 0x04 */
+};
+#ifndef SM64DS_PLATFORM_PC
+typedef char SharedFileView_size_must_be_0x8[sizeof(SharedFileView) == 8 ? 1 : -1];
+#endif
+
 /* Lakitu's model-file handle, owned and constructed by d_a_c_jugem.cpp's
  * static init. Same TU-local wrapper spelling as the owning TU. */
 struct JugemModelFile : SharedFilePtr {
@@ -3722,7 +3733,7 @@ int daDemo_c::anmModel_c::func_ov002_020f6618(SharedFilePtr *mdl, int nAnims, Sh
     for (i = 0; i < mNumAnimFiles; i++) {
         _ZN15dExtFrameCtrl_c8LoadFileER13SharedFilePtr(*mAnimFiles[i]);
     }
-    _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(self, *(void **)((char *)mAnimFiles[0] + 4), 0,
+    _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(self, ((SharedFileView *)mAnimFiles[0])->filePtr, 0,
                                                 0x1000, 0);
     if (texByte) {
         ts = _Znwj(0x14);
@@ -3733,12 +3744,12 @@ int daDemo_c::anmModel_c::func_ov002_020f6618(SharedFilePtr *mdl, int nAnims, Sh
         mNumTexSeqFiles = texByte;
         mTexSeqFiles = texs;
         for (i = 0; i < mNumTexSeqFiles; i++) {
-            void *bmd = *(void **)((char *)mModelFile + 4);
+            void *bmd = ((SharedFileView *)mModelFile)->filePtr;
             void *btp = TextureSequence::LoadFile(*mTexSeqFiles[i]);
             TextureSequence::Prepare(*(BMD_File*)bmd, *(BTP_File*)btp);
         }
         _ZN15TextureSequence7SetFileER8BTP_Filei5Fix12IiEj(
-            mTexSeq, *(void **)((char *)mTexSeqFiles[0] + 4), 0, 0x1000, 0);
+            mTexSeq, ((SharedFileView *)mTexSeqFiles[0])->filePtr, 0, 0x1000, 0);
     }
     mSnapToFloor = (u8)arg5;
     return 1;
@@ -4645,42 +4656,46 @@ void daDemo_c::OnPendingDestroy()
 /* ROM ordinal 142 -- _ZN8daDemo_c6RenderEv, 0x020f80ac, size 0x118 */
 /* -------------------------------------------------------------------------- */
 // @symbol _ZN8daDemo_c6RenderEv
-int daDemo_c::Render()
-{
-  if (param1 == 0x19){
-    /* Draw the model three times: copy INV_VIEW_MATRIX_ASR_3 into its
-       mat4x3, then for each entry of data_ov002_0210bb7c overwrite the
-       translation column and render. The {p, cur, src} struct is the
-       allocation shape the ROM compiles; a plain Matrix4x3 pointer builds
-       the same size with different registers. */
-    struct { char* p; char* cur; M48* src; } s;
-    s.src = (M48*)&data_0209b41c;
-    s.p = (char*)&mModel->mat4x3;
-    s.cur = s.p;
-    *(M48*)s.cur = *s.src;
-    int* tbl = data_ov002_0210bb7c;
-    int i = 0;
-    do {
-      *(int*)(s.p + 0x24) = tbl[0];
-      *(int*)(s.p + 0x28) = tbl[1];
-      *(int*)(s.p + 0x2c) = tbl[2];
-      mModel->Render(0);
-      tbl += 3;
-      i++;
-    } while ((unsigned)i < 3u);
+int daDemo_c::Render() {
+    if (param1 == 0x19) {
+        /* Draw the model three times: copy INV_VIEW_MATRIX_ASR_3 into its
+           mat4x3, then for each entry of data_ov002_0210bb7c overwrite the
+           translation column (m[9..11]) and render. The {p, cur, src} struct
+           is the allocation shape the ROM compiles; a plain Matrix4x3
+           pointer builds the same size with different registers. */
+        struct {
+            char *p;
+            char *cur;
+            M48 *src;
+        } s;
+        s.src = (M48 *)&data_0209b41c;
+        s.p = (char *)&mModel->mat4x3;
+        s.cur = s.p;
+        *(M48 *)s.cur = *s.src;
+        int *tbl = data_ov002_0210bb7c;
+        int i = 0;
+        do {
+            ((Matrix4x3 *)s.p)->m[9] = tbl[0];
+            ((Matrix4x3 *)s.p)->m[10] = tbl[1];
+            ((Matrix4x3 *)s.p)->m[11] = tbl[2];
+            mModel->Render(0);
+            tbl += 3;
+            i++;
+        } while ((unsigned)i < 3u);
+        return 1;
+    }
+    unsigned char op = mOpacity;
+    if (op == 0)
+        return 1;
+    if (mModel != 0) {
+        mModel->ApplyOpacity(op, 0);
+        mModel->Render(&mScale);
+    } else if (mModelAnim != 0) {
+        ((anmModel_c *)mModelAnim)->func_ov002_020f65b8();
+        mModelAnim->ApplyOpacity(mOpacity, 0);
+        mModelAnim->Render(&mScale);
+    }
     return 1;
-  }
-  unsigned char op = mOpacity;
-  if (op == 0) return 1;
-  if (mModel != 0){
-    mModel->ApplyOpacity(op, 0);
-    mModel->Render(&mScale);
-  } else if (mModelAnim != 0){
-    ((anmModel_c*)mModelAnim)->func_ov002_020f65b8();
-    mModelAnim->ApplyOpacity(mOpacity, 0);
-    mModelAnim->Render(&mScale);
-  }
-  return 1;
 }
 
 /* -------------------------------------------------------------------------- */

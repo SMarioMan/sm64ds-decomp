@@ -19,15 +19,14 @@
  *   detect[12].
  * - Render stores the colour at BMD_Material+0x20,
  *   which is pad, and walks materials as an int**. Naming that walk
- *   off modelFile shrinks Render.
+ *   off data.modelFile shrinks Render, so only the int** slot is
+ *   retyped to BMD_File for numMaterials.
  * - UpdateMirrorShadow keeps its Obj overlay. Spelling the position
  *   and a Mtx43* at pad_3e8 moves 34 words.
  * - StateSaveTalkMain and StateCaughtMain write the player's mStateFlags
  *   through a u16 pointer. The direct member form changes the size.
  *   StateIdleMain updates mTargetAngY through a pointer, and
  *   Behavior increments mEatenTimer through (long long)(int)&.
- * - unk_426 is the header's name: 2 the frame Yoshi eats the rabbit,
- *   and any nonzero value forces the idle state.
  */
 /* Runtime asset handles resolved through the overlay 0 file table. */
 enum daMip_c_AssetId {
@@ -280,7 +279,7 @@ int daMip_c::TestWaterBelow()
 // @symbol _ZN7daMip_c10UpdateGrabEv
 /* Pick-up. otherOwner is the actor touching the cylinder; actor 0xbf is
    Player. hitFlags 0x1000 is the grab bit. A rabbit already caught once
-   (unk_426) goes to Released instead of Caught. */
+   (mCatchState) goes to Released instead of Caught. */
 void daMip_c::UpdateGrab()
 {
     extern MipStatePair data_ov085_021306ac;
@@ -296,7 +295,7 @@ void daMip_c::UpdateGrab()
     if (((Player *)o)->TryGrab(*this) == 0) return;
     mTalkingPlayer = (Player *)o;
     mdCcAc_c.flags |= 2;
-    if (unk_426 == 0) {
+    if (mCatchState == 0) {
         SetState(&data_ov085_021306ac);
     } else {
         SetState(&data_ov085_021306bc);
@@ -506,7 +505,7 @@ int daMip_c::StateReleasedInit()
     extern DaMipAnimationFilePtr data_ov085_021305c0;
 
     mVertAccel = -0x1000;
-    unk_426 = 1;
+    mCatchState = 1;
     mdCcAc_c.vulnFlags &= ~0x1000;
     mdCcAc_c.flags |= 0x4000000;
     mdCcAc_c.radius = 0x78000;
@@ -552,14 +551,14 @@ int daMip_c::StateCaughtMain()
             pv.z = ps[2];
         }
 
-        if (unk_426 != 0) {
+        if (mCatchState != 0) {
             s16 ang = Vec3_HorzAngle(&mPos, &pv);
             ApproachLinear(mPrevAngleY, ang, 0x800);
             if (AngleDiff(mPrevAngleY, ang) > 0x200)
                 return 1;
         }
 
-        if ((IsFlagSet(this, 0x4000) || unk_426 == 2) && pl->StartTalk(*this, 1) != 0) {
+        if ((IsFlagSet(this, 0x4000) || mCatchState == 2) && pl->StartTalk(*this, 1) != 0) {
             pos.x = mPosX;
             soundId = 0;
             pos.y = mPosY;
@@ -1228,13 +1227,13 @@ int daMip_c::Render()
     mScaleY = mScaleZ;
 
     {
-        /* modelFile, then materials. +0x24 of the BMD is numMaterials.
+        /* modelFile, then materials.
            +0x20 of each 0x30-byte material is still pad in BMD_Material;
            walking it as BMD_Material:: does not match this loop. */
         int** base = (int**)&mModelAnim.data;
-        int* modelData = base[0];
+        BMD_File *modelData = (BMD_File *)base[0];
         char* mat = (char*)base[1];
-        for (unsigned int i = 0; i < *(unsigned int*)((char*)modelData + 0x24); i++) {
+        for (unsigned int i = 0; i < modelData->numMaterials; i++) {
             *(int*)(mat + 0x20) = mMaterialColor;
             mat += 0x30;
         }
@@ -1416,7 +1415,7 @@ int daMip_c::Behavior()
             }
         }
         UpdateMatrixAndShadow();
-        unk_426 = 2;
+        mCatchState = 2;
         SetState(&data_ov085_021306ac);
         _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(&mModelAnim, *(void**)((char*)&data_ov085_021305c0 + 4), 0, 0x1000, 0);
         if (*(void**)&mTalkingPlayer == 0)
@@ -1424,7 +1423,7 @@ int daMip_c::Behavior()
         return 1;
     }
 
-    if (unk_426 != 0) {
+    if (mCatchState != 0) {
         void* p = *(void**)&mState;
         if (p != (void*)&data_ov085_021306ac && p != (void*)&data_ov085_0213068c &&
             p != (void*)&data_ov085_021306bc && p != (void*)&data_ov085_021306dc) {
@@ -1462,7 +1461,7 @@ int daMip_c::Behavior()
         UpdateMirrorShadow();
 
     if (!IsFlagSet(this, 0x4000)) {
-        if (*(void **)&mState != (void *)&data_ov085_021306ac || unk_426 != 0)
+        if (*(void **)&mState != (void *)&data_ov085_021306ac || mCatchState != 0)
             UpdatePos(&mdCcAc_c);
         mAngleX = mPrevAngleX;
         mAngleY = mPrevAngleY;

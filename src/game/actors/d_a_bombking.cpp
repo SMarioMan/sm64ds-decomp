@@ -223,7 +223,7 @@ int daBombking_c::func_ov078_021238ac()
     v.y = 0;
     v.z = 0;
     data_020a0e68 = *(struct M12 *)&this->mBlendModelAnim.mat4x3;
-    MulMat4x3Mat4x3((char *)this->mBlendModelAnim.data.transforms + 0x30, &data_020a0e68, &data_020a0e68);
+    MulMat4x3Mat4x3(&this->mBlendModelAnim.data.transforms[1], &data_020a0e68, &data_020a0e68);
 
     v.x = data_020a0e68.w[9];
     v.y = data_020a0e68.w[10];
@@ -651,7 +651,7 @@ int daBombking_c::func_ov078_02124520()
         a.y = 0;
         a.z = 0;
         data_020a0e68 = *(struct M12 *)&this->mBlendModelAnim.mat4x3;
-        MulMat4x3Mat4x3((char *)this->mBlendModelAnim.data.transforms + 0x120, &data_020a0e68, &data_020a0e68);
+        MulMat4x3Mat4x3(&this->mBlendModelAnim.data.transforms[6], &data_020a0e68, &data_020a0e68);
         a.x = data_020a0e68.w[9];
         a.y = data_020a0e68.w[10];
         a.z = data_020a0e68.w[11];
@@ -1280,7 +1280,7 @@ int daBombking_c::func_ov078_02125790()
     s.y = 0;
     s.z = 0;
     data_020a0e68 = *(struct M12 *)&this->mBlendModelAnim.mat4x3;
-    MulMat4x3Mat4x3((char *)this->mBlendModelAnim.data.transforms + 0x120, &data_020a0e68, &data_020a0e68);
+    MulMat4x3Mat4x3(&this->mBlendModelAnim.data.transforms[6], &data_020a0e68, &data_020a0e68);
     s.x = data_020a0e68.w[9];
     s.y = data_020a0e68.w[10];
     s.z = data_020a0e68.w[11];
@@ -1484,8 +1484,8 @@ void daBombking_c::func_ov078_02125de0()
     this->mBlendModelAnim.mat4x3.m[9] = this->mPosX >> 3;
     this->mBlendModelAnim.mat4x3.m[10] = this->mPosY >> 3;
     this->mBlendModelAnim.mat4x3.m[11] = this->mPosZ >> 3;
-    MulMat4x3Mat4x3((char *)this->mBlendModelAnim.data.transforms + 0x1e0,
-                    &this->mBlendModelAnim.mat4x3, this->mHoldMtx);
+    MulMat4x3Mat4x3(&this->mBlendModelAnim.data.transforms[10], &this->mBlendModelAnim.mat4x3,
+                    this->mHoldMtx);
 
     /* Held-matrix pointer: dActor_c's mCarryMatrix. */
     this->mCarryMatrix = (Matrix4x3 *)this->mHoldMtx;
@@ -1593,7 +1593,7 @@ int daBombking_c::Behavior()
         ((dCamera_c *)data_0209f318)->mFramedActor = this;
     }
 
-    if (*(void **)((char *)mState + 8) != 0) {
+    if (mState[1] != 0) {
         PMF *p = mState + 1;
         (this->**p)();
     }

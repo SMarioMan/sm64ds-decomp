@@ -961,8 +961,6 @@ extern int func_0201eaac();
 extern u32 func_02022cbc(int, int, s32, s32, s32, int);
 extern int func_020308a8(void);
 extern void func_02034504();
-extern int func_020353d4(unsigned char*);
-extern int func_02035408(unsigned char*);
 extern int func_0203543c(unsigned char*);
 extern int func_0203545c(unsigned char*);
 extern int func_0203547c(unsigned char*);

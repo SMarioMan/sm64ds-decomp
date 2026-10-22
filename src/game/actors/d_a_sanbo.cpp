@@ -37,10 +37,6 @@
  *   - gSanboHeadModelFile and gSanboBodyModelFile are the head
  *   and segment file handles (InitResources LoadFile, CleanupResources
  *   Release). Both actor profiles are defined with their factories below.
- *   - unk_3a8 is the head byte func_ov096_0213670c reads to
- *   choose a 0 or 0x5a regrowth delay. func_ov096_021365d4 clears it
- *   once three segments exist. It stays unk_ until that role is
- *   measured past those two stores.
  *   - func_ov096_02135948 keeps five int[3] positions. One
  *   Vector3 in their place changes that function.
  *   - data_02082214 is arm9's sine table. data_020a0e68 is the
@@ -144,7 +140,7 @@ int daSanbo_c::InitResources()
         mModel.SetFile((BMD_File *)m, 1, 1);
         Model::LoadFile(gSanboBodyModelFile);
         LoadBlueCoinModel(this);
-        unk_3a8 = 1;
+        mInstantSprout = 1;
     } else {
         t = (actorID == SANBO_BODY);
         if (t != false) {
@@ -351,10 +347,10 @@ int daSanbo_c::func_ov096_02136754()
 }
 
 // @symbol _ZN9daSanbo_c19func_ov096_0213670cEv
-/* unk_3a8 on the head picks a zero delay or a 90-frame one. */
+/* mInstantSprout on the head picks a zero delay or a 90-frame one. */
 int daSanbo_c::func_ov096_0213670c() {
     daSanbo_c *head = func_ov096_021357b4();
-    u8 timer = head->unk_3a8;
+    u8 timer = head->mInstantSprout;
 
     if (timer != 0)
         timer = 0;
@@ -395,7 +391,7 @@ int daSanbo_c::func_ov096_021365d4()
                 mNextSegment = (daSanbo_c *)spawned;
                 func_ov096_02136928(4);
                 if (func_ov096_02135838() >= 3)
-                    func_ov096_021357b4()->unk_3a8 = 0;
+                    func_ov096_021357b4()->mInstantSprout = 0;
             }
         }
     }

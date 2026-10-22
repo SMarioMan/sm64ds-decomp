@@ -85,9 +85,9 @@ void dWipe_c::func_0202fb30()
     }
     *(volatile u32 *)0x4000000 &= ~0xe000;
     *(volatile u32 *)0x4001000 &= ~0xe000;
-    if (unk_028 == 1) {
-        type = unk_018;
-        unk_028 = 0;
+    if (typePending == 1) {
+        type = pendingType;
+        typePending = 0;
     }
 }
 
@@ -581,8 +581,8 @@ void dWipe_c::func_0202ed14()
     wipeSpeed = 0;
     wipeAccel = 0;
     type = 0;
-    unk_018 = type;
-    unk_028 = 0;
+    pendingType = type;
+    typePending = 0;
 }
 
 /* Vtable slot 8. A pure veneer to the base: the wipe has no end state of its
@@ -602,21 +602,21 @@ void dWipe_c::SetToStart()
 }
 
 /* Request a new wipe `type`. A mid-transition request is stashed into
-   unk_018/unk_028 and committed by func_0202fb30 when the current leg ends;
+   pendingType/typePending and committed by func_0202fb30 when the current leg ends;
    outside a transition it lands directly. */
 // @symbol _ZN7dWipe_c13func_0202ec9cEi
 int dWipe_c::func_0202ec9c(int arg)
 {
     if (arg == type) {
-        unk_028 = 0;
+        typePending = 0;
         return 0;
     }
     if (IsBetweenStartAndEnd()) {
-        unk_018 = arg;
-        unk_028 = 1;
+        pendingType = arg;
+        typePending = 1;
         return 1;
     }
     type = arg;
-    unk_028 = 0;
+    typePending = 0;
     return 0;
 }

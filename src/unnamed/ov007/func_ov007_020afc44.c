@@ -12,10 +12,16 @@ extern void func_ov007_020b8188(int a, int b, int c);
 extern void func_ov007_020c0638(int a, int b, int c, int d);
 extern void func_ov007_020b8070(int n);
 
+/* The 0xc-byte record func_ov007_020adc08 returns; names as in
+ * func_ov007_020adc08, only the layer read here. */
+typedef struct Ov007LayerSlot {
+    int state; /* 0x00: an Ov007MenuState (func_ov007_020c9388) */
+    int layer; /* 0x04: the Ov007BgLayer func_ov007_020c0638 scrolls */
+} Ov007LayerSlot;
+
 /* data_ov007_0210342c: the overlay's manager. No class or header names it;
  * only the slots this file touches are spelled. Left raw: +0x60 (handed to
- * func_ov007_020b8188, cleared by func_ov007_020b0244), the two records at
- * +0xe0/+0xe4 whose +4 func_ov007_020c0638 scrolls, and the record the
+ * func_ov007_020b8188, cleared by func_ov007_020b0244) and the record the
  * settings' first word points at (a byte per slot from +0xb). */
 typedef struct Ov007Work {
     char pad_00[4];
@@ -34,7 +40,13 @@ typedef struct Ov007Work {
     char pad_60[4];
     int tweenOut[2];       /* 0x64: bound as tweens[i]->out (func_ov007_020b6a84) */
     Ov007Tween *tweens[2]; /* 0x6c: func_ov007_020c908c */
+    char pad_74[0x54];
+    /* 0xc8: func_ov007_020b6d40 stores func_ov007_020adc08(i, ...) for
+     * i = 0..7 */
+    Ov007LayerSlot *layerSlots[8];
 } Ov007Work;
+
+typedef char Ov007Work_size_must_be_0xe8[sizeof(Ov007Work) == 0xe8 ? 1 : -1];
 
 extern char *data_ov007_0210342c;
 /* The extern keeps the tree's char * spelling (the declaration-agreement
@@ -180,7 +192,7 @@ void func_ov007_020afc44(void)
                     WORK->selectedSlot = WORK->targetSlot;
                     WORK->targetSlot = t;
                     func_ov007_020b7d94(3);
-                    func_ov007_020c0638(*(int*)(*(char**)(G + 0xe0) + 4), 0, 0, 0);
+                    func_ov007_020c0638(WORK->layerSlots[6]->layer, 0, 0, 0);
                     menu->stateWork = 2;
                 }
                 break;
@@ -218,10 +230,8 @@ void func_ov007_020afc44(void)
         return;
     if (func_ov007_020b79e4() != 0) return;
     if (sb != 0) {
-        func_ov007_020c0638(*(int *)(*(char **)(G + 0xe0) + 4), (WORK->tweenOut[0] >> 0xc) * 8, 0,
-                            0);
-        func_ov007_020c0638(*(int *)(*(char **)(G + 0xe4) + 4), (WORK->tweenOut[0] >> 0xc) * 8, 0,
-                            0);
+        func_ov007_020c0638(WORK->layerSlots[6]->layer, (WORK->tweenOut[0] >> 0xc) * 8, 0, 0);
+        func_ov007_020c0638(WORK->layerSlots[7]->layer, (WORK->tweenOut[0] >> 0xc) * 8, 0, 0);
     }
     if (fp == 0) return;
     func_ov007_020b8070(WORK->tweenOut[1] >> 0xc);

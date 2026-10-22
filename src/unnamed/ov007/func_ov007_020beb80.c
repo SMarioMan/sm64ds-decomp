@@ -1,5 +1,6 @@
 #include "types.h"
 #include "nitro/fx/fx.h"
+#include "ModelBase.h"
 
 extern int func_020538b8(int a, int b);
 extern void *func_ov007_020b7690(int i);
@@ -7,22 +8,42 @@ extern int func_02053644(s16 *v);
 extern int _ZN4cstd4fdivEii(int a, int b);
 extern void func_02053380(s16 *in, s16 *out);
 
-/* The fields this file reads; func_ov007_020be9ac calls it with the same
- * object (its b0/b1 bytes and +0x18 callback are not read here).
- * mOwner is the animated object it tracks: its +0x98/+0x94 words gate the
- * update below, and its first word leads (via +0xc) to the node `P` whose
- * +0x24 position this follows. mYaw takes func_020538b8 (atan2) of P's
- * +0x18 x/z; mPrevPos holds P's position from the last gated update, so
- * `dd` is the motion since then. mSlot picks the element
- * func_ov007_020b7690 returns. */
-typedef struct BoneFollower {
+/* The 0x1c-byte animation player; names as in func_ov007_020bc02c. */
+typedef struct Ov007AnimPlayer {
+    /* 0x00: 0 playing; 1 held; func_ov007_020c9110 sets 2 when a one-shot ends */
+    s32 state;
+} Ov007AnimPlayer;
+
+/* The 0xa0-byte model record func_ov007_020bc6d4 allocates; names as in
+ * func_ov007_020bc02c and func_ov007_020be0dc, only the slots read here. */
+typedef struct Ov007Model {
+    struct ModelComponents *model; /* 0x00 */
+    char pad_04[0x14];
+    Ov007AnimPlayer *boneAnim; /* 0x18 */
+    char pad_1c[0x78];
+    int visible; /* 0x94: func_ov007_020bbff0 renders only while it is nonzero */
+    /* 0x98: 1 on the frames that step the animations (func_ov007_020bc02c) */
+    int animTick;
+} Ov007Model;
+
+typedef char
+    Ov007Model_animTick_must_be_at_0x98[(int)&((Ov007Model *)0)->animTick == 0x98 ? 1 : -1];
+
+/* func_ov007_020beaa0's 0x1c-byte figure; func_ov007_020be9ac calls this
+ * file with it (its +0x00/+0x01 bytes and +0x18 hook are not read here).
+ * particleIndex and model as in func_ov007_020be0dc. The model's
+ * animTick/visible gate the update below, and its bone 0 transform `P` is
+ * what this follows: yaw takes func_020538b8 (atan2) of P's third rotation
+ * row x/z; prevPos holds P's translation from the last stepped frame, so
+ * `dd` is the motion since then. */
+typedef struct Ov007Figure {
     u8 pad_00[2];
-    u8 mSlot; /* 0x02 */
+    u8 particleIndex; /* 0x02: picks the particle system func_ov007_020b7690 returns */
     u8 pad_03;
-    char *mOwner;   /* 0x04 */
-    int mYaw;       /* 0x08 */
-    Vector3 mPrevPos; /* 0x0c */
-} BoneFollower;
+    Ov007Model *model; /* 0x04: func_ov007_020bc6d4 */
+    int yaw;           /* 0x08 */
+    Vector3 prevPos;   /* 0x0c */
+} Ov007Figure;
 
 /* The element func_ov007_020b7690 hands back; only the fields written here are named. */
 typedef struct TrackElem {
@@ -38,29 +59,29 @@ typedef struct TrackElem {
 } TrackElem;
 
 void func_ov007_020beb80(char *self) {
-    BoneFollower *f = (BoneFollower *)self;
-    char *B = *(char **)f->mOwner;
-    char *P = *(char **)(B + 0xc);
-    int *q = (int *)(int)(P + 0x18);
+    Ov007Figure *f = (Ov007Figure *)self;
+    struct ModelComponents *B = f->model->model;
+    Matrix4x3 *P = B->transforms;
+    int *q = (int *)(int)&P->r.m[6];
     int r;
     Vector3s dd;
     TrackElem *e;
     int frames;
     int vel;
     int sc;
-    Vector3 *tp = (Vector3 *)(int)(P + 0x24);
+    Vector3 *tp = (Vector3 *)(int)&P->t;
     r = func_020538b8(q[0], q[2]);
-    dd.x = (short)(tp->x - f->mPrevPos.x);
-    dd.y = (short)(tp->y - f->mPrevPos.y);
-    dd.z = (short)(tp->z - f->mPrevPos.z);
-    if (*(int *)(f->mOwner + 0x98) != 0) {
-        f->mYaw = r;
-        f->mPrevPos = *tp;
+    dd.x = (short)(tp->x - f->prevPos.x);
+    dd.y = (short)(tp->y - f->prevPos.y);
+    dd.z = (short)(tp->z - f->prevPos.z);
+    if (f->model->animTick != 0) {
+        f->yaw = r;
+        f->prevPos = *tp;
     }
-    e = (TrackElem *)func_ov007_020b7690(f->mSlot);
+    e = (TrackElem *)func_ov007_020b7690(f->particleIndex);
     {
-        char *A = f->mOwner;
-        if (*(int *)(A + 0x94) != 0 && (unsigned)*(*(int **)(A + 0x18)) <= 1) {
+        Ov007Model *A = f->model;
+        if (A->visible != 0 && (unsigned)A->boneAnim->state <= 1) {
             vel = 0;
             frames = 0x1000;
             if (dd.x != 0 || dd.y != 0 || dd.z != 0) {

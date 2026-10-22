@@ -69,7 +69,8 @@ struct BMD_Material {
     char *name;            /* 0x00 - file-relative, fixed up on load */
     u32 textureId;         /* 0x04 - index into BMD_File::textures */
     u32 paletteId;         /* 0x08 - index into BMD_File::palettes */
-    u8 pad_0c[0x18];
+    u8 pad_0c[0x14];
+    u32 texImageParam;     /* 0x20 - ORed with the texture's flags by func_02046bbc */
     u32 flags;             /* 0x24 - bit 31 hides the material */
     u8 pad_28[0x8];
 };

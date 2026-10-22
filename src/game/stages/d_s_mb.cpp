@@ -3,8 +3,8 @@
  *
  * .text 0x02034a78..0x02035354. Twelve class functions plus the factory
  * dScMB_c_classInit, which abuts InitResources and stores this class's
- * vtable. The next symbol, func_02035354, is a list-node compare and is
- * not part of the scene.
+ * vtable. The next symbol, dBgCh::IsOwnedBy, opens the collision-query
+ * run and is not part of the scene.
  *
  * _ZTS7dScMB_c 0x02094364. _ZTI7dScMB_c 0x02094370, base word _ZTI8dScene_c.
  * Nested _ZTIN7dScMB_c15graphCallback_cE 0x0209437c,
@@ -326,19 +326,19 @@ extern "C" void *dScMB_c_classInit(void) {
         *(int **)p = data_0208e4b8;
         *(int **)p = _ZTV8dScene_c;
         {
-            u8 *bp = (u8 *)((int)p + 0x13);
+            u8 *bp = &((dScMB_c *)p)->pauseFlags;
             *bp |= 1;
             *bp |= 4;
         }
         *(int **)p = data_020943c4;
         {
-            int *fp = (int *)((int)p + 0x50);
-            fp[0] = (int)_ZTV8dFader_c;
-            fp[0] = (int)_ZTV15dFdBrightness_c;
-            fp[1] = 0x1000;
-            fp[2] = 0;
-            fp[0] = (int)_ZTV10dFdColor_c;
-            *(short *)(fp + 3) = 0;
+            dFdColor_c *fader = &((dScMB_c *)p)->fader;
+            *(int **)fader = _ZTV8dFader_c;
+            *(int **)fader = _ZTV15dFdBrightness_c;
+            fader->currInterp = 0x1000;
+            fader->speed = 0;
+            *(int **)fader = _ZTV10dFdColor_c;
+            fader->color = 0;
         }
     }
     return p;

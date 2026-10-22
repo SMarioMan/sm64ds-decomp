@@ -89,7 +89,7 @@ void func_ov001_020aaf40(void)
                         func_ov001_020aa6b0((int *)node, ((v / 10) & 1) == 0 ? 1 : 0);
                     }
                 }
-                node = *(char**)(node + 0x10);
+                node = (char *)((dCapIcon_c *)node)->mNext;
             }
         }
         if (gCapIconFlashTimer == 0)
@@ -132,11 +132,11 @@ void func_ov001_020aadac(void) {
         while (sl != 0) {
             unsigned char *fl = LAUNDER_U8_PTR(&((dCapIcon_c *)sl)->mFlags);
             *fl &= ~2;
-            if (sl[0x14/4] != -1) {
+            if (((dCapIcon_c *)sl)->mSlot != -1) {
                 func_ov001_020aa6b0(sl, 0);
-                data_0209f3e8[sl[0x14/4]] = 0;
+                data_0209f3e8[((dCapIcon_c *)sl)->mSlot] = 0;
             }
-            sl = (int*)sl[0x10/4];
+            sl = (int *)((dCapIcon_c *)sl)->mNext;
         }
         if (i1 != ((Player *)fp)->mCharacter) {
             gCapIconDispatchFlags[i1] |= 2;
@@ -151,12 +151,13 @@ void func_ov001_020aadac(void) {
         o = (int *)gCapIconListHeads[i2];
         if (o == 0) continue;
         do {
-            void* fw = dActor_c::FindWithID(o[8/4]);
-            if (fw != 0 || (int)fw != o[4/4]) {
+            void *fw = dActor_c::FindWithID(((dCapIcon_c *)o)->mOwnerUniqueID);
+            if (fw != 0 || fw != ((dCapIcon_c *)o)->mOwner) {
                 if (((dCapIcon_c *)o)->mIconKind == 4) {
                     unsigned char *fl = LAUNDER_U8_PTR(&((dCapIcon_c *)o)->mFlags);
                     *fl |= 2;
-                    o[0x14 / 4] = func_0202a8e0(o[4 / 4], ((dCapIcon_c *)o)->mCharacter);
+                    ((dCapIcon_c *)o)->mSlot = func_0202a8e0((int)((dCapIcon_c *)o)->mOwner,
+                                                             ((dCapIcon_c *)o)->mCharacter);
                     func_ov001_020aa6b0(o, 1);
                     func_ov001_020aa6e4(i2, ((dCapIcon_c *)o)->mIconKind, 0);
                     *flags |= 2;
@@ -164,14 +165,10 @@ void func_ov001_020aadac(void) {
             } else {
                 ((dCapIcon_c *)o)->Unlink();
             }
-            o = (int*)o[0x10/4];
+            o = (int *)((dCapIcon_c *)o)->mNext;
         } while (o != 0);
     }
 }
-
-/* Route the +0x1b flag-byte address through 64-bit arithmetic so it is
- * materialized (add rX,base,#0x1b) for the read-modify-write, matching the ROM. */
-#define FLAGS1B(p) (*(u8*)(((int)(p) + 0x1b)))
 
 void func_ov001_020aaa54(void)
 {
@@ -229,7 +226,7 @@ void func_ov001_020aaa54(void)
                             if (bit0) {
                                 if (sl->mSlot == -1) {
                                     sl->mSlot = func_0202a8e0((int)sl->mOwner, sl->mCharacter);
-                                    FLAGS1B(sl) |= 2;
+                                    sl->mFlags |= 2;
                                     func_ov001_020aa6b0((int *)sl, 1);
                                 } else {
                                     spc = 1;
@@ -252,10 +249,13 @@ void func_ov001_020aaa54(void)
                                         *flagp |= 0x20;
                                 } else {
                                     if ((t & 3) == 1 && r8 == 0) {
-                                        if ((unsigned)(((volatile u8 *)sl)[0x1b] << 0x1c) >> 0x1f) {
+                                        /* volatile is load-bearing: a plain sl->mFlags read DIFFs. */
+                                        if ((unsigned)(((volatile dCapIcon_c *)sl)->mFlags
+                                                       << 0x1c) >>
+                                            0x1f) {
                                             sb = sl;
                                         } else {
-                                            FLAGS1B(sl) |= 8;
+                                            sl->mFlags |= 8;
                                         }
                                     }
                                 }
@@ -272,7 +272,7 @@ void func_ov001_020aaa54(void)
              * (the shards' extern declared five). The cast preserves the
              * pushed r7; the definition takes four. */
             if (((int (*)(int, void *, int, int, int))func_ov001_020aa858)(r6, sb, typ, fp, r7) != 0) {
-                FLAGS1B(sb) |= 2;
+                sb->mFlags |= 2;
                 sb->mSlot = func_0202a8e0((int)sb->mOwner, sb->mCharacter);
                 func_ov001_020aa6b0((int *)sb, 1);
                 func_ov001_020aa6e4(r6, sb->mIconKind, (int *)sb);

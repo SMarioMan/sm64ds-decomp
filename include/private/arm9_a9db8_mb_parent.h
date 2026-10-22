@@ -64,12 +64,25 @@ typedef char MbChildRequest_size_must_be_0x20[sizeof(MbChildRequest) == 0x20 ? 1
 #endif
 
 typedef struct MbParentWork {
-    u8 pad_0000[0x1318];
+    u8 pad_0000[0x1300];
+    /* 0x1300 -- the parent's own MBUserInfo (NitroSDK parentInfo):
+     * func_02067928 hands it to func_02068680, which copies its 0x16 bytes
+     * into each registered file's game record */
+    u8 mParentUser[0x16];
+    u8 pad_1316[0x2];
     /* 0x1318 -- bytes of a file carried per block: func_02068ae8 sets it to
      * the MP parent size less 6; func_02067604 divides each segment by it
      * and func_02067530 turns a block number back into an offset with it */
     u32 mBlockSize;
-    u8 pad_131c[0x1340 - 0x131c];
+    /* 0x131c -- bytes of the child's entry request carried per piece:
+     * func_02068ae8 sets it to the MP child size less 2, and
+     * func_02065de4 copies each received piece at piece * mReqPieceSize */
+    s32 mReqPieceSize;
+    /* 0x1320 -- pieces a whole request takes, 30 / mReqPieceSize
+     * (func_02068ae8): func_02065de4 refuses a piece number above it and
+     * counts the received bits up to it */
+    s32 mReqPieceCount;
+    u8 pad_1324[0x1340 - 0x1324];
     /* 0x1340 -- per child (AID - 1): the user record from its entry request,
      * AID in the high nibble of byte 0 (func_0206655c); func_02066a94 hands
      * the table to func_0206853c */

@@ -46,6 +46,7 @@ enum dScMgLuigi_c_AssetId {
 #include "IRQ.h"
 #include "nitro/fx/fx.h"
 #include "SpawnInfo.h"
+#include "OamAttr.h"
 
 typedef void (dScMgLuigi_c::*LuigiSlotHandler)(int);
 typedef void (dScMgLuigi_c::*LuigiStateHandler)();
@@ -330,9 +331,8 @@ void dScMgLuigi_c::DrawReward() {
     if (y >= 0xb8)
         y = 0xb8;
     s32 language = GetGameLanguage();
-    Mg_RenderSubSpriteMtx(*(void **)((char *)sLuigiTextSpritesByLanguage[language] + 0x34), x - 8,
-                          y, 0);
-    Mg_RenderSubSpriteMtx(*(void **)(sMgDigitSprites + 0x64), x + 8, y, 0);
+    Mg_RenderSubSpriteMtx(((void **)sLuigiTextSpritesByLanguage[language])[13], x - 8, y, 0);
+    Mg_RenderSubSpriteMtx(((void **)sMgDigitSprites)[25], x + 8, y, 0);
 }
 
 // @symbol _ZN12dScMgLuigi_c12UpdateRewardEv
@@ -426,13 +426,14 @@ void dScMgLuigi_c::DrawCurtains() {
             for (;;) {
                 char *sprite = Mg_RenderMainSpriteScaled((int)entry, x, y, -1, 1, 0x1000, 0);
                 if (sprite != 0) {
+                    /* attr2's palette, read with the ROM's word load at +4:
+                       spelled `->attr2` it becomes a halfword load and moves bytes. */
                     int palette = (int)((unsigned int)(*(int *)(sprite + 4) << 0x10) >> 0x1c);
                     *(int *)sprite = (*(int *)sprite & ~0xc00) | 0x800;
-                    *(unsigned short *)(sprite + 4) =
-                        (unsigned short)((*(unsigned short *)(sprite + 4) & ~0xf000) |
-                                         (palette << 12));
+                    ((OamAttr *)sprite)->attr2 =
+                        (unsigned short)((((OamAttr *)sprite)->attr2 & ~0xf000) | (palette << 12));
                 }
-                if (*(unsigned short *)(entry + 6) == 0xffff)
+                if (((OamAttr *)entry)->attr3 == 0xffff)
                     break;
                 entry += 8;
             }
@@ -758,10 +759,10 @@ void dScMgLuigi_c::DrawPenalties() {
             if (y >= 0xb8)
                 y = 0xb8;
             language = GetGameLanguage();
-            Mg_RenderSubSpriteMtx(*(void **)((char *)sLuigiTextSpritesByLanguage[language] + 0x38),
-                                  x - 0x10, y, 0);
-            Mg_RenderSubSpriteMtx(*(void **)(sMgDigitSprites + 0xa4), x, y, 0);
-            Mg_RenderSubSpriteMtx(*(void **)(sMgDigitSprites + 0xa0), x + 0x10, y, 0);
+            Mg_RenderSubSpriteMtx(((void **)sLuigiTextSpritesByLanguage[language])[14], x - 0x10, y,
+                                  0);
+            Mg_RenderSubSpriteMtx(((void **)sMgDigitSprites)[41], x, y, 0);
+            Mg_RenderSubSpriteMtx(((void **)sMgDigitSprites)[40], x + 0x10, y, 0);
         }
     }
 }

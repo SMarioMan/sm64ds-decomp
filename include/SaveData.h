@@ -31,10 +31,11 @@ struct SaveData {
     u32 flags1;
     /* 0x008 -- character unlocks in the low bits (bit 0 Mario, 1 Luigi,
        2 Wario ...) and the eight glowing rabbits at bits 20..27.
-       WIDTH CORRECTED: this was declared `u8 unk_008`, but every access is a
-       32-bit read-modify-write -- IsCharacterUnlocked and SetCharacterIntro
-       index it as s32[2], and NumGlowingRabbitsFound loads a whole int from
-       +0x8. The u8 was the marker the generator emitted, not the width. */
+       WIDTH CORRECTED: this was declared `u8 unk_008`, but every access is
+       32 bits wide -- IsCharacterUnlocked tests the whole word,
+       SetCharacterIntro read-modify-writes it, and NumGlowingRabbitsFound
+       loads it as an int. The u8 was the marker the generator emitted, not
+       the width. */
     s32 flags2;
     u8  pad_00c[0x35];
     u8  mCharacter;            /* 0x041 -- current character */

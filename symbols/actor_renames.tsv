@@ -6702,3 +6702,11 @@ arm9	0x020379d0	_ZN12dBgCh_SphCrr13func_020379d0EiiP8dActor_cP4dBgW	_ZN12dBgCh_S
 arm9	0x020379f4	_ZN12dBgCh_SphCrr13func_020379f4EiPv	_ZN12dBgCh_SphCrr14RecordFloorHitEiPv	inferred name: forwards to mClsnResult1 (GetFloorResult) RecordHit
 arm9	0x02037a04	_ZN12dBgCh_SphCrr13func_02037a04EP7Vector3S1_	_ZN12dBgCh_SphCrr16GetPushOutBoundsEP7Vector3S1_	inferred name: copies mPushOutMin/mPushOutMax out
 arm9	0x02037a38	_ZN12dBgCh_SphCrr13func_02037a38Ev	_ZN12dBgCh_SphCrr18UpdateDisplacementEv	inferred name: sets disp to mPushOutMin + mPushOutMax after a scan
+arm9	0x02035354	func_02035354	_ZNK5dBgCh9IsOwnedByEP8dActor_c	inferred name: true when the actor matches the query's own mOwner pointer and mOwnerUniqueID; every collider-table scan skips such colliders
+arm9	0x02035394	func_02035394	_ZN5dBgChaSERKS_	copies mDetectFlags, mOwnerUniqueID and mOwner but not the vptr; called through a base cast like dBgPi::operator= by the dBgW_KcMbg local-space queries
+arm9	0x020353d4	func_020353d4	_ZNK5dBgCh21IsIgnoringType14WallsEv	inferred name: tests mDetectFlags 0x40, which ShouldPassThroughImpl reads to pass through CLPS surface type 0x14 on wall-facing hits
+arm9	0x020353e0	func_020353e0	_ZN5dBgCh23StopIgnoringType14WallsEv	inferred name: clears mDetectFlags 0x40 (the type-0x14 wall pass-through bit)
+arm9	0x020353f4	func_020353f4	_ZN5dBgCh24StartIgnoringType14WallsEv	inferred name: sets mDetectFlags 0x40 (the type-0x14 wall pass-through bit)
+arm9	0x02035408	func_02035408	_ZNK5dBgCh24IsIgnoringVanishSurfacesEv	inferred name: tests mDetectFlags 0x20, which ShouldPassThroughImpl reads to pass through CLPS surface type 0x11; set only for a vanished Player and Boos
+arm9	0x02035414	func_02035414	_ZN5dBgCh26StopIgnoringVanishSurfacesEv	inferred name: clears mDetectFlags 0x20 (the vanish-surface pass-through bit)
+arm9	0x02035428	func_02035428	_ZN5dBgCh27StartIgnoringVanishSurfacesEv	inferred name: sets mDetectFlags 0x20 (the vanish-surface pass-through bit); callers gate it on Player::mIsVanish, and daTrs_c sets it always

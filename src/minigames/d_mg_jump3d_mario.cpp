@@ -319,6 +319,14 @@ extern "C" void Jump3D_StopGravity(void)
     } while (i < sJump3DMarioCount);
 }
 
+/* One Mario's start in a round layout: three per layout (0x24 bytes). */
+struct Jump3DLayoutSlot {
+    int windUpTimer; /* 0x00: StartWindUp's timer */
+    int x;           /* 0x04: start mPos.x */
+    int vxScale;     /* 0x08: 20.12 factor on sJump3DStartVx, giving mVel.x */
+};
+typedef char Jump3DLayoutSlot_size_must_be_0xc[sizeof(Jump3DLayoutSlot) == 0xc ? 1 : -1];
+
 // @symbol Jump3D_StartRoundLayout
 #pragma push
 #pragma opt_common_subs off
@@ -334,14 +342,15 @@ extern "C" void Jump3D_StartRoundLayout(void)
     eoff = 0;
     ooff = 0;
     do {
-        char *e = sJump3DRoundLayouts + sJump3DLayout * 0x24 + eoff;
-        int word = *(int *)e;
+        Jump3DLayoutSlot *e =
+            (Jump3DLayoutSlot *)(sJump3DRoundLayouts + sJump3DLayout * 0x24 + eoff);
+        int word = e->windUpTimer;
         ((dMgJump3DMario_c *)(sJump3DMarioPool + ooff))->StartWindUp((short)word);
-        *(int *)(sJump3DMarioPool + ooff + 0x14) = *(int *)(e + 4);
+        ((dMgJump3DMario_c *)(sJump3DMarioPool + ooff))->mPos.x = e->x;
         {
             int s = sJump3DStartVx;
-            int c = *(int *)(e + 8);
-            *(int *)(sJump3DMarioPool + ooff + 0x20) = FX_MUL(s, c);
+            int c = e->vxScale;
+            ((dMgJump3DMario_c *)(sJump3DMarioPool + ooff))->mVel.x = FX_MUL(s, c);
         }
         ((dMgJump3DMario_c *)(sJump3DMarioPool + ooff))->UpdateModelMatrix();
         i++;

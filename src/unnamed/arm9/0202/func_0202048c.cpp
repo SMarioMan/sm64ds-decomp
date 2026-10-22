@@ -14,9 +14,8 @@ extern short data_02082214[];
 /* Draw an OamAnimation's current frame at (a1, a2). OamAnimation.h's names
  * are kept although this reader contradicts two of them: `tile` holds the
  * current frame's OamAttr list (func_0202044c copies it from the frame
- * table), and `affine` gates drawing at all. Its 0x28 word picks the screen
- * (0 main, 1 sub, 2 both, the main copy 0xc0 lower); the header has no name
- * for it, so it stays raw here. */
+ * table), and `affine` gates drawing at all. `screen` picks the engine
+ * (0 main, 1 sub, 2 both, the main copy 0xc0 lower). */
 extern "C" void func_0202048c(char* a0, int a1, int a2)
 {
     OamAnimation *anim = (OamAnimation *)a0;
@@ -28,7 +27,7 @@ extern "C" void func_0202048c(char* a0, int a1, int a2)
 
     int f08 = anim->scaleX;
     if (f08 == 0x1000 && anim->scaleY == 0x1000 && (u16)anim->rotation == 0) {
-        int mode = *(int*)(a0 + 0x28);
+        int mode = anim->screen;
         if (mode == 2) {
             _ZN3OAM6RenderEbP7OamAttriiii5Fix12IiES3_ii(0, (OamAttr *)anim->tile, a1, a2 + 0xc0,
                                                         anim->palette, anim->priority, 0x1000,
@@ -66,7 +65,7 @@ extern "C" void func_0202048c(char* a0, int a1, int a2)
         m[3] = -m[3];
     }
 
-    int mode = *(int*)(a0 + 0x28);
+    int mode = anim->screen;
     if (mode == 2) {
         OAM::Render(false, (OamAttr *)anim->tile, a1, a2 + 0xc0, anim->palette, anim->priority,
                     (Matrix2x2 *)m);
