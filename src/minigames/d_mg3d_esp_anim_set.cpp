@@ -65,22 +65,16 @@ struct ModelComponents;
  * declared, never defined: the manifest aliases their undefined members
  * onto the ROM veneers. */
 struct EspAnimSetModelFilePtr : SharedFilePtr {
-    u32 words[2];
-
     EspAnimSetModelFilePtr(u32 fileID);
     ~EspAnimSetModelFilePtr();
 };
 
 struct EspAnimSetAnimationFileHandle : SharedFilePtr {
-    u32 words[2];
-
     EspAnimSetAnimationFileHandle(u32 fileID);
     ~EspAnimSetAnimationFileHandle();
 };
 
 struct EspAnimSetTexSequenceFilePtr : SharedFilePtr {
-    u32 words[2];
-
     EspAnimSetTexSequenceFilePtr(u32 fileID);
     ~EspAnimSetTexSequenceFilePtr();
 };
@@ -392,9 +386,9 @@ void dMg3DEspModel_c::Behavior()
 // @symbol _ZN15dMg3DEspModel_c3HitEv
 void dMg3DEspModel_c::Hit()
 {
-    if (mModelAnim.Finished() != 0 && mModelAnim.file == ((BCA_File **)&gEspCardOpenAnimFile)[1]) {
+    if (mModelAnim.Finished() != 0 && mModelAnim.file == (BCA_File *)gEspCardOpenAnimFile.filePtr) {
         _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(
-            &mModelAnim, ((BCA_File **)&gEspCardOpenWaitAnimFile)[1], 0, 0x800, 0);
+            &mModelAnim, (BCA_File *)gEspCardOpenWaitAnimFile.filePtr, 0, 0x800, 0);
         return;
     }
     if (mModelAnim.WillHitFrame(0x10) == 0 && mModelAnim.WillHitFrame(0x50) == 0)
@@ -408,7 +402,7 @@ void dMg3DEspModel_c::Hit()
 void dMg3DEspModel_c::StartHit()
 {
     _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(
-        &mModelAnim, *(BCA_File **)((char *)&gEspCardOpenAnimFile + 4), 0x40000000, 0x800, 0);
+        &mModelAnim, (BCA_File *)gEspCardOpenAnimFile.filePtr, 0x40000000, 0x800, 0);
     if (mMuted == 0)
         Sound::PlayBank2_2D(0x191);
     mState = pmf_dMg3DEspModel_c_Hit;
@@ -435,7 +429,7 @@ void dMg3DEspModel_c::Intro()
 void dMg3DEspModel_c::StartIntro()
 {
     _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(
-        &mModelAnim, *(BCA_File **)((char *)&gEspCardStartAnimFile + 4), 0x40000000, 0x800, 0);
+        &mModelAnim, (BCA_File *)gEspCardStartAnimFile.filePtr, 0x40000000, 0x800, 0);
     mAnimSet.SetPeriod(0xf);
     mAnimSet.SetSpeed(0x1000);
     mAnimSet.SetRepeats(3);
@@ -463,7 +457,7 @@ void dMg3DEspModel_c::Wait()
 void dMg3DEspModel_c::StartWait()
 {
     _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(
-        &mModelAnim, ((BCA_File **)&gEspCardWaitAnimFile)[1], 0, 0x800, 0);
+        &mModelAnim, (BCA_File *)gEspCardWaitAnimFile.filePtr, 0, 0x800, 0);
     mState = pmf_dMg3DEspModel_c_Wait;
 }
 

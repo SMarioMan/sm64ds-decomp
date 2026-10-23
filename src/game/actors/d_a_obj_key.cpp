@@ -83,13 +83,9 @@ namespace Sound {
 void LoadAndSetMusic_Layer3(unsigned int musicId);
 }
 
-/* {file id, loaded file}. Same two words daStar_c reads as id/ptr, and the
- * words this TU passes to SetAnim / SetFile / compares with mModelAnim.file.
- * SharedFilePtr itself has no fields; Release and LoadFile go through it. */
-struct ObjKeyFile {
-    u32 id;
-    void *ptr;
-};
+/* This TU's file handle type. The star's idle animation
+ * data_ov002_02110964 is declared through it as well. */
+struct ObjKeyFile : SharedFilePtr {};
 
 /* File-scope objects at the end of this file construct the eight resource
  * handles and fill the eight-entry state table. mwcc emits
@@ -333,8 +329,8 @@ void daObjKey_c::func_ov089_0213115c(int anim)
         return;
     }
     mAnimID = anim;
-    _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(&mModelAnim, data_ov089_02132880[anim]->ptr,
-                                                 ANIM_FLAGS, ANIM_SPEED, 0);
+    _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(&mModelAnim, data_ov089_02132880[anim]->filePtr,
+                                                ANIM_FLAGS, ANIM_SPEED, 0);
 }
 
 // @symbol _ZN10daObjKey_c16StateFlyToCenterEv
@@ -781,7 +777,7 @@ void daObjKey_c::UpdateModelTransform()
     mShadowMatrix.m[10] = mPosY >> 3;
     mShadowMatrix.m[11] = mPosZ >> 3;
     /* Shadow only while the idle anim (file 0x801b) is showing. */
-    if (mModelAnim.file == (BCA_File *)data_ov002_02110964.ptr)
+    if (mModelAnim.file == (BCA_File *)data_ov002_02110964.filePtr)
         _ZN8dActor_c19DropShadowRadHeightER17dExtShadowModel_cR9Matrix4x35Fix12IiES5_j(this, &mShadowModel, &mShadowMatrix, SHADOW_R, SHADOW_DEPTH, SHADOW_OPACITY);
 }
 
@@ -863,7 +859,7 @@ int daObjKey_c::Behavior()
             int isKey = (actorID == ACTOR_OBJ_KEY);
             if (isKey != 0) {
                 /* Anim 3's file (data_ov089_02132c40, id 0x44f) stays; the others die. */
-                if (mModelAnim.file != (BCA_File *)data_ov089_02132c40.ptr)
+                if (mModelAnim.file != (BCA_File *)data_ov089_02132c40.filePtr)
                     MarkForDestruction();
             }
         }
@@ -911,9 +907,11 @@ int daObjKey_c::InitResources()
     dExtFrameCtrl_c::LoadFile(*(SharedFilePtr *)&data_ov002_02110964);
 
     if (mState == KEY_KIND_STAR) {
-        if (mModelAnim.SetFile((BMD_File *)((ObjKeyFile *)&data_ov002_0211094c)->ptr, 1, 1) == 0)
+        if (mModelAnim.SetFile((BMD_File *)((ObjKeyFile *)&data_ov002_0211094c)->filePtr, 1, 1) ==
+            0)
             return 0;
-        _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(&mModelAnim, data_ov002_02110964.ptr, ANIM_FLAGS, ANIM_SPEED, 0);
+        _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(&mModelAnim, data_ov002_02110964.filePtr,
+                                                    ANIM_FLAGS, ANIM_SPEED, 0);
         mScaleX = SCALE_STAR;
         mScaleY = SCALE_STAR;
         mScaleZ = SCALE_STAR;
@@ -930,16 +928,18 @@ int daObjKey_c::InitResources()
         dExtFrameCtrl_c::LoadFile(*(SharedFilePtr *)&data_ov089_02132c40);
         dExtFrameCtrl_c::LoadFile(*(SharedFilePtr *)&data_ov089_02132c70);
         dExtFrameCtrl_c::LoadFile(*(SharedFilePtr *)&data_ov089_02132c48);
-        if (mModelAnim.SetFile((BMD_File *)((ObjKeyFile *)data_ov089_02132894[mState])->ptr, 1, 1) == 0)
+        if (mModelAnim.SetFile((BMD_File *)((ObjKeyFile *)data_ov089_02132894[mState])->filePtr, 1,
+                               1) == 0)
             return 0;
         {
             void *extra = data_ov089_021328b4[mState];
             if (extra != 0) {
-                if (mModel.SetFile((BMD_File *)((ObjKeyFile *)extra)->ptr, 1, -1) == 0)
+                if (mModel.SetFile((BMD_File *)((ObjKeyFile *)extra)->filePtr, 1, -1) == 0)
                     return 0;
             }
         }
-        _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(&mModelAnim, data_ov002_02110964.ptr, ANIM_FLAGS, ANIM_SPEED, 0);
+        _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(&mModelAnim, data_ov002_02110964.filePtr,
+                                                    ANIM_FLAGS, ANIM_SPEED, 0);
         mScaleX = SCALE_KEY;
         mScaleY = SCALE_KEY;
         mScaleZ = SCALE_KEY;

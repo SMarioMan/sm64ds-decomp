@@ -108,8 +108,6 @@ typedef void (daRNk_c::*StateFunc)();
 /* The model handle's ctor/dtor are the cartridge's func_02017acc /
    func_02017ab4 pair; the manifest aliases these. */
 struct RNkModelFileHandle : SharedFilePtr {
-    s32 fileId;
-    void *file;
     RNkModelFileHandle(u32 fileID);
     ~RNkModelFileHandle();
 };
@@ -117,21 +115,19 @@ struct RNkModelFileHandle : SharedFilePtr {
 /* The seven animation handles construct through SharedFilePtr::Construct
    and register SharedFilePtr_Destruct_Anim; the manifest aliases these. */
 struct RNkAnimationFileHandle : SharedFilePtr {
-    s32 fileId;
-    void *file;
     RNkAnimationFileHandle(u32 fileID);
     ~RNkAnimationFileHandle();
 };
 
-/* Each SharedFilePtr below is {?, loaded file} with the file at +4. Names are
-   by when SetAnim plays them. */
-#define ANIM_IDLE      (gdaRNkNokonokoWait1AnimationFile.file)   /* after talking, after stopping, at spawn */
-#define ANIM_TALK      (gdaRNkNokonokoWait2AnimationFile.file)   /* turned to face the player and talking */
-#define ANIM_RUN_START (data_ov062_0211e014.file)   /* at the start of the race; then ANIM_RUN */
-#define ANIM_RUN       (data_ov062_0211e024.file)   /* the looping run; speed follows mHorzSpeed */
-#define ANIM_JUMP      (data_ov062_0211e02c.file)   /* in the air */
-#define ANIM_LAND      (data_ov062_0211e004.file)   /* on landing, or when the path ends; then ANIM_RUN */
-#define ANIM_BRAKE     (gdaRNkNokonokoWalkEdAnimationFile.file)   /* STATE_PULL_UP's last frame to a stop */
+/* The animation each handle below has loaded. Names are by when SetAnim
+   plays them. */
+#define ANIM_IDLE      (gdaRNkNokonokoWait1AnimationFile.filePtr)   /* after talking, after stopping, at spawn */
+#define ANIM_TALK      (gdaRNkNokonokoWait2AnimationFile.filePtr)   /* turned to face the player and talking */
+#define ANIM_RUN_START (data_ov062_0211e014.filePtr)   /* at the start of the race; then ANIM_RUN */
+#define ANIM_RUN       (data_ov062_0211e024.filePtr)   /* the looping run; speed follows mHorzSpeed */
+#define ANIM_JUMP      (data_ov062_0211e02c.filePtr)   /* in the air */
+#define ANIM_LAND      (data_ov062_0211e004.filePtr)   /* on landing, or when the path ends; then ANIM_RUN */
+#define ANIM_BRAKE     (gdaRNkNokonokoWalkEdAnimationFile.filePtr)   /* STATE_PULL_UP's last frame to a stop */
 
 /* Play a BCA on Koopa's ModelAnim at normal speed (0x1000 = 1.0), from frame 0. */
 #define SET_ANIM(this, bca, flags) \
@@ -230,7 +226,7 @@ int daRNk_c::InitResources()
     dExtFrameCtrl_c::LoadFile(*(SharedFilePtr *)&gdaRNkNokonokoWait2AnimationFile);
     dExtFrameCtrl_c::LoadFile(*(SharedFilePtr *)&data_ov062_0211e02c);
     dExtFrameCtrl_c::LoadFile(*(SharedFilePtr *)&data_ov062_0211e004);
-    if (mModelAnim.SetFile((BMD_File *)gdaRNkNokonokoModelFile.file, 1, -1) == 0)
+    if (mModelAnim.SetFile((BMD_File *)gdaRNkNokonokoModelFile.filePtr, 1, -1) == 0)
         return 0;
     if (mShadowModel.InitCylinder() == 0)
         return 0;

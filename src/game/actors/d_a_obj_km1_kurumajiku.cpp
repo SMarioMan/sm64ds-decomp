@@ -51,12 +51,10 @@ typedef char ResourceDescriptor_size_must_be_0x0c[
  * declared-only subclasses so the static initializer names the real entry
  * points. */
 struct Km1KurumajikuModelFilePtr : SharedFilePtr {
-    u32 words[2];
     Km1KurumajikuModelFilePtr(u32 fileID);
     ~Km1KurumajikuModelFilePtr();
 };
 struct Km1KurumajikuCollisionFilePtr : SharedFilePtr {
-    u32 words[2];
     Km1KurumajikuCollisionFilePtr(u32 fileID);
     ~Km1KurumajikuCollisionFilePtr();
 };

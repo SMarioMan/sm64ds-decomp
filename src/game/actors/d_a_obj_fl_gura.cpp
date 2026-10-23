@@ -81,12 +81,10 @@ s32 daObjFl_Gura_c::CleanupResources()
  * declared-only subclasses so the static initializer names the real entry
  * points. */
 struct FlGuraModelFilePtr : SharedFilePtr {
-    u32 words[2];
     FlGuraModelFilePtr(u32 fileID);
     ~FlGuraModelFilePtr();
 };
 struct FlGuraCollisionFilePtr : SharedFilePtr {
-    u32 words[2];
     FlGuraCollisionFilePtr(u32 fileID);
     ~FlGuraCollisionFilePtr();
 };

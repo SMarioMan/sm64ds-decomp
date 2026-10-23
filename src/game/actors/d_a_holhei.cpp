@@ -20,8 +20,8 @@
  *   check_decl_agreement disagreement); the other seven keep their
  *   existing spellings, so each use casts to HolheiState *.
  *   __sinit_ov062_0211cf30 constructs the file handles and copies each
- *   record's two PMFs in. The second word of each file handle is the
- *   loaded BMD or BCA.
+ *   record's two PMFs in. Each file handle's filePtr is the loaded BMD
+ *   or BCA.
  * - g_profile_HOLHEI stays outside this text-only TU.
  * - func_ov062_02116d28 reloads mHeld before each pos word.
  *   func_ov062_02116a08 copies the player's position through one int
@@ -42,11 +42,6 @@
 #include "SurfaceInfo.h"
 #include "dBgPi.h"
 #include "Sound.h"
-
-/* Second word is the loaded file. SharedFilePtr.h has no fields.
-   The externs below keep the spellings already banked against
-   __sinit_ov062_0211cf30; this view is only a cast at the use. */
-struct HolheiFile { int id; void *file; };
 
 /* A state record: daHolhei_c_ChangeState stores its address in mState
    and calls a non-null enter; past the UpdateKillByInvincibleChar check,
@@ -365,7 +360,8 @@ int daHolhei_c::func_ov062_02116c78() {
     mTurnWait = 0x3c;
     mChargeStep = 0;
     mModel.speed = 0x1000;
-    _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(&mModel, ((HolheiFile *)&gHoruheiWalkAnimationFile)->file, 0, 0x1000, 0);
+    _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(
+        &mModel, ((SharedFilePtr *)&gHoruheiWalkAnimationFile)->filePtr, 0, 0x1000, 0);
     mTargetAngY = Vec3_HorzAngle(&mPosX, &mHomePosX);
     return 1;
 }
@@ -388,7 +384,8 @@ extern "C" int func_ov062_02116b80(daHolhei_c *self) {
     self->mTargetAngY = (short)((RandomIntInternal(data_0209e650) >> 8) << 0xc);
     self->mStateTimer = (short)(((RandomIntInternal(data_0209e650) >> 8) & 0x3f) + 0x64);
     self->mModel.speed = 0x1000;
-    _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(&self->mModel, ((HolheiFile *)&gHoruheiWalkAnimationFile)->file, 0, 0x1000, 0);
+    _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(
+        &self->mModel, ((SharedFilePtr *)&gHoruheiWalkAnimationFile)->filePtr, 0, 0x1000, 0);
     return 1;
 }
 
@@ -509,7 +506,8 @@ int daHolhei_c::func_ov062_021167c0() {
 // @symbol func_ov062_02116784
 extern "C" int func_ov062_02116784(daHolhei_c *self) {
     self->mChargeStep = 0;
-    _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(&self->mModel, ((HolheiFile *)&gHoruheiWalkAnimationFile)->file, 0, 0x1000, 0);
+    _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(
+        &self->mModel, ((SharedFilePtr *)&gHoruheiWalkAnimationFile)->filePtr, 0, 0x1000, 0);
     return 1;
 }
 
@@ -583,7 +581,7 @@ int daHolhei_c::func_ov062_021164e8()
 {
     if (mGrabAnim == 0 && IsFlagSet(this, 0x4000)) {
         _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(
-            &mModel, ((HolheiFile *)data_ov062_0211de00)->file, 0, 0x1000, 0);
+            &mModel, ((SharedFilePtr *)data_ov062_0211de00)->filePtr, 0, 0x1000, 0);
         mGrabAnim = 1;
     }
     if (IsFlagSet(this, 0x400) || IsFlagSet(this, 0x2000) || !IsFlagSet(this, 0x100)) {
@@ -641,7 +639,8 @@ extern "C" int func_ov062_021163b0(daHolhei_c *self)
 
 // @symbol func_ov062_02116368
 extern "C" int func_ov062_02116368(daHolhei_c *self) {
-    _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(&self->mModel, ((HolheiFile *)data_ov062_0211dde8)->file, 0x40000000, 0x1000, 0);
+    _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(
+        &self->mModel, ((SharedFilePtr *)data_ov062_0211dde8)->filePtr, 0x40000000, 0x1000, 0);
     self->mChargeStep = 0;
     return 1;
 }
@@ -659,7 +658,8 @@ extern "C" int func_ov062_0211632c(daHolhei_c *self) {
 /* Start an animation, then wait a random few frames facing a random way. */
 // @symbol func_ov062_021162b8
 extern "C" int func_ov062_021162b8(daHolhei_c *self) {
-    _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(&self->mModel, ((HolheiFile *)&gHoruheiLiftLoopAnimationFile)->file, 0, 0x1000, 0);
+    _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(
+        &self->mModel, ((SharedFilePtr *)&gHoruheiLiftLoopAnimationFile)->filePtr, 0, 0x1000, 0);
     self->mStateTimer = (short)(((RandomIntInternal(data_0209e650) >> 8) & 0x1f) + 0x14);
     self->mTargetAngY = (short)((RandomIntInternal(data_0209e650) >> 8) << 0xc);
     return 1;
@@ -677,7 +677,8 @@ extern "C" int func_ov062_02116274(daHolhei_c *self)
 
 // @symbol func_ov062_02116238
 extern "C" int func_ov062_02116238(daHolhei_c *self) {
-    _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(&self->mModel, ((HolheiFile *)data_ov062_0211de08)->file, 0x40000000, 0x1000, 0);
+    _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(
+        &self->mModel, ((SharedFilePtr *)data_ov062_0211de08)->filePtr, 0x40000000, 0x1000, 0);
     return 1;
 }
 

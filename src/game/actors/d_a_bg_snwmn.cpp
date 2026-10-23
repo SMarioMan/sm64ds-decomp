@@ -9,9 +9,8 @@
  * - TextureSequence::SetFile / dCcAcPos_c::Init / DropShadowRadHeight 6az:
  *   InitResources and func_ov072_021208d8 pass Fix12<int> by value
  *   (notes/mwccarm-codegen.md 6az).
- * - SharedFilePtr +4: InitResources' TextureSequence::Prepare / SetFile
- *   read the BMD/BTP at gdaBgSnwmnBigSnowmanHeadModelFile / 02122c50 +4;
- *   SharedFilePtr.h has no fields.
+ * - InitResources' TextureSequence::Prepare / SetFile read the BMD/BTP
+ *   through gdaBgSnwmnBigSnowmanHeadModelFile / 02122c50's filePtr.
  * - gdaBgSnwmnBigSnowmanBodyModelFile / 02122c48 / 02122c50 model/BTP handles and
  *   data_ov072_02122c70 cylinder offset are defined at the end of this file.
  *   Their ctors are what emit __sinit_d_a_bg_snwmn.cpp.
@@ -51,15 +50,11 @@ void _ZN8dActor_c19DropShadowRadHeightER17dExtShadowModel_cR9Matrix4x35Fix12IiES
  * The two model handles share one veneer pair, the BTP handle is the texseq
  * pair, and the cylinder offset's stores are inline. */
 struct SnwmnModelFilePtr : SharedFilePtr {
-    u32 words[2];
-
     SnwmnModelFilePtr(u32 fileID);
     ~SnwmnModelFilePtr();
 };
 
 struct SnwmnTexSequenceFilePtr : SharedFilePtr {
-    u32 words[2];
-
     SnwmnTexSequenceFilePtr(u32 fileID);
     ~SnwmnTexSequenceFilePtr();
 };
@@ -120,10 +115,10 @@ s32 daBgSnwmn_c::InitResources()
     mModel2.SetFile((BMD_File *)model, 1, 1);
 
     TextureSequence::LoadFile(gdaBgSnwmnBigSnowmanSmileTextureSequenceFile);
-    TextureSequence::Prepare(**(BMD_File **)((char *)&gdaBgSnwmnBigSnowmanHeadModelFile + 4),
-                             **(BTP_File **)((char *)&gdaBgSnwmnBigSnowmanSmileTextureSequenceFile + 4));
+    TextureSequence::Prepare(*(BMD_File *)gdaBgSnwmnBigSnowmanHeadModelFile.filePtr,
+                             *(BTP_File *)gdaBgSnwmnBigSnowmanSmileTextureSequenceFile.filePtr);
     _ZN15TextureSequence7SetFileER8BTP_Filei5Fix12IiEj(
-        &mTexSeq, *(void **)((char *)&gdaBgSnwmnBigSnowmanSmileTextureSequenceFile + 4), 0, 0x1000, 0);
+        &mTexSeq, gdaBgSnwmnBigSnowmanSmileTextureSequenceFile.filePtr, 0, 0x1000, 0);
 
     if (mShadow.InitCylinder() == 0)
         return 0;

@@ -47,15 +47,11 @@ typedef char ResourceDescriptor_size_must_be_0x0c[
  * names the handles directly; the ResourceDescriptor row above points at
  * them. */
 struct RcKaitendaiModelFile : SharedFilePtr {
-    u32 words[2];
-
     RcKaitendaiModelFile(u32 fileID);
     ~RcKaitendaiModelFile();
 };
 
 struct RcKaitendaiCollisionFilePtr : SharedFilePtr {
-    u32 words[2];
-
     RcKaitendaiCollisionFilePtr(u32 fileID);
     ~RcKaitendaiCollisionFilePtr();
 };

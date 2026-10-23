@@ -70,11 +70,9 @@ struct C {
     virtual void v5(void *arg);
 };
 
-/* SharedFilePtr has no fields; the two words are the handle's 8 bytes. The
- * cartridge's ctor/dtor imports are the functions the wrapper's aliases name. */
+/* The cartridge's ctor/dtor imports are the functions the wrapper's aliases
+ * name. */
 struct Trampoline2ModelFilePtr : SharedFilePtr {
-    u32 words[2];
-
     Trampoline2ModelFilePtr(u32 fileID);
     ~Trampoline2ModelFilePtr();
 };

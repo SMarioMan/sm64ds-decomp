@@ -46,19 +46,9 @@
 /* Twelve-word copy. Assigning Matrix4x3 itself is a different sequence. */
 struct Mtx { int m[12]; };
 
-/* filePtr is the word Model::LoadFile and dExtFrameCtrl_c::LoadFile read.
- * include/SharedFilePtr.h has no fields. */
-struct LoadedSharedFile {
-    u16 fileID;    /* 0x00 */
-    u8 numRefs;    /* 0x02 */
-    u8 pad;        /* 0x03 */
-    void *filePtr; /* 0x04 */
-};
-
 /* Vec3_Asr's definition. Three ints, same layout as mPosX/Y/Z. */
 struct Vec3 { int x, y, z; };
 struct Obj;
-#define FileOf(handle, T) ((T *)((LoadedSharedFile *)&(handle))->filePtr)
 
 #define CurrentPlayer() ((Player *)data_0209f394[data_0209f250])
 
@@ -154,12 +144,14 @@ int daLuigi_c::InitResources()
     func_02016acc(&mModel, kMatClear);
     func_02016b24(&mModel, kMatSet);
 
-    TextureSequence::Prepare(*FileOf(data_ov002_0210ebb8, BMD_File),
-                             *FileOf(data_ov002_0210e8d0, BTP_File));
-    _ZN15TextureSequence7SetFileER8BTP_Filei5Fix12IiEj(&mTextureSequences[0], FileOf(data_ov002_0210e8d0, BTP_File), 0, kFxOne, 0);
-    TextureSequence::Prepare(*FileOf(data_ov002_0210eb20, BMD_File),
-                             *FileOf(data_ov002_0210ebd8, BTP_File));
-    _ZN15TextureSequence7SetFileER8BTP_Filei5Fix12IiEj(&mTextureSequences[1], FileOf(data_ov002_0210ebd8, BTP_File), 0, kFxOne, 0);
+    TextureSequence::Prepare(*(BMD_File *)data_ov002_0210ebb8.filePtr,
+                             *(BTP_File *)data_ov002_0210e8d0.filePtr);
+    _ZN15TextureSequence7SetFileER8BTP_Filei5Fix12IiEj(
+        &mTextureSequences[0], (BTP_File *)data_ov002_0210e8d0.filePtr, 0, kFxOne, 0);
+    TextureSequence::Prepare(*(BMD_File *)data_ov002_0210eb20.filePtr,
+                             *(BTP_File *)data_ov002_0210ebd8.filePtr);
+    _ZN15TextureSequence7SetFileER8BTP_Filei5Fix12IiEj(
+        &mTextureSequences[1], (BTP_File *)data_ov002_0210ebd8.filePtr, 0, kFxOne, 0);
 
     mShadowModel.InitCylinder();
 

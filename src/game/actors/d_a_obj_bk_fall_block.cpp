@@ -36,12 +36,10 @@ enum d_a_obj_bk_fall_block_AssetId {
  * func_02017ab4. The collision handle constructs through func_02017b4c and
  * destroys through SharedFilePtr_Destruct_Clsn. The descriptor stays ROM data. */
 struct FallBlockModelFilePtr : SharedFilePtr {
-    unsigned int words[2];
     FallBlockModelFilePtr(unsigned int fileId);
     ~FallBlockModelFilePtr();
 };
 struct FallBlockClsnFileHandle : SharedFilePtr {
-    unsigned int words[2];
     FallBlockClsnFileHandle(unsigned int fileId);
     ~FallBlockClsnFileHandle();
 };

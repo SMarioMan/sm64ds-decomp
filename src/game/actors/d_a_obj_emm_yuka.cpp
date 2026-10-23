@@ -40,12 +40,10 @@ struct EmmYukaFiles {
  * func_02017ab4 for the model, func_02017b4c / SharedFilePtr_Destruct_Clsn
  * for the collision); the subclasses exist to spell those entry points. */
 struct EmmYukaModelFilePtr : SharedFilePtr {
-    u32 words[2];
     EmmYukaModelFilePtr(u32 fileID);
     ~EmmYukaModelFilePtr();
 };
 struct EmmYukaCollisionFilePtr : SharedFilePtr {
-    u32 words[2];
     EmmYukaCollisionFilePtr(u32 fileID);
     ~EmmYukaCollisionFilePtr();
 };

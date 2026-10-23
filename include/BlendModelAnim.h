@@ -21,7 +21,12 @@
  * UpdateVertsUsingBones. mBlendBuffer is a buffer the destructor frees and
  * func_020165c4 (DoSetFile's tail) sets up.
  *
- * SetAnim's definition stays a mangled free function (wall 6az).
+ * SetAnim's definition is still a mangled free function, but NOT because of
+ * wall 6az. Measured 2026-10-22: `void BlendModelAnim::SetAnim(BCA_File &,
+ * int, int, Fix12i, u16)` reproduces 0x020163e0/0x9c as a real method under
+ * the scalar mangling _ZN14BlendModelAnim7SetAnimER8BCA_Fileiiit. The
+ * `5Fix12IiE` in the old name is ours, and it is what blocks the method.
+ * See notes/mwccarm-codegen.md section 6az, MEASURED 2026-10-22.
  */
 
 #ifdef __cplusplus
@@ -60,8 +65,9 @@ struct BlendModelAnim : ModelAnim {
     /* --- non-virtual --- */
     BlendModelAnim();
     void Advance();
-    void SetAnim(BCA_File &animFile, int numBlendFrames, int flags,
-                 Fix12<int> speed, u16 startFrame);  /* free function, wall 6az */
+    /* Free function; the NAME blocks the method, not 6az -- see above. */
+    void SetAnim(BCA_File &animFile, int numBlendFrames, int flags, Fix12<int> speed,
+                 u16 startFrame);
 
     /* ITS OWN, TO RESOLVE AN AMBIGUITY MULTIPLE INHERITANCE CREATES. ModelAnim
        derives from Model (so ModelBase) and from dExtFrameCtrl_c, and both bases

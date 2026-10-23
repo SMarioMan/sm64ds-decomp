@@ -47,15 +47,11 @@ typedef char ResourceDescriptor_size_must_be_0x0c[
  * their destructors. The wrapper names are local; the ctor/dtor
  * addresses are the ROM resource-family functions. */
 struct UkishimaModelFilePtr : SharedFilePtr {
-    u32 words[2];
-
     UkishimaModelFilePtr(u32 fileID);
     ~UkishimaModelFilePtr();
 };
 
 struct UkishimaCollisionFilePtr : SharedFilePtr {
-    u32 words[2];
-
     UkishimaCollisionFilePtr(u32 fileID);
     ~UkishimaCollisionFilePtr();
 };

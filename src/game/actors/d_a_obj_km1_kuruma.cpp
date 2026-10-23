@@ -50,15 +50,11 @@ typedef char ResourceDescriptor_size_must_be_0x0c[
  * names the handles directly; the ResourceDescriptor row above points at
  * them. */
 struct Km1KurumaModelFile : SharedFilePtr {
-    u32 words[2];
-
     Km1KurumaModelFile(u32 fileID);
     ~Km1KurumaModelFile();
 };
 
 struct Km1KurumaCollisionFilePtr : SharedFilePtr {
-    u32 words[2];
-
     Km1KurumaCollisionFilePtr(u32 fileID);
     ~Km1KurumaCollisionFilePtr();
 };

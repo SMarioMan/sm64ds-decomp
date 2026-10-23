@@ -29,15 +29,11 @@ struct CLPS_Block;
  * their destructors. The wrapper names are local; the ctor/dtor
  * addresses are the ROM resource-family functions. */
 struct AgaruModelFilePtr : SharedFilePtr {
-    u32 words[2];
-
     AgaruModelFilePtr(u32 fileID);
     ~AgaruModelFilePtr();
 };
 
 struct AgaruCollisionFilePtr : SharedFilePtr {
-    u32 words[2];
-
     AgaruCollisionFilePtr(u32 fileID);
     ~AgaruCollisionFilePtr();
 };

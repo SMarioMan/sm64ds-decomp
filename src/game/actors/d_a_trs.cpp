@@ -143,25 +143,17 @@ extern Matrix4x3 data_020a0e68;
 }
 
 /* The seven file handles __sinit_ov063_0211e29c constructs. SharedFilePtr
- * declares no fields and no constructor of its own, so the model handles get
- * the model-file pair func_02017acc/func_02017ab4 and the animation handles
- * get SharedFilePtr::Construct plus the anim destructor through thin
+ * declares no constructor of its own, so the model handles get the
+ * model-file pair func_02017acc/func_02017ab4 and the animation handles get
+ * SharedFilePtr::Construct plus the anim destructor through thin
  * declaration-only wrappers; the manifest aliases those mangled spellings to
- * the arm9 destinations the retail initializer calls. The measured layout is
- * u16 fileID at +0, u8 numRefs at +2, and the loaded file pointer at +4.
- * The destructor chain records the file ID; actor cleanup releases handles
+ * the arm9 destinations the retail initializer calls. The destructor chain records the file ID; actor cleanup releases handles
  * separately. These local wrappers retain the existing lifecycle aliases. */
 struct TrsModelFileResHandle : SharedFilePtr {
-    u16 fileID;
-    u8 numRefs;
-    BMD_File *filePtr;
     TrsModelFileResHandle(unsigned int fileID);
     ~TrsModelFileResHandle();
 };
 struct TrsAnimationResFileHandle : SharedFilePtr {
-    u16 fileID;
-    u8 numRefs;
-    BCA_File *filePtr;
     TrsAnimationResFileHandle(unsigned int fileID);
     ~TrsAnimationResFileHandle();
 };
@@ -1444,10 +1436,11 @@ void daTrs_c::func_ov063_02118458() {
 
     if (this->mModelAnim.Finished()) {
         if (func_ov063_0211a8a4()) {
-            if (this->mModelAnim.file == data_ov063_0211edcc.filePtr) {
+            if (this->mModelAnim.file == (BCA_File *)data_ov063_0211edcc.filePtr) {
                 func_02012694(0x158, &this->mCamSpacePosX);
                 _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(&this->mModelAnim,
-                    data_ov063_0211edd4.filePtr, 0x40000000, 0x1000, 0);
+                                                            (BCA_File *)data_ov063_0211edd4.filePtr,
+                                                            0x40000000, 0x1000, 0);
             } else if (this->mAttackRepeats != 0) {
                 this->mAttackRepeats -= 1;
                 this->mModelAnim.currFrame = 0;
@@ -1458,8 +1451,8 @@ void daTrs_c::func_ov063_02118458() {
                 this->mdCcAcPos_c.flags &= ~1;
                 rnd = ((unsigned int)RandomIntInternal(&data_0209e650) >> 16) & 0x3f;
                 this->mAttackTimer = rnd + 0xb4;
-                _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(&this->mModelAnim,
-                    data_ov063_0211ede4.filePtr, 0, 0x1000, 0);
+                _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(
+                    &this->mModelAnim, (BCA_File *)data_ov063_0211ede4.filePtr, 0, 0x1000, 0);
             }
         } else {
             int rnd;
@@ -1467,12 +1460,12 @@ void daTrs_c::func_ov063_02118458() {
             this->mdCcAcPos_c.flags &= ~1;
             rnd = ((unsigned int)RandomIntInternal(&data_0209e650) >> 16) & 0x3f;
             this->mAttackTimer = rnd + 0xb4;
-            _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(&this->mModelAnim,
-                data_ov063_0211ede4.filePtr, 0, 0x1000, 0);
+            _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(
+                &this->mModelAnim, (BCA_File *)data_ov063_0211ede4.filePtr, 0, 0x1000, 0);
         }
     } else {
-        if (this->mModelAnim.file == data_ov063_0211edd4.filePtr
-            && this->mModelAnim.WillHitFrame(6)) {
+        if (this->mModelAnim.file == (BCA_File *)data_ov063_0211edd4.filePtr &&
+            this->mModelAnim.WillHitFrame(6)) {
             Vec3 v;
             s16 m = 0x78;
             v.x = this->mPosX;
@@ -1559,7 +1552,8 @@ void daTrs_c::func_ov063_0211873c() {
     this->mVertSpeed = 0;
     this->mVertAccel = 0;
     func_02012694(0x159, &this->mCamSpacePosX);
-    ModelAnim_SetAnim(&this->mModelAnim, data_ov063_0211edcc.filePtr, 0x40000000, 0x1000, 0);
+    ModelAnim_SetAnim(&this->mModelAnim, (BCA_File *)data_ov063_0211edcc.filePtr, 0x40000000,
+                      0x1000, 0);
     {
         unsigned int rnd = (unsigned int)RandomIntInternal(&data_0209e650);
         this->mAttackRepeats = (u8)((rnd >> 0x10) % 3);
@@ -3431,7 +3425,8 @@ int daTrs_c::InitResources()
         }
         dExtFrameCtrl_c::LoadFile(data_ov063_0211ede4);
         mModelAnim.SetFile((BMD_File *)Model::LoadFile(data_ov063_0211edf4), 1, 1);
-        _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(&mModelAnim, data_ov063_0211ede4.filePtr, 0, 0x1000, 0);
+        _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(
+            &mModelAnim, (BCA_File *)data_ov063_0211ede4.filePtr, 0, 0x1000, 0);
         mHitPoints = 3;
         mClsnRadius = 0xc8;
         mClsnHeight = 0x104;
@@ -3450,7 +3445,8 @@ int daTrs_c::InitResources()
         mVariant = param1 & 0xf;
         dExtFrameCtrl_c::LoadFile(data_ov063_0211eddc);
         mModelAnim.SetFile((BMD_File *)Model::LoadFile(data_ov063_0211edc4), 1, 0x16);
-        _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(&mModelAnim, data_ov063_0211eddc.filePtr, 0, 0x1000, 0);
+        _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(
+            &mModelAnim, (BCA_File *)data_ov063_0211eddc.filePtr, 0, 0x1000, 0);
         mHitPoints = 1;
         if (mVariant == 5) {
             mClsnZBias = -0x24000;
@@ -3588,15 +3584,15 @@ int daTrs_c::InitResources()
                 return 1;
             }
         }
-        mCarriedModel.SetFile(data_ov063_0211edec.filePtr, 1, -1);
+        mCarriedModel.SetFile((BMD_File *)data_ov063_0211edec.filePtr, 1, -1);
     } else if (mVariant == 0 || mVariant == 1 || mVariant == 2 || mVariant == 6 || (unsigned)(unsigned char)(mVariant + 0xf8) <= 3) {
         unsigned short t = mCarriedID;
         if (t == TRS_ID_BLUE_COIN) {
-            mCarriedModel.SetFile((BMD_File *)*(void **)((char *)&data_ov002_0210d9c8 + 4), 1, -1);
+            mCarriedModel.SetFile((BMD_File *)data_ov002_0210d9c8.filePtr, 1, -1);
         } else if (t == TRS_ID_RED_COIN) {
-            mCarriedModel.SetFile((BMD_File *)*(void **)((char *)&data_ov002_0210d9f8 + 4), 1, -1);
+            mCarriedModel.SetFile((BMD_File *)data_ov002_0210d9f8.filePtr, 1, -1);
         } else {
-            mCarriedModel.SetFile((BMD_File *)*(void **)((char *)&data_ov002_0210d9b8 + 4), 1, -1);
+            mCarriedModel.SetFile((BMD_File *)data_ov002_0210d9b8.filePtr, 1, -1);
         }
         if (mVariant == 0xb) {
             mAreaId = -1;

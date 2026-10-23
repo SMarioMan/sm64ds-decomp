@@ -58,15 +58,11 @@ struct RawVector3 {
  * destroy through SharedFilePtr_Destruct_Clsn. The manifest aliases those
  * undefined members onto the ROM symbols. */
 struct BlockModelFile : SharedFilePtr {
-    u32 words[2];
-
     BlockModelFile(u32 fileID);
     ~BlockModelFile();
 };
 
 struct daObjBlockLClsnFile : SharedFilePtr {
-    u32 words[2];
-
     daObjBlockLClsnFile(u32 fileID);
     ~daObjBlockLClsnFile();
 };

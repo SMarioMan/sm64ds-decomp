@@ -49,15 +49,11 @@ typedef struct { s32 x, y, z; } Vec3;
  * collision file func_02017b4c / SharedFilePtr_Destruct_Clsn. The spellings
  * are local; the manifest aliases the generated names to those ROM symbols. */
 struct DgrModelFilePtr : SharedFilePtr {
-    u32 words[2];
-
     DgrModelFilePtr(u32 fileID);
     ~DgrModelFilePtr();
 };
 
 struct DgrCollisionFilePtr : SharedFilePtr {
-    u32 words[2];
-
     DgrCollisionFilePtr(u32 fileID);
     ~DgrCollisionFilePtr();
 };

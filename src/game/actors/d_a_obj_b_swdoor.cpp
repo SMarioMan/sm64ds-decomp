@@ -44,15 +44,11 @@ typedef char ResourceDescriptor_size_must_be_0x0c[
  * collision file func_02017b4c / SharedFilePtr_Destruct_Clsn. The spellings
  * are local; the manifest aliases the generated names to those ROM symbols. */
 struct BSwdoorModelFilePtr : SharedFilePtr {
-    unsigned int words[2];
-
     BSwdoorModelFilePtr(unsigned int fileID);
     ~BSwdoorModelFilePtr();
 };
 
 struct BSwdoorClsnFilePtr : SharedFilePtr {
-    unsigned int words[2];
-
     BSwdoorClsnFilePtr(unsigned int fileID);
     ~BSwdoorClsnFilePtr();
 };

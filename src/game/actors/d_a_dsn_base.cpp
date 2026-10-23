@@ -78,13 +78,6 @@ typedef char DsnBaseFileTable_size_must_be_0x18[
     sizeof(DsnBaseFileTable) == 0x18 ? 1 : -1];
 #endif
 
-/* SharedFilePtr has no fields (include/SharedFilePtr.h). Both leaves' tables
- * store the loaded BMD/BTP at +4; Prepare and SetFile read that word. */
-struct DsnFileHandle {
-    s32 fileId;
-    void *loaded;
-};
-
 /* 0x360..0x39f is the same on both leaves, and daDsn_c.h / daDkk_c.h already
  * declare it, so the view stays in this TU. Based at the actor, shadowMtx.m[9]
  * is the store at 0x384. */
@@ -403,14 +396,12 @@ s32 daDsnBase_c::Init()
     if (texAnim != 0) {
         TextureSequence::LoadFile(*texAnim);
         files = (DsnBaseFileTable *)mFileTable;
-        TextureSequence::Prepare(
-            *(BMD_File *)((DsnFileHandle *)files->model)->loaded,
-            *(BTP_File *)((DsnFileHandle *)files->texAnim)->loaded);
+        TextureSequence::Prepare(*(BMD_File *)files->model->filePtr,
+                                 *(BTP_File *)files->texAnim->filePtr);
         files = (DsnBaseFileTable *)mFileTable;
         texAnim = files->texAnim;
         _ZN15TextureSequence7SetFileER8BTP_Filei5Fix12IiEj(
-            &mTextureSequence, (BTP_File *)((DsnFileHandle *)texAnim)->loaded,
-            0x40000000, 0x1000, 0);
+            &mTextureSequence, (BTP_File *)texAnim->filePtr, 0x40000000, 0x1000, 0);
     }
 
     if (!mShadowModel.InitCuboid())

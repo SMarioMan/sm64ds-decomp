@@ -38,13 +38,11 @@
 /* Local names for the existing eight-byte model/collision resource families.
  * Their constructors and destructors remain ordinary cross-TU C++ imports. */
 struct DossunbarModelFile : SharedFilePtr {
-    u32 words[2];
     DossunbarModelFile(u32 fileID);
     ~DossunbarModelFile();
 };
 
 struct DossunbarCollisionFile : SharedFilePtr {
-    u32 words[2];
     DossunbarCollisionFile(u32 fileID);
     ~DossunbarCollisionFile();
 };

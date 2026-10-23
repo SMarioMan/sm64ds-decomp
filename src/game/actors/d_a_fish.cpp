@@ -29,8 +29,8 @@
  * leftovers:
  * - ModelAnim::SetAnim stays mangled: it takes Fix12<int> by value
  *   (notes/mwccarm-codegen.md 6az).
- * - SharedFilePtr carries no fields yet, so the loaded file pointer in a
- *   handle's second word is read through a cast.
+ * - SharedFilePtr::filePtr is a void *, so LoadedBCA casts it to the
+ *   BCA_File * SetAnim takes.
  * - data_0209caa0 / data_0209f32c are the arm9 level-state words that
  *   carry the "has water" flag and the water height; neither is named yet.
  * - RawMatrix4x3 / RawVector3_16 are POD views whose aggregate copies
@@ -67,15 +67,11 @@ struct daFishState {
  * constructors and destructors are the ROM resource-family functions,
  * aliased in the manifest. */
 struct FishModelFilePtr : SharedFilePtr {
-    u32 words[2];
-
     FishModelFilePtr(u32 fileID);
     ~FishModelFilePtr();
 };
 
 struct FishAnimationFileHandle : SharedFilePtr {
-    u32 words[2];
-
     FishAnimationFileHandle(u32 fileID);
     ~FishAnimationFileHandle();
 };
@@ -133,10 +129,10 @@ struct RawMatrix4x3 { int words[12]; };
  * each field sign-extended; the ROM moves three plain halfwords. */
 struct RawVector3_16 { s16 words[3]; };
 
-/* A SharedFilePtr's second word is the file it has loaded. */
+/* The animation file a handle has loaded. */
 static inline BCA_File *LoadedBCA(SharedFilePtr *ptr)
 {
-    return (BCA_File *)((void **)ptr)[1];
+    return (BCA_File *)ptr->filePtr;
 }
 
 inline daFish_c::daFish_c()

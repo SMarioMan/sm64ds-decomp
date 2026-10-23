@@ -20,10 +20,8 @@
  * retired one-function files defined, so every caller's declaration agrees
  * or disagrees exactly as before.
  *
- * Layout: +0x0 u16 fileID, +0x2 u8 numRefs, +0x4 void *filePtr. Every member
- * below reads it, so the class is defined here in full. include/SharedFilePtr.h
- * stays fieldless on purpose (its comment says why); its member declarations
- * and these agree.
+ * Layout: +0x0 u16 fileID, +0x2 u8 numRefs, +0x4 void *filePtr, as
+ * include/SharedFilePtr.h declares it. Every member below reads it.
  *
  * mwccarm's default deferred codegen emits .text in reverse source order, so
  * the definitions run from the highest address down. Do not reorder.
@@ -40,21 +38,10 @@
  */
 
 #include "types.h"
+#include "SharedFilePtr.h"
 #include "Model.h"
 #include "TextureSequence.h"
 #include "dBgW_Kc.h"
-
-struct SharedFilePtr {
-    u16 fileID;    /* 0x00 */
-    u8 numRefs;    /* 0x02 */
-    void *filePtr; /* 0x04 */
-
-    SharedFilePtr &Construct(unsigned int);
-    void ReallocateModelFile();
-    void Release();
-    void *LoadFile();
-    void *Load();
-};
 
 namespace Memory {
 void *Allocate(u32 size);

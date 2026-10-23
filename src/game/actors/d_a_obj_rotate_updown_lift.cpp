@@ -108,15 +108,11 @@ struct UpdownClpsSlot {
  * this TU names the handles directly; the UpdownFileSlot rows above
  * point at them. */
 struct RotateUpdownLiftModelFile : SharedFilePtr {
-    u32 words[2];
-
     RotateUpdownLiftModelFile(u32 fileID);
     ~RotateUpdownLiftModelFile();
 };
 
 struct RotateUpdownLiftCollisionFilePtr : SharedFilePtr {
-    u32 words[2];
-
     RotateUpdownLiftCollisionFilePtr(u32 fileID);
     ~RotateUpdownLiftCollisionFilePtr();
 };

@@ -45,18 +45,14 @@ enum d_a_obj_hm_bskt_AssetId {
 struct KCL_File;
 struct CLPS_Block;
 
-/* SharedFilePtr has no fields; the two words are the handle's 8 bytes. The
- * cartridge's ctor/dtor imports are the functions the wrappers' aliases name. */
+/* The cartridge's ctor/dtor imports are the functions the wrappers' aliases
+ * name. */
 struct HmBsktModelFilePtr : SharedFilePtr {
-    u32 words[2];
-
     HmBsktModelFilePtr(u32 fileID);
     ~HmBsktModelFilePtr();
 };
 
 struct HmBsktCollisionFilePtr : SharedFilePtr {
-    u32 words[2];
-
     HmBsktCollisionFilePtr(u32 fileID);
     ~HmBsktCollisionFilePtr();
 };

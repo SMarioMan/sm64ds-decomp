@@ -72,11 +72,12 @@ enum {
     kGrockStill = 4
 };
 
-/* SharedFilePtr.h has the methods and no fields. InitResources reads the
- * loaded BMD at +4, so this TU completes the forward declaration. */
+/* SharedFilePtr as include/SharedFilePtr.h declares it, cut to what this TU
+ * uses. Including the header moves the .bss @NNN label by one. */
 struct SharedFilePtr {
-    void *file;
-    void *bmd;
+    u16 fileID;
+    u8 numRefs;
+    void *filePtr;
     void Release();
 };
 
@@ -445,7 +446,7 @@ int daGrock_c::InitResources()
     Model::LoadFile(data_ov021_02114a50);
 
     if (mType >= kGrockRolling) {
-        if (mModel.SetFile((BMD_File *)data_ov021_02114a50.bmd, 1, 1) == 0)
+        if (mModel.SetFile((BMD_File *)data_ov021_02114a50.filePtr, 1, 1) == 0)
             return 0;
         if (mShadowModel.InitCylinder() == 0)
             return 0;

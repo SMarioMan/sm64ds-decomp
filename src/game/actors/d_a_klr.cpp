@@ -97,9 +97,9 @@ s32 daKlr_c::InitResources()
 {
     Model::LoadFile(data_ov079_02128300);
     Model::LoadFile(data_ov079_021282f0);
-    if (mModel.SetFile(*(BMD_File **)((char *)&data_ov079_02128300 + 4), 1, -1) == 0)
+    if (mModel.SetFile((BMD_File *)data_ov079_02128300.filePtr, 1, -1) == 0)
         return 0;
-    if (mModel2.SetFile(*(BMD_File **)((char *)&data_ov079_021282f0 + 4), 1, -1) == 0)
+    if (mModel2.SetFile((BMD_File *)data_ov079_021282f0.filePtr, 1, -1) == 0)
         return 0;
     if (mShadow.InitCylinder() == 0)
         return 0;

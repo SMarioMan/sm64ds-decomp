@@ -23,9 +23,8 @@
  * - ApproachLinear2 takes &mState as int* because mState, mPhase and
  *   mTimer share one word. State numbers, mFlags bit 0x80000 and hit
  *   mask 0x66fe0 stay numeric.
- * - ModelCache stays file-local; da1up_c reads the same second word.
- *   The loaded BCA is data_ov081_02128edc[1]. GmchDrawReg is the one-slot
- *   init sentinel the folded sinit needs.
+ * - The loaded BCA is data_ov081_02128edc.filePtr. GmchDrawReg is the
+ *   one-slot init sentinel the folded sinit needs.
  */
 
 /* Runtime asset handles resolved through the overlay 0 file table. */
@@ -77,11 +76,6 @@ enum {
     HIT_MEGA_CHARACTER = 0x10
 };
 
-/* Cached model handle: the loaded BMD file is the second word (da1up_c
- * reads the same home the same way). Wants a shared home with da1up_c's
- * ModelCache; kept file-local until then. */
-struct ModelCache { int pad0; BMD_File *file; };
-
 /* Non-virtual state handlers. daGmch_c is already complete here; the
    pointer-to-member call through mStatePmfPair still matches. */
 typedef void (daGmch_c::*StateFn)();
@@ -89,8 +83,6 @@ typedef void (daGmch_c::*StateFn)();
 /* The model handle's ctor/dtor are the cartridge's func_02017acc /
  * func_02017ab4 pair; the manifest aliases these. */
 struct GmchModelFileHandle : SharedFilePtr {
-    s32 fileId;
-    void *file;
     GmchModelFileHandle(u32 fileID);
     ~GmchModelFileHandle();
 };
@@ -98,8 +90,6 @@ struct GmchModelFileHandle : SharedFilePtr {
 /* The four animation handles construct through SharedFilePtr::Construct
  * and register SharedFilePtr_Destruct_Anim; the manifest aliases these. */
 struct GmchAnimationFileHandle : SharedFilePtr {
-    s32 fileId;
-    void *file;
     GmchAnimationFileHandle(u32 fileID);
     ~GmchAnimationFileHandle();
 };
@@ -431,7 +421,8 @@ int daGmch_c::EnterState8()
     mHorzSpeed = 0xa000;
     mVertSpeed = 0x28000;
     mTimer = 0x2d;
-    _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(&mModelAnim, data_ov081_02128edc.file, 0, 0x1000, 0);
+    _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(&mModelAnim, data_ov081_02128edc.filePtr, 0, 0x1000,
+                                                0);
     mModelAnim.speed = 0x4000;
     int yOffset1 = OnAimedAtWithEgg();
     _ZN8Particle6System9NewSimpleEj5Fix12IiES2_S2_(0x43, mPosX, mPosY + yOffset1, mPosZ);
@@ -592,7 +583,8 @@ int daGmch_c::EnterState5()
     extern GmchAnimationFileHandle data_ov081_02128edc;
 
     mHorzSpeed = 0xa000;
-    _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(&mModelAnim, data_ov081_02128edc.file, 0, 0x1000, 0);
+    _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(&mModelAnim, data_ov081_02128edc.filePtr, 0, 0x1000,
+                                                0);
     mModelAnim.speed = 0x1000;
     mStateIndex = 5;
     return 1;
@@ -617,7 +609,8 @@ int daGmch_c::EnterState4()
 {
     extern GmchAnimationFileHandle gGamaguchiJumpEndAnimationFile;
 
-    _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(&mModelAnim, gGamaguchiJumpEndAnimationFile.file, 0x40000000, 0x1000, 0);
+    _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(&mModelAnim, gGamaguchiJumpEndAnimationFile.filePtr,
+                                                0x40000000, 0x1000, 0);
     mModelAnim.speed = 0x1000;
     mHorzSpeed = 0;
     mStateIndex = 4;
@@ -659,7 +652,8 @@ int daGmch_c::EnterState3()
     extern int data_0209e650[];
 
     mFlags &= ~1;
-    _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(&mModelAnim, gGamaguchiJumpAnimationFile.file, 0x40000000, 0x1000, 0);
+    _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(&mModelAnim, gGamaguchiJumpAnimationFile.filePtr,
+                                                0x40000000, 0x1000, 0);
     mModelAnim.currFrame = 0;
     mAngleY = (short)RandomIntInternal(data_0209e650);
     mPrevAngleY = mAngleY;
@@ -687,7 +681,8 @@ int daGmch_c::EnterState2()
 {
     extern GmchAnimationFileHandle gGamaguchiWalkEndAnimationFile;
 
-    _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(&mModelAnim, gGamaguchiWalkEndAnimationFile.file, 0x40000000, 0x1000, 0);
+    _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(&mModelAnim, gGamaguchiWalkEndAnimationFile.filePtr,
+                                                0x40000000, 0x1000, 0);
     mModelAnim.speed = 0x1000;
     mHorzSpeed = 0;
     mStateIndex = 2;
@@ -717,7 +712,8 @@ void daGmch_c::EnterState1()
     extern GmchAnimationFileHandle data_ov081_02128edc;
     extern int data_0209e650[];
 
-    _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(&mModelAnim, data_ov081_02128edc.file, 0, 0x1000, 0);
+    _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(&mModelAnim, data_ov081_02128edc.filePtr, 0, 0x1000,
+                                                0);
     mModelAnim.speed = 0x1000;
     mHorzSpeed = 0xa000;
     mTargetAngleY = (short)RandomIntInternal(data_0209e650);
@@ -768,7 +764,8 @@ int daGmch_c::EnterState0()
 {
     extern GmchAnimationFileHandle gGamaguchiJumpEndAnimationFile;
 
-    _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(&mModelAnim, gGamaguchiJumpEndAnimationFile.file, 0, 0x1000, 0);
+    _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(&mModelAnim, gGamaguchiJumpEndAnimationFile.filePtr,
+                                                0, 0x1000, 0);
     mModelAnim.speed = 0x1000;
     mModelAnim.currFrame = 0x6000;
     mPhase = 0;
@@ -867,13 +864,13 @@ int daGmch_c::InitResources()
 {
     extern GmchModelFileHandle data_ov081_02128ed4;
     extern void *data_ov081_021280d8[];
-    extern ModelCache data_ov002_0210d9b8;
+    extern SharedFilePtr data_ov002_0210d9b8;
     extern Matrix4x3 IDENTITY_MATRIX4X3;
 
     Vector3 pos;
     void *modelFile = Model::LoadFile(*(SharedFilePtr *)&data_ov081_02128ed4);
     mModelAnim.SetFile((BMD_File *)modelFile, 1, 1);
-    if (mModel.SetFile(data_ov002_0210d9b8.file, 1, 1) == 0)
+    if (mModel.SetFile((BMD_File *)data_ov002_0210d9b8.filePtr, 1, 1) == 0)
         return 0;
     for (int i = 0; i < 4; i++)
         dExtFrameCtrl_c::LoadFile(*(SharedFilePtr *)data_ov081_021280d8[i]);

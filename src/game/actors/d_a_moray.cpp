@@ -55,16 +55,9 @@ enum {
     ACTOR_STAR = 178,
 };
 
-/* SharedFilePtr.h intentionally leaves its storage unspecified. These local
- * handles follow their measured initialization/load/release operations:
- * u16 fileID at +0, u8 numRefs at +2, and the loaded file pointer at +4.
- * The compiler supplies the alignment byte before the pointer. */
 /* The model handle's ctor/dtor are the cartridge's func_02017acc /
  * func_02017ab4 pair; the manifest aliases these. */
 struct MorayModelFileHandle : SharedFilePtr {
-    u16 fileID;
-    u8 numRefs;
-    void *filePtr;
     MorayModelFileHandle(u32 fileID);
     ~MorayModelFileHandle();
 };
@@ -72,9 +65,6 @@ struct MorayModelFileHandle : SharedFilePtr {
 /* The three animation handles construct through SharedFilePtr::Construct
  * and register SharedFilePtr_Destruct_Anim; the manifest aliases these. */
 struct MorayAnimResFileHandle : SharedFilePtr {
-    u16 fileID;
-    u8 numRefs;
-    void *filePtr;
     MorayAnimResFileHandle(u32 fileID);
     ~MorayAnimResFileHandle();
 };

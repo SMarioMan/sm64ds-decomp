@@ -35,8 +35,6 @@
  * func_02017ab4. The manifest aliases those undefined members onto the ROM
  * symbols. */
 struct ClockModelFilePtr : SharedFilePtr {
-    u32 words[2];
-
     ClockModelFilePtr(u32 fileID);
     ~ClockModelFilePtr();
 };

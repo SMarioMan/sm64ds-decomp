@@ -53,7 +53,6 @@
  * - Particle::System::New / NewSimple 6az: func_ov064_0211616c / 02115f98.
  * - _Z14ApproachLinearRiii stays mangled; no header method form here.
  * - func_0201267c: PlayStepSound / PlayHitSound / PlayDeathSound at mCamSpacePosX.
- * - SharedFilePtr +4: SetAnim BCA loads; SharedFilePtr.h has no fields.
  * - 0x398..0x3f9 stay children's padding (annexing them as members would move
  *   the fields the children declare from 0x3fa on); the helpers reach them
  *   through daOts_c::tail(), a cast of the whole object to the nested Tail struct
@@ -63,7 +62,7 @@
  *   were leftover shards; names describe the children's slot-0 / slot-6
  *   wrappers.
  * - InitResourcesCommon 6az: dCcAc_c::Init / dBgCh_Actr::Init / SetAnim
- *   keep mangled forms (Fix12<int> by value). SharedFilePtr +4 for the BCA.
+ *   keep mangled forms (Fix12<int> by value).
  * - BehaviorCommon: the mStateTimer increment stays unsigned short (ldrh).
  * - daOts_c.h first: nested Matrix4x3 for mModelAnim.mat4x3.t (02116bac).
  *   common.h's flat m[12] would stand down if it came first.
@@ -172,13 +171,10 @@ enum {
     kHopSpeed = 0xf000              /* 15 units a frame upward */
 };
 
-/* The BCA a SharedFilePtr holds is its word at +4; SharedFilePtr.h has no fields. */
-#define SHARED_FILE_BCA(file) (*(BCA_File **)((char *)(file) + 4))
-
 /* Local stand-ins with no header of their own. */
 
 /* The resource block mFileTable points at. CleanupResources releases files[0..4];
- * SetAnim loads the BCA at each SharedFilePtr +4; OnAimedAtWithEgg reads
+ * SetAnim loads each file's BCA through filePtr; OnAimedAtWithEgg reads
  * eggAimHeight (slot-29 return, added to pos.y); 02115f98 / 021165d8 / 0211616c
  * read the rest. */
 struct BullyResourceConfig {
@@ -195,7 +191,7 @@ struct BullyResourceConfig {
 
 /* The resource block of an actor, and the BCA of one of its animation slots. */
 #define CONFIG(obj) ((BullyResourceConfig *)(obj)->mFileTable)
-#define CONFIG_BCA(obj, slot) SHARED_FILE_BCA(CONFIG(obj)->files[slot])
+#define CONFIG_BCA(obj, slot) ((BCA_File *)CONFIG(obj)->files[slot]->filePtr)
 
 /* Spelled and guarded exactly as include/Particle__System.h spells it, so this
  * TU agrees with that header if it is ever pulled in. Only ever used here as a

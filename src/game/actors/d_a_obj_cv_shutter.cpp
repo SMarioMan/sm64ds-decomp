@@ -53,15 +53,11 @@ extern ResourceDescriptor data_ov021_021148d0;
  * func_02017acc / func_02017ab4 and func_02017b4c /
  * SharedFilePtr_Destruct_Clsn. */
 struct CvShutterModelFilePtr : SharedFilePtr {
-    u32 words[2];
-
     CvShutterModelFilePtr(u32 fileID);
     ~CvShutterModelFilePtr();
 };
 
 struct CvShutterCollisionFilePtr : SharedFilePtr {
-    u32 words[2];
-
     CvShutterCollisionFilePtr(u32 fileID);
     ~CvShutterCollisionFilePtr();
 };

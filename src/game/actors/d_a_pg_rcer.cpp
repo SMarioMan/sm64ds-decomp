@@ -26,11 +26,6 @@ bool ApproachLinear(short &value, short target, short step);
 int ApproachLinear(int &value, int target, int step);
 void UpdateAngle(short &angle, short target, int divisor, short maxStep);
 
-/* Word 1 of a SharedFilePtr is the loaded file. SharedFilePtr itself has no
- * fields; the sinit constructs these and this TU's LoadFile / SetAnim / SetFile
- * read that word. */
-#define LOADED(handle) (((void **)&(handle))[1])
-
 extern "C" {
 
 extern SharedFilePtr data_ov019_02113498;          /* model, file 0x3fb */
@@ -99,9 +94,7 @@ int daPgRcer_c::InitResources()
     for (int j = 0; j < 3; j++) {
         SharedFilePtr *t = data_ov019_0211277c[j];
         TextureSequence::LoadFile(*t);
-        TextureSequence::Prepare(
-            *(BMD_File *)LOADED(data_ov019_02113498),
-            *(BTP_File *)LOADED(*t));
+        TextureSequence::Prepare(*(BMD_File *)data_ov019_02113498.filePtr, *(BTP_File *)t->filePtr);
     }
 
     if (mShadowModel.InitCylinder() == 0)
@@ -197,9 +190,11 @@ int func_ov019_021121f8(daPgRcer_c *self)
 {
     self->mVertAccel = 0;
     self->mTerminalVelocity = 0;
-    _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(&self->mModelAnim, LOADED(gOV019PenguinWait1AnimationFile), 0, 0x1000, 0);
+    _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(
+        &self->mModelAnim, gOV019PenguinWait1AnimationFile.filePtr, 0, 0x1000, 0);
     self->mModelAnim.speed = 0x1000;
-    _ZN15TextureSequence7SetFileER8BTP_Filei5Fix12IiEj(&self->mTextureSequence, LOADED(gOV019PenguinWait1TextureSequenceFile), 0, 0x1000, 0);
+    _ZN15TextureSequence7SetFileER8BTP_Filei5Fix12IiEj(
+        &self->mTextureSequence, gOV019PenguinWait1TextureSequenceFile.filePtr, 0, 0x1000, 0);
     self->mAction = 0;
     return 1;
 }
@@ -287,7 +282,8 @@ int func_ov019_02111fec(daPgRcer_c *self)
 // @symbol func_ov019_02111f54
 int func_ov019_02111f54(daPgRcer_c *self)
 {
-    _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(&self->mModelAnim, LOADED(gPenguinJumpStAnimationFile), 0x40000000, 0x1000, 0);
+    _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(
+        &self->mModelAnim, gPenguinJumpStAnimationFile.filePtr, 0x40000000, 0x1000, 0);
     self->mVertAccel = -0x2000;
     self->mTerminalVelocity = -0x3c000;
     self->mVertSpeed = 0x16000;
@@ -313,13 +309,15 @@ int func_ov019_02111dec(daPgRcer_c *self)
         self->UpdatePos(&self->mdCcAc_c);
         func_ov019_0211140c(self, &self->mWithMeshClsn);
         if (self->mWithMeshClsn.JustHitGround() != 0) {
-            _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(&self->mModelAnim, LOADED(gPenguinJumpEdAnimationFile), 0x40000000, 0x1000, 0);
+            _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(
+                &self->mModelAnim, gPenguinJumpEdAnimationFile.filePtr, 0x40000000, 0x1000, 0);
             ++self->mActionStep;
         }
         break;
     case 2:
         if (self->mModelAnim.dExtFrameCtrl_c::Finished() != 0) {
-            _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(&self->mModelAnim, LOADED(gOV019PenguinWait1AnimationFile), 0, 0x1000, 0);
+            _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(
+                &self->mModelAnim, gOV019PenguinWait1AnimationFile.filePtr, 0, 0x1000, 0);
         }
         if (self->mTalkPlayer->GetTalkState() == -1) {
             _ZN5Sound7PlaySubEjjj5Fix12IiEb(0x1f, 0x7f, 0, 0x15666, 0);
@@ -337,8 +335,10 @@ int func_ov019_02111d58(daPgRcer_c *self)
 {
     self->mVertAccel = -0x2000;
     self->mTerminalVelocity = -0x3c000;
-    _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(&self->mModelAnim, LOADED(gPenguinDiveAnimationFile), 0x40000000, 0x1000, 0);
-    _ZN15TextureSequence7SetFileER8BTP_Filei5Fix12IiEj(&self->mTextureSequence, LOADED(gPenguinSliderTextureSequenceFile), 0, 0x1000, 0);
+    _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(
+        &self->mModelAnim, gPenguinDiveAnimationFile.filePtr, 0x40000000, 0x1000, 0);
+    _ZN15TextureSequence7SetFileER8BTP_Filei5Fix12IiEj(
+        &self->mTextureSequence, gPenguinSliderTextureSequenceFile.filePtr, 0, 0x1000, 0);
     self->mHorzSpeed = 0x30000;
     self->mActionStep = 0;
     self->mPlayerFinished = 0;
@@ -355,7 +355,8 @@ int func_ov019_0211197c(daPgRcer_c *self)
             self->func_ov019_021113b0();
         }
         if (self->mModelAnim.dExtFrameCtrl_c::Finished()) {
-            _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(&self->mModelAnim, LOADED(gPenguinSliderAnimationFile), 0, 0x1000, 0);
+            _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(
+                &self->mModelAnim, gPenguinSliderAnimationFile.filePtr, 0, 0x1000, 0);
             self->mModelAnim.speed = 0x1000;
             self->mActionStep++;
         }
@@ -388,7 +389,8 @@ int func_ov019_0211197c(daPgRcer_c *self)
     case 1:
         if (self->func_ov019_0211131c()) {
             if (self->mPathNodeIndex >= (int)self->mPath.NumNodes() - 2) {
-                _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(&self->mModelAnim, LOADED(gPenguinStandUpAnimationFile), 0x40000000, 0x1000, 0);
+                _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(
+                    &self->mModelAnim, gPenguinStandUpAnimationFile.filePtr, 0x40000000, 0x1000, 0);
                 self->mActionStep++;
             } else {
                 self->func_ov019_021113b0();
@@ -461,9 +463,11 @@ int func_ov019_0211197c(daPgRcer_c *self)
 // @symbol func_ov019_02111904
 int func_ov019_02111904(daPgRcer_c *self)
 {
-    _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(&self->mModelAnim, LOADED(gOV019PenguinWalkAnimationFile), 0, 0x1000, 0);
+    _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(
+        &self->mModelAnim, gOV019PenguinWalkAnimationFile.filePtr, 0, 0x1000, 0);
     self->mModelAnim.speed = 0x1000;
-    _ZN15TextureSequence7SetFileER8BTP_Filei5Fix12IiEj(&self->mTextureSequence, LOADED(gOV019PenguinWait1TextureSequenceFile), 0, 0x1000, 0);
+    _ZN15TextureSequence7SetFileER8BTP_Filei5Fix12IiEj(
+        &self->mTextureSequence, gOV019PenguinWait1TextureSequenceFile.filePtr, 0, 0x1000, 0);
     self->mActionStep = 0;
     self->mHorzSpeed = 0x5000;
     self->mAction = 4;
@@ -517,7 +521,8 @@ int func_ov019_021117a8(daPgRcer_c *self)
 // @symbol func_ov019_02111754
 int func_ov019_02111754(daPgRcer_c *self)
 {
-    _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(&self->mModelAnim, LOADED(gOV019PenguinWait1AnimationFile), 0, 0x1000, 0);
+    _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(
+        &self->mModelAnim, gOV019PenguinWait1AnimationFile.filePtr, 0, 0x1000, 0);
     self->mModelAnim.speed = 0x1000;
     self->mActionStep = 0;
     self->mAction = 5;
@@ -551,7 +556,9 @@ int func_ov019_02111558(daPgRcer_c *self)
             v.z = z;
             if (self->mPlayerCheated != 0) {
                 id = 0xa9;
-                _ZN15TextureSequence7SetFileER8BTP_Filei5Fix12IiEj(&self->mTextureSequence, LOADED(gOV019PenguinAngryTextureSequenceFile), 0, 0x1000, 0);
+                _ZN15TextureSequence7SetFileER8BTP_Filei5Fix12IiEj(
+                    &self->mTextureSequence, gOV019PenguinAngryTextureSequenceFile.filePtr, 0,
+                    0x1000, 0);
                 self->mPenguinWon = 1;
             } else {
                 if (self->mPenguinWon != 0)
@@ -574,7 +581,9 @@ int func_ov019_02111558(daPgRcer_c *self)
                                           self->mPos, 4);
             }
             self->mTalkPlayer->HasFinishedTalking();
-            _ZN15TextureSequence7SetFileER8BTP_Filei5Fix12IiEj(&self->mTextureSequence, LOADED(gOV019PenguinWait1TextureSequenceFile), 0, 0x1000, 0);
+            _ZN15TextureSequence7SetFileER8BTP_Filei5Fix12IiEj(
+                &self->mTextureSequence, gOV019PenguinWait1TextureSequenceFile.filePtr, 0, 0x1000,
+                0);
             ++self->mActionStep;
         }
         break;

@@ -101,22 +101,16 @@ typedef char MarioCapEatView_size_must_be_0xd4[sizeof(MarioCapEatView) == 0xd4 ?
    SharedFilePtr_Destruct_Clsn. The manifest aliases each undefined member
    onto its ROM symbol. */
 struct DossyModelFilePtr : SharedFilePtr {
-    u32 id; void *ptr;
-
     DossyModelFilePtr(u32 fileID);
     ~DossyModelFilePtr();
 };
 
 struct DossyAnimationFileHandle : SharedFilePtr {
-    u32 id; void *ptr;
-
     DossyAnimationFileHandle(u32 fileID);
     ~DossyAnimationFileHandle();
 };
 
 struct DossyCollisionFileHandle : SharedFilePtr {
-    u32 id; void *ptr;
-
     DossyCollisionFileHandle(u32 fileID);
     ~DossyCollisionFileHandle();
 };
@@ -179,9 +173,6 @@ extern void _ZN9daDossy_c19func_ov065_02119594EP8dActor_c(void *self, void *othe
 
 int ApproachLinear(int &value, int target, int step);
 bool ApproachLinear(short &value, short target, short step);
-
-/* The loaded file behind a SharedFilePtr is its second word. */
-#define LOADED_FILE(ptr) ((void *)((int *)&(ptr))[1])
 
 typedef void (daDossy_c::*StateFunc)();
 extern "C" StateFunc data_ov065_0211d7fc[];
@@ -248,7 +239,7 @@ void daDossy_c::func_ov065_0211956c(dActor_c *other)
 // @symbol _ZN12daDossyCap_c13InitResourcesEv
 int daDossyCap_c::InitResources()
 {
-    mModel.SetFile((BMD_File *)LOADED_FILE(data_ov002_0210d9c0), 1, -1);
+    mModel.SetFile((BMD_File *)data_ov002_0210d9c0.filePtr, 1, -1);
     mCapIcon.func_ov001_020ab228((char *)this, 2, 2, 0);
     _ZN7dCcAc_c4InitEP8dActor_c5Fix12IiES3_jj(&mdCcAc_c, this, 0x96000, 0x96000, 0x100002, 0x8000);
     mCarrier = 0;
@@ -264,7 +255,8 @@ int daDossy_c::InitResources()
     Model::LoadFile(data_ov002_0210d9c0);
     for (i = 0; i < 3; i++)
         dExtFrameCtrl_c::LoadFile(*data_ov065_0211c080[i]);
-    _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(&mModelAnim, data_ov065_0211d770.ptr, 0, 0x1000, 0);
+    _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(&mModelAnim, data_ov065_0211d770.filePtr, 0, 0x1000,
+                                                0);
     func_ov065_02118cc4();
     func_ov065_02118838();
 
@@ -615,7 +607,8 @@ void daDossy_c::func_ov065_02118634()
         mState++;
         mHorzSpeed = 0;
         mAngVelY = 0;
-        _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(&mModelAnim, data_ov065_0211d768.ptr, 0x40000000, 0x1000, 0);
+        _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(&mModelAnim, data_ov065_0211d768.filePtr,
+                                                    0x40000000, 0x1000, 0);
         mCylClsn1.Clear();
         mCylClsn2.Clear();
         mStateTimer = 0;
@@ -696,8 +689,8 @@ void daDossy_c::func_ov065_021183c8()
                     && ((Player *)mClsnPlayer)->SetNoControlState(5, -1, 0) != 0) {
                     mState++;
                     mStateState = 0;
-                    _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(&mModelAnim,
-                        data_ov065_0211d748.ptr, 0x40000000, 0x1000, 0);
+                    _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(
+                        &mModelAnim, data_ov065_0211d748.filePtr, 0x40000000, 0x1000, 0);
                     mRider = mClsnPlayer;
                 }
             }
@@ -708,8 +701,8 @@ void daDossy_c::func_ov065_021183c8()
         if (mStateTimer > 0x96) {
             mState++;
             mStateState = 0;
-            _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(&mModelAnim,
-                data_ov065_0211d748.ptr, 0x40000000, 0x1000, 0);
+            _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(&mModelAnim, data_ov065_0211d748.filePtr,
+                                                        0x40000000, 0x1000, 0);
         }
         mStateTimer++;
     }
@@ -722,7 +715,8 @@ void daDossy_c::func_ov065_021182e4()
     case 0:
         if (mModelAnim.Finished() == 0) return;
         mStateState = 1;
-        _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(&mModelAnim, data_ov065_0211d770.ptr, 0, 0x1000, 0);
+        _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(&mModelAnim, data_ov065_0211d770.filePtr, 0,
+                                                    0x1000, 0);
         if (mRider == 0) return;
         ((Player *)mRider)->Unk_020ca150(5);
         return;

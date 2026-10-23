@@ -1,11 +1,11 @@
-struct ListNode;
-extern void func_02041bbc(struct ListNode **head, struct ListNode **insertSlot, struct ListNode *node);
+#include "private/arm9_a1fc0_file_share.h"
 
-void func_02041a94(char *base, char *node)
-{
-    int *ctr;
-    func_02041bbc((struct ListNode **)(base + 0x2708), (struct ListNode **)(base + 0x2700), (struct ListNode *)node);
-    ctr = (int *)(base + 0x2724);
-    *(int *)(node + 0x7c) = 0;
-    *ctr -= 1;
+extern void func_02041bbc(FileShareNode **from, FileShareNode **to, FileShareNode *node);
+
+/* busy -> free: the loader has closed the node's file (state 0), and the
+ * node is no longer counted in mBusyCount. */
+void func_02041a94(FileShareParentArea *area, FileShareNode *node) {
+    func_02041bbc(&area->mBusyList, &area->mFreeList, node);
+    node->mState = 0;
+    area->mBusyCount -= 1;
 }

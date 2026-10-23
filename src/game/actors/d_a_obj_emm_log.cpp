@@ -48,12 +48,10 @@ struct daObjEmmLog_c_Resources {
  * declared-only subclasses so the static initializer names the real entry
  * points. */
 struct EmmLogModelFilePtr : SharedFilePtr {
-    u32 words[2];
     EmmLogModelFilePtr(u32 fileID);
     ~EmmLogModelFilePtr();
 };
 struct EmmLogCollisionFilePtr : SharedFilePtr {
-    u32 words[2];
     EmmLogCollisionFilePtr(u32 fileID);
     ~EmmLogCollisionFilePtr();
 };

@@ -96,7 +96,7 @@
  *   appear. The u16 at 0x38c is a distinct field, mStateFrames.)
  * - func_ov002_020af0c0: reading the player's position directly instead of
  *   through the laundered int* changes the bytes, so the launder stays.
- * - SharedFilePtr has no recovered fields; handles stay data_ov002_*
+ * - The shared file handles keep their data_ov002_* address names
  * - decl_common.h stays out (its surviving claims are redundant with the
  *   decl region and this file's own definition)
  *
@@ -1065,10 +1065,6 @@ typedef void (da1up_c::*PMF)();
 
 extern PMF data_ov002_0210dc00[14];
 
-/* Ordinal 35's view of data_ov002_0210d9b8: a cached model handle whose second
-   word is the BMD file pointer. */
-struct ModelCache { int pad0; BMD_File* file; };
-
 /* -------------------------------------------------------------------------- */
 // @symbol _ZN7da1up_c16CleanupResourcesEv
 /* Vtable slot 3. Releases the model file InitResources loaded -- the 1-Up's
@@ -1175,7 +1171,7 @@ int da1up_c::Behavior()
    the current level, it calls MarkForDestruction and returns 0. */
 int da1up_c::InitResources()
 {
-    extern ModelCache data_ov002_0210d9b8;
+    extern SharedFilePtr data_ov002_0210d9b8;
     extern SharedFilePtr data_ov002_0210d9d8;
     extern SharedFilePtr data_ov002_0210da30;
     extern signed char data_0209f2f8;
@@ -1191,7 +1187,7 @@ int da1up_c::InitResources()
     isOneUp = (actorID == ACTOR_ONEUPKINOKO);
     if (isOneUp) {
         if ((unsigned int)(mMushroomType - 0xb) <= 1) {
-            if (mModel.SetFile(data_ov002_0210d9b8.file, 1, 1) == 0)
+            if (mModel.SetFile((BMD_File *)data_ov002_0210d9b8.filePtr, 1, 1) == 0)
                 return 0;
         } else {
             f = (BMD_File*)Model::LoadFile(data_ov002_0210d9d8);
@@ -1200,7 +1196,7 @@ int da1up_c::InitResources()
         }
     } else {
         if ((unsigned int)(mMushroomType - 0xb) <= 1) {
-            if (mModel.SetFile(data_ov002_0210d9b8.file, 1, 1) == 0)
+            if (mModel.SetFile((BMD_File *)data_ov002_0210d9b8.filePtr, 1, 1) == 0)
                 return 0;
         } else {
             f = (BMD_File*)Model::LoadFile(data_ov002_0210da30);

@@ -60,13 +60,11 @@
  * These local type spellings bind to the existing resource constructors and
  * destructors; no new resource implementation is introduced. */
 struct YajirusiModelFile : SharedFilePtr {
-    u32 words[2];
     YajirusiModelFile(u32 fileID);
     ~YajirusiModelFile();
 };
 
 struct YajirusiCollisionFile : SharedFilePtr {
-    u32 words[2];
     YajirusiCollisionFile(u32 fileID);
     ~YajirusiCollisionFile();
 };

@@ -74,12 +74,10 @@ s32 daObjTh_Fall_Block_c::CleanupResources()
  * declared-only subclasses so the static initializer names the real entry
  * points. */
 struct ThFallBlockModelFilePtr : SharedFilePtr {
-    u32 words[2];
     ThFallBlockModelFilePtr(u32 fileID);
     ~ThFallBlockModelFilePtr();
 };
 struct ThFallBlockCollisionFilePtr : SharedFilePtr {
-    u32 words[2];
     ThFallBlockCollisionFilePtr(u32 fileID);
     ~ThFallBlockCollisionFilePtr();
 };

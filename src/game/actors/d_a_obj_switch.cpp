@@ -49,15 +49,11 @@ namespace Event { int ClearBit(unsigned int bit); void SetBit(unsigned int bit);
  * through SharedFilePtr_Destruct_Clsn. The manifest aliases those undefined
  * members onto the ROM symbols. */
 struct SwitchModelFilePtr : SharedFilePtr {
-    u32 words[2];
-
     SwitchModelFilePtr(u32 fileID);
     ~SwitchModelFilePtr();
 };
 
 struct SwitchClsnFileHandle : SharedFilePtr {
-    u32 words[2];
-
     SwitchClsnFileHandle(u32 fileID);
     ~SwitchClsnFileHandle();
 };

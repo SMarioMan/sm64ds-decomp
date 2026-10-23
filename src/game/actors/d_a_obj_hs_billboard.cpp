@@ -37,7 +37,6 @@ enum d_a_obj_hs_billboard_AssetId {
 /* Four model handles. Each constructs through func_02017acc and destroys
  * through func_02017ab4. The four-pointer table stays ROM rodata. */
 struct HsBillboardModelFilePtr : SharedFilePtr {
-    unsigned int words[2];
     HsBillboardModelFilePtr(unsigned int fileId);
     ~HsBillboardModelFilePtr();
 };

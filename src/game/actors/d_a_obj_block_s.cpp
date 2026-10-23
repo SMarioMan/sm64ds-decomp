@@ -200,12 +200,10 @@ struct BlockSStateHost { char pad[0x560]; int idx; };
  * declared-only subclasses so the static initializer names the real entry
  * points. */
 struct BlockSModelFilePtr : SharedFilePtr {
-    u32 words[2];
     BlockSModelFilePtr(u32 fileID);
     ~BlockSModelFilePtr();
 };
 struct BlockSCollisionFilePtr : SharedFilePtr {
-    u32 words[2];
     BlockSCollisionFilePtr(u32 fileID);
     ~BlockSCollisionFilePtr();
 };

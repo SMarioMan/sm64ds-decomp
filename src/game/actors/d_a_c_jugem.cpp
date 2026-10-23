@@ -68,22 +68,16 @@ bool ApproachLinear(short &value, short target, short step);
  * TU, which deliberately avoids it); the destructor alias points at the
  * ROM's canonical copy. */
 struct JugemModelFile : SharedFilePtr {
-    u32 words[2];
-
     JugemModelFile(u32 fileID);
     ~JugemModelFile();
 };
 
 struct JugemAnimationFilePtr : SharedFilePtr {
-    u32 words[2];
-
     JugemAnimationFilePtr(u32 fileID);
     ~JugemAnimationFilePtr();
 };
 
 struct JugemTexSequenceFilePtr : SharedFilePtr {
-    u32 words[2];
-
     JugemTexSequenceFilePtr(u32 fileID);
     ~JugemTexSequenceFilePtr();
 };

@@ -165,31 +165,31 @@
       "ordinal": 18
     },
     {
-      "symbol": "_ZN6Player19func_ov002_020bd8c0Ej",
+      "symbol": "_ZN6Player13EndStateMusicEj",
       "address": "0x020bd8c0",
       "size": "0x00000068",
-      "legacy_source": "src/func_ov002_020bd8c0.cpp",
+      "legacy_source": "src/EndStateMusic.cpp",
       "ordinal": 19
     },
     {
-      "symbol": "_ZN6Player19func_ov002_020bd928Ej",
+      "symbol": "_ZN6Player15StartStateMusicEj",
       "address": "0x020bd928",
       "size": "0x0000005c",
-      "legacy_source": "src/func_ov002_020bd928.cpp",
+      "legacy_source": "src/StartStateMusic.cpp",
       "ordinal": 20
     },
     {
-      "symbol": "_ZN6Player19func_ov002_020bd984Ej",
+      "symbol": "_ZN6Player15EndPowerupMusicEj",
       "address": "0x020bd984",
       "size": "0x00000068",
-      "legacy_source": "src/func_ov002_020bd984.cpp",
+      "legacy_source": "src/EndPowerupMusic.cpp",
       "ordinal": 21
     },
     {
-      "symbol": "_ZN6Player19func_ov002_020bd9ecEj",
+      "symbol": "_ZN6Player17StartPowerupMusicEj",
       "address": "0x020bd9ec",
       "size": "0x0000005c",
-      "legacy_source": "src/func_ov002_020bd9ec.cpp",
+      "legacy_source": "src/StartPowerupMusic.cpp",
       "ordinal": 22
     },
     {

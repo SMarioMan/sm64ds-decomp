@@ -24,8 +24,6 @@ enum d_a_obj_ks_water_AssetId {
  * - TextureTransformer::SetFile / dBgW_KcMbg::SetFile 6az: InitResources
  *   passes Fix12<int> by value; the header method form size-DIFFs.
  * - Sound::PlayLong: Behavior's long water sound; Sound.h has no PlayLong.
- * - SharedFilePtr +4: InitResources' TextureTransformer::Prepare reads the
- *   BMD at data_ov017_02111c88 +4; SharedFilePtr.h has no fields.
  * - data_ov017_02111c80 / 02111c88 / 02111a60 / 02111a94 KCL / BMD / BTA / CLPS
  *   handles; this TU consumes them, overlay .bss/.data owns them.
  * - no Player.h.
@@ -55,15 +53,11 @@ struct CLPS_Block;
  * destroy through SharedFilePtr_Destruct_Clsn. The manifest aliases those
  * undefined members onto the ROM symbols. */
 struct KsWaterModelFilePtr : SharedFilePtr {
-    u32 words[2];
-
     KsWaterModelFilePtr(u32 fileID);
     ~KsWaterModelFilePtr();
 };
 
 struct KsWaterClsnFileHandle : SharedFilePtr {
-    u32 words[2];
-
     KsWaterClsnFileHandle(u32 fileID);
     ~KsWaterClsnFileHandle();
 };
@@ -105,9 +99,7 @@ extern "C" daObjKsWater_c *daObjKsWater_c_classInit()
 int daObjKsWater_c::InitResources()
 {
     mModel.SetFile((BMD_File *)Model::LoadFile(data_ov017_02111c88), 1, -1);
-    /* SharedFilePtr.h has no fields; +4 is the loaded BMD pointer. */
-    TextureTransformer::Prepare(**(BMD_File **)((char *)&data_ov017_02111c88 + 4),
-                                data_ov017_02111a60);
+    TextureTransformer::Prepare(*(BMD_File *)data_ov017_02111c88.filePtr, data_ov017_02111a60);
     /* 6az: header SetFile takes Fix12<int> by value. */
     _ZN18TextureTransformer7SetFileER8BTA_Filei5Fix12IiEj(
         &mTextureTransformer, &data_ov017_02111a60, 0, 0x1000, 0);

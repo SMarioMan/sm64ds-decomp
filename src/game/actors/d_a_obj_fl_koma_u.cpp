@@ -38,12 +38,10 @@ enum daObjFl_KomaU_c_AssetId {
  * for the collision); the subclasses exist to spell those entry points.
  * data_ov064_0211adbc stays the file table. */
 struct KomaUModelFilePtr : SharedFilePtr {
-    unsigned int words[2];
     KomaUModelFilePtr(unsigned int fileId);
     ~KomaUModelFilePtr();
 };
 struct KomaUClsnFileHandle : SharedFilePtr {
-    unsigned int words[2];
     KomaUClsnFileHandle(unsigned int fileId);
     ~KomaUClsnFileHandle();
 };

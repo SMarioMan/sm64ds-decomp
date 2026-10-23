@@ -56,14 +56,6 @@ bool ApproachLinear(short &value, short target, short step);
 struct BMD_File;
 struct BTP_File;
 
-/* SharedFilePtr has no fields. This TU reads the file word at +4
-   (sinit constructs these as SharedFilePtr; LoadFile/Release take the
-   object, SetAnim/SetFile/Prepare read +4). */
-struct FileRef {
-    s32 refs;
-    void *file;
-};
-
 /* Two 8-byte daPgDfdr_c member pointers (enter, then the per-frame tick). */
 struct StatePair {
     int w[4];
@@ -101,29 +93,21 @@ int func_ov027_02111ca8(daPgDfdr_c *self);
  * local; the handle constructors and destructors are the ROM resource-family
  * functions, aliased in the manifest. */
 struct PgDfdrModelFile : SharedFilePtr {
-    u32 words[2];
-
     PgDfdrModelFile(u32 fileID);
     ~PgDfdrModelFile();
 };
 
 struct PgDfdrAnimationFilePtr : SharedFilePtr {
-    u32 words[2];
-
     PgDfdrAnimationFilePtr(u32 fileID);
     ~PgDfdrAnimationFilePtr();
 };
 
 struct PgDfdrTexSequenceFilePtr : SharedFilePtr {
-    u32 words[2];
-
     PgDfdrTexSequenceFilePtr(u32 fileID);
     ~PgDfdrTexSequenceFilePtr();
 };
 
 struct PgDfdrCollisionFilePtr : SharedFilePtr {
-    u32 words[2];
-
     PgDfdrCollisionFilePtr(u32 fileID);
     ~PgDfdrCollisionFilePtr();
 };
@@ -178,10 +162,10 @@ s32 daPgDfdr_c::InitResources()
         dExtFrameCtrl_c::LoadFile(*(SharedFilePtr *)data_ov027_02112ca4[i]);
 
     TextureSequence::LoadFile(*(SharedFilePtr *)&data_ov027_02113c94);
-    TextureSequence::Prepare(*(BMD_File *)((FileRef *)&data_ov027_02113c7c)->file,
-                             *(BTP_File *)((FileRef *)&data_ov027_02113c94)->file);
-    _ZN15TextureSequence7SetFileER8BTP_Filei5Fix12IiEj(
-        &mTextureSequence, ((FileRef *)&data_ov027_02113c94)->file, 0, 0x1000, 0);
+    TextureSequence::Prepare(*(BMD_File *)data_ov027_02113c7c.filePtr,
+                             *(BTP_File *)data_ov027_02113c94.filePtr);
+    _ZN15TextureSequence7SetFileER8BTP_Filei5Fix12IiEj(&mTextureSequence,
+                                                       data_ov027_02113c94.filePtr, 0, 0x1000, 0);
 
     mAngleY = (short)0xdd30;
     mPrevAngleY = mAngleY;
@@ -291,7 +275,8 @@ void daPgDfdr_c::func_ov027_02111cfc()
 /* State 0 enter: pause-and-turn clip, 20 frames, unk_3d0 = 0. */
 extern "C" int func_ov027_02111ca8(daPgDfdr_c *self)
 {
-    _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(&self->mModelAnim, ((FileRef *)&data_ov027_02113c84)->file, 0, 0x1000, 0);
+    _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(&self->mModelAnim, data_ov027_02113c84.filePtr, 0,
+                                                0x1000, 0);
     self->mModelAnim.speed = 0x1000;
     self->mTimer = 20;
     self->unk_3d0 = 0;
@@ -321,10 +306,12 @@ extern "C" void func_ov027_02111b2c(daPgDfdr_c *self)
     self->mHorzSpeed = data_ov027_02113a1c[self->mStepIndex].speed;
     self->mPrevAngleY = data_ov027_02113a1c[self->mStepIndex].startHeading;
     if (data_ov027_02113a1c[self->mStepIndex].startHeading != data_ov027_02113a1c[self->mStepIndex].endHeading) {
-        _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(&self->mModelAnim, ((FileRef *)&data_ov027_02113c8c)->file, 0, 0x1000, 0);
+        _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(&self->mModelAnim, data_ov027_02113c8c.filePtr,
+                                                    0, 0x1000, 0);
         self->mModelAnim.speed = 0x1000;
     } else {
-        _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(&self->mModelAnim, ((FileRef *)&data_ov027_02113c74)->file, 0, 0x1000, 0);
+        _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(&self->mModelAnim, data_ov027_02113c74.filePtr,
+                                                    0, 0x1000, 0);
         self->mModelAnim.speed = FX_MUL(data_ov027_02113a1c[self->mStepIndex].speed, 0x5000);
     }
     self->unk_3d0 = 1;
@@ -364,14 +351,14 @@ int daPgDfdr_c::func_ov027_02111a28()
            6 words; the ternary keeps the straight-walk file in the compare. */
         char *c = (char *)this;
         int frameRaw = *(int *)(c + 0x378);
-        int walkAnim = (int)((FileRef *)&data_ov027_02113c74)->file;
+        int walkAnim = (int)data_ov027_02113c74.filePtr;
         int curAnim = walkAnim ? *(int *)(c + 0x380) : *(int *)(c + 0x380);
         unsigned int frame = (unsigned int)(frameRaw << 4) >> 0x10;
         if (curAnim == walkAnim) {
             if (frame == 0xa || frame == 0x16) {
                 func_0201267c(0xf3, (char *)&mCamSpacePosX);
             }
-        } else if (curAnim == (int)((FileRef *)&data_ov027_02113c8c)->file) {
+        } else if (curAnim == (int)data_ov027_02113c8c.filePtr) {
             if (frame == 9 || frame == 0x16) {
                 func_0201267c(0xf3, (char *)&mCamSpacePosX);
             }

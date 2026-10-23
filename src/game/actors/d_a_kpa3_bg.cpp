@@ -105,15 +105,11 @@ extern HandlerEntry data_ov060_0211b1ac[];
  * and destroy through SharedFilePtr_Destruct_Clsn. The wrappers are declared,
  * never defined: the manifest aliases their members onto the ROM veneers. */
 struct Kpa3BgModelFilePtr : SharedFilePtr {
-    u32 words[2];
-
     Kpa3BgModelFilePtr(u32 fileID);
     ~Kpa3BgModelFilePtr();
 };
 
 struct Kpa3BgCollisionFilePtr : SharedFilePtr {
-    u32 words[2];
-
     Kpa3BgCollisionFilePtr(u32 fileID);
     ~Kpa3BgCollisionFilePtr();
 };

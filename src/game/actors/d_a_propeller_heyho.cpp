@@ -16,8 +16,7 @@
  * func_ov070_0211f62c and func_ov070_0211f6e0. Player-position reads
  * through int* in func_ov070_0211fd98, func_ov070_0211fae4 and
  * func_ov070_0211f48c, and the Vector3 write through ((int *)&v)[i] in
- * func_ov070_0211f368, stay as written. SharedFilePtr has no fields, so
- * the loaded file is ((int *)&handle)[1]. The mPrevAngle triple keeps
+ * func_ov070_0211f368, stay as written. The mPrevAngle triple keeps
  * the base-class names.
  * FlyGuy_ChangeState keeps its C-ABI name. ApproachAngleInt is the
  * int-target overload. V3w and V3h keep the ldm/stm copy in
@@ -153,15 +152,11 @@ s32 daPropeller_Heyho_c::OnAimedAtWithEgg() {
  * constructors and destructors are the ROM resource-family functions,
  * aliased in the manifest. */
 struct HeyhoModelFile : SharedFilePtr {
-    u32 words[2];
-
     HeyhoModelFile(u32 fileID);
     ~HeyhoModelFile();
 };
 
 struct HeyhoAnimationFilePtr : SharedFilePtr {
-    u32 words[2];
-
     HeyhoAnimationFilePtr(u32 fileID);
     ~HeyhoAnimationFilePtr();
 };
@@ -425,7 +420,8 @@ extern int data_0209e650[];
 int func_ov070_0211ffa8(daPropeller_Heyho_c* c){
   c->mTargetAngY = (short)(((RandomIntInternal(data_0209e650) >> 8) & 0xf) << 0xc);
   c->mStateTimer = (short)(((RandomIntInternal(data_0209e650) >> 8) & 0x1f) + 0x32);
-  _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(&c->mModelAnim, (void*)((int *)&data_ov070_02123520)[1], 0, 0x1000, 0);
+  _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(&c->mModelAnim, data_ov070_02123520.filePtr, 0,
+                                              0x1000, 0);
   return 1;
 }
 }
@@ -650,7 +646,8 @@ int func_ov070_0211fa80(daPropeller_Heyho_c *c) {
     c->mStateTimer = 0x3f;
     c->mStateStep = 0;
     c->mTargetAngY = c->HorzAngleToCPlayerOrAng();
-    _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(&c->mModelAnim, (void*)((int *)&data_ov070_02123518)[1], 0x40000000, 0x1000, 0);
+    _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(&c->mModelAnim, data_ov070_02123518.filePtr,
+                                                0x40000000, 0x1000, 0);
     return 1;
 }
 }
@@ -724,7 +721,8 @@ int daPropeller_Heyho_c::func_ov070_0211f6e0()
 
     if (mModelAnim.dExtFrameCtrl_c::Finished()) {
         if (mStateStep == 0) {
-            _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(&mModelAnim, (void*)((int *)&data_ov070_02123510)[1], 0, 0x1000, 0);
+            _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(&mModelAnim, data_ov070_02123510.filePtr, 0,
+                                                        0x1000, 0);
             mStateStep = 1;
         }
         if (mHitDuringAttack == 1) {
@@ -825,7 +823,8 @@ extern void _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(void* self, void* bca, i
 int func_ov070_0211f694(daPropeller_Heyho_c *c) {
     c->mStateStep = 0;
     if (c->mHitDuringAttack == 0) {
-        _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(&c->mModelAnim, (void*)((int *)&data_ov070_02123508)[1], 0x40000000, 0x1000, 0);
+        _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(&c->mModelAnim, data_ov070_02123508.filePtr,
+                                                    0x40000000, 0x1000, 0);
     }
     return 1;
 }
@@ -867,7 +866,7 @@ extern void _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(void* self, void* bca, i
 /* Fire init: plays the file-02123500 animation (flags 0x40000000) at speed 1.0. */
 extern "C" int func_ov070_0211f5f0(daPropeller_Heyho_c *c) {
     unsigned int flags = 0;
-    BCA_File *file = (BCA_File *)(((int *)&data_ov070_02123500)[1]);
+    BCA_File *file = (BCA_File *)data_ov070_02123500.filePtr;
     _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(&c->mModelAnim, file, 0x40000000, 0x1000, flags);
     return 1;
 }
@@ -1091,7 +1090,8 @@ extern "C" void func_ov070_0211f100(daPropeller_Heyho_c* c)
     if (c->mCurrentState != &data_ov070_021235cc)
         return;
 
-    _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(&c->mModelAnim, (void*)((int *)&data_ov070_02123528)[1], 0x40000000, 0x1000, 0);
+    _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(&c->mModelAnim, data_ov070_02123528.filePtr,
+                                                0x40000000, 0x1000, 0);
     c->mStateStep = 1;
     c->mHitDuringAttack = 1;
 }

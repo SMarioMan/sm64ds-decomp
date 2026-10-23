@@ -437,11 +437,17 @@ void SetMusic(unsigned int j1, unsigned int j2)
     func_02011dcc(data_0209b4a0, j2);
 }
 
-// @symbol _ZN5Sound8EndMusicEjj
-void EndMusic(unsigned int j1, unsigned int j2)
-{
+/* ONE parameter, although this symbol used to be spelled _ZN5Sound8EndMusicEjj.
+   The second was never read here, and every ROM call site passes a single
+   argument -- `LDRB r0, [...]; BL`, r1 untouched. The extra `j` kept the symbol
+   unspellable from C++: a truthful declaration mangled to ...Ej and matched
+   nothing, so callers had to hand-spell the two-parameter name and pass one
+   argument. The symbol is now ...Ej and include/Sound.h declares it. */
+// @symbol _ZN5Sound8EndMusicEj
+void EndMusic(unsigned int playerNo) {
     if (data_0209b4ac < 0) return;
-    if (j1 != data_0209f250) return;
+    if (playerNo != data_0209f250)
+        return;
     int e43c = data_0208e43c;
     int e444 = data_0208e444;
     data_0209b4ac = e43c;

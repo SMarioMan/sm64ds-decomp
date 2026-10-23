@@ -22,7 +22,7 @@
  *   declared with void * parameters: their definitions take a file-local
  *   struct, so no shared spelling agrees with them yet.
  * - data_ov002_0210d9f0 is a SharedFilePtr, read here through a local
- *   PathStuff struct because include/SharedFilePtr.h declares no fields.
+ *   PathStuff struct: including SharedFilePtr.h renumbers the @NNN labels.
  * - IsUnk42cSet keeps its symbol-bound name; the field it reads is
  *   mRespawnAfterFall (see include/PathLift.h).
  * - StateFall keeps two views of mFallAngle: a signed read and an
@@ -56,9 +56,9 @@ struct RawVector3 {
     int x, y, z;
 };
 
-/* The shared lift model file. include/SharedFilePtr.h declares no fields
-   yet, so this file reads the loaded-file pointer through the layout
-   src/SharedFilePtr.cpp defines. */
+/* The shared lift model file, in SharedFilePtr's layout. This TU does not
+   include SharedFilePtr.h: the header's declarations take one compiler
+   label number, and every @NNN of the state table would move up by one. */
 struct BMD_File;
 struct PathStuff {
     u16 fileID;

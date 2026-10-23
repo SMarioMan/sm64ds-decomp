@@ -383,7 +383,8 @@ void func_ov102_0214c0b8(void *cv)
         self->mHorzSpeed = 0;
     else
         self->mHorzSpeed = 0x5000;
-    _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj((char *)&self->mModelAnim, *(void **)((char *)&data_ov102_0214e9c0 + 4), 0, 0x1000, 0);
+    _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj((char *)&self->mModelAnim,
+                                                data_ov102_0214e9c0.filePtr, 0, 0x1000, 0);
     self->mTurnTimer = 0x200;
     self->mVertAccel = -0x2000;
     self->mCarrier = 0;
@@ -544,7 +545,8 @@ void func_ov102_0214bd20(char* c)
     self->mState = 3;
     self->mVertAccel = 0;
     self->mHorzSpeed = 0;
-    _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(&self->mModelAnim, *(void **)((char *)&data_ov102_0214e9c8 + 4), 0, 0x1000, 0);
+    _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(&self->mModelAnim, data_ov102_0214e9c8.filePtr, 0,
+                                                0x1000, 0);
     func_ov102_0214b384(c, 0x96);
     self->mdCc_c.flags |= 2;
     self->mdCc_c.flags &= ~4;
@@ -624,7 +626,8 @@ void func_ov102_0214bc20(char* c)
     self->mHorzSpeed = a1.v[idx];
     self->mVertSpeed = a2.v[idx];
     self->mState = 4;
-    _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj((char *)&self->mModelAnim, *(void **)((char *)&data_ov102_0214e9c0 + 4), 0, 0x1000, 0);
+    _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj((char *)&self->mModelAnim,
+                                                data_ov102_0214e9c0.filePtr, 0, 0x1000, 0);
     self->mVertAccel = -0x2000;
 }
 
@@ -1154,7 +1157,7 @@ void func_ov102_0214b128(void *cv) {
 
 // @symbol _ZN7daBmb_c19func_ov102_0214b03cEv
 void daBmb_c::func_ov102_0214b03c() {
-    if (mState < 2 && mModelAnim.file == *((BCA_File **)((char *)&data_ov102_0214e9c0 + 4))) {
+    if (mState < 2 && mModelAnim.file == (BCA_File *)data_ov102_0214e9c0.filePtr) {
         if (mModelAnim.WillHitFrame(0) != 0 || mModelAnim.WillHitFrame(0x10) != 0) {
             func_0201267c(0x132, &mCamSpacePos);
         }
@@ -1360,7 +1363,8 @@ after_cannon:
     if (self->mVariant == 2) {
         self->mVariant = 3;
         self->mState = 0;
-        _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(&self->mModelAnim, *(void **)((char *)&data_ov102_0214e9c0 + 4), 0, 0x1000, 0);
+        _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(&self->mModelAnim, data_ov102_0214e9c0.filePtr,
+                                                    0, 0x1000, 0);
         self->mTurnTimer = 0x200;
         self->mVertAccel = -0x2000;
         self->mdCc_c.flags &= ~2u;

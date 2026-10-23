@@ -70,15 +70,11 @@ struct daObjFl_Ring_c_Files {
  * collision file func_02017b4c / SharedFilePtr_Destruct_Clsn. The spellings
  * are local; the manifest aliases the generated names to those ROM symbols. */
 struct RingModelFilePtr : SharedFilePtr {
-    u32 words[2];
-
     RingModelFilePtr(u32 fileID);
     ~RingModelFilePtr();
 };
 
 struct RingCollisionFilePtr : SharedFilePtr {
-    u32 words[2];
-
     RingCollisionFilePtr(u32 fileID);
     ~RingCollisionFilePtr();
 };

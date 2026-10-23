@@ -3,9 +3,8 @@
  * - SetAnim, DropShadowRadHeight, IsTooFarAwayFromPlayer,
  *   dCcAc_c::Init and dBgCh_Actr::Init stay
  *   mangled. Each takes Fix12<int> by value.
- * - Local file-handle wrappers retain the measured eight-byte layout while
- *   SharedFilePtr.h remains fieldless. Their constructor/destructor veneers
- *   are mapped to the retail destinations in this TU's manifest.
+ * - The local file-handle wrappers' constructor/destructor veneers are
+ *   mapped to the retail destinations in this TU's manifest.
  * - The state steps stay func_ov072_*. The cartridge has no names
  *   for them.
  *
@@ -30,24 +29,13 @@ struct PgBbyMtx {
 };
 
 /* Descriptive local types and object names, not recovered source spellings.
- * SharedFilePtr.cpp proves fileID at +0, numRefs at +2, and filePtr at +4.
- * Byte +3 is padding. Model and animation handles use different veneers. */
+ * Model and animation handles use different veneers. */
 struct PgBbyModelFile : SharedFilePtr {
-    u16 fileID;
-    u8 numRefs;
-    u8 padding;
-    BMD_File *filePtr;
-
     PgBbyModelFile(u32 fileID);
     ~PgBbyModelFile();
 };
 
 struct PgBbyAnimationFile : SharedFilePtr {
-    u16 fileID;
-    u8 numRefs;
-    u8 padding;
-    BCA_File *filePtr;
-
     PgBbyAnimationFile(u32 fileID);
     ~PgBbyAnimationFile();
 };
@@ -203,8 +191,8 @@ void daPgBby_c::func_ov072_02121cdc()
 int daPgBby_c::func_ov072_02121c94()
 {
     mSubState = 0;
-    _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(&mModelAnim, gPenguinBabyWaitAnimationFile.filePtr,
-                                                0, 0x1000, 0);
+    _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(
+        &mModelAnim, (BCA_File *)gPenguinBabyWaitAnimationFile.filePtr, 0, 0x1000, 0);
     mStateId = 0;
     return 1;
 }
@@ -255,10 +243,10 @@ int daPgBby_c::func_ov072_02121a84()
     }
     if (mHorzSpeed != 0) {
         _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(
-            &mModelAnim, gPenguinBabyWalkAnimationFile.filePtr, 0, 0x1000, 0);
+            &mModelAnim, (BCA_File *)gPenguinBabyWalkAnimationFile.filePtr, 0, 0x1000, 0);
     } else {
         _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(
-            &mModelAnim, gPenguinBabyWaitAnimationFile.filePtr, 0, 0x1000, 0);
+            &mModelAnim, (BCA_File *)gPenguinBabyWaitAnimationFile.filePtr, 0, 0x1000, 0);
     }
     mModelAnim.speed = 0x1000;
     mModelAnim.Advance();
@@ -270,7 +258,7 @@ int daPgBby_c::func_ov072_02121a84()
     func_ov072_02120e50();
     mCylClsn.Clear();
     mCylClsn.Update();
-    if (mModelAnim.file == gPenguinBabyWalkAnimationFile.filePtr) {
+    if (mModelAnim.file == (BCA_File *)gPenguinBabyWalkAnimationFile.filePtr) {
         frame = (int)(((u32)mModelAnim.currFrame << 4) >> 16);
         if (frame == 9 || frame == 0x15) {
             func_0201267c(0xf3, &mCamSpacePos);
@@ -285,8 +273,8 @@ int daPgBby_c::func_ov072_02121a28()
 {
     mHorzSpeed = 0x19000;
     mVertSpeed = 0xc000;
-    _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(&mModelAnim, gPenguinBabyDiveAnimationFile.filePtr,
-                                                0x40000000, 0x1000, 0);
+    _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(
+        &mModelAnim, (BCA_File *)gPenguinBabyDiveAnimationFile.filePtr, 0x40000000, 0x1000, 0);
     mSubState = 0;
     mStateId = 1;
     return 1;
@@ -300,7 +288,7 @@ int daPgBby_c::func_ov072_021218dc()
     case 0:
         if (mModelAnim.Finished()) {
             _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(
-                &mModelAnim, gPenguinBabySlideAnimationFile.filePtr, 0, 0x1000, 0);
+                &mModelAnim, (BCA_File *)gPenguinBabySlideAnimationFile.filePtr, 0, 0x1000, 0);
             mModelAnim.speed = 0x1000;
             mSubState++;
         }
@@ -309,7 +297,8 @@ int daPgBby_c::func_ov072_021218dc()
         mHorzSpeed -= 0x3000;
         if (mHorzSpeed < 0) {
             _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(
-                &mModelAnim, gPenguinBabyStandUpAnimationFile.filePtr, 0x40000000, 0x1000, 0);
+                &mModelAnim, (BCA_File *)gPenguinBabyStandUpAnimationFile.filePtr, 0x40000000,
+                0x1000, 0);
             mHorzSpeed = 0;
             mSubState++;
         }
@@ -334,8 +323,8 @@ int daPgBby_c::func_ov072_021218dc()
 /* State 2, enter: picked up. */
 int daPgBby_c::func_ov072_02121890()
 {
-    _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(&mModelAnim, gPenguinBabyWaitAnimationFile.filePtr,
-                                                0, 0x1000, 0);
+    _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(
+        &mModelAnim, (BCA_File *)gPenguinBabyWaitAnimationFile.filePtr, 0, 0x1000, 0);
     mModelAnim.speed = 0x1000;
     mStateId = 2;
     return 1;
@@ -385,8 +374,8 @@ animate:
 /* State 3, enter. */
 int daPgBby_c::func_ov072_02121758()
 {
-    _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(&mModelAnim, gPenguinBabyWalkAnimationFile.filePtr,
-                                                0, 0x1000, 0);
+    _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(
+        &mModelAnim, (BCA_File *)gPenguinBabyWalkAnimationFile.filePtr, 0, 0x1000, 0);
     mModelAnim.speed = 0x1000;
     mHorzSpeed = 0x5000;
     mStateId = 3;

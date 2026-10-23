@@ -6717,3 +6717,8 @@ arm9	0x02037e68	func_02037e68	_ZNK4CLPS13func_02037e68Ev	CLPS const member; mean
 arm9	0x02037e84	func_02037e84	_ZNK4CLPS13func_02037e84Ev	CLPS const member; meaning of w0 & 0x1f not yet settled
 arm9	0x02037e90	func_02037e90	_ZNK4CLPS13func_02037e90Ev	CLPS const member; meaning of w1 & 0xff not yet known
 ov002	0x020c16ec	func_ov002_020c16ec	_ZN6Player19SetFloorSurfaceInfoERK5dBgPi	inferred name: unpacks the floor dBgPi CLPS fields and normal into Player (include/Player.h)
+ov002	0x020bd8c0	_ZN6Player19func_ov002_020bd8c0Ej	_ZN6Player13EndStateMusicEj	inferred name: ends the mStateMusic layer and restarts mPowerupMusic if that one is still set; include/Player.h already described it as such
+ov002	0x020bd928	_ZN6Player19func_ov002_020bd928Ej	_ZN6Player15StartStateMusicEj	inferred name: installs its argument as the mStateMusic layer through Sound::SetMusic; include/Player.h already described it as such
+ov002	0x020bd984	_ZN6Player19func_ov002_020bd984Ej	_ZN6Player15EndPowerupMusicEj	inferred name: ends the mPowerupMusic layer and restarts mStateMusic if that one is still set; callers pass the power-up ids include/Player.h lists (Mega 0x31, Fire Yoshi 0x32, Vanish/Wings 0x33, Metal 0x34, Balloon 0x30)
+ov002	0x020bd9ec	_ZN6Player19func_ov002_020bd9ecEj	_ZN6Player17StartPowerupMusicEj	inferred name: installs its argument as the mPowerupMusic layer through Sound::SetMusic; include/Player.h already described it as such
+arm9	0x02012998	_ZN5Sound8EndMusicEjj	_ZN5Sound8EndMusicEj	corrected arity: the second parameter was never read and every ROM call site passes one argument (LDRB r0, [...]; BL, r1 untouched); the extra j made the symbol unspellable from C++ so callers hand-mangled it. Dropping it is byte-identical in Sound.cpp and Player.cpp

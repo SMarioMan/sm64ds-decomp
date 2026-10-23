@@ -62,19 +62,11 @@ enum { kPlayerActorId = 0xbf };
  * paths store a u16 file ID at +0, a byte reference count at +2 and a loaded
  * file pointer at +4. */
 struct BakubakuModelFilePtr : SharedFilePtr {
-    u16 fileID;
-    u8 numRefs;
-    void *filePtr;
-
     BakubakuModelFilePtr(u32 fileID);
     ~BakubakuModelFilePtr();
 };
 
 struct BakubakuAnimationFileHandle : SharedFilePtr {
-    u16 fileID;
-    u8 numRefs;
-    void *filePtr;
-
     BakubakuAnimationFileHandle(u32 fileID);
     ~BakubakuAnimationFileHandle();
 };

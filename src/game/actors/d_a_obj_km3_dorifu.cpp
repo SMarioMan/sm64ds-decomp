@@ -45,12 +45,10 @@ enum d_a_obj_km3_dorifu_AssetId {
  * destroy through SharedFilePtr_Destruct_Clsn. The five-plank table stays
  * ROM data. */
 struct DorifuModelFilePtr : SharedFilePtr {
-    unsigned int words[2];
     DorifuModelFilePtr(unsigned int fileId);
     ~DorifuModelFilePtr();
 };
 struct DorifuClsnFileHandle : SharedFilePtr {
-    unsigned int words[2];
     DorifuClsnFileHandle(unsigned int fileId);
     ~DorifuClsnFileHandle();
 };

@@ -41,14 +41,6 @@
 
 #pragma defer_codegen off
 
-/* SharedFilePtr declares no fields; the loaded BCA is the second word.
-   Same two-word view as daPkn_c's PknSharedFile. */
-struct PknSharedFile {
-    int id;
-    void *file;
-};
-typedef char PknSharedFile_size_must_be_0x8[sizeof(PknSharedFile) == 0x8 ? 1 : -1];
-
 /* The tag SubVec3.c / Vec3_Asr.c define their parameters by. */
 struct Vec3 { int x, y, z; };
 
@@ -147,11 +139,11 @@ void _ZN8dActor_c10SpawnCoinsERK7Vector3j5Fix12IiEs(void *self, const void *pos,
 extern SharedFilePtr data_ov084_02130dfc;   /* the plant's model */
 extern SharedFilePtr *data_ov084_021302f4[];/* the six shared animation handles */
 extern SharedFilePtr data_ov002_0210da38;   /* the sleep-bubble model, out of ov002 */
-extern PknSharedFile data_ov084_02130df4;   /* idle animation */
-extern PknSharedFile data_ov084_02130e04;   /* spit animation */
-extern PknSharedFile data_ov084_02130e14;   /* grow-in lunge animation */
-extern void *data_ov084_02130e1c[];         /* post-spit animation, a PknSharedFile pair */
-extern PknSharedFile data_ov084_02130e24;   /* death animation */
+extern SharedFilePtr data_ov084_02130df4;   /* idle animation */
+extern SharedFilePtr data_ov084_02130e04;   /* spit animation */
+extern SharedFilePtr data_ov084_02130e14;   /* grow-in lunge animation */
+extern void *data_ov084_02130e1c[];         /* post-spit animation; decl_common.h's spelling */
+extern SharedFilePtr data_ov084_02130e24;   /* death animation */
 extern int data_ov084_0213029c[];           /* SpawnDeathBurst reach per frame */
 extern int data_ov084_021302c4[];           /* SpawnDeathBurst height per frame */
 extern u8 data_ov084_02130294[];            /* UpdateClsnOffset's five bone indices */
@@ -175,7 +167,7 @@ daFPkn_c::~daFPkn_c()
 void daFPkn_c::SpawnDeathSmoke()
 {
     Particle::System *particle;
-    if (mModelAnim.file != data_ov084_02130e24.file)
+    if (mModelAnim.file != data_ov084_02130e24.filePtr)
         return;
 
     mParticleHandle1 = _ZN8Particle6System3NewEjj5Fix12IiES2_S2_PK11Vector3_16fPNS_8CallbackE(
@@ -203,7 +195,7 @@ void daFPkn_c::SpawnDeathBurst()
     Vector3 pos;
     int frame, burstReach, product;
 
-    if (mModelAnim.file != data_ov084_02130e24.file)
+    if (mModelAnim.file != data_ov084_02130e24.filePtr)
         return;
     frame = (int)((unsigned)(mModelAnim.currFrame << 4) >> 16);  /* whole frames */
     if (frame >= 0xa)
@@ -332,7 +324,8 @@ void daFPkn_c::CheckClsnHits()
             mSpinSpeed = 0x1f40;
             mdCcAc_c.flags |= 1;
             mFlags &= ~0x10000000;
-            _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(&mModelAnim, data_ov084_02130e24.file, 0x40000000, 0x1000, 0);
+            _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(&mModelAnim, data_ov084_02130e24.filePtr,
+                                                        0x40000000, 0x1000, 0);
             mSuppressDeathReward = 0;
             mParticleHandle1 = 0;
         }
@@ -403,7 +396,8 @@ second:
         mSpinSpeed = 0x1f40;
         mdCcAc_c.flags |= 1;
         mFlags &= ~0x10000000;
-        _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(&mModelAnim, data_ov084_02130e24.file, 0x40000000, 0x1000, 0);
+        _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(&mModelAnim, data_ov084_02130e24.filePtr,
+                                                    0x40000000, 0x1000, 0);
         mSuppressDeathReward = 0;
         mParticleHandle1 = 0;
         return;
@@ -488,7 +482,8 @@ void daFPkn_c::StateSpit()
         else
             func_0201267c(SND_SPIT_END, &mCamSpacePos);
         mState = STATE_WAIT;
-        _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(&mModelAnim, ((PknSharedFile *)data_ov084_02130e1c)->file, 0, 0x1000, 0);
+        _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(
+            &mModelAnim, ((SharedFilePtr *)data_ov084_02130e1c)->filePtr, 0, 0x1000, 0);
     } else {
         if ((u16)mStateTimer < 0x3a) {
             targetAngle = mAngleY;
@@ -638,10 +633,12 @@ void daFPkn_c::StateWait()
     cmp = actorID == ACTOR_PAKUN2;
     if (cmp != false) {
         mState = STATE_GROW;
-        _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(&mModelAnim, data_ov084_02130e14.file, 0x40000000, 0x1000, 0);
+        _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(&mModelAnim, data_ov084_02130e14.filePtr,
+                                                    0x40000000, 0x1000, 0);
     } else {
         mState = STATE_SPIT;
-        _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(&mModelAnim, data_ov084_02130e04.file, 0x40000000, 0x1000, 0);
+        _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(&mModelAnim, data_ov084_02130e04.filePtr,
+                                                    0x40000000, 0x1000, 0);
         mModelAnim.currFrame = 0;
     }
     cmp = actorID == ACTOR_FIREPAKUN;
@@ -782,8 +779,8 @@ int daFPkn_c::InitResources()
     LoadBlueCoinModel(this);
 
     /* A real SetAnim call with a Fix12<int> speed DIFFs; see the file header. */
-    _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(
-        &mModelAnim, data_ov084_02130df4.file, 0x40000000, 0x1000, 0);
+    _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(&mModelAnim, data_ov084_02130df4.filePtr,
+                                                0x40000000, 0x1000, 0);
 
     _ZN7dCcAc_c4InitEP8dActor_c5Fix12IiES3_jj(
         &mdCcAc_c, this, 0, 0, 0x200001, HIT_DAMAGE & ~HIT_MEGA_CHARACTER);

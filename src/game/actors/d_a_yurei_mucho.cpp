@@ -16,8 +16,6 @@
  * - The Mtx43 / V3A overlays on mModelAnim.mat4x3, mShadowMat and the
  *   player position copies. Plain Matrix4x3 / Vector3 assignment
  *   scalarizes.
- * - The SharedFilePtr +4 BCA loads stay raw -- that layout is
- *   unrecovered.
  * - ModelAnim::SetAnim, dCcAc_c::Init, dBgCh_Actr::Init,
  *   DropShadowRadHeight, KillByInvincibleChar, SpawnCoins, Player::Hurt
  *   and Player::Bounce retain scalar ABI declarations. Native fixed-point
@@ -105,7 +103,7 @@ extern void func_ov002_020aea30(void *self, void *actor, void *collision);
 /* The four shared-file handles and four State records remain ROM-supplied BSS.
    __sinit_ov065_0211c110 initializes the handles and copies the eight PMF
    constants into the State records. This text-only TU does not own that storage
-   or initializer; SharedFilePtr's complete layout is still unrecovered. */
+   or initializer. */
 extern SharedFilePtr data_ov065_0211d600;
 extern SharedFilePtr data_ov065_0211d608;
 extern SharedFilePtr data_ov065_0211d610;
@@ -366,14 +364,14 @@ int daYurei_Mucho_c::func_ov065_0211691c(State *s)
 // @symbol _ZN15daYurei_Mucho_c19func_ov065_021168a8Ev
 /* State entry hook at 0x0211d670 +0x00: randomise the facing angle and the
    timer, then start the wait animation. The BCA file is read straight out of
-   the SharedFilePtr's second word -- the ROM does `ldr r1,[r0,#4]` off the
-   literal at 0x02116918, not a call, so the raw read is what reproduces. */
+   the SharedFilePtr's filePtr -- the ROM does `ldr r1,[r0,#4]` off the
+   literal at 0x02116918, not a call, so the field read is what reproduces. */
 int daYurei_Mucho_c::func_ov065_021168a8()
 {
     mTargetAngle = (short)((RandomIntInternal(data_0209e650) >> 8) << 0xc);
     mStateTimer = (short)(((RandomIntInternal(data_0209e650) >> 8) & 0x1f) + 0x32);
-    _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(&mModelAnim,
-        ((void **)&data_ov065_0211d600)[1], 0, 0x1000, 0);
+    _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(&mModelAnim, data_ov065_0211d600.filePtr, 0, 0x1000,
+                                                0);
     return 1;
 }
 
@@ -488,13 +486,13 @@ int daYurei_Mucho_c::func_ov065_021165d8()
 /* -------------------------------------------------------------------------- */
 // @symbol _ZN15daYurei_Mucho_c19func_ov065_02116588Ev
 /* State entry hook at 0x0211d650 +0x00: start the attack animation. As at
-   ordinal 11, the BCA file is the SharedFilePtr's second word, read directly
+   ordinal 11, the BCA file is the SharedFilePtr's filePtr, read directly
    (`ldr r1,[r0,#4]` at 0x021165a4 off the literal at 0x021165d4). */
 short daYurei_Mucho_c::func_ov065_02116588()
 {
     mShotCount = 0;
-    _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(&mModelAnim,
-        ((void **)&data_ov065_0211d608)[1], 0x40000000, 0x1000, 0);
+    _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(&mModelAnim, data_ov065_0211d608.filePtr,
+                                                0x40000000, 0x1000, 0);
     mStateTimer = 0;
     return 1;
 }
@@ -548,8 +546,8 @@ int daYurei_Mucho_c::func_ov065_02116364()
                 func_ov065_0211691c((State *)data_ov065_0211d670);
             } else {
                 mStateTimer = 0x32;
-                _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(&mModelAnim,
-                    ((void **)&data_ov065_0211d600)[1], 0, 0x1000, 0);
+                _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(
+                    &mModelAnim, data_ov065_0211d600.filePtr, 0, 0x1000, 0);
                 func_ov065_0211691c((State *)&data_ov065_0211d680);
             }
         } else {

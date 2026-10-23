@@ -75,15 +75,11 @@ enum {
 /* Resource handles constructed by this TU's static initializer. The
  * constructor and destructor bodies stay out of line; mwcc registers them. */
 struct Mecha10ModelFilePtr : SharedFilePtr {
-    u32 words[2];
-
     Mecha10ModelFilePtr(u32 fileID);
     ~Mecha10ModelFilePtr();
 };
 
 struct Mecha10ClsnFilePtr : SharedFilePtr {
-    u32 words[2];
-
     Mecha10ClsnFilePtr(u32 fileID);
     ~Mecha10ClsnFilePtr();
 };

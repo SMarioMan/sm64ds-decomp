@@ -71,15 +71,11 @@ struct AnimFilePtr { int a; struct BCA_File *file; };
  * local; the handle constructors and destructors are the ROM resource-family
  * functions, aliased in the manifest. */
 struct PukupukuModelFile : SharedFilePtr {
-    u32 words[2];
-
     PukupukuModelFile(u32 fileID);
     ~PukupukuModelFile();
 };
 
 struct PukupukuAnimationFilePtr : SharedFilePtr {
-    u32 words[2];
-
     PukupukuAnimationFilePtr(u32 fileID);
     ~PukupukuAnimationFilePtr();
 };

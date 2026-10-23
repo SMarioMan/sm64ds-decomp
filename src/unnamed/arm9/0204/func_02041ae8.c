@@ -1,8 +1,10 @@
-struct ListNode;
-extern void func_02041bbc(struct ListNode **head, struct ListNode **insertSlot, struct ListNode *node);
+#include "private/arm9_a1fc0_file_share.h"
 
-void func_02041ae8(char *base, char *node)
-{
-    func_02041bbc((struct ListNode **)(base + 0x2704), (struct ListNode **)(base + 0x2708), (struct ListNode *)node);
-    *(int *)(node + 0x7c) = 3;
+extern void func_02041bbc(FileShareNode **from, FileShareNode **to, FileShareNode *node);
+
+/* ready -> busy: no child reads the node's region any more, so the loader
+ * closes its file (state 3, releasing). */
+void func_02041ae8(FileShareParentArea *area, FileShareNode *node) {
+    func_02041bbc(&area->mReadyList, &area->mBusyList, node);
+    node->mState = 3;
 }

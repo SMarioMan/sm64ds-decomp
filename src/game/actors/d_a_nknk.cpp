@@ -77,16 +77,10 @@ bool ApproachLinear(short &value, short target, short step);
  * animation initialization paths both store a u16 file ID at +0, a byte
  * reference count at +2, and a loaded-file pointer at +4. */
 struct NknkModelFilePtr : SharedFilePtr {
-    u16 fileID;
-    u8 numRefs;
-    void *filePtr;
     NknkModelFilePtr(u32 fileID);
     ~NknkModelFilePtr();
 };
 struct NknkAnimationFileHandle : SharedFilePtr {
-    u16 fileID;
-    u8 numRefs;
-    void *filePtr;
     NknkAnimationFileHandle(u32 fileID);
     ~NknkAnimationFileHandle();
 };

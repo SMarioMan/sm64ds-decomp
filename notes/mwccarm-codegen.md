@@ -135,6 +135,54 @@ is renamed to its scalar mangling so a real declaration works on both sides.
 The 2026-08-27 result is untouched: inside the callee, an unread class parameter
 still costs nothing.
 
+### MEASURED 2026-10-22: both `SetAnim` symbols are NOT walled -- the name was the wall
+
+`ModelAnim::SetAnim` and `BlendModelAnim::SetAnim` were the two standing in-tree
+citations of this wall. Their sources said so in four places (`include/ModelAnim.h`,
+`src/engine/model/ModelAnim.cpp`, `include/BlendModelAnim.h`,
+`src/engine/model/BlendModelAnim.cpp`): "SetAnim's definition stays a mangled free
+function (wall 6az)". Measured on 605184f87d, that is wrong. Both reproduce as real
+C++ methods once the symbol is renamed to its scalar mangling, exactly as
+`IsGoingOffCliff` above:
+
+| symbol | form | result |
+|---|---|---|
+| `_ZN9ModelAnim7SetAnimEP8BCA_Fileiit` | `void ModelAnim::SetAnim(BCA_File *, int, Fix12i, u16)` | **2004/b56, 0x5c** |
+| `_ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj` | same body, method, `Fix12<int>` + `u32` | 0x74 vs 0x5c (+0x18) |
+| `_ZN14BlendModelAnim7SetAnimER8BCA_Fileiiit` | `void BlendModelAnim::SetAnim(BCA_File &, int, int, Fix12i, u16)` | **2004/b56, 0x9c** |
+
+Both matches are `--module arm9` (strict relocs), 0x02016748/0x5c and
+0x020163e0/0x9c. The class-typed row is the wall doing what this section says: the
+body reads `speed` in both branches, so it costs. The scalar row is what retail
+actually does -- `mov r4, r3` then `ldrh ip, [sp, #0x10]`, the argument read
+straight out of r3, no homing.
+
+Two things follow, and both are general, not specific to these two symbols:
+
+- **`extern "C"` and `thiz` are symptoms of the name, not of the compiler.** The
+  `extern "C"` exists only to stop mwccarm re-mangling a hand-spelled mangled
+  identifier, and the explicit `ModelAnim *thiz` exists only because an
+  `extern "C"` function has no implicit `this`. A real method's natural mangling
+  IS the symbol, so all three disappear together. The tree carries 1111 `thiz`
+  across 164 files and 54 distinct `5Fix12IiE` symbols, 207 files defining one as
+  a free function with an explicit self parameter -- so this is worth re-testing
+  per symbol rather than inheriting.
+- **`include/math/Fix12.h`'s justification is circular** and has been corrected
+  with this change. It read "reconstructed from its own mangled symbols:
+  `5Fix12IiE` in e.g. `dExtShadowModel_c::InitModel` and `Player::SetAnim`" --
+  but the census recorded above found zero `_Z...` strings and zero `5Fix12IiE`
+  in arm9 and all 105 overlays. Those names are ours; they cannot be evidence for
+  the type they contain.
+
+**NOT done here.** Landing either rename is a source campaign, not a comment fix:
+801 references across 114 files, plus `config/arm9/symbols.txt`, ~30
+`config/tu_manifest.d/` manifests and `config/decl-agreement-baseline.json`.
+Renaming a symbol re-keys every local `extern` of it, so each must be retyped to
+agree with the new definition -- including `unsigned int` -> `u16` on
+`startFrame`, which is itself an instruction-selection risk at ~100 call sites.
+A symbol rename cannot partially land, so it needs a full `tools/rombuild.py`
+run, not a sampled one.
+
 ## 1. Ground rules of the build
 
 - **Reloc slots are wildcards.** Every `bl`/`blx` target and every pc-relative `ldr` of an

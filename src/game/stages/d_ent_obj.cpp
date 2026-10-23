@@ -73,25 +73,16 @@ void CopyToViewMat(const Matrix4x3 *m);
    SharedFilePtr_Destruct_TexSeq. The manifest aliases each undefined member
    onto its ROM symbol. */
 struct EntObjModelFilePtr : SharedFilePtr {
-    u32 id;
-    void *ptr;
-
     EntObjModelFilePtr(u32 fileID);
     ~EntObjModelFilePtr();
 };
 
 struct EntObjAnimationFileHandle : SharedFilePtr {
-    u32 id;
-    void *ptr;
-
     EntObjAnimationFileHandle(u32 fileID);
     ~EntObjAnimationFileHandle();
 };
 
 struct EntObjTextureSequenceFileHandle : SharedFilePtr {
-    u32 id;
-    void *ptr;
-
     EntObjTextureSequenceFileHandle(u32 fileID);
     ~EntObjTextureSequenceFileHandle();
 };
@@ -245,8 +236,8 @@ UnknownVsPlayer::~UnknownVsPlayer() {}
 // @symbol _ZN15UnknownVsPlayer19func_ov075_02114010Ev
 void UnknownVsPlayer::func_ov075_02114010() {
     if (mSpeed < mMaxSpeed / 2) {
-        _ZN14BlendModelAnim7SetAnimER8BCA_Fileii5Fix12IiEt(&mModel, (void *)data_ov075_0211d424.ptr,
-                                                           4, 0, 0x1000, 0);
+        _ZN14BlendModelAnim7SetAnimER8BCA_Fileii5Fix12IiEt(
+            &mModel, (void *)data_ov075_0211d424.filePtr, 4, 0, 0x1000, 0);
         mAnimState = ANIM_SLOW_GAIT;
     }
     mModel.speed = cstd::fdiv(mSpeed, mMaxSpeed) + 0x1000;
@@ -264,8 +255,8 @@ void UnknownVsPlayer::func_ov075_02114010() {
 // @symbol _ZN15UnknownVsPlayer19func_ov075_021140e4Ev
 void UnknownVsPlayer::func_ov075_021140e4() {
     if (mSpeed >= mMaxSpeed / 2) {
-        _ZN14BlendModelAnim7SetAnimER8BCA_Fileii5Fix12IiEt(&mModel, (void *)data_ov075_0211d42c.ptr,
-                                                           4, 0, 0x1000, 0);
+        _ZN14BlendModelAnim7SetAnimER8BCA_Fileii5Fix12IiEt(
+            &mModel, (void *)data_ov075_0211d42c.filePtr, 4, 0, 0x1000, 0);
         mAnimState = ANIM_FAST_GAIT;
     }
     mModel.speed = cstd::fdiv(mSpeed, mMaxSpeed) + 0x1000;
@@ -285,8 +276,8 @@ int UnknownVsPlayer::func_ov075_021141b8() {
     int finished = mModel.Finished();
     if (!finished)
         return finished;
-    _ZN14BlendModelAnim7SetAnimER8BCA_Fileii5Fix12IiEt(&mModel, (void *)data_ov075_0211d3ec.ptr, 4,
-                                                       0, 0x1000, 0);
+    _ZN14BlendModelAnim7SetAnimER8BCA_Fileii5Fix12IiEt(&mModel, (void *)data_ov075_0211d3ec.filePtr,
+                                                       4, 0, 0x1000, 0);
     mAnimState = ANIM_NONE;
     return 0;
 }
@@ -298,8 +289,8 @@ int UnknownVsPlayer::func_ov075_02114218() {
     int finished = mModel.Finished();
     if (!finished)
         return finished;
-    _ZN14BlendModelAnim7SetAnimER8BCA_Fileii5Fix12IiEt(&mModel, (void *)data_ov075_0211d3a4.ptr, 4,
-                                                       0x40000000, 0x1000, 0);
+    _ZN14BlendModelAnim7SetAnimER8BCA_Fileii5Fix12IiEt(&mModel, (void *)data_ov075_0211d3a4.filePtr,
+                                                       4, 0x40000000, 0x1000, 0);
     mAnimState = ANIM_WAIT_FOR_IDLE;
     return 3;
 }
@@ -365,18 +356,18 @@ void UnknownVsPlayer::func_ov075_021143e4() {
             data_ov075_0211b524[((unsigned int)RandomIntInternal(&data_0209e650) >> 0x10) % 6];
     }
     if (data_0209b2f0[mPlayerNo] != 0) {
-        _ZN14BlendModelAnim7SetAnimER8BCA_Fileii5Fix12IiEt(&mModel, (void *)data_ov075_0211d3ac.ptr,
-                                                           0, 0, 0x1000, 0);
-        textureFile = (void *)data_ov075_0211d40c.ptr;
+        _ZN14BlendModelAnim7SetAnimER8BCA_Fileii5Fix12IiEt(
+            &mModel, (void *)data_ov075_0211d3ac.filePtr, 0, 0, 0x1000, 0);
+        textureFile = (void *)data_ov075_0211d40c.filePtr;
         mMoveState = MOVE_WAIT_FOR_POSE_SOUND;
     } else {
         _ZN14BlendModelAnim7SetAnimER8BCA_Fileii5Fix12IiEt(
             &mModel, (void *)(data_ov075_0211c688[data_ov075_0211d380 & 3])[1], 0, 0, 0x1000, 0);
-        textureFile = (void *)data_ov075_0211d3dc.ptr;
+        textureFile = (void *)data_ov075_0211d3dc.filePtr;
         mMoveState = MOVE_POSE_PARTICLES;
         data_ov075_0211d380 >>= 2;
     }
-    TextureSequence::Prepare(*(BMD_File *)data_ov075_0211d3c4.ptr, *(BTP_File *)textureFile);
+    TextureSequence::Prepare(*(BMD_File *)data_ov075_0211d3c4.filePtr, *(BTP_File *)textureFile);
     _ZN15TextureSequence7SetFileER8BTP_Filei5Fix12IiEj(&mTextureSequence, textureFile, 0, 0x1000,
                                                        0);
     {
@@ -397,8 +388,8 @@ void UnknownVsPlayer::func_ov075_02114560() {
     if (mPosition.z < sVsPlayerTakeoffZ[mPlayerNo] && mInAir == 0) {
         mVertSpeed = 0x2a000;
         mInAir = 1;
-        _ZN14BlendModelAnim7SetAnimER8BCA_Fileii5Fix12IiEt(&mModel, (void *)data_ov075_0211d41c.ptr,
-                                                           4, 0x40000000, 0x1000, 0);
+        _ZN14BlendModelAnim7SetAnimER8BCA_Fileii5Fix12IiEt(
+            &mModel, (void *)data_ov075_0211d41c.filePtr, 4, 0x40000000, 0x1000, 0);
         mAnimState = ANIM_NONE;
     }
 
@@ -492,8 +483,8 @@ void UnknownVsPlayer::func_ov075_02114890() {}
 void UnknownVsPlayer::func_ov075_02114894() {
     mSpeed = 0;
     mVertSpeed = 0;
-    _ZN14BlendModelAnim7SetAnimER8BCA_Fileii5Fix12IiEt(&mModel, (void *)data_ov075_0211d424.ptr, 4,
-                                                       0, 0x1000, 0);
+    _ZN14BlendModelAnim7SetAnimER8BCA_Fileii5Fix12IiEt(&mModel, (void *)data_ov075_0211d424.filePtr,
+                                                       4, 0, 0x1000, 0);
     mMoveState = MOVE_RUN_OFF_STAGE;
     mAnimState = ANIM_SLOW_GAIT;
     mInAir = 0;
@@ -509,8 +500,8 @@ int UnknownVsPlayer::func_ov075_021148f0() {
  * (movement state 2). */
 // @symbol _ZN15UnknownVsPlayer19func_ov075_02114904Ei
 void UnknownVsPlayer::func_ov075_02114904(int exitX) {
-    _ZN14BlendModelAnim7SetAnimER8BCA_Fileii5Fix12IiEt(&mModel, (void *)data_ov075_0211d384.ptr, 8,
-                                                       0x40000000, 0x1000, 0);
+    _ZN14BlendModelAnim7SetAnimER8BCA_Fileii5Fix12IiEt(&mModel, (void *)data_ov075_0211d384.filePtr,
+                                                       8, 0x40000000, 0x1000, 0);
     mWaitTimer = (((unsigned int)RandomIntInternal(&data_0209e650) >> 0x10) + 0x1e) & 0xf;
     mExitPos.x = exitX;
     mExitPos.y = 0;
@@ -522,8 +513,8 @@ void UnknownVsPlayer::func_ov075_02114904(int exitX) {
 /* The selected figure's one-shot, followed by animation state 3. */
 // @symbol _ZN15UnknownVsPlayer19func_ov075_02114988Ev
 int UnknownVsPlayer::func_ov075_02114988() {
-    _ZN14BlendModelAnim7SetAnimER8BCA_Fileii5Fix12IiEt(&mModel, (void *)data_ov075_0211d3a4.ptr, 8,
-                                                       0x40000000, 0x1000, 0);
+    _ZN14BlendModelAnim7SetAnimER8BCA_Fileii5Fix12IiEt(&mModel, (void *)data_ov075_0211d3a4.filePtr,
+                                                       8, 0x40000000, 0x1000, 0);
     mAnimState = ANIM_WAIT_FOR_IDLE;
     return 3;
 }
@@ -540,8 +531,8 @@ void UnknownVsPlayer::func_ov075_021149d0(int targetX) {
         mSpeed = -0x8000;
     mMoveState = MOVE_TO_SLOT;
     mAnimState = ANIM_WALK_SOUNDS;
-    _ZN14BlendModelAnim7SetAnimER8BCA_Fileii5Fix12IiEt(&mModel, (void *)data_ov075_0211d42c.ptr, 4,
-                                                       0, 0x1000, 0);
+    _ZN14BlendModelAnim7SetAnimER8BCA_Fileii5Fix12IiEt(&mModel, (void *)data_ov075_0211d42c.filePtr,
+                                                       4, 0, 0x1000, 0);
     mModel.speed = 0x1000;
 }
 
@@ -698,25 +689,25 @@ void UnknownVsPlayer::func_ov075_02114cd8() {
 int UnknownVsPlayer::func_ov075_02114ddc(unsigned char kind, unsigned char playerNo, int x) {
     void *textureFile;
 
-    mModel.SetFile((BMD_File *)data_ov075_0211d404.ptr, 1, 1);
+    mModel.SetFile((BMD_File *)data_ov075_0211d404.filePtr, 1, 1);
     mMaterialColor = *(int *)((char *)mModel.data.materials + 0x20) + (playerNo << 1);
-    mAnimation.SetFile((BMD_File *)data_ov075_0211d3c4.ptr, 1, 1);
-    _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(&mAnimation, (void *)data_ov075_0211d414.ptr, 0,
+    mAnimation.SetFile((BMD_File *)data_ov075_0211d3c4.filePtr, 1, 1);
+    _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(&mAnimation, (void *)data_ov075_0211d414.filePtr, 0,
                                                 0x1000, 0);
 
     if (kind == 0 || kind == 2) {
         _ZN14BlendModelAnim7SetAnimER8BCA_Fileii5Fix12IiEt(
             &mModel, (void *)data_ov075_0211c678[playerNo][1], 0, 0, 0x1000, 0);
-        textureFile = (void *)data_ov075_0211d40c.ptr;
+        textureFile = (void *)data_ov075_0211d40c.filePtr;
         mMoveState = MOVE_IDLE;
     } else {
-        _ZN14BlendModelAnim7SetAnimER8BCA_Fileii5Fix12IiEt(&mModel, (void *)data_ov075_0211d3ac.ptr,
-                                                           0, 0, 0x1000, 0);
-        textureFile = (void *)data_ov075_0211d40c.ptr;
+        _ZN14BlendModelAnim7SetAnimER8BCA_Fileii5Fix12IiEt(
+            &mModel, (void *)data_ov075_0211d3ac.filePtr, 0, 0, 0x1000, 0);
+        textureFile = (void *)data_ov075_0211d40c.filePtr;
         mMoveState = MOVE_CHOOSE_POSE;
     }
 
-    TextureSequence::Prepare(*(BMD_File *)data_ov075_0211d3c4.ptr, *(BTP_File *)textureFile);
+    TextureSequence::Prepare(*(BMD_File *)data_ov075_0211d3c4.filePtr, *(BTP_File *)textureFile);
     _ZN15TextureSequence7SetFileER8BTP_Filei5Fix12IiEj(&mTextureSequence, textureFile, 0, 0x1000,
                                                        0);
 
@@ -1049,7 +1040,7 @@ int dEntObj_c::InitResources() {
     _ZN3G3X6SetFogEbiii(0, 0, 2, 0x1000);
     dExtShadowModel_c::CleanAll();
 
-    mModel.SetFile((BMD_File *)data_ov075_0211d3fc.ptr, 1, -1);
+    mModel.SetFile((BMD_File *)data_ov075_0211d3fc.filePtr, 1, -1);
 
     func_0203c178(&data_020a0e68, 0x7d000, 0x7d000, 0x7d000);
     /* 0x888 is +0x1c inside the Model at 0x86c -- its mat4x3. The cartridge's own
@@ -1057,9 +1048,9 @@ int dEntObj_c::InitResources() {
     *(MatrixCopyWords *)((char *)&mModel.mat4x3) = *(MatrixCopyWords *)&data_020a0e68;
 
     if (param1 != 1) {
-        mModelAnim.SetFile((BMD_File *)data_ov075_0211d3bc.ptr, 1, -1);
-        _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(&mModelAnim, (void *)data_ov075_0211d3e4.ptr, 0,
-                                                    0x1000, 0);
+        mModelAnim.SetFile((BMD_File *)data_ov075_0211d3bc.filePtr, 1, -1);
+        _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(
+            &mModelAnim, (void *)data_ov075_0211d3e4.filePtr, 0, 0x1000, 0);
     }
 
     func_ov075_0211b458((char *)&mMesh, (int *)&data_ov075_0211c654, 0);

@@ -24,8 +24,8 @@
 //   mTimesHit addresses opaque.
 // - Throw reads mAngleX/Y/Z as unsigned short. Hidden reads mHasTurn as
 //   signed char.
-// - Model handle layout remains words[2]. The local animation handles use
-//   the measured fileID, numRefs and filePtr fields. File ids: mole model
+// - The model and animation handles take SharedFilePtr's fileID, numRefs
+//   and filePtr. File ids: mole model
 //   0x2d1, rock model 0x2d6, animations 0x2d2..0x2d5.
 // - SetAnim's flag word is 0 in InitResources and 0x40000000 in the state
 //   handlers. Collision words 0x200000 (mole) and 0x200004 (rock), and
@@ -35,7 +35,6 @@
 // - pad_0d0 is untouched. data_ov080_0212767c and data_ov080_021276c4
 //   (leap and emerge cylinder heights) are read as int arrays. The
 //   hit-flag mask 0x66fe0 stays a literal.
-
 
 /* Runtime asset handles resolved through the overlay 0 file table. */
 enum daChoropu_c_AssetId {
@@ -67,18 +66,11 @@ struct ChoropuStateRow { ChoropuStateFn fn[1]; };
  * 0x2d4, 0x2d5) and fill the six one-entry state rows. mwcc emits
  * __sinit_d_a_choropu.cpp from those definitions. */
 struct ChoropuModelFile : SharedFilePtr {
-    u32 words[2];
-
     ChoropuModelFile(u32 fileID);
     ~ChoropuModelFile();
 };
 
 struct ChoropuAnimationFilePtr : SharedFilePtr {
-    /* SharedFilePtr::Load and func_02017e0c use this local eight-byte layout. */
-    u16 fileID;
-    u8 numRefs;
-    void *filePtr;
-
     ChoropuAnimationFilePtr(u32 fileID);
     ~ChoropuAnimationFilePtr();
 };

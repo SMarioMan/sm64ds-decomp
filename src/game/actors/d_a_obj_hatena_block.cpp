@@ -237,19 +237,16 @@ void func_ov102_02149684(int *dst, daObjHatenaBlock_c *src);
    destructors func_02017ab4, SharedFilePtr_Destruct_Anim and
    SharedFilePtr_Destruct_Clsn. */
 struct HatenaBlockModelFilePtr : SharedFilePtr {
-    int unk0; void *file;
     HatenaBlockModelFilePtr(unsigned int id);
     ~HatenaBlockModelFilePtr();
 };
 
 struct HatenaBlockAnimFileHandle : SharedFilePtr {
-    int unk0; void *file;
     HatenaBlockAnimFileHandle(unsigned int id);
     ~HatenaBlockAnimFileHandle();
 };
 
 struct HatenaBlockClsnFileHandle : SharedFilePtr {
-    int unk0; void *file;
     HatenaBlockClsnFileHandle(unsigned int id);
     ~HatenaBlockClsnFileHandle();
 };

@@ -42,9 +42,8 @@
  *   carries Fix12<int> by value (wall 6az), so the method form size-DIFFs.
  * - func_020393d4/func_020393c4 install the BeforeClsn/unk_1c callback words;
  *   dBgW carries no setter, and dBgW.h itself blesses this spelling.
- * - SharedFilePtr+4 is the loaded KCL file: the handle's layout is still
- *   unrecovered (SharedFilePtr.h), and the ROM re-reads the word rather than
- *   keeping dBgW_Kc::LoadFile's return.
+ * - The ROM re-reads the loaded KCL from filePtr rather than keeping
+ *   dBgW_Kc::LoadFile's return.
  * - The dispatch table is a pointer-to-member of daTrsTrap_c itself. An
  *   earlier draft bound it to an opaque forward-declared class on the theory
  *   that a polymorphic receiver changes the {ptr, adj} record shape; that is
@@ -96,17 +95,6 @@ struct BookSwitchView {
 };
 typedef char BookSwitchView_size_must_be_0x41c[sizeof(BookSwitchView) == 0x41c ? 1 : -1];
 
-/* SharedFilePtr's fields, which SharedFilePtr.h leaves undeclared; the
-   names are src/SharedFilePtr.cpp's. filePtr is the loaded file. */
-struct SharedFileView {
-    u16 fileID;    /* 0x00 */
-    u8 numRefs;    /* 0x02 */
-    void *filePtr; /* 0x04 */
-};
-#ifndef SM64DS_PLATFORM_PC
-typedef char SharedFileView_size_must_be_0x8[sizeof(SharedFileView) == 8 ? 1 : -1];
-#endif
-
 #pragma defer_codegen off
 
 /* The per-trap resource rows, indexed by mIndex: the model handle, the
@@ -127,15 +115,11 @@ extern PMF data_ov063_0211ef38[];
  * collision files func_02017b4c / SharedFilePtr_Destruct_Clsn. The spellings
  * are local; the manifest aliases the generated names to those ROM symbols. */
 struct TrsTrapModelFilePtr : SharedFilePtr {
-    u32 words[2];
-
     TrsTrapModelFilePtr(u32 fileID);
     ~TrsTrapModelFilePtr();
 };
 
 struct TrsTrapCollisionFilePtr : SharedFilePtr {
-    u32 words[2];
-
     TrsTrapCollisionFilePtr(u32 fileID);
     ~TrsTrapCollisionFilePtr();
 };
@@ -554,12 +538,12 @@ int daTrsTrap_c::InitResources()
         int m = mIndex;
         if (m == 3) {
             _ZN10dBgW_KcMbg7SetFileEP8KCL_FileRK9Matrix4x35Fix12IiEsR10CLPS_Block(
-                &mMovingMeshCollider, ((SharedFileView *)data_ov063_0211e28c[m])->filePtr,
-                &mClsnMat, 0x1000, mAngleY, data_ov063_0211e9e8[m]);
+                &mMovingMeshCollider, data_ov063_0211e28c[m]->filePtr, &mClsnMat, 0x1000, mAngleY,
+                data_ov063_0211e9e8[m]);
         } else {
             _ZN10dBgW_KcMbg7SetFileEP8KCL_FileRK9Matrix4x35Fix12IiEsR10CLPS_Block(
-                &mMovingMeshCollider, ((SharedFileView *)data_ov063_0211e28c[m])->filePtr,
-                &mClsnMat, 0x199, mAngleY, data_ov063_0211e9e8[m]);
+                &mMovingMeshCollider, data_ov063_0211e28c[m]->filePtr, &mClsnMat, 0x199, mAngleY,
+                data_ov063_0211e9e8[m]);
         }
     }
 

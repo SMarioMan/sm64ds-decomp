@@ -31,25 +31,15 @@ enum d_a_obj_km3_kuruma_AssetId {
 #include "SharedFilePtr.h"
 #include "CLPS.h"
 
-/* Local layout follows SharedFilePtr.cpp: fileID at +0, numRefs at +2,
- * implicit padding at +3, filePtr at +4. The shared header is fieldless.
- * 8-byte file handles. The model uses func_02017acc / func_02017ab4 and the
+/* 8-byte file handles. The model uses func_02017acc / func_02017ab4 and the
  * collision file func_02017b4c / SharedFilePtr_Destruct_Clsn. The spellings
  * are local; the manifest aliases the generated names to those ROM symbols. */
 struct Km3KurumaModelFilePtr : SharedFilePtr {
-    unsigned short fileID;
-    unsigned char numRefs;
-    void *filePtr;
-
     Km3KurumaModelFilePtr(unsigned int fileID);
     ~Km3KurumaModelFilePtr();
 };
 
 struct Km3KurumaClsnFilePtr : SharedFilePtr {
-    unsigned short fileID;
-    unsigned char numRefs;
-    void *filePtr;
-
     Km3KurumaClsnFilePtr(unsigned int fileID);
     ~Km3KurumaClsnFilePtr();
 };

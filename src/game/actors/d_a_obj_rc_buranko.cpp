@@ -66,15 +66,11 @@ enum d_a_obj_rc_buranko_AssetId {
  * collision file func_02017b4c / SharedFilePtr_Destruct_Clsn. The spellings
  * are local; the manifest aliases the generated names to those ROM symbols. */
 struct RcBurankoModelFilePtr : SharedFilePtr {
-    unsigned int words[2];
-
     RcBurankoModelFilePtr(unsigned int fileID);
     ~RcBurankoModelFilePtr();
 };
 
 struct RcBurankoClsnFilePtr : SharedFilePtr {
-    unsigned int words[2];
-
     RcBurankoClsnFilePtr(unsigned int fileID);
     ~RcBurankoClsnFilePtr();
 };

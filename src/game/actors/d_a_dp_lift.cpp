@@ -59,15 +59,11 @@ enum daDpLift_c_AssetId {
  * collision file func_02017b4c / SharedFilePtr_Destruct_Clsn. The spellings
  * are local; the manifest aliases the generated names to those ROM symbols. */
 struct DpLiftModelFilePtr : SharedFilePtr {
-    u32 words[2];
-
     DpLiftModelFilePtr(u32 fileID);
     ~DpLiftModelFilePtr();
 };
 
 struct DpLiftCollisionFilePtr : SharedFilePtr {
-    u32 words[2];
-
     DpLiftCollisionFilePtr(u32 fileID);
     ~DpLiftCollisionFilePtr();
 };

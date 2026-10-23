@@ -106,15 +106,11 @@ int daObjFl_Ukiyuka_c::InitResources()
  * spellings are local; the manifest aliases the generated names to those
  * ROM symbols. */
 struct UkiyukaModelFilePtr : SharedFilePtr {
-    u32 words[2];
-
     UkiyukaModelFilePtr(u32 fileID);
     ~UkiyukaModelFilePtr();
 };
 
 struct UkiyukaCollisionFilePtr : SharedFilePtr {
-    u32 words[2];
-
     UkiyukaCollisionFilePtr(u32 fileID);
     ~UkiyukaCollisionFilePtr();
 };

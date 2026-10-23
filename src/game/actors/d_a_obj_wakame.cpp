@@ -51,15 +51,12 @@ enum d_a_obj_wakame_AssetId {
 #include "SharedFilePtr.h"
 
 /* Model: func_02017acc / func_02017ab4. Animation: SharedFilePtr::Construct /
- * SharedFilePtr_Destruct_Anim. words[1] is the file LoadFile just filled in.
- * SharedFilePtr itself has no fields. */
+ * SharedFilePtr_Destruct_Anim. filePtr is the file LoadFile just filled in. */
 struct WakameModelFilePtr : SharedFilePtr {
-    unsigned int words[2];
     WakameModelFilePtr(unsigned int fileId);
     ~WakameModelFilePtr();
 };
 struct WakameAnimationFileHandle : SharedFilePtr {
-    unsigned int words[2];
     WakameAnimationFileHandle(unsigned int fileId);
     ~WakameAnimationFileHandle();
 };

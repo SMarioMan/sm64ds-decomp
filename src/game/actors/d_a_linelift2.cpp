@@ -63,15 +63,11 @@ typedef void (dBgActor_c::*StateFunc)();
  * collision files func_02017b4c / SharedFilePtr_Destruct_Clsn. The spellings
  * are local; the manifest aliases the generated names to those ROM symbols. */
 struct Linelift2ModelFilePtr : SharedFilePtr {
-    u32 words[2];
-
     Linelift2ModelFilePtr(u32 fileID);
     ~Linelift2ModelFilePtr();
 };
 
 struct Linelift2CollisionFilePtr : SharedFilePtr {
-    u32 words[2];
-
     Linelift2CollisionFilePtr(u32 fileID);
     ~Linelift2CollisionFilePtr();
 };

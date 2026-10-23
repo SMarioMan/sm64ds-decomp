@@ -1,8 +1,8 @@
-struct Node;
+#include "private/arm9_a1fc0_file_share.h"
 
 extern unsigned int _ZN3IRQ7DisableEv(void);
 extern int func_020658c0(void *node, int a1, void *a2, int a3, int arg5, unsigned short arg6);
-extern void func_02041b24(char *base, char *node);
+extern void func_02041b24(FileShareParentArea *area, FileShareNode *node);
 extern void _ZN3IRQ7RestoreEj(unsigned int saved);
 
 extern int data_020a1fc0;
@@ -38,7 +38,7 @@ void func_02041d28(char *r7, struct R6 *r6)
             int a1 = r6->f88;
             func_020658c0((char *)r6 + 4, a1, &data_02082158,
                           (diff <= 0x400) ? (int)&r6->fc0 : 0, diff, 0);
-            func_02041b24(r7, (char *)r6);
+            func_02041b24((FileShareParentArea *)r7, (FileShareNode *)r6);
         }
         for (bit = 0;; bit++) {
             if ((1 << bit) > mask) {

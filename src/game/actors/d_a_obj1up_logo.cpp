@@ -10,8 +10,6 @@
  * leftovers:
  * - TextureSequence::SetFile and Particle::System::NewSimple stay
  *   mangled. Both take Fix12<int> by value.
- * - SharedFilePtr has no fields, so InitResources reads the loaded
- *   BMD and BTP at +4 of data_ov002_02110aa4 and 02110a9c.
  * - Behavior keeps a volatile read of mPosY and of pos.z. A plain
  *   read is folded into the add and the stores above it.
  * - The follow target's position is read through &mPos. Naming that
@@ -49,15 +47,11 @@ enum {
  * are local; the handle constructors and destructors are the ROM
  * resource-family functions, aliased in the manifest. */
 struct OneUpLogoModelFile : SharedFilePtr {
-    u32 words[2];
-
     OneUpLogoModelFile(u32 fileID);
     ~OneUpLogoModelFile();
 };
 
 struct OneUpLogoTexSeqFilePtr : SharedFilePtr {
-    u32 words[2];
-
     OneUpLogoTexSeqFilePtr(u32 fileID);
     ~OneUpLogoTexSeqFilePtr();
 };
@@ -176,15 +170,12 @@ s32 daObj1UpLogo_c::InitResources()
     TextureSequence::LoadFile(data_ov002_02110a9c);
     if (mModel.SetFile((BMD_File *)Model::LoadFile(data_ov002_02110aa4), 1, -1) == 0)
         return 0;
-    TextureSequence::Prepare(
-        **(BMD_File **)((char *)&data_ov002_02110aa4 + 4),
-        **(BTP_File **)((char *)&data_ov002_02110a9c + 4));
+    TextureSequence::Prepare(*(BMD_File *)data_ov002_02110aa4.filePtr,
+                             *(BTP_File *)data_ov002_02110a9c.filePtr);
     /* InitResources: SetFile's Fix12<int> parameter. A braced method call
        does not compile, so this stays the scalar extern. */
     _ZN15TextureSequence7SetFileER8BTP_Filei5Fix12IiEj(
-        &mTextureSequence,
-        *(void **)((char *)&data_ov002_02110a9c + 4),
-        kBtpFlags, 0, frame);
+        &mTextureSequence, data_ov002_02110a9c.filePtr, kBtpFlags, 0, frame);
     mState = 0;
     mStartPos.x = mPosX;
     mStartPos.y = mPosY;

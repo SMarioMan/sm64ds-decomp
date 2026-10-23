@@ -68,7 +68,6 @@ struct Base {
  * sJumpBackFile; a declared-only subclass so the static initializer
  * names the real entry points. */
 struct MgJumpModelFilePtr : SharedFilePtr {
-    u32 words[2];
     MgJumpModelFilePtr(u32 fileID);
     ~MgJumpModelFilePtr();
 };

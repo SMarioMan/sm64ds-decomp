@@ -28,15 +28,11 @@ extern daObjFloatBoard_c_Resources data_ov016_02114b8c;
  * func_02017acc / func_02017ab4 and func_02017b4c /
  * SharedFilePtr_Destruct_Clsn. */
 struct KiItaModelFilePtr : SharedFilePtr {
-    u32 words[2];
-
     KiItaModelFilePtr(u32 fileID);
     ~KiItaModelFilePtr();
 };
 
 struct KiItaCollisionFilePtr : SharedFilePtr {
-    u32 words[2];
-
     KiItaCollisionFilePtr(u32 fileID);
     ~KiItaCollisionFilePtr();
 };

@@ -41,12 +41,14 @@ void func_0203cbc0(void *ptr);
 /* defined below -- DoSetFile's tail; it sits between UpdateVerts and
    DoSetFile in the ROM and DoSetFile is its only caller here */
 int func_020165c4(BlendModelAnim *self, char *file);
-/* SetAnim below and its SetAnimation call keep their mangled spellings:
-   wall 6az (notes/mwccarm-codegen.md) homes class-typed by-value
-   parameters that a body reads, and the real signature carries
-   Fix12<int> -- passing one to the member declaration homes it to the
-   caller's stack. The declarations in BlendModelAnim.h and dExtFrameCtrl_c.h
-   are the real ones. */
+/* SetAnim below and its SetAnimation call keep their mangled spellings
+   because of the NAMES, not wall 6az. Measured 2026-10-22: SetAnim
+   reproduces 0x020163e0/0x9c as a real method under the scalar mangling
+   _ZN14BlendModelAnim7SetAnimER8BCA_Fileiiit; only the class-typed
+   `5Fix12IiE` spelling costs. The rename is a campaign, not a local edit --
+   notes/mwccarm-codegen.md 6az, MEASURED 2026-10-22. The declarations in
+   BlendModelAnim.h and dExtFrameCtrl_c.h are the ones callers use; the
+   measured method takes Fix12i where they say Fix12<int>. */
 void _ZN15dExtFrameCtrl_c12SetAnimationEti5Fix12IiEt(dExtFrameCtrl_c *self, u16 numFrames, s32 flags, s32 speed, u16 startFrame);
 }
 

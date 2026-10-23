@@ -61,15 +61,11 @@ struct Km1DorifuClpsBlock {
 typedef char Km1DorifuClps_size_must_be_24[sizeof(Km1DorifuClpsBlock) == 24 ? 1 : -1];
 
 struct DorifuModelFilePtr : SharedFilePtr {
-    u32 words[2];
-
     DorifuModelFilePtr(u32 fileID);
     ~DorifuModelFilePtr();
 };
 
 struct DorifuCollisionFilePtr : SharedFilePtr {
-    u32 words[2];
-
     DorifuCollisionFilePtr(u32 fileID);
     ~DorifuCollisionFilePtr();
 };

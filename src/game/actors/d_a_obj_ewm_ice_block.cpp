@@ -177,12 +177,10 @@ extern "C" daObjEwmIceBlock_c *daObjEwmIceBlock_c_classInit()
  * func_02017ab4 for the model, func_02017b4c / SharedFilePtr_Destruct_Clsn
  * for the collision); the subclasses exist to spell those entry points. */
 struct EwmIceBlockModelFilePtr : SharedFilePtr {
-    u32 words[2];
     EwmIceBlockModelFilePtr(u32 fileID);
     ~EwmIceBlockModelFilePtr();
 };
 struct EwmIceBlockCollisionFilePtr : SharedFilePtr {
-    u32 words[2];
     EwmIceBlockCollisionFilePtr(u32 fileID);
     ~EwmIceBlockCollisionFilePtr();
 };

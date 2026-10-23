@@ -87,21 +87,14 @@ typedef void (daBtfly_c::*ButterflyState)();
  * handles (model file 0x43a, animation file 0x43b) and fill the eight-entry
  * state table. mwcc emits __sinit_d_a_btfly.cpp from those definitions. */
 struct BtflyModelFilePtr : SharedFilePtr {
-    u32 words[2];
-
     BtflyModelFilePtr(u32 fileID);
     ~BtflyModelFilePtr();
 };
 
 struct BtflyAnimationFilePtr : SharedFilePtr {
-    u32 words[2];
-
     BtflyAnimationFilePtr(u32 fileID);
     ~BtflyAnimationFilePtr();
 };
-
-/* SharedFilePtr.h has no fields. LoadFile stashes the file in the second word. */
-#define LOADED(h) (((void **)&(h))[1])
 
 /* State7's flutter-phase add. A plain mFlutterPhase += folds to add #0x300;
  * the int cast keeps the pool-offset add the ROM has. */
@@ -560,11 +553,11 @@ int daBtfly_c::InitResources()
 
     if (mModelAnim.SetFile((BMD_File *)bmd, 1, 1) == 0)
         return 0;
-    _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(
-        &mModelAnim, LOADED(gButterflyFlyAnimationFile), 0, 0x1000, 0);
+    _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(&mModelAnim, gButterflyFlyAnimationFile.filePtr, 0,
+                                                0x1000, 0);
     if (mShadowModel1.InitCylinder() == 0)
         return 0;
-    if (mModel.SetFile((BMD_File *)LOADED(data_ov100_02148668), 1, 1) == 0)
+    if (mModel.SetFile((BMD_File *)data_ov100_02148668.filePtr, 1, 1) == 0)
         return 0;
     if (mShadowModel2.InitCylinder() == 0)
         return 0;

@@ -42,15 +42,11 @@
  * func_02017acc / func_02017ab4 and SharedFilePtr::Construct /
  * SharedFilePtr_Destruct_Anim. */
 struct HeyhoAdapterModelFilePtr : SharedFilePtr {
-    u32 words[2];
-
     HeyhoAdapterModelFilePtr(u32 fileID);
     ~HeyhoAdapterModelFilePtr();
 };
 
 struct HeyhoAdapterAnimationFileHandle : SharedFilePtr {
-    u32 words[2];
-
     HeyhoAdapterAnimationFileHandle(u32 fileID);
     ~HeyhoAdapterAnimationFileHandle();
 };

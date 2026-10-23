@@ -50,12 +50,10 @@ enum daObjHmMaruta_c_AssetId {
  * func_02017ab4. The collision handle constructs through func_02017b4c and
  * destroys through SharedFilePtr_Destruct_Clsn. The descriptor stays ROM data. */
 struct MarutaModelFilePtr : SharedFilePtr {
-    unsigned int words[2];
     MarutaModelFilePtr(unsigned int fileId);
     ~MarutaModelFilePtr();
 };
 struct MarutaClsnFileHandle : SharedFilePtr {
-    unsigned int words[2];
     MarutaClsnFileHandle(unsigned int fileId);
     ~MarutaClsnFileHandle();
 };

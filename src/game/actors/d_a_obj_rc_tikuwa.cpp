@@ -54,15 +54,11 @@ enum daObjRc_Tikuwa_c_AssetId {
  * collision file func_02017b4c / SharedFilePtr_Destruct_Clsn. The spellings
  * are local; the manifest aliases the generated names to those ROM symbols. */
 struct TikuwaModelFilePtr : SharedFilePtr {
-    u32 words[2];
-
     TikuwaModelFilePtr(u32 fileID);
     ~TikuwaModelFilePtr();
 };
 
 struct TikuwaCollisionFilePtr : SharedFilePtr {
-    u32 words[2];
-
     TikuwaCollisionFilePtr(u32 fileID);
     ~TikuwaCollisionFilePtr();
 };

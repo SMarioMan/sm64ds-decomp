@@ -74,15 +74,11 @@ struct KabeFiles {
  * resource-family functions, aliased in the manifest. Nothing in this TU
  * names the handles directly; the KabeFiles rows above point at them. */
 struct BkKabeModelFile : SharedFilePtr {
-    u32 words[2];
-
     BkKabeModelFile(u32 fileID);
     ~BkKabeModelFile();
 };
 
 struct BkKabeCollisionFilePtr : SharedFilePtr {
-    u32 words[2];
-
     BkKabeCollisionFilePtr(u32 fileID);
     ~BkKabeCollisionFilePtr();
 };

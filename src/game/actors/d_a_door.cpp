@@ -314,13 +314,11 @@ extern void *data_ov089_02132894[];
    SharedFilePtr::Construct (animation) in this unit's manifest, and the
    destructors func_02017ab4 and SharedFilePtr_Destruct_Anim. */
 struct DoorModelFilePtr : SharedFilePtr {
-    int unk0; void *file;
     DoorModelFilePtr(unsigned int id);
     ~DoorModelFilePtr();
 };
 
 struct DoorAnimationFileHandle : SharedFilePtr {
-    int unk0; void *file;
     DoorAnimationFileHandle(unsigned int id);
     ~DoorAnimationFileHandle();
 };

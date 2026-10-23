@@ -162,7 +162,7 @@
 0x02012840	_ZN5Sound6Play2DEjj	function
 0x020128c4	_ZN5Sound22StopLoadedMusic_Layer2Ev	function
 0x02012940	_ZN5Sound22LoadAndSetMusic_Layer2Ej	function
-0x02012998	_ZN5Sound8EndMusicEjj	function
+0x02012998	_ZN5Sound8EndMusicEj	function
 0x02012a68	_ZN5Sound8SetMusicEjj	function
 0x02012af8	_ZN5Sound22StopLoadedMusic_Layer3Ev	function
 0x02012bbc	_ZN5Sound22LoadAndSetMusic_Layer3Ej	function

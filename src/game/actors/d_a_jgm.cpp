@@ -43,8 +43,6 @@
  *   `frame` in UpdateThrowState, the `offset` references in the hover and
  *   throw collision updates, and the parameter names on the cstd::fdiv and
  *   IsTooFarAwayFromPlayer prototypes.
- * - The handle wrappers declare `id` / `file` locally; SharedFilePtr.h has
- *   no fields.
  * - OnTurnIntoEgg's R6Player and UpdateWallAndWater's R10dBgCh_Actr take
  *   reference spelling; a pointer emits identical ARM. SetState's `int`
  *   signedness is indistinguishable.
@@ -107,25 +105,16 @@ extern int _ZTV7daJgm_c[];
  * whose declared-not-defined destructor aliases the ROM's canonical
  * Vector3 D1. */
 struct DaJgmModelFile : SharedFilePtr {
-    u32 id;
-    void *file;
-
     DaJgmModelFile(u32 fileID);
     ~DaJgmModelFile();
 };
 
 struct DaJgmAnimationFilePtr : SharedFilePtr {
-    u32 id;
-    void *file;
-
     DaJgmAnimationFilePtr(u32 fileID);
     ~DaJgmAnimationFilePtr();
 };
 
 struct DaJgmTexSequenceFilePtr : SharedFilePtr {
-    u32 id;
-    void *file;
-
     DaJgmTexSequenceFilePtr(u32 fileID);
     ~DaJgmTexSequenceFilePtr();
 };
@@ -261,8 +250,7 @@ s32 daJgm_c::InitResources()
         DaJgmTexSequenceFilePtr *t =
             (DaJgmTexSequenceFilePtr *)data_ov077_02127230[i];
         TextureSequence::LoadFile(*t);
-        TextureSequence::Prepare(
-            *(BMD_File *)data_ov077_02127b50.file, *(BTP_File *)t->file);
+        TextureSequence::Prepare(*(BMD_File *)data_ov077_02127b50.filePtr, *(BTP_File *)t->filePtr);
     }
     if (mShadowModel.InitCylinder() == 0)
         return 0;
@@ -362,13 +350,11 @@ void daJgm_c::UpdateState()
 s32 daJgm_c::EnterHoverState()
 {
     mHorzSpeed = 0xc000;
-    _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(
-        &mModelAnim, data_ov077_02127b28.file,
-        0, 0x1000, 0);
+    _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(&mModelAnim, data_ov077_02127b28.filePtr, 0, 0x1000,
+                                                0);
     mModelAnim.speed = 0x1000;
-    _ZN15TextureSequence7SetFileER8BTP_Filei5Fix12IiEj(
-        &mTextureSequence, data_ov077_02127b20.file,
-        0, 0x1000, 0);
+    _ZN15TextureSequence7SetFileER8BTP_Filei5Fix12IiEj(&mTextureSequence,
+                                                       data_ov077_02127b20.filePtr, 0, 0x1000, 0);
     mTextureSequence.speed = 0x1000;
     mTimer = 0x96;
     mState = 0;
@@ -413,15 +399,13 @@ s32 daJgm_c::UpdateHoverState()
 // @symbol _ZN7daJgm_c15EnterThrowStateEv
 s32 daJgm_c::EnterThrowState()
 {
-    _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(
-        &mModelAnim, data_ov077_02127b40.file,
-        0, 0x1000, 0);
+    _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(&mModelAnim, data_ov077_02127b40.filePtr, 0, 0x1000,
+                                                0);
     mModelAnim.SetFlags(0x40000000);
     mModelAnim.speed = 0x1000;
     mModelAnim.currFrame = 0;
-    _ZN15TextureSequence7SetFileER8BTP_Filei5Fix12IiEj(
-        &mTextureSequence, data_ov077_02127b30.file,
-        0, 0x1000, 0);
+    _ZN15TextureSequence7SetFileER8BTP_Filei5Fix12IiEj(&mTextureSequence,
+                                                       data_ov077_02127b30.filePtr, 0, 0x1000, 0);
     mTextureSequence.SetFlags(0x40000000);
     mTextureSequence.speed = 0x1000;
     mTextureSequence.currFrame = 0;
@@ -557,9 +541,8 @@ s32 daJgm_c::EnterFallState()
     mHorzSpeed = 0xa000;
     mVertSpeed = 0x28000;
     mTimer = 0x2d;
-    _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(
-        &mModelAnim, data_ov077_02127b28.file,
-        0, 0x1000, 0);
+    _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(&mModelAnim, data_ov077_02127b28.filePtr, 0, 0x1000,
+                                                0);
     mModelAnim.speed = 0x4000;
     {
         int aimHeight = OnAimedAtWithEgg();

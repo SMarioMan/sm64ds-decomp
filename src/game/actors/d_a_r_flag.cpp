@@ -40,15 +40,11 @@ extern Timer data_0209d4c8;
    SharedFilePtr::Construct and registers SharedFilePtr_Destruct_Anim.
    The manifest aliases these. */
 struct RFlagModelFileHandle : SharedFilePtr {
-    u32 words[2];
-
     RFlagModelFileHandle(u32 fileID);
     ~RFlagModelFileHandle();
 };
 
 struct RFlagAnimResFileHandle : SharedFilePtr {
-    u32 words[2];
-
     RFlagAnimResFileHandle(u32 fileID);
     ~RFlagAnimResFileHandle();
 };

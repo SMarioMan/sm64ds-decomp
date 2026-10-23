@@ -1086,11 +1086,6 @@ void TrmpItem_Hide(int *p);
 extern "C" void _ZN18TextureTransformer7SetFileER8BTA_Filei5Fix12IiEj(void *, BTA_File &, int, int,
                                                                       unsigned int);
 
-// Consumed file-handle prefix only; the shared class exposes methods, not fields.
-struct SharedModelFileView {
-    int header;
-    BMD_File *file;
-};
 extern "C" {
 extern SharedFilePtr sTrmpItemRingAModelFile;
 }
@@ -1105,17 +1100,13 @@ extern BTA_File sTrmpItemTextureAnim;
 }
 
 extern "C" void TrmpItem_Load(char *c) {
-    ((Model *)TRMPITEM(c)->mModels[0])
-        ->SetFile(((SharedModelFileView *)&sTrmpItemRingAModelFile)->file, 1, -1);
-    ((Model *)TRMPITEM(c)->mModels[1])
-        ->SetFile(((SharedModelFileView *)&sTrmpItemRingBModelFile)->file, 1, -1);
-    ((Model *)TRMPITEM(c)->mModels[2])
-        ->SetFile(((SharedModelFileView *)&sTrmpItemRingCModelFile)->file, 1, -1);
+    ((Model *)TRMPITEM(c)->mModels[0])->SetFile((BMD_File *)sTrmpItemRingAModelFile.filePtr, 1, -1);
+    ((Model *)TRMPITEM(c)->mModels[1])->SetFile((BMD_File *)sTrmpItemRingBModelFile.filePtr, 1, -1);
+    ((Model *)TRMPITEM(c)->mModels[2])->SetFile((BMD_File *)sTrmpItemRingCModelFile.filePtr, 1, -1);
     ((Model *)TRMPITEM(c)->mModels[0])->SetPolygonID(1);
     ((Model *)TRMPITEM(c)->mModels[1])->SetPolygonID(2);
     ((Model *)TRMPITEM(c)->mModels[2])->SetPolygonID(3);
-    TextureTransformer::Prepare(*((SharedModelFileView *)&sTrmpItemRingAModelFile)->file,
-                                sTrmpItemTextureAnim);
+    TextureTransformer::Prepare(*(BMD_File *)sTrmpItemRingAModelFile.filePtr, sTrmpItemTextureAnim);
     _ZN18TextureTransformer7SetFileER8BTA_Filei5Fix12IiEj(
         (TextureTransformer *)TRMPITEM(c)->mTexAnim, sTrmpItemTextureAnim, 0, 0x1000, 0);
     TrmpItem_Hide((int *)c);

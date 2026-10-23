@@ -66,8 +66,6 @@ extern s16 data_02082214[];
 /* Model-file handle. The derived constructor and destructor are the retail
  * SharedFilePtr pair; this TU does not define them. */
 struct BttBkModelFilePtr : SharedFilePtr {
-    u32 words[2];
-
     BttBkModelFilePtr(u32 fileID);
     ~BttBkModelFilePtr();
 };

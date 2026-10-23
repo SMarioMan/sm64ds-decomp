@@ -82,21 +82,11 @@ typedef int (daJango_c::*JangoPMF)();
  * and the loaded-file pointer at +4. CleanupResources releases references;
  * the registered wrapper destructors only publish the file ID. */
 struct JangoModelFile : SharedFilePtr {
-    u16 fileID;
-    u8 numRefs;
-    u8 pad_03;
-    BMD_File *filePtr;
-
     JangoModelFile(u32 fileID);
     ~JangoModelFile();
 };
 
 struct JangoAnimationFilePtr : SharedFilePtr {
-    u16 fileID;
-    u8 numRefs;
-    u8 pad_03;
-    BCA_File *filePtr;
-
     JangoAnimationFilePtr(u32 fileID);
     ~JangoAnimationFilePtr();
 };
@@ -352,9 +342,8 @@ s32 daJango_c::OnAimedAtWithEgg() {
    path (JANGO_STATE_FLY_PATH). Without one it circles (JANGO_STATE_CIRCLE), and
    if the player has already lost the cap it starts out holding it.
 
-   The shared SharedFilePtr interface remains fieldless. These four local
-   wrappers describe their model/animation payloads; native loading APIs
-   receive the existing base by reference. */
+   The four handle wrappers are SharedFilePtrs; the loaders take them by
+   reference and the payloads come back through filePtr. */
 int daJango_c::InitResources()
 {
     void *bmd;
@@ -680,7 +669,8 @@ int daJango_c::func_ov062_0211c594() {
         mStateTimer = 0x3c;
     }
 
-    _ZN14BlendModelAnim7SetAnimER8BCA_Fileii5Fix12IiEt(&mBlendModelAnim, *data_ov062_0211e104.filePtr, 4, 0, 0x1000, 0);
+    _ZN14BlendModelAnim7SetAnimER8BCA_Fileii5Fix12IiEt(
+        &mBlendModelAnim, *(BCA_File *)data_ov062_0211e104.filePtr, 4, 0, 0x1000, 0);
     return 1;
 }
 }
@@ -793,7 +783,8 @@ int daJango_c::func_ov062_0211c218()
         mHitPlayer = 0;
     }
     mLeaveDelay = 0;
-    _ZN14BlendModelAnim7SetAnimER8BCA_Fileii5Fix12IiEt(&mBlendModelAnim, *data_ov062_0211e104.filePtr, 4, 0, 0x1000, 0);
+    _ZN14BlendModelAnim7SetAnimER8BCA_Fileii5Fix12IiEt(
+        &mBlendModelAnim, *(BCA_File *)data_ov062_0211e104.filePtr, 4, 0, 0x1000, 0);
     if (mSilverStarFlag == 2 ||
         (unsigned char)(signed char)((signed char)data_0209f2f8 - 0x18) <= 1) {
         mLeaveDelay = 2;
@@ -926,7 +917,7 @@ int daJango_c::func_ov062_0211bd10()
     if (angD < 0x300) {
         if (mStateParam == 1) {
             _ZN14BlendModelAnim7SetAnimER8BCA_Fileii5Fix12IiEt(
-                &mBlendModelAnim, *data_ov062_0211e104.filePtr, 4, 0, 0x1000, 0);
+                &mBlendModelAnim, *(BCA_File *)data_ov062_0211e104.filePtr, 4, 0, 0x1000, 0);
             if (mSilverStarFlag == 2 ||
                 (unsigned)(u8)(s8)((s8)data_0209f2f8 - 0x18) <= 1u) {
                 p43c = &mLeaveDelay;
@@ -939,7 +930,7 @@ int daJango_c::func_ov062_0211bd10()
         }
     } else if (mStateParam == 0) {
         _ZN14BlendModelAnim7SetAnimER8BCA_Fileii5Fix12IiEt(
-            &mBlendModelAnim, *data_ov062_0211e114.filePtr, 4, 0, 0x1000, 0);
+            &mBlendModelAnim, *(BCA_File *)data_ov062_0211e114.filePtr, 4, 0, 0x1000, 0);
         p43c = &mStateParam;
         *p43c = *p43c + 1;
     }
@@ -997,7 +988,8 @@ int daJango_c::func_ov062_0211bc54()
     mSpeedZ = 0;
     func_02012694(SND_AT_SWOOP_ENTER, &mCamSpacePosX);
     mStateParam = ((((unsigned)RandomIntInternal(&data_0209e650) >> 8) & 3) << 8) + 0x300;
-    _ZN14BlendModelAnim7SetAnimER8BCA_Fileii5Fix12IiEt(&mBlendModelAnim, *data_ov062_0211e114.filePtr, 4, 0, 0x1000, 0);
+    _ZN14BlendModelAnim7SetAnimER8BCA_Fileii5Fix12IiEt(
+        &mBlendModelAnim, *(BCA_File *)data_ov062_0211e114.filePtr, 4, 0, 0x1000, 0);
     return 1;
 }
 
@@ -1095,7 +1087,8 @@ int func_ov062_0211ba84(char *c)
 int daJango_c::func_ov062_0211b930()
 {
     dActor_c* found;
-    _ZN14BlendModelAnim7SetAnimER8BCA_Fileii5Fix12IiEt(&(mBlendModelAnim), *data_ov062_0211e10c.filePtr, 4, 0x40000000, 0x1000, 0);
+    _ZN14BlendModelAnim7SetAnimER8BCA_Fileii5Fix12IiEt(
+        &(mBlendModelAnim), *(BCA_File *)data_ov062_0211e10c.filePtr, 4, 0x40000000, 0x1000, 0);
     mStateParam = 1;
     if (mHeldActorID != 0 && (found = dActor_c::FindWithID(mHeldActorID)) != 0) {
         found->mVertAccel = -0x2000;
@@ -1154,7 +1147,8 @@ int daJango_c::func_ov062_0211b880() {
     mVertSpeed = 0;
     mSpeedZ = 0;
     mVertAccel = 0;
-    _ZN14BlendModelAnim7SetAnimER8BCA_Fileii5Fix12IiEt(&mBlendModelAnim, *data_ov062_0211e104.filePtr, 4, 0, 0x1000, 0);
+    _ZN14BlendModelAnim7SetAnimER8BCA_Fileii5Fix12IiEt(
+        &mBlendModelAnim, *(BCA_File *)data_ov062_0211e104.filePtr, 4, 0, 0x1000, 0);
     return 1;
 }
 

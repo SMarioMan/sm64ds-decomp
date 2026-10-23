@@ -34,25 +34,16 @@ enum d_a_obj_km3_kurumajiku_AssetId {
 #include "SharedFilePtr.h"
 #include "CLPS.h"
 
-/* Runtime layout: u16 stored file ID, u8 reference count, alignment, file pointer.
- * The constructor resolves each runtime asset handle to the stored ID.
- * These local layouts preserve the shared fieldless API. The model uses func_02017acc / func_02017ab4 and the
+/* The constructor resolves each runtime asset handle to the stored ID.
+ * The model uses func_02017acc / func_02017ab4 and the
  * collision file func_02017b4c / SharedFilePtr_Destruct_Clsn. The spellings
  * are local; the manifest aliases the generated names to those ROM symbols. */
 struct Km3KurumajikuModelFilePtr : SharedFilePtr {
-    unsigned short fileID;
-    unsigned char numRefs;
-    void *filePtr;
-
     Km3KurumajikuModelFilePtr(unsigned int fileID);
     ~Km3KurumajikuModelFilePtr();
 };
 
 struct Km3KurumajikuClsnFilePtr : SharedFilePtr {
-    unsigned short fileID;
-    unsigned char numRefs;
-    void *filePtr;
-
     Km3KurumajikuClsnFilePtr(unsigned int fileID);
     ~Km3KurumajikuClsnFilePtr();
 };

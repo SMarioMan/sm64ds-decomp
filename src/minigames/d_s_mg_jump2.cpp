@@ -124,8 +124,6 @@ struct RoundStartCallbacks {
  * constructor and destructor are the ROM resource-family functions,
  * aliased in the manifest. */
 struct Jump2ModelFile : SharedFilePtr {
-    u32 words[2];
-
     Jump2ModelFile(u32 fileID);
     ~Jump2ModelFile();
 };

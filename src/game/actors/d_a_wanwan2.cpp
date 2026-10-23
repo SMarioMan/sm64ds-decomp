@@ -137,15 +137,11 @@ struct ChompPmfSelf {
  * constructors and destructors are the ROM resource-family functions,
  * aliased in the manifest. */
 struct Wanwan2ModelFilePtr : SharedFilePtr {
-    u32 words[2];
-
     Wanwan2ModelFilePtr(u32 fileID);
     ~Wanwan2ModelFilePtr();
 };
 
 struct Wanwan2AnimFileHandle : SharedFilePtr {
-    u32 words[2];
-
     Wanwan2AnimFileHandle(u32 fileID);
     ~Wanwan2AnimFileHandle();
 };
@@ -514,8 +510,8 @@ extern "C" int func_ov100_02143aa4(daWanwan2_c *c)
    animation from data_ov100_021486ac. Was a C source. */
 extern "C" int func_ov100_02143ae0(daWanwan2_c *c)
 {
-    _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj((char *)&c->mModelAnim,
-        *(void **)((char *)&data_ov100_021486ac + 4), 0, 0x1000, 0);
+    _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj((char *)&c->mModelAnim, data_ov100_021486ac.filePtr,
+                                                0, 0x1000, 0);
     return 1;
 }
 
@@ -757,7 +753,7 @@ int daWanwan2_c::InitResources()
         int i = 0;
         Model *model = mModels;
         do {
-            model->SetFile(*(BMD_File **)((char *)&data_ov100_021486a4 + 4), 1, -1);
+            model->SetFile((BMD_File *)data_ov100_021486a4.filePtr, 1, -1);
             i++;
             model++;
         } while (i < daWanwan2_NUM_LINKS);

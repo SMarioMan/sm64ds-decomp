@@ -58,8 +58,15 @@
  * stores, zeroes +0x60), D2 (both vptr restores, both base D2 calls) and
  * SetAnim/UpdateVerts reading +0x60.
  *
- * SetAnim's definition stays a mangled free function (wall 6az: its true
- * signature carries Fix12<int>); the declaration below is the real one.
+ * SetAnim's definition is still a mangled free function, but NOT because of
+ * wall 6az. Measured 2026-10-22: `void ModelAnim::SetAnim(BCA_File *, int,
+ * Fix12i, u16)` reproduces 0x02016748/0x5c exactly as a real method, under the
+ * scalar mangling _ZN9ModelAnim7SetAnimEP8BCA_Fileiit. The class-typed spelling
+ * costs +0x18 because the body reads `speed` in both branches -- so what blocks
+ * the method is the `5Fix12IiE` WE PUT IN THE NAME, not the compiler. Retail
+ * reads the argument straight out of r3 (`mov r4, r3`). Renaming is a campaign
+ * (801 references, 114 files, symbols.txt, ~30 manifests); see
+ * notes/mwccarm-codegen.md section 6az, MEASURED 2026-10-22.
  */
 
 #ifdef __cplusplus
@@ -85,8 +92,8 @@ struct ModelAnim : Model, dExtFrameCtrl_c {
 
     /* --- non-virtual --- */
     ModelAnim();
-    void SetAnim(BCA_File *animFile, int flags, Fix12<int> speed,
-                 u32 startFrame);         /* defined as a free function, wall 6az */
+    /* Free function; the NAME blocks the method, not 6az -- see above. */
+    void SetAnim(BCA_File *animFile, int flags, Fix12<int> speed, u32 startFrame);
     void Copy(const ModelAnim &src, char *newFile);
 
     /* ITS OWN, TO RESOLVE AN AMBIGUITY MULTIPLE INHERITANCE CREATES. ModelAnim

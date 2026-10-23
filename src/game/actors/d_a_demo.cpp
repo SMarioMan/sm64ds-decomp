@@ -385,22 +385,9 @@ struct Obj {
 };
 */
 
-/* SharedFilePtr's fields, which SharedFilePtr.h leaves undeclared; the
- * names are src/SharedFilePtr.cpp's. filePtr is the loaded file. */
-struct SharedFileView {
-    u16 fileID;    /* 0x00 */
-    u8 numRefs;    /* 0x02 */
-    void *filePtr; /* 0x04 */
-};
-#ifndef SM64DS_PLATFORM_PC
-typedef char SharedFileView_size_must_be_0x8[sizeof(SharedFileView) == 8 ? 1 : -1];
-#endif
-
 /* Lakitu's model-file handle, owned and constructed by d_a_c_jugem.cpp's
  * static init. Same TU-local wrapper spelling as the owning TU. */
 struct JugemModelFile : SharedFilePtr {
-    u32 words[2];
-
     JugemModelFile(u32 fileID);
     ~JugemModelFile();
 };
@@ -3668,16 +3655,15 @@ void daDemo_c::anmModel_c::func_ov002_020f6514(void *tbl, unsigned char arg)
     mAnimEntry = arg;
     e = (u8 *)tbl + mAnimEntry * 4;
     v = (e[2] == 0) ? 0x40000000 : 0;
-    _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(
-        this, (void *)((struct Ent **)mAnimFiles)[e[0]]->out4, v, 0x1000, 0);
+    _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(this, mAnimFiles[e[0]]->filePtr, v, 0x1000, 0);
     {
         void *ts = mTexSeq;
         s8 idx;
         if (ts == 0) return;
         idx = (s8)e[1];
         if (idx < 0) return;
-        _ZN15TextureSequence7SetFileER8BTP_Filei5Fix12IiEj(
-            ts, (void *)((struct Ent **)mTexSeqFiles)[idx]->out4, v, 0x1000, 0);
+        _ZN15TextureSequence7SetFileER8BTP_Filei5Fix12IiEj(ts, mTexSeqFiles[idx]->filePtr, v,
+                                                           0x1000, 0);
     }
 }
 
@@ -3733,8 +3719,7 @@ int daDemo_c::anmModel_c::func_ov002_020f6618(SharedFilePtr *mdl, int nAnims, Sh
     for (i = 0; i < mNumAnimFiles; i++) {
         _ZN15dExtFrameCtrl_c8LoadFileER13SharedFilePtr(*mAnimFiles[i]);
     }
-    _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(self, ((SharedFileView *)mAnimFiles[0])->filePtr, 0,
-                                                0x1000, 0);
+    _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(self, mAnimFiles[0]->filePtr, 0, 0x1000, 0);
     if (texByte) {
         ts = _Znwj(0x14);
         if (ts) ts = _ZN15TextureSequenceC1Ev(ts);
@@ -3744,12 +3729,12 @@ int daDemo_c::anmModel_c::func_ov002_020f6618(SharedFilePtr *mdl, int nAnims, Sh
         mNumTexSeqFiles = texByte;
         mTexSeqFiles = texs;
         for (i = 0; i < mNumTexSeqFiles; i++) {
-            void *bmd = ((SharedFileView *)mModelFile)->filePtr;
+            void *bmd = mModelFile->filePtr;
             void *btp = TextureSequence::LoadFile(*mTexSeqFiles[i]);
             TextureSequence::Prepare(*(BMD_File*)bmd, *(BTP_File*)btp);
         }
-        _ZN15TextureSequence7SetFileER8BTP_Filei5Fix12IiEj(
-            mTexSeq, ((SharedFileView *)mTexSeqFiles[0])->filePtr, 0, 0x1000, 0);
+        _ZN15TextureSequence7SetFileER8BTP_Filei5Fix12IiEj(mTexSeq, mTexSeqFiles[0]->filePtr, 0,
+                                                           0x1000, 0);
     }
     mSnapToFloor = (u8)arg5;
     return 1;

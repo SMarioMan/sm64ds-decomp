@@ -32,12 +32,10 @@ enum d_a_obj_bk_ukisima_AssetId {
  * func_02017ab4. The collision handle constructs through func_02017b4c and
  * destroys through SharedFilePtr_Destruct_Clsn. The descriptor stays ROM data. */
 struct UkisimaModelFilePtr : SharedFilePtr {
-    unsigned int words[2];
     UkisimaModelFilePtr(unsigned int fileId);
     ~UkisimaModelFilePtr();
 };
 struct UkisimaClsnFileHandle : SharedFilePtr {
-    unsigned int words[2];
     UkisimaClsnFileHandle(unsigned int fileId);
     ~UkisimaClsnFileHandle();
 };

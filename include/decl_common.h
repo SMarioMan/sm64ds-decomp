@@ -1646,7 +1646,7 @@ extern void func_ov002_020dbbc0(char*);
 extern void func_ov002_020dbd94(char*);
 extern void func_ov002_020dbe70(char*);
 extern void func_ov002_020dc09c(char*);
-extern void func_ov002_020dc174(char*, void*, int, int, unsigned int, unsigned int);
+extern void func_ov002_020dc174(char *, const Vector3 *, Fix12i, Fix12i, u32, u32);
 extern void func_ov002_020dcafc(char*);
 extern void func_ov002_020dd5ec(void*);
 extern void func_ov002_020dd8f4(char*);

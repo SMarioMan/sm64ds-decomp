@@ -63,15 +63,6 @@ enum {
     HIT_TOUCH = 0x8000000
 };
 
-/* SharedFilePtr's header has no fields. Model::LoadFile and
-   SharedFilePtr::Load both store the loaded buffer at +0x4. */
-struct PgLoadedFile {
-    u16 fileID;
-    u8 numRefs;
-    u8 pad;
-    void *filePtr;
-};
-
 /* __sinit_d_a_pg_mthr.cpp constructs these, and the relocs at 02112c04 /
    02112c0c point the two tables at them:
      02113c00  file 0x3fb  BMD   model          (dtor 02017ab4)
@@ -81,27 +72,21 @@ struct PgLoadedFile {
      02113be8  file 0x407  BTP   stand/talk
      02112c04 = { &02113bf8, &02113be8 }
      02112c0c = { &02113bf0, &02113c08 }   (decl_common spells this int[])
-   SharedFilePtr declares no fields and no constructor of its own, so the
+   SharedFilePtr declares no constructor of its own, so the
    model handle gets the func_02017acc/func_02017ab4 pair, the animation
    handles get SharedFilePtr::Construct/Destruct_Anim and the texture
    sequences get SharedFilePtr_Construct_TexSeq/Destruct_TexSeq through
    thin declaration-only wrappers; the manifest aliases those mangled
    spellings to the arm9 destinations the retail initializer calls. */
 struct PgMthrModelFileHandle : SharedFilePtr {
-    s32 fileId;
-    void *file;
     PgMthrModelFileHandle(unsigned int fileID);
     ~PgMthrModelFileHandle();
 };
 struct PgMthrAnimFileResHandle : SharedFilePtr {
-    s32 fileId;
-    void *file;
     PgMthrAnimFileResHandle(unsigned int fileID);
     ~PgMthrAnimFileResHandle();
 };
 struct PgMthrTexSeqFileHandle : SharedFilePtr {
-    s32 fileId;
-    void *file;
     PgMthrTexSeqFileHandle(unsigned int fileID);
     ~PgMthrTexSeqFileHandle();
 };
@@ -162,9 +147,7 @@ int daPgMthr_c::InitResources()
     for (int i = 0; i < 2; i++) {
         SharedFilePtr *t = data_ov018_02112c04[i];
         TextureSequence::LoadFile(*t);
-        TextureSequence::Prepare(
-            *(BMD_File *)((PgLoadedFile *)&data_ov018_02113c00)->filePtr,
-            *(BTP_File *)((PgLoadedFile *)t)->filePtr);
+        TextureSequence::Prepare(*(BMD_File *)data_ov018_02113c00.filePtr, *(BTP_File *)t->filePtr);
     }
     if (mShadowModel.InitCylinder() == 0)
         return 0;
@@ -258,9 +241,11 @@ extern "C" void func_ov018_0211235c(daPgMthr_c *self)
 /* State 0 enter. Idle anim, stopped, not talking. */
 int daPgMthr_c::func_ov018_021122ec()
 {
-    _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(&mModelAnim, (BCA_File *)((PgLoadedFile *)&gPenguinWait1AnimationFile)->filePtr, 0, 0x1000, 0);
+    _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(
+        &mModelAnim, (BCA_File *)gPenguinWait1AnimationFile.filePtr, 0, 0x1000, 0);
     mModelAnim.speed = 0x1000;
-    _ZN15TextureSequence7SetFileER8BTP_Filei5Fix12IiEj(&mTextureSequence, *(BTP_File *)((PgLoadedFile *)&gPenguinWait1TextureSequenceFile)->filePtr, 0, 0x1000, 0);
+    _ZN15TextureSequence7SetFileER8BTP_Filei5Fix12IiEj(
+        &mTextureSequence, *(BTP_File *)gPenguinWait1TextureSequenceFile.filePtr, 0, 0x1000, 0);
     mHorzSpeed = 0;
     mPlayer = 0;
     unk_37c = 0;
@@ -299,7 +284,8 @@ int daPgMthr_c::func_ov018_02112234()
 // @symbol _ZN10daPgMthr_c19func_ov018_021121dcEv
 int daPgMthr_c::func_ov018_021121dc()
 {
-    _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(&mModelAnim, (BCA_File *)((PgLoadedFile *)&gPenguinWait1AnimationFile)->filePtr, 0, 0x1000, 0);
+    _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(
+        &mModelAnim, (BCA_File *)gPenguinWait1AnimationFile.filePtr, 0, 0x1000, 0);
     mModelAnim.speed = 0x1000;
     mTalkStep = 0;
     mTalkTimer = 0x3c;
@@ -378,9 +364,11 @@ int daPgMthr_c::func_ov018_02111f1c()
     if (mPlayer == 0 && mGaveStar == 0)
         func_ov018_021123d0(0);
     mHorzSpeed = 0x5000;
-    _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(&mModelAnim, (BCA_File *)((PgLoadedFile *)&gPenguinWalkAnimationFile)->filePtr, 0, 0x1000, 0);
+    _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(
+        &mModelAnim, (BCA_File *)gPenguinWalkAnimationFile.filePtr, 0, 0x1000, 0);
     mModelAnim.speed = 0x1000;
-    _ZN15TextureSequence7SetFileER8BTP_Filei5Fix12IiEj(&mTextureSequence, *(BTP_File *)((PgLoadedFile *)&gPenguinAngryTextureSequenceFile)->filePtr, 0, 0x1000, 0);
+    _ZN15TextureSequence7SetFileER8BTP_Filei5Fix12IiEj(
+        &mTextureSequence, *(BTP_File *)gPenguinAngryTextureSequenceFile.filePtr, 0, 0x1000, 0);
     unk_37c = 2;
     return 1;
 }

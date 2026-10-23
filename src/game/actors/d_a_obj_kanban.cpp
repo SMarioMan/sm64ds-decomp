@@ -34,8 +34,6 @@ bool ApproachLinear(short &value, short target, short step);
  * spelling is local; the manifest aliases the generated names to those ROM
  * symbols. */
 struct KanbanModelFilePtr : SharedFilePtr {
-    u32 words[2];
-
     KanbanModelFilePtr(u32 fileID);
     ~KanbanModelFilePtr();
 };

@@ -343,10 +343,10 @@ struct Player : dActor_c {
     s32 mClpsWord1Lo;                /* 0x670  CLPS word1 bits 0-7, getter CLPS::func_02037e90 */
     s32 mHurtDamage;            /* 0x674 */
     /* Two music layers over the level music, both Sound::SetMusic ids.
-       func_ov002_020bd9ec(id) starts a power-up's music in mPowerupMusic
+       StartPowerupMusic(id) starts a power-up's music in mPowerupMusic
        (Mega 0x31, Fire Yoshi 0x32, Vanish/Wings 0x33, Metal 0x34, Balloon
-       0x30) and func_ov002_020bd984 ends it; func_ov002_020bd928 and
-       func_ov002_020bd8c0 do the same for mStateMusic (St_Owl 0x2f, St_Shell
+       0x30) and EndPowerupMusic ends it; StartStateMusic and
+       EndStateMusic do the same for mStateMusic (St_Owl 0x2f, St_Shell
        and St_Swim 0x33). mPlayingMusic is the one SetMusic last started;
        ending a layer restarts the other if it is still set. */
     u32 mPowerupMusic;     /* 0x678 */
@@ -1029,10 +1029,16 @@ struct Player : dActor_c {
     int func_ov002_020bd600(unsigned char *, int, int);
     int func_ov002_020bd664(unsigned char *, int, int);
 
-    void func_ov002_020bd8c0(unsigned int);
-    void func_ov002_020bd928(unsigned int);
-    void func_ov002_020bd984(unsigned int);
-    void func_ov002_020bd9ec(unsigned int);
+    /* The two music layers documented at mPowerupMusic. The argument is the
+       layer id being started or ended. Ending always clears the layer; with
+       the other layer empty it stops the music outright, otherwise it switches
+       to the other layer only if the id is the one playing and differs from
+       it. Unnamed, like the declarations below, so Player.h consumers keep
+       their @NNN numbering. */
+    void EndStateMusic(u32);
+    void StartStateMusic(u32);
+    void EndPowerupMusic(u32);
+    void StartPowerupMusic(u32);
     /* Player state helpers in the 0x020d2f24..0x020db8d8 span (method review
        020d2f24-020db8d8). Address-named Player methods, verified against the
        ROM bodies; parameters stay unnamed so the 258 Player.h consumers keep

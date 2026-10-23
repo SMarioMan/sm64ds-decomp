@@ -497,7 +497,7 @@
       "ordinal": 67
     },
     {
-      "symbol": "_ZN5Sound8EndMusicEjj",
+      "symbol": "_ZN5Sound8EndMusicEj",
       "address": "0x02012998",
       "legacy_source": "src/_ZN5Sound8EndMusicEjj.cpp",
       "size": "0x000000d0",

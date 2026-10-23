@@ -23,8 +23,6 @@
  * deslop leftovers:
  * - TextureTransformer::SetFile / dBgW_KcMbg::SetFile 6az: InitResources
  *   passes Fix12<int> by value; the header method form size-DIFFs.
- * - SharedFilePtr +4: InitResources' TextureTransformer::Prepare reads the
- *   BMD at data_ov032_02113afc +4; SharedFilePtr.h has no fields.
  * - data_ov032_02113afc / 02113af4 / 02112f64 / 02112fb8 BMD / KCL / BTA /
  *   CLPS handles; this TU consumes them, overlay .data owns them.
  * - S14: g_profile_TD_WATER stays outside the licensed .text.
@@ -62,15 +60,11 @@ struct CLPS_Block;
  * destroy through SharedFilePtr_Destruct_Clsn. The manifest aliases those
  * undefined members onto the ROM symbols. */
 struct TdWaterModelFilePtr : SharedFilePtr {
-    u32 words[2];
-
     TdWaterModelFilePtr(u32 fileID);
     ~TdWaterModelFilePtr();
 };
 
 struct TdWaterClsnFileHandle : SharedFilePtr {
-    u32 words[2];
-
     TdWaterClsnFileHandle(u32 fileID);
     ~TdWaterClsnFileHandle();
 };
@@ -114,12 +108,9 @@ s32 daObjTdWater_c::InitResources()
 {
     mModel.SetFile((BMD_File *)Model::LoadFile(data_ov032_02113afc), 1, 0x14);
 
-    /* The BMD the SharedFilePtr is holding, at +4: the ROM re-reads it out of
-       the descriptor rather than reusing LoadFile's return value. The class has
-       no recovered layout (include/SharedFilePtr.h says so), so the offset is
-       spelled out instead of being named. */
-    TextureTransformer::Prepare(
-        **(BMD_File **)((char *)&data_ov032_02113afc + 4), data_ov032_02112f64);
+    /* The BMD the SharedFilePtr is holding: the ROM re-reads it out of the
+       descriptor rather than reusing LoadFile's return value. */
+    TextureTransformer::Prepare(*(BMD_File *)data_ov032_02113afc.filePtr, data_ov032_02112f64);
     /* 6az: header SetFile takes Fix12<int> by value. */
     _ZN18TextureTransformer7SetFileER8BTA_Filei5Fix12IiEj(
         &mTextureTransformer, data_ov032_02112f64, 0, 0x1000, 0);

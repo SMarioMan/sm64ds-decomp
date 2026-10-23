@@ -42,8 +42,6 @@ enum d_a_obj_wl_polelift_AssetId {
  * and destructor are the ROM resource-family functions, aliased in the
  * manifest. */
 struct PoleliftModelFile : SharedFilePtr {
-    u32 words[2];
-
     PoleliftModelFile(u32 fileID);
     ~PoleliftModelFile();
 };

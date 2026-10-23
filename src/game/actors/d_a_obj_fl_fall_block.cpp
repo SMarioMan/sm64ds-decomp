@@ -35,15 +35,11 @@ struct CLPS_Block;
  * handle constructors and destructors are the ROM resource-family
  * functions, aliased in the manifest. */
 struct FallBlockModelFile : SharedFilePtr {
-    u32 words[2];
-
     FallBlockModelFile(u32 fileID);
     ~FallBlockModelFile();
 };
 
 struct FallBlockCollisionFilePtr : SharedFilePtr {
-    u32 words[2];
-
     FallBlockCollisionFilePtr(u32 fileID);
     ~FallBlockCollisionFilePtr();
 };

@@ -85,15 +85,11 @@ typedef char KaitendaiResources_size_must_be_0x0c[
  * names the handles directly; the KaitendaiResources rows above point at
  * them. */
 struct KaitendaiModelFile : SharedFilePtr {
-    u32 words[2];
-
     KaitendaiModelFile(u32 fileID);
     ~KaitendaiModelFile();
 };
 
 struct KaitendaiCollisionFilePtr : SharedFilePtr {
-    u32 words[2];
-
     KaitendaiCollisionFilePtr(u32 fileID);
     ~KaitendaiCollisionFilePtr();
 };

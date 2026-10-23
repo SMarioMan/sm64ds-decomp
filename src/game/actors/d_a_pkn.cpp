@@ -18,10 +18,9 @@
  *   by value (the measured alternatives are noted at their declarations).
  * - UpdatePose still walks the PknMtx43/PknVec3 views: spelling the copies
  *   as Vector3/Matrix4x3 is emitted differently.
- * - The shared files keep their address names and the PknSharedFile
- *   two-word view, because include/SharedFilePtr.h deliberately leaves the
- *   layout unrecovered; the state table at 0x02130e80 also keeps its
- *   address name (text-only TU; the static initializer owns the .bss).
+ * - The shared files keep their address names; the state table at
+ *   0x02130e80 also keeps its address name (text-only TU; the static
+ *   initializer owns the .bss).
  *
  * Boundary, layout and compiler experiments are recorded in
  * notes/data/class-facts/daPkn_c.json and
@@ -34,18 +33,14 @@
 #include "Player.h"
 #include "Sound.h"
 
-/* The six shared files this actor claims.  include/SharedFilePtr.h declares no
-   fields on purpose -- the files that shadow it disagree about the layout -- so
-   this TU takes its own two-word view and casts to SharedFilePtr wherever it
-   calls a method.  Every member below that reads a loaded handle reads it out
-   of `.file`, which is the second word, so one spelling serves all of them. */
-struct PknSharedFile { int id; void *file; };
-extern PknSharedFile data_ov084_02130dfc;   /* the plant's own model */
-extern PknSharedFile data_ov002_0210da38;   /* BUBBLE_MODEL_PTR -- sleep bubble, shared out of ov002 */
-extern PknSharedFile data_ov084_02130df4;   /* idle animation */
-extern PknSharedFile data_ov084_02130e0c;   /* recoil animation */
-extern PknSharedFile data_ov084_02130e14;   /* lunge animation */
-extern PknSharedFile data_ov084_02130e24;   /* death animation */
+/* The six shared files this actor claims. */
+extern SharedFilePtr data_ov084_02130dfc; /* the plant's own model */
+extern SharedFilePtr
+    data_ov002_0210da38; /* BUBBLE_MODEL_PTR -- sleep bubble, shared out of ov002 */
+extern SharedFilePtr data_ov084_02130df4; /* idle animation */
+extern int *data_ov084_02130e0c;          /* recoil animation; decl_common.h's spelling */
+extern SharedFilePtr data_ov084_02130e14; /* lunge animation */
+extern SharedFilePtr data_ov084_02130e24; /* death animation */
 
 /* Six animation handles, held indirectly: the table is pointers, not objects. */
 extern SharedFilePtr *data_ov084_021302f4[];
@@ -143,11 +138,11 @@ int daPkn_c::InitResources()
     for (i = 0; i < 6; i++)
         dExtFrameCtrl_c::LoadFile(*data_ov084_021302f4[i]);
     LoadBlueCoinModel(this);
-    Model::LoadFile(*(SharedFilePtr *)&data_ov084_02130dfc);
-    Model::LoadFile(*(SharedFilePtr *)&data_ov002_0210da38);
-    if (mModelAnim.SetFile((BMD_File *)data_ov084_02130dfc.file, 1, -1) == 0)
+    Model::LoadFile(data_ov084_02130dfc);
+    Model::LoadFile(data_ov002_0210da38);
+    if (mModelAnim.SetFile((BMD_File *)data_ov084_02130dfc.filePtr, 1, -1) == 0)
         return 0;
-    if (mModel.SetFile((BMD_File *)data_ov002_0210da38.file, 1, -1) == 0)
+    if (mModel.SetFile((BMD_File *)data_ov002_0210da38.filePtr, 1, -1) == 0)
         return 0;
     _ZN7dCcAc_c4InitEP8dActor_c5Fix12IiES3_jj(&mdCcAc_c1, this, 0x32000, 0x64000, 0x200004, 0x423e0);
     _ZN7dCcAc_c4InitEP8dActor_c5Fix12IiES3_jj(&mdCcAc_c2, this, 0x82000, 0x64000, 2, 0x423e0);
@@ -193,7 +188,8 @@ int daPkn_c::InitResources()
     mParticleHandle2 = 0;
     mParticleHandle = mParticleHandle2;
     mLoopSoundHandle = 0;
-    _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(&mModelAnim, data_ov084_02130df4.file, 0, 0x1000, 0);
+    _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(&mModelAnim, data_ov084_02130df4.filePtr, 0, 0x1000,
+                                                0);
     return 1;
 }
 
@@ -262,7 +258,7 @@ int daPkn_c::Render()
     if (mScaleX == 0)
         return 1;
     mModelAnim.Render(&mScale);
-    if ((int)mModelAnim.file == (int)data_ov084_02130df4.file)
+    if ((int)mModelAnim.file == (int)data_ov084_02130df4.filePtr)
         mModel.Render(&mBubbleScale);
     return 1;
 }
@@ -281,11 +277,11 @@ void daPkn_c::OnPendingDestroy()
 int daPkn_c::CleanupResources()
 {
     int i;
-    ((SharedFilePtr *)&data_ov084_02130dfc)->Release();
+    data_ov084_02130dfc.Release();
     for (i = 0; i < 6; i++)
         data_ov084_021302f4[i]->Release();
     UnloadBlueCoinModel(this);
-    ((SharedFilePtr *)&data_ov002_0210da38)->Release();
+    data_ov002_0210da38.Release();
     return 1;
 }
 
@@ -298,7 +294,8 @@ void daPkn_c::StateWait()
     mScaleZ = 0x1000;
     mClsnEnabled = 1;
     mFlags |= 0x10000000;
-    _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(&mModelAnim, data_ov084_02130df4.file, 0, 0x1000, 0);
+    _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(&mModelAnim, data_ov084_02130df4.filePtr, 0, 0x1000,
+                                                0);
     if (mPlayerDist < 0x4b0000)
         mState = 1;
     CheckHits();
@@ -310,10 +307,12 @@ void daPkn_c::StateSleep()
 {
     mClsnEnabled = 1;
     if (mModelAnim.Finished() || mModelAnim.WillHitFrame(0))
-        _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(&mModelAnim, data_ov084_02130df4.file, 0, 0x1000, 0);
+        _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(&mModelAnim, data_ov084_02130df4.filePtr, 0,
+                                                    0x1000, 0);
     int thr = (mPlayerAirborne != 0) ? 0x12c000 : 0x190000;
     if (mPlayerDist < thr && PlayerMovingFast()) {
-        _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(&mModelAnim, data_ov084_02130e0c.file, 0x40000000, 0x1000, 0);
+        _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(
+            &mModelAnim, ((SharedFilePtr *)&data_ov084_02130e0c)->filePtr, 0x40000000, 0x1000, 0);
         mState = 3;
         func_02012694(0x175, &mCamSpacePosX);
         _ZN8Particle6System9NewSimpleEj5Fix12IiES2_S2_(0xfe, mBubblePos.x, mBubblePos.y, mBubblePos.z);
@@ -475,7 +474,8 @@ void daPkn_c::StateWake()
     /* mStateTimer is s16; the ROM compares it as a u16 (ldrh). */
     if ((u16)mStateTimer <= 0xb) return;
     if (!mModelAnim.Finished()) return;
-    _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(&mModelAnim, data_ov084_02130e14.file, 0x40000000, 0x1000, 0);
+    _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(&mModelAnim, data_ov084_02130e14.filePtr,
+                                                0x40000000, 0x1000, 0);
     mState = 2;
 }
 
@@ -485,7 +485,8 @@ void daPkn_c::StateDoze()
 {
     mClsnEnabled = 1;
     if (mModelAnim.Finished()) {
-        _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(&mModelAnim, data_ov084_02130e0c.file, 0x40000000, 0x1000, 0);
+        _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(
+            &mModelAnim, ((SharedFilePtr *)&data_ov084_02130e0c)->filePtr, 0x40000000, 0x1000, 0);
         mState = 1;
     } else {
         int thresh = (mPlayerAirborne != 0) ? 0x12c000 : 0x190000;
@@ -568,7 +569,8 @@ void daPkn_c::StateGone()
     mState = 8;
     mParticleHandle2 = 0;
     mParticleHandle = mParticleHandle2;
-    _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(&mModelAnim, data_ov084_02130e0c.file, 0, 0x1000, 0);
+    _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(
+        &mModelAnim, ((SharedFilePtr *)&data_ov084_02130e0c)->filePtr, 0, 0x1000, 0);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -664,7 +666,9 @@ int daPkn_c::CheckHits()
                     v.y = mPosY;
                     v.z = mPosZ;
                     _ZN6Player4HurtERK7Vector3j5Fix12IiEjjj(actor, &v, 3, 0xc000, 1, 0, 1);
-                    _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(&mModelAnim, data_ov084_02130e0c.file, 0, 0x1000, 0);
+                    _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(
+                        &mModelAnim, ((SharedFilePtr *)&data_ov084_02130e0c)->filePtr, 0, 0x1000,
+                        0);
                     mModelAnim.SetFlags(0x40000000);
                     mState = 3;
                     func_02012694(0x175, &mCamSpacePosX);
@@ -799,7 +803,8 @@ s32 daPkn_c::OnAimedAtWithEgg()
 void daPkn_c::EnterLunge(int frame)
 {
     mState = 2;
-    _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(&mModelAnim, data_ov084_02130e14.file, 0x40000000, 0x1000, 0);
+    _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(&mModelAnim, data_ov084_02130e14.filePtr,
+                                                0x40000000, 0x1000, 0);
     mModelAnim.currFrame = (u16)frame << 12;
 }
 
@@ -810,5 +815,6 @@ void daPkn_c::Die()
 {
     func_0201267c(0xc1, &mCamSpacePosX);
     mState = 5;
-    _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(&mModelAnim, data_ov084_02130e24.file, 0x40000000, 0x1000, 0);
+    _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(&mModelAnim, data_ov084_02130e24.filePtr,
+                                                0x40000000, 0x1000, 0);
 }

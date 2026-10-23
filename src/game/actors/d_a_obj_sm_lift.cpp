@@ -78,15 +78,11 @@ void SubVec3(void *a, void *b, void *c);
  * member spellings onto the real ROM functions; each handle is the base plus
  * the two words that family actually stores. */
 struct SmLiftModelFilePtr : SharedFilePtr {
-    u32 words[2];
-
     SmLiftModelFilePtr(u32 fileID);
     ~SmLiftModelFilePtr();
 };
 
 struct SmLiftClsnFileHandle : SharedFilePtr {
-    u32 words[2];
-
     SmLiftClsnFileHandle(u32 fileID);
     ~SmLiftClsnFileHandle();
 };

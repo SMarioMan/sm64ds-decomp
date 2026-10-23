@@ -255,7 +255,8 @@ int daWater_Ring_c::InitResources()
         mRingType = 0;
     }
 
-    TextureTransformer::Prepare(*((BMD_File **)&data_ov002_0210da10)[1], *(BTA_File *)data_ov002_0210d6dc);
+    TextureTransformer::Prepare(*(BMD_File *)data_ov002_0210da10.filePtr,
+                                *(BTA_File *)data_ov002_0210d6dc);
     _ZN18TextureTransformer7SetFileER8BTA_Filei5Fix12IiEj(&mTextureTransformer, (BTA_File *)data_ov002_0210d6dc, 0, 0x1000, 0);
 
     mTextureTransformer.speed = 0x1000;

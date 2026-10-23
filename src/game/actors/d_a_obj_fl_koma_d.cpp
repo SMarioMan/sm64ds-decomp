@@ -94,15 +94,11 @@ extern "C" daObjFl_Koma_D_c *daObjFl_Koma_D_c_classInit(void)
  * collision file func_02017b4c / SharedFilePtr_Destruct_Clsn. The spellings
  * are local; the manifest aliases the generated names to those ROM symbols. */
 struct KomaDModelFilePtr : SharedFilePtr {
-    u32 words[2];
-
     KomaDModelFilePtr(u32 fileID);
     ~KomaDModelFilePtr();
 };
 
 struct KomaDCollisionFilePtr : SharedFilePtr {
-    u32 words[2];
-
     KomaDCollisionFilePtr(u32 fileID);
     ~KomaDCollisionFilePtr();
 };

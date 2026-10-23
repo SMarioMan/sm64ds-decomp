@@ -68,15 +68,11 @@ extern CLPS_Block    data_ov002_0210d7f4;
  * and destroys through SharedFilePtr_Destruct_Clsn. The manifest aliases
  * those undefined members onto the ROM symbols. */
 struct CannonShutterModelFilePtr : SharedFilePtr {
-    u32 words[2];
-
     CannonShutterModelFilePtr(u32 fileID);
     ~CannonShutterModelFilePtr();
 };
 
 struct CannonShutterClsnFilePtr : SharedFilePtr {
-    u32 words[2];
-
     CannonShutterClsnFilePtr(u32 fileID);
     ~CannonShutterClsnFilePtr();
 };

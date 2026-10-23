@@ -10,10 +10,6 @@
 #include "MaterialChanger.h"
 
 struct KrbAnimationFileHandle : SharedFilePtr {
-    u16 fileID;
-    u8 numRefs;
-    BCA_File *ptr;
-
     KrbAnimationFileHandle(u32 fileID);
     ~KrbAnimationFileHandle();
 };

@@ -276,7 +276,7 @@ void daKinopio_c::St_Talk_Main()
 void daKinopio_c::St_Talk_Init()
 {
     u32 flags = 0;
-    BCA_File *file = (BCA_File *)(((int *)&data_ov085_02130490)[1]);
+    BCA_File *file = (BCA_File *)data_ov085_02130490.filePtr;
     _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(
         &mModelAnim, file, 0, 0x1000, flags);
 }
@@ -306,7 +306,7 @@ void daKinopio_c::St_Idle_Main()
 void daKinopio_c::St_Idle_Init()
 {
     _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(
-        &mModelAnim, ((BCA_File **)&data_ov085_02130488)[1], 0, 0x1000, 0);
+        &mModelAnim, (BCA_File *)data_ov085_02130488.filePtr, 0, 0x1000, 0);
 }
 
 // @symbol _ZN11daKinopio_c8SetStateEi

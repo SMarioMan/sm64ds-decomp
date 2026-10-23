@@ -14,7 +14,7 @@ extern int func_0205d5e8(char *self, int a1, int a2, int a3, int a4);
 extern int FS_ReadFile(char *a, char *b, int c);
 extern void func_02041d28(char *base, void *node, int d);
 extern int FS_CloseFile(char *self);
-extern void func_02041a94(char *base, void *node);
+extern void func_02041a94(FileShareParentArea *area, FileShareNode *node);
 
 /* The parent's loader thread: while the share is up (mState), take each node
  * off the busy list; a loading one (state 1) has its region's file opened
@@ -71,7 +71,7 @@ void func_02042254(void) {
         } else {
             FS_CloseFile((char *)node->mFile);
             irq = _ZN3IRQ7DisableEv();
-            func_02041a94(base, node);
+            func_02041a94(area, node);
             _ZN3IRQ7RestoreEj(irq);
         }
     }

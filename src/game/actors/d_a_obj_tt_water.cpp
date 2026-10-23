@@ -31,15 +31,11 @@ enum daObjTtWater_c_AssetId {
  * collision file func_02017b4c / SharedFilePtr_Destruct_Clsn. The spellings
  * are local; the manifest aliases the generated names to those ROM symbols. */
 struct TtWaterModelFilePtr : SharedFilePtr {
-    u32 words[2];
-
     TtWaterModelFilePtr(u32 fileID);
     ~TtWaterModelFilePtr();
 };
 
 struct TtWaterCollisionFilePtr : SharedFilePtr {
-    u32 words[2];
-
     TtWaterCollisionFilePtr(u32 fileID);
     ~TtWaterCollisionFilePtr();
 };

@@ -95,15 +95,11 @@ void ApproachLinear(int &value, int target, int step);
  * constructors and destructors are the ROM resource-family functions,
  * aliased in the manifest. */
 struct UdliftModelFile : SharedFilePtr {
-    u32 words[2];
-
     UdliftModelFile(u32 fileID);
     ~UdliftModelFile();
 };
 
 struct UdliftCollisionFilePtr : SharedFilePtr {
-    u32 words[2];
-
     UdliftCollisionFilePtr(u32 fileID);
     ~UdliftCollisionFilePtr();
 };

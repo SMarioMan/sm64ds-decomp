@@ -15,9 +15,6 @@
  *   value (notes/mwccarm-codegen.md 6az).
  * - Particle::System::NewSimple 6az: Behavior's particle 0xd2; the
  *   header has no NewSimple and the mangled name carries Fix12<int>.
- * - SharedFilePtr +4: InitResources' Prepare/SetFile read the BMD/BTP
- *   at data_ov002_0210da28 / 0210da08 / 0210d9a8 / 0210d9e8 +4;
- *   SharedFilePtr.h has no fields.
  * - data_ov002_0210d9a8 / 0210d9e8 / 0210da08 / 0210da28: this TU
  *   consumes the four handles; overlay .bss owns them. symbols.txt has
  *   no recovered name, so they are not coined.
@@ -93,13 +90,10 @@ s32 daObjNumber_c::InitResources()
         void *m = Model::LoadFile(data_ov002_0210da28);
         if (mModel.SetFile((BMD_File *)m, 1, 1) == 0)
             return 0;
-        TextureSequence::Prepare(
-            **(BMD_File **)((char *)&data_ov002_0210da28 + 4),
-            **(BTP_File **)((char *)&data_ov002_0210da08 + 4));
+        TextureSequence::Prepare(*(BMD_File *)data_ov002_0210da28.filePtr,
+                                 *(BTP_File *)data_ov002_0210da08.filePtr);
         _ZN15TextureSequence7SetFileER8BTP_Filei5Fix12IiEj(
-            &mTextureSequence,
-            *(void **)((char *)&data_ov002_0210da08 + 4),
-            0x40000000, 0, 0);
+            &mTextureSequence, data_ov002_0210da08.filePtr, 0x40000000, 0, 0);
         mTextureSequence.currFrame =
             (int)((((unsigned int)(param1 & 0xf) % 10) << 16) >> 4);
     } else {
@@ -107,13 +101,10 @@ s32 daObjNumber_c::InitResources()
         void *m = Model::LoadFile(data_ov002_0210d9a8);
         if (mModel.SetFile((BMD_File *)m, 1, 1) == 0)
             return 0;
-        TextureSequence::Prepare(
-            **(BMD_File **)((char *)&data_ov002_0210d9a8 + 4),
-            **(BTP_File **)((char *)&data_ov002_0210d9e8 + 4));
+        TextureSequence::Prepare(*(BMD_File *)data_ov002_0210d9a8.filePtr,
+                                 *(BTP_File *)data_ov002_0210d9e8.filePtr);
         _ZN15TextureSequence7SetFileER8BTP_Filei5Fix12IiEj(
-            &mTextureSequence,
-            *(void **)((char *)&data_ov002_0210d9e8 + 4),
-            0x40000000, 0, 0);
+            &mTextureSequence, data_ov002_0210d9e8.filePtr, 0x40000000, 0, 0);
         mTextureSequence.currFrame =
             (int)((((unsigned int)(param1 & 0xf) % 10) << 16) >> 4);
     }

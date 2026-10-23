@@ -108,8 +108,6 @@
  *   likewise only written here; daJango_c reads it).
  *   mStateEntry stays an s32 because the member-pointer record is spelled by
  *   the file-local CapStateRec / CapEnterSelf stand-ins.
- *   The SharedFilePtr header has no fields; CleanupResources still casts the
- *   AnimRec tables.
  *   dBgCh_Gnd stays a 0x50 stack blob: its C1/D1 only run on the airborne
  *   path (UpdateMatrix).
  *   The carrier's matrix is dActor_c::mCarryMatrix; this file never sets it.
@@ -146,24 +144,13 @@ enum daObjMarioCap_c_AssetId {
  * Local shapes the merged members need.
  * ------------------------------------------------------------------------ */
 
-/* The animation descriptor pairs these tables hold: a header word and the
- * BCA file pointer read at +4. Spelled as a struct because three members
- * reach the second word by name and two more take the address of the whole
- * record. SharedFilePtr.h commits to no fields, so CleanupResources still
- * casts these to SharedFilePtr*. */
-struct AnimRec { void *f0; void *file; };
-
 /* The static initializer's own types. __sinit_ov002_02101064 constructs the 13
  * file handles with SharedFilePtr's constructor and registers each for
  * destruction through func_020731dc, then copies 18 pointer-to-member records
- * into the nine {enter, per-frame} state records. SharedFilePtr's layout is
- * not recovered, so a handle is a subclass carrying the two words, its
- * constructor/destructor the ROM's SharedFilePtr entry points (the manifest
- * aliases those symbols). */
+ * into the nine {enter, per-frame} state records. A handle is a SharedFilePtr
+ * subclass whose constructor/destructor are the ROM's SharedFilePtr entry
+ * points (the manifest aliases those symbols). */
 struct daObjMarioCapFileHandle : SharedFilePtr {
-    u32 f0;
-    void *file;
-
     daObjMarioCapFileHandle(u32 fileID);
     ~daObjMarioCapFileHandle();
 };
@@ -313,8 +300,8 @@ extern McapStatePmf data_ov002_0210957c, data_ov002_02109584;
 extern McapStatePmf data_ov002_0210958c, data_ov002_02109594;
 extern McapStatePmf data_ov002_0210959c, data_ov002_021095a4;
 
-extern struct AnimRec *data_ov002_020ff0a0[];
-extern struct AnimRec *data_ov002_020ff0b8[];
+extern SharedFilePtr *data_ov002_020ff0a0[];
+extern SharedFilePtr *data_ov002_020ff0b8[];
 extern int            *data_ov002_020ff0c4[];
 
 }
@@ -703,7 +690,7 @@ void daObjMarioCap_c::OnTurnIntoEgg(Player &player)
 {
     if (player.SetNoControlState(8, -1, 0) == 1) {
         player.SetNewHatCharacter(mModelIndex & 0xff, 1, 0);
-        _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(&mModelAnim, data_ov002_0210de30.file,
+        _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(&mModelAnim, data_ov002_0210de30.filePtr,
                                                     0x40000000, 0x1000, 0);
         mAnimStarted = 1;
     }
@@ -1200,7 +1187,8 @@ int daObjMarioCap_c::Taken() {
         if (mPlayer->SetNoControlState(0xf, -1, 0) == 1) {
             mPlayer->SetNewHatCharacter(mModelIndex & 0xff, 0, 0);
             func_02013a88();
-            _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(&mModelAnim, data_ov002_0210de38.file, 0x40000000, 0x1000, 0);
+            _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(&mModelAnim, data_ov002_0210de38.filePtr,
+                                                        0x40000000, 0x1000, 0);
             mTakenStep = 2;
         }
         break;
@@ -1217,7 +1205,8 @@ int daObjMarioCap_c::Taken() {
 
     if (mAnimStarted == 0) {
         if (mPlayer->Unk_020c9e5c(8) == 1) {
-            _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(&mModelAnim, data_ov002_0210de30.file, 0x40000000, 0x1000, 0);
+            _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(&mModelAnim, data_ov002_0210de30.filePtr,
+                                                        0x40000000, 0x1000, 0);
             mAnimStarted = 1;
         }
     }
@@ -1267,24 +1256,24 @@ int daObjMarioCap_c::InitAnim()
 
     switch (mType) {
     case 0xa:
-        _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(
-            &mModelAnim, data_ov002_0210de30.file, 0x40000000, 0x1000, 0);
+        _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(&mModelAnim, data_ov002_0210de30.filePtr,
+                                                    0x40000000, 0x1000, 0);
         break;
     case 0xf:
         _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(
-            &mModelAnim, data_ov002_020ff0a0[mModelIndex]->file, 0x40000000, 0x1000, 0);
+            &mModelAnim, data_ov002_020ff0a0[mModelIndex]->filePtr, 0x40000000, 0x1000, 0);
         break;
     case 0x14:
         _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(
-            &mModelAnim, data_ov002_020ff0b8[mModelIndex]->file, 0x40000000, 0x1000, 0);
+            &mModelAnim, data_ov002_020ff0b8[mModelIndex]->filePtr, 0x40000000, 0x1000, 0);
         break;
     case 0x15:
-        _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(
-            &mModelAnim, data_ov002_0210de58.file, 0x40000000, 0x1000, 0);
+        _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(&mModelAnim, data_ov002_0210de58.filePtr,
+                                                    0x40000000, 0x1000, 0);
         break;
     case 0x16:
-        _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(
-            &mModelAnim, data_ov002_0210de18.file, 0x40000000, 0x1000, 0);
+        _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(&mModelAnim, data_ov002_0210de18.filePtr,
+                                                    0x40000000, 0x1000, 0);
         break;
     }
 

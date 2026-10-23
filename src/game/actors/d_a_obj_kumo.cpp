@@ -44,11 +44,9 @@ enum d_a_obj_kumo_AssetId {
 
 /* Model-file handle. The derived constructor and destructor are the retail
  * SharedFilePtr pair (func_02017acc / func_02017ab4); this TU declares but
- * never defines them. The words[2] tail sizes the object to the 8 bytes the
- * cartridge keeps between 0x021118e4 and 0x021118ec. */
+ * never defines them. The cartridge keeps its 8 bytes between 0x021118e4 and
+ * 0x021118ec. */
 struct KumoModelFilePtr : SharedFilePtr {
-    u32 words[2];
-
     KumoModelFilePtr(u32 fileID);
     ~KumoModelFilePtr();
 };
