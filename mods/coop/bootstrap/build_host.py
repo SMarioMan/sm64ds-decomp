@@ -2,7 +2,7 @@
 """Experimental native SM64DS parent with a signed Download Station first stage.
 
 The original hook prototype remains a separate build. This variant appends its
-bootstrap assets into the four replaced VS archives; all story assets remain.
+bootstrap assets under new raw file IDs, preserving every native archive.
 """
 import argparse
 import hashlib
@@ -30,6 +30,10 @@ def main():
                         help='HaxxStation package containing demomenu and rom0000d; defaults to the boot probe')
     parser.add_argument('--output', type=Path,
                         help='Output ROM path; defaults to the experimental native host')
+    parser.add_argument('--clients', type=int, choices=(1,2,3), default=3,
+                        help='Number of Download Play clients to bootstrap before changing sessions')
+    parser.add_argument('--handoff', action='store_true',
+                        help='Return to the native game lobby after every payload finishes')
     args = parser.parse_args()
     root = ROOT/'build/coop/bootstrap'
     root.mkdir(parents=True, exist_ok=True)
@@ -46,13 +50,24 @@ def main():
     launcher = shlex.split(os.environ['MWCCARM_LAUNCHER'])
     game = symbols(ROOT/'config/arm9/symbols.txt')
     overlay_symbols = symbols(ROOT/'config/arm9/overlays/ov075/symbols.txt')
-    # Raw NitroFS file IDs of the four VS-only NARCs, now unused by story mode.
-    ids = [rom.filenames.idOf('ARCHIVE/vs'+str(i)+'.narc') for i in range(1,5)]
+    game.update(overlay_symbols)
+    # Bootstrap readers open raw NitroFS IDs, so no filename entries are needed.
+    # Keep the native archives: STAGE can request them even with story rules.
+    ids = list(range(len(rom.files),len(rom.files)+4))
+    old_fat,old_fat_size=struct.unpack_from('<II',original,0x48)
+    if old_fat_size!=len(rom.files)*8:
+        raise ValueError('Unexpected native FAT size')
+    # Fixed position across probe/handoff builds, irrespective of body size.
+    fat=(len(original)+511)&~511
+    fat_size=old_fat_size+len(ids)*8
+    filesystem_header=bytearray(original[0x40:0x60])
+    struct.pack_into('<II',filesystem_header,8,fat,fat_size)
     base = 0x02200000
     game['CoopOriginalMBTick'] = base+0x1800
     game['CoopOriginalMBReceive'] = base+0x1808
     boot_size = sum(struct.unpack_from('<I',signed,p)[0] for p in (0x2c,0x3c))+0x1e8
-    define = [f'COOP_SIGNED_BOOT_FILE={ids[1]}', f'COOP_SIGNED_BOOT_SIZE={boot_size}',
+    define = [f'COOP_EXPECTED_CLIENTS={args.clients}', f'COOP_GAME_HANDOFF={int(args.handoff)}',
+              f'COOP_SIGNED_BOOT_FILE={ids[1]}', f'COOP_SIGNED_BOOT_SIZE={boot_size}',
               f'COOP_MENU_FILE={ids[2]}', f'COOP_MENU_SIZE={len(menu)}',
               f'COOP_PAYLOAD_FILE={ids[3]}', f'COOP_PAYLOAD_SIZE={len(probe)}']
     body, exports = link(ROOT/'mods/coop/bootstrap/host.cpp', root/'host', base, game, launcher, cc, ld, define)
@@ -74,19 +89,19 @@ def main():
     fixups.extend([0x80000000 | (len(body)-12),0x80000000 | (len(body)-4)])
     blob = pack(base,body,exports['CoopBootstrapInit'],sorted(fixups))
     (root/'host-relocatable.bin').write_bytes(blob)
-    old_report = json.loads((ROOT/'build/coop/build.json').read_text())
-    cave = next(p for p in old_report['patches'] if 'installerBytes' in p)
-    loader_address = CAVE_START+((cave['installerBytes']+3)&~3)+cave['runtimeBytes']
+    # This variant offers the station's signed SRL, so the parent's unused
+    # secure-area padding need not retain the stock SM64DS boot signature.
+    # ENTRY uses this loader only before the resident story runtime installs.
+    # Keep 0x02004100 free for the downloaded client's pre-crt0 descriptor stub.
+    loader_address = 0x02004200
     trampoline = CAVE_END-8
     game['CoopOriginalEntryInit'] = trampoline
     loader, _ = link(ROOT/'mods/coop/bootstrap/heap_loader.cpp',root/'heap-loader',loader_address,
                      game,launcher,cc,ld,[f'COOP_BOOTSTRAP_FILE={ids[0]}'])
-    if loader_address+len(loader)>trampoline:
-        raise ValueError(f'Heap loader exceeds cave: {len(loader)} bytes, {trampoline-loader_address} available')
+    if loader_address+len(loader)>0x02004800:
+        raise ValueError('Heap loader exceeds the pre-crt0 padding')
     overlay = rom.loadArm9Overlays()[75]
     data = bytearray(overlay.data)
-    off = loader_address-overlay.ramAddress
-    data[off:off+len(loader)] = loader
     entry = overlay_symbols['_ZN10dScEntry_c13InitResourcesEv']
     first = data[entry-overlay.ramAddress:entry-overlay.ramAddress+4]
     if first != bytes.fromhex('30402de9'):
@@ -100,8 +115,24 @@ def main():
             replacement=pad_blz(compressed,len(rom.files[overlay.fileID]),bytes(data));break
     if replacement is None:
         raise ValueError('Modified overlay cannot fit fixed extent')
+    if args.handoff:
+        client_report=json.loads((root/'game-client.json').read_text())
+        if hashlib.sha256(package_path.read_bytes()).hexdigest()!=client_report['packageSha256']:
+            raise ValueError('Handoff requires the verified game-client package')
+        if hashlib.sha256(replacement).hexdigest()!=client_report['hostOverlay75Sha256']:
+            raise ValueError('Parent overlay 75 differs from the client authentication table')
+        if client_report['wirelessFilesystemHeader']!=filesystem_header.hex():
+            raise ValueError('Client wireless filesystem extents differ from the parent header')
     output = bytearray(original)
-    fat = struct.unpack_from('<I',output,0x48)[0]
+    output+=b'\xff'*(fat-len(output))
+    output+=original[old_fat:old_fat+old_fat_size]+bytes(len(ids)*8)
+    struct.pack_into('<II',output,0x48,fat,fat_size)
+    arm9_offset=struct.unpack_from('<I',original,0x20)[0]
+    loader_offset=loader_address-rom.arm9RamAddress
+    if ndspy.codeCompression.decompress(rom.arm9)[loader_offset:loader_offset+len(loader)]!=rom.arm9[loader_offset:loader_offset+len(loader)]:
+        raise ValueError('Parent loader storage is not in the uncompressed ARM9 prefix')
+    output[arm9_offset+loader_offset:arm9_offset+loader_offset+len(loader)]=loader
+    struct.pack_into('<H',output,0x6c,_common.crc16(output[arm9_offset:arm9_offset+0x4000]))
     start,end = struct.unpack_from('<II',output,fat+overlay.fileID*8)
     output[start:end]=replacement
     assets = [blob,signed,menu,probe]
@@ -116,11 +147,20 @@ def main():
     struct.pack_into('<I',output,0x80,used)
     struct.pack_into('<H',output,0x15e,_common.crc16(output[:0x15e]))
     output+=b'\xff'*(capacity-len(output))
+    checked=ndspy.rom.NintendoDSRom(output)
+    changed_native=[i for i,data in enumerate(rom.files) if checked.files[i]!=data]
+    if changed_native!=[overlay.fileID] or len(checked.files)!=len(rom.files)+len(ids):
+        raise ValueError('Unexpected native file changes: '+str(changed_native))
+    if output[0x40:0x60]!=filesystem_header:
+        raise ValueError('Unexpected wireless filesystem extents')
     result=args.output or root/'sm64ds-haxxstation-host-experimental.nds'
     result.write_bytes(output)
     report={'purpose':'Signed Download Station first stage inside the SM64DS parent; second-stage service in progress',
             'output':str(result),'sha256':hashlib.sha256(output).hexdigest(),
             'package':str(package_path),
+            'clients':args.clients,'nativeGameHandoff':args.handoff,
+            'originalFileCount':len(rom.files),'preservedNativeArchives':True,
+            'wirelessFilesystemHeader':filesystem_header.hex(),
             'files':dict(zip(('bootstrap','signedClient','menu','unsignedPayload'),ids)),
             'loaderAddress':hex(loader_address),'loaderBytes':len(loader),'bodyBytes':len(body),'fixups':len(fixups),
             'bodyLinkBase':hex(base),'bootstrapEntryOffset':exports['CoopBootstrapInit']-base,

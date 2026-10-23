@@ -14,7 +14,7 @@ import time
 
 class Remote:
     def __init__(self, port):
-        deadline=time.monotonic()+60
+        deadline=time.monotonic()+300
         while True:
             try:
                 self.socket=socket.create_connection(('127.0.0.1',port),timeout=2)

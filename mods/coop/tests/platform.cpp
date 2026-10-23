@@ -12,11 +12,24 @@
 #include <dlfcn.h>
 #include <unistd.h>
 #include <cstdlib>
+#include <stdexcept>
 
 namespace melonDS::Platform {
 static FILE* fp(FileHandle* p) { return reinterpret_cast<FILE*>(p); }
 static int instance(void* p) { return int(reinterpret_cast<uintptr_t>(p)); }
-static LocalMP& bus() { static LocalMP b; return b; }
+static LocalMP& bus() {
+    static LocalMP b;
+    static const bool configured=[] {
+        if(const char* value=std::getenv("COOP_MP_TIMEOUT_MS")) {
+            const int timeout=std::stoi(value);
+            if(timeout<1 || timeout>10000)throw std::runtime_error("Invalid COOP_MP_TIMEOUT_MS");
+            b.SetRecvTimeout(timeout);
+        }
+        return true;
+    }();
+    (void)configured;
+    return b;
+}
 void SignalStop(StopReason r, void* p) { fprintf(stderr,"STOP instance=%d reason=%d\n",instance(p),r); }
 std::string GetLocalFilePath(const std::string& p) { return p; }
 FileHandle* OpenFile(const std::string& p,FileMode m) {
@@ -50,7 +63,16 @@ struct Semaphore { std::mutex m;std::condition_variable cv;int n=0; };
 Semaphore* Semaphore_Create() { return new Semaphore; }
 void Semaphore_Free(Semaphore* s) { delete s; }
 void Semaphore_Reset(Semaphore* s) { std::lock_guard<std::mutex> l(s->m);s->n=0; }
-bool Semaphore_TryWait(Semaphore* s,int ms) { std::unique_lock<std::mutex> l(s->m);if(!s->cv.wait_for(l,std::chrono::milliseconds(ms),[s]{return s->n>0;}))return false;--s->n;return true; }
+bool Semaphore_TryWait(Semaphore* s,int ms) {
+    std::unique_lock<std::mutex> l(s->m);
+    // LocalMP polls regular packets with zero timeout. Match a semaphore's
+    // nonblocking try operation instead of entering a timed condition wait.
+    if(ms==0) {
+        if(s->n==0)return false;
+    } else if(!s->cv.wait_for(l,std::chrono::milliseconds(ms),[s]{return s->n>0;}))return false;
+    --s->n;
+    return true;
+}
 void Semaphore_Wait(Semaphore* s) { std::unique_lock<std::mutex> l(s->m);s->cv.wait(l,[s]{return s->n>0;});--s->n; }
 void Semaphore_Post(Semaphore* s,int n) { std::lock_guard<std::mutex> l(s->m);s->n+=n;s->cv.notify_all(); }
 struct Mutex { std::mutex m; };

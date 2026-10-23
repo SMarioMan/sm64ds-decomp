@@ -20,14 +20,14 @@ int CoopHeapBootstrap(void *scene) {
     FS_InitFile(file);
     if (!func_020185c0(file, COOP_BOOTSTRAP_FILE) || FS_ReadFile(file, header, 24) != 24 || header[0] != 0x31584248)
         return 0;
-    u32 *body = (u32 *)_ZN6Memory8AllocateEji(header[2], 32);
-    if (FS_ReadFile(file, body, header[2]) != (int)header[2])
+    u32 storedSize=header[2]+header[4]*4;
+    u32 *body = (u32 *)_ZN6Memory8AllocateEji(storedSize, 32);
+    if (FS_ReadFile(file, body, storedSize) != (int)storedSize)
         return 0;
+    u32 *records=(u32 *)((u8 *)body+header[2]);
     s32 delta = (u32)body - header[1];
     for (unsigned i = 0; i < header[4]; ++i) {
-        u32 record;
-        if (FS_ReadFile(file, &record, 4) != 4)
-            return 0;
+        u32 record=records[i];
         u32 *word = (u32 *)((u8 *)body + (record & 0x7fffffff));
         if (record & 0x80000000)
             *word = (*word & 0xff000000) | ((*word - (delta >> 2)) & 0x00ffffff);

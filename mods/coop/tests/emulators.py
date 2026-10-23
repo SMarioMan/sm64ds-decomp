@@ -33,6 +33,7 @@ class Emulators:
 
     def command(self, text):
         self.log.write('> '+text+'\n')
+        self.log.flush()
         self.process.stdin.write(text+'\n')
         self.process.stdin.flush()
         result=[]
@@ -48,7 +49,15 @@ class Emulators:
             result.append(line)
 
     def run(self, frames):
-        return self.command(f'run {frames}')
+        result=[]
+        # Several interpreter cores can take more than a minute for a large
+        # frame batch. Keep acknowledgements flowing without changing timeouts
+        # or the actual number of emulated frames requested.
+        while frames:
+            batch=min(frames,60)
+            result.extend(self.command(f'run {batch}'))
+            frames-=batch
+        return result
 
     def touch(self, index, x, y):
         self.command(f'touch {index} {x} {y}')

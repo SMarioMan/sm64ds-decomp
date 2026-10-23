@@ -50,7 +50,8 @@ int main(int argc,char** argv) try {
     const char* configured = std::getenv("COOP_INPUT_DIR");
     const std::string inputs = configured ? configured : "/workspace/inputs";
     std::vector<std::unique_ptr<NDS>> consoles;
-    std::vector<unsigned long> frames;
+    std::vector<std::atomic<unsigned long>> frames(argc-1);
+    std::vector<std::atomic<bool>> running(argc-1);
     for(int i=1;i<argc;i++) {
         NDSArgs a;
         bios(*a.ARM9BIOS,inputs + "/bios9.bin");
@@ -78,16 +79,26 @@ int main(int argc,char** argv) try {
         ds->RTC.SetDateTime(2026,10,21,12,0,0);
         if(std::string(argv[i])!="-")ds->SetupDirectBoot(argv[i]);
         ds->Start();
-        consoles.push_back(std::move(ds));frames.push_back(0);
+        consoles.push_back(std::move(ds));running[i-1]=true;
     }
     std::vector<std::mutex> locks(consoles.size());
     LiveWorkers live;
     const bool realtime=std::getenv("COOP_LIVE")!=nullptr;
+    unsigned frameMicros=16667;
+    if(const char* pace=std::getenv("COOP_FRAME_US")) {
+        frameMicros=std::stoul(pace);
+        if(frameMicros<1000 || frameMicros>1000000)
+            throw std::runtime_error("COOP_FRAME_US must be between 1000 and 1000000");
+    }
     if(realtime)for(size_t i=0;i<consoles.size();i++)live.threads.emplace_back([&,i]{
         auto next=std::chrono::steady_clock::now();
         while(!live.stop) {
-            { std::lock_guard lock(locks[i]);if(consoles[i]->IsRunning()){consoles[i]->RunFrame();++frames[i];} }
-            next+=std::chrono::microseconds(16667);
+            {
+                std::lock_guard lock(locks[i]);
+                if(consoles[i]->IsRunning()){consoles[i]->RunFrame();++frames[i];}
+                running[i]=consoles[i]->IsRunning();
+            }
+            next+=std::chrono::microseconds(frameMicros);
             const auto now=std::chrono::steady_clock::now();
             if(now-next>std::chrono::milliseconds(250))next=now;
             // A wireless RunFrame can exceed its deadline. Give command
@@ -104,9 +115,33 @@ int main(int argc,char** argv) try {
             unsigned n;if(!(s>>n)||n>36000)throw std::runtime_error("Bad frame count");
             if(realtime) {
                 std::vector<unsigned long> targets;
-                for(size_t i=0;i<consoles.size();i++){std::lock_guard lock(locks[i]);targets.push_back(frames[i]+n);}
+                for(size_t i=0;i<consoles.size();i++)targets.push_back(frames[i].load()+n);
+                auto lastReport=std::chrono::steady_clock::now();
+                std::vector<unsigned long> previous(consoles.size());
+                std::vector<std::chrono::steady_clock::time_point> changed(consoles.size(),lastReport);
                 bool complete=false;
-                while(!complete){complete=true;for(size_t i=0;i<consoles.size();i++){std::lock_guard lock(locks[i]);if(consoles[i]->IsRunning()&&frames[i]<targets[i])complete=false;}std::this_thread::sleep_for(std::chrono::milliseconds(10));}
+                while(!complete) {
+                    complete=true;
+                    const auto now=std::chrono::steady_clock::now();
+                    for(size_t i=0;i<consoles.size();i++) {
+                        const auto frame=frames[i].load();
+                        if(frame!=previous[i]){previous[i]=frame;changed[i]=now;}
+                        if(running[i] && frame<targets[i]) {
+                            complete=false;
+                            if(now-changed[i]>std::chrono::seconds(60)) {
+                                std::cerr<<"Frame stalled on console "<<i<<" at "<<frame<<std::endl;
+                                throw std::runtime_error("A console made no frame progress for 60 seconds");
+                            }
+                        }
+                    }
+                    if(now-lastReport>std::chrono::seconds(5)) {
+                        std::cout<<"progress run "<<n;
+                        for(size_t i=0;i<consoles.size();i++)std::cout<<" console="<<i<<":"<<frames[i].load()<<"/"<<targets[i];
+                        std::cout<<std::endl;
+                        lastReport=now;
+                    }
+                    std::this_thread::sleep_for(std::chrono::milliseconds(10));
+                }
             } else {
             std::vector<std::thread> workers;
             std::barrier gate(static_cast<std::ptrdiff_t>(consoles.size()));
@@ -139,8 +174,24 @@ int main(int argc,char** argv) try {
                     std::cout<<std::hex<<address<<":"<<value<<" ";
                 }
                 std::cout<<std::dec<<"\n";
+                u32 subsp=ds.ARM7.R[13];
+                if(subsp>=0x02000000 && subsp+256<0x04000000) {
+                    for(unsigned word=0;word<64;word++) {
+                        u32 address=subsp+word*4;
+                        std::cout<<std::hex<<address<<":"<<ds.ARM7Read32(address)<<" ";
+                    }
+                    std::cout<<std::dec<<"\n";
+                }
             }
             else if(cmd=="dump") { std::string path;s>>path;std::ofstream out(path,std::ios::binary);out.write(reinterpret_cast<char*>(ds.MainRAM),0x400000); }
+            else if(cmd=="dumptcm") {
+                std::string path;s>>path;std::ofstream out(path,std::ios::binary);
+                out.write(reinterpret_cast<char*>(ds.ARM9.DTCM),0x4000);
+            }
+            else if(cmd=="dump7") {
+                std::string path;s>>path;std::ofstream out(path,std::ios::binary);
+                for(u32 address=0x037f8000;address<0x03810000;++address)out.put(ds.ARM7Read8(address));
+            }
             else if(cmd=="savesram") { std::string path;s>>path;std::ofstream out(path,std::ios::binary);out.write(reinterpret_cast<const char*>(ds.GetNDSSave()),ds.GetNDSSaveLength()); }
             else if(cmd=="loadsram") { std::string path;s>>path;auto b=readfile(path);ds.SetNDSSave(b.data(),b.size()); }
             else throw std::runtime_error("Unknown command: "+cmd);

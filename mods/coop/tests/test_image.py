@@ -1,6 +1,7 @@
 """Independent structural checks of the generated, local-only co-op cartridge."""
 import hashlib
 import io
+import json
 import os
 from pathlib import Path
 import struct
@@ -32,19 +33,32 @@ class ImageTests(unittest.TestCase):
         cls.stock = ndspy.rom.NintendoDSRom(cls.original)
         cls.mod = ndspy.rom.NintendoDSRom(cls.modified)
         cls.overlay = cls.mod.loadArm9Overlays()[75]
+        cls.report = json.loads((BUILD/'build.json').read_text())
+        cls.module = cls.mod.files[cls.report['runtimeModule']['fileID']]
+        cls.header = struct.unpack_from('<6I',cls.module)
+        cls.module_base = cls.header[1]
+        cls.body = cls.module[24:24+cls.header[2]]
+        cls.records = struct.unpack_from('<'+'I'*cls.header[4],cls.module,24+cls.header[2])
 
-    def test_fixed_layout_and_unchanged_boot_images(self):
-        self.assertEqual(len(self.original), len(self.modified))
-        self.assertEqual(self.original[:0x4000], self.modified[:0x4000])
-        self.assertEqual(self.stock.arm9, self.mod.arm9)
-        self.assertEqual(self.stock.arm7, self.mod.arm7)
-        self.assertEqual(self.stock.arm9OverlayTable, self.mod.arm9OverlayTable)
-        changed_files = [i for i, (a, b) in enumerate(zip(self.stock.files, self.mod.files)) if a != b]
-        self.assertEqual(changed_files, [self.overlay.fileID])
-        fat = struct.unpack_from('<I', self.original, 0x48)[0]
-        low, high = struct.unpack_from('<II', self.original, fat + self.overlay.fileID * 8)
-        self.assertEqual(self.original[:low], self.modified[:low])
-        self.assertEqual(self.original[high:], self.modified[high:])
+    def test_native_files_and_unchanged_boot_images(self):
+        self.assertEqual(self.stock.arm9,self.mod.arm9)
+        self.assertEqual(self.stock.arm7,self.mod.arm7)
+        self.assertEqual(self.stock.arm9OverlayTable,self.mod.arm9OverlayTable)
+        self.assertEqual(self.stock.arm7OverlayTable,self.mod.arm7OverlayTable)
+        self.assertEqual(len(self.mod.files),len(self.stock.files)+1)
+        changed=[i for i,data in enumerate(self.stock.files) if self.mod.files[i]!=data]
+        self.assertEqual(changed,[self.overlay.fileID])
+        old_fat=struct.unpack_from('<I',self.original,0x48)[0]
+        new_fat=struct.unpack_from('<I',self.modified,0x48)[0]
+        self.assertEqual(self.original[old_fat:old_fat+len(self.stock.files)*8],
+                         self.modified[new_fat:new_fat+len(self.stock.files)*8])
+        low,high=struct.unpack_from('<II',self.original,old_fat+self.overlay.fileID*8)
+        self.assertEqual(self.original[0x4000:low],self.modified[0x4000:low])
+        self.assertEqual(self.original[high:],self.modified[high:len(self.original)])
+        allowed={0x14,*range(0x48,0x50),*range(0x80,0x84),0x15e,0x15f}
+        self.assertTrue(all(i in allowed for i,(a,b) in enumerate(zip(self.original[:0x4000],self.modified[:0x4000])) if a!=b))
+        self.assertEqual(self.header[0],0x31584248)
+        self.assertEqual(hashlib.sha256(self.module).hexdigest(),self.report['runtimeModule']['sha256'])
 
     def test_decoded_changes_are_confined(self):
         stock = self.stock.loadArm9Overlays()[75]
@@ -70,23 +84,24 @@ class ImageTests(unittest.TestCase):
                          stock.data[0x0211A410-base:0x0211A414-base])
         # The compiled runtime's zeroed session flag must be embedded as data;
         # leaving arbitrary secure-area bytes there would disable normal saves.
-        payload_address = ins['CoopPayload']
-        flag = payload_address + rs['coopEnabled'] - 0x02004100
-        self.assertEqual(data[flag - base:flag - base + 4], bytes(4))
+        flag=rs['coopEnabled']-self.module_base
+        self.assertEqual(self.body[flag:flag+4],bytes(4))
+        self.assertEqual(self.header[3],rs['CoopRuntimeDispatch']-self.module_base)
 
     def test_runtime_trampolines_preserve_original_prologues(self):
         elf = ELFFile(io.BytesIO((BUILD / 'runtime.elf').read_bytes()))
         symbols = {s.name: s['st_value'] for s in elf.get_section_by_name('.symtab').iter_symbols()}
-        installer = ELFFile(io.BytesIO((BUILD / 'install.elf').read_bytes()))
-        payload = next(s['st_value'] for s in installer.get_section_by_name('.symtab').iter_symbols()
-                       if s.name == 'CoopPayload')
-        data, base = self.overlay.data, self.overlay.ramAddress
         for name, original_address, prologue in [
             ('CoopOriginalLoadLevelOverlays', 0x0202DED4, bytes.fromhex('30402de9')),
-            ('CoopOriginalEntryCleanup', 0x0211A210, bytes.fromhex('00402de9'))]:
-            offset = payload - base + symbols[name] - 0x02004100
-            self.assertEqual(data[offset:offset+4], prologue)
-            self.assertEqual(destination(data, offset+4, symbols[name]+4), original_address+4)
+            ('CoopOriginalEntryCleanup', 0x0211A210, bytes.fromhex('00402de9')),
+            ('CoopOriginalStageInit',0x0202CC0C,bytes.fromhex('f04f2de9')),
+            ('CoopOriginalSceneBefore',0x0202E3D4,bytes.fromhex('10402de9')),
+            ('CoopOriginalActorBefore',0x02010FD4,bytes.fromhex('10402de9'))]:
+            offset=symbols[name]-self.module_base
+            self.assertEqual(self.body[offset:offset+4],prologue)
+            self.assertEqual(destination(self.body,offset+4,symbols[name]+4),original_address+4)
+            self.assertIn(0x80000000 | (offset+4),self.records)
+        self.assertTrue(all((r&0x7fffffff)%4==0 and (r&0x7fffffff)<=len(self.body)-4 for r in self.records))
 
     def test_control_is_retail(self):
         control = (BUILD / 'baseline.nds').read_bytes()
