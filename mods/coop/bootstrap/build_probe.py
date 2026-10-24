@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Build a HaxxStation-only unsigned SM64DS boot probe (no gameplay claim)."""
 import hashlib
+import argparse
 import json
 from pathlib import Path
 import struct
@@ -16,6 +17,9 @@ from build import branch
 
 
 def main():
+    parser=argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--station',type=Path,default=Path('/workspace/inputs/download-station.nds'))
+    args=parser.parse_args()
     root = ROOT / 'build/coop/bootstrap'
     root.mkdir(parents=True, exist_ok=True)
     source = ROOT / 'build/coop/sm64ds-coop-experimental.nds'
@@ -43,10 +47,10 @@ def main():
     probe = root / 'boot-probe.nds'
     rom.saveToFile(probe)
     output = root / 'haxxstation-boot-probe.nds'
-    subprocess.run(['dspatch', '-s', '/workspace/inputs/download-station.nds',
+    subprocess.run(['dspatch', '-s', str(args.station),
                     '-i', str(probe), '-o', str(output)], check=True)
     checked = ndspy.rom.NintendoDSRom(output.read_bytes())
-    original = ndspy.rom.NintendoDSRom.fromFile('/workspace/inputs/download-station.nds')
+    original = ndspy.rom.NintendoDSRom.fromFile(args.station)
     for name in ('mb/ds_demo_client.srl', 'mb/ds_demo_client.sgn'):
         assert checked.files[checked.filenames.idOf(name)] == original.files[original.filenames.idOf(name)]
     report = {'purpose': 'Unsigned ARM9 execution through real HaxxStation, not gameplay',

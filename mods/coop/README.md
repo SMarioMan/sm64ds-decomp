@@ -1,16 +1,72 @@
 # Experimental four-player co-op
 
-Four-player castle-grounds gameplay through DS Download Play has passed with
-one cartridge parent and three firmware-only melonDS clients. Each console
+Four-player castle-grounds, castle-interior, and Bob-omb Battlefield controller
+checks through DS Download Play have passed with one cartridge parent and
+three firmware-only melonDS clients. Each console
 controls a distinct player, positions synchronize across the party, and shared
 pause/resume follows the host. This is still an unfinished campaign mod:
-persistent host saves, campaign transitions, stars/keys, cutscenes, deaths,
+persistent wireless host saves, campaign transitions, stars/keys, cutscenes, deaths,
 disconnects and completion need implementation or broader acceptance.
+
+The latest bootstrap separates the native MB message buffer from the SDK's
+MP assembly workspace. The retail single-port implementation aliases them;
+adding NI packets could overwrite an MB command with a menu chunk number.
+With separate aligned storage, all **five repeated four-console signed-menu
+cold starts passed** at `/workspace/runtime/separate-mp-work-repeats/result.json`
+(ROM `a83287a9d8e222da930f35a6e2fafeed5b0325590c8c6e0dd449e4d345ab95f9`).
+They used unmodified melonDS 1.1, standard JIT, the default 25 ms receive
+timeout and no frame-lead cap. These are menu checks, not five campaign passes.
+Full payload/story repetitions passed two of three starts; the third failed
+before signed-menu selection. A subsequent opt-in
+`--restart-station-parent` experiment recreates the native parent after all
+firmware associations depart and preserves its TGID. That candidate also
+passed five menu cold starts at
+`/workspace/runtime/recreated-station-repeats/result.json`; its full campaign
+acceptance is still in progress. Neither repeat depends on selecting menus
+within a particular time window.
+
+Wireless host saving has persisted a controller-earned castle key without
+changing the other adventure slots. Save-and-quit exposed an overwritten
+VS heap and a guest menu-loading stall. The runtime now retires that heap
+before story overlays load. A later capture identified cartridge-lock
+contention between backup reads and a WFS interrupt while returning to TITLE.
+The current candidate acknowledges every peer's completed transition reads,
+shuts wireless sharing down, then opens the host's normal file menu. Guests
+show the resident retail communication-ended screen. This avoids concurrent
+backup access and downloaded menu reads. Four-console fresh key collection,
+host persistence and orderly quit pass at
+`/workspace/runtime/ordered-quit-new-progress/result.json`. Local initialized
+TITLE and fresh-launch reload pass at
+`/workspace/runtime/ordered-quit-local-save/result.json`. Host saves remain an
+explicit experimental option while campaign and repeated-save checks continue.
 
 The runtime loads into a persistent ROOT allocation to make room for those
 policies. This layout passes four-console story entry, independent movement
 and shared pause/resume in `/workspace/runtime/short-handoff-game/result.json`.
-Further interaction changes are under wireless regression testing. Earlier
+`/workspace/runtime/first-course-route1/result.json` additionally records passing
+shared key collection, castle entry, and independent interior controls. That
+run failed its later route to the painting; it is not a complete acceptance pass.
+The shared-reader candidate at `/workspace/runtime/beacon203-course-return/result.json`
+passed first-course entry and all four controllers, then failed its stronger
+paused-enemy checkpoint: two Goombas' stuck counters depended on local camera
+visibility. The follow-up preserves local clip flags for rendering while
+presenting consistent visibility during actor behavior. Its four-console
+replay passed the complete tested route, including all 15 Goombas and a return
+to active castle gameplay with all controllers, at
+`/workspace/runtime/shared-visibility-course-return/result.json`.
+The cache-corrected image also passed that route independently at
+`/workspace/runtime/shared-visibility-cache-course-return/result.json`:
+`61fdd6a4603702267a8c1eafd0456e041d51f85daeb3c047c22452605eeff071`.
+It flushes and invalidates each installed branch individually, including the
+shared SDK reader outside the old scene/actor cache range. Its local replay
+also passed at `/workspace/runtime/local-shared-visibility-cache/result.json`.
+In that checkpoint, all 15 Goombas' positions, angles and states agreed; two
+had different `mStuckTimer` values. Native Goomba behavior increments that
+counter only when camera clip bit 8 is clear, eventually using it to hop or
+respawn. The runtime now saves each actor's local visibility bits, clears
+them for its behavior, then restores them before rendering. Existing native
+NET behavior still determines which actors update.
+Earlier
 passing evidence is in `/workspace/runtime/frame-progress-game/` and
 `/workspace/runtime/appended-files-timeout100/`. Direct stock Download Play
 still rejects the modified overlay; the integrated HaxxStation path is required.
@@ -19,7 +75,46 @@ Only the supplied **Europe revision 0** cartridge is supported:
 `ce5829aaa79f06c67140ed1f45cbca738b0a9d0180538c8c1498472d859db032`.
 Other region/revision ROMs are deliberately rejected.
 
+The standard multiplayer Yoshi palettes (green, red, blue, yellow) passed a
+four-console check at `/workspace/runtime/native-colors-delayed-mp1/yoshi-colors.json`.
+That run also launched all three Download Play clients with menu selections
+delayed by 0, 10 and 30 seconds. It subsequently exposed a dialogue desync:
+the host left the castle-key conversation while guests retained NoControl.
+The current candidate wraps `Message::Update` itself with host input, including
+calls outside scene behavior. `/workspace/runtime/native-clock-jit-default/result.json`
+passed the key conversation, regained control on every console, and entered the
+castle with four controllers and the original Yoshi palettes. It used unmodified
+melonDS 1.1 with its standard JIT and 25 ms LocalMP timeout. Menu selections
+were delayed by 30, 0 and 10 seconds. Its later castle-route failure was also
+reproduced locally; the controller bot now aims through the center of the door
+and shortens its final D-pad bursts. The corrected local route passes at
+`/workspace/runtime/centered-castle-route/result.json`.
+The identical multiplayer ROM failed a cold-start repeat at signed-loader
+discovery: `/workspace/runtime/native-clock-jit-repeat/result.json`. Neither
+that dialogue pass nor the local route proves reliable startup or a completed
+campaign.
+
 ## Build and inspect
+
+The integrated build takes the personal EU revision-0 game and USA Download
+Station Volume 1 dumps and creates the host cartridge plus its matching
+Download Play payload in one command. It uses host adventure file A by default;
+choose `--save-slot B` or `--save-slot C` for another file. The mod remains under
+campaign acceptance testing.
+
+```bash
+source /workspace/setup/activate.sh
+python mods/coop/build_download_play.py /workspace/inputs/sm64ds-eu.nds \
+  --station /workspace/inputs/download-station.nds --save-slot A
+```
+
+The output is `build/coop/bootstrap/sm64ds-haxxstation-game-handoff.nds`.
+Its adjacent JSON records input hashes, client overlay authentication and
+wireless parameters. The completed pipeline reproduces the current regression
+cartridge SHA256
+`0e78e2b0bf80e29a02d8f904b45b44955ec65f57cbf6a4dd44a1a80b20437c64`.
+The lower-level commands below are useful for individual diagnostics; the
+base `build.py` image by itself does not supply the HaxxStation handoff.
 
 ```bash
 cd /workspace/sm64ds-decomp
@@ -27,6 +122,7 @@ source /workspace/setup/activate.sh
 python mods/coop/build.py /workspace/inputs/sm64ds-eu.nds --baseline
 python mods/coop/build.py /workspace/inputs/sm64ds-eu.nds
 python mods/coop/tests/test_image.py
+python mods/coop/tests/test_relocatable.py
 bash mods/coop/tests/build_harness.sh
 bash mods/coop/tests/local_story.sh
 python mods/coop/tests/local_campaign.py --output /workspace/runtime/local-campaign
@@ -41,9 +137,10 @@ Do not distribute the ROMs, BIOS, firmware, extracted assets, or compiler files.
 The builder verifies the input ROM and both proprietary toolchain executables.
 It preserves ARM9, ARM7, overlay tables, native file extents and all native files
 except the explicit overlay-75 hook ranges. A relocated FAT exposes one appended
-runtime module; capacity, used-size and header CRC are updated. Five structural
-tests check those limits, hook destinations, zeroed module state and all five
-original-instruction trampolines. Gameplay is checked separately in melonDS.
+runtime module; capacity, used-size and header CRC are updated. Six structural
+tests check those limits, hook destinations, zeroed module state, the original
+original-instruction trampolines and the camera-read wrapper's register
+preservation. Gameplay is checked separately in melonDS.
 
 ## Why native Download Play currently fails
 
@@ -131,15 +228,17 @@ stripping the files that the parent will eventually serve:
 python mods/coop/bootstrap/build_client.py
 python mods/coop/bootstrap/build_host.py \
   --package build/coop/bootstrap/haxxstation-game-client.nds \
-  --clients 3 --handoff \
+  --clients 3 --handoff --channel 1 --beacon-period 100 \
   --output build/coop/bootstrap/sm64ds-haxxstation-game-handoff.nds
-python mods/coop/bootstrap/smoke.py --parent native --story --clients 3 \
+COOP_MAX_FRAME_LEAD=0 python mods/coop/bootstrap/smoke.py \
+  --parent native --story --shared-menus --course-return --clients 3 --menu-frames 7200 \
   --image build/coop/bootstrap/sm64ds-haxxstation-game-handoff.nds \
   --output /workspace/runtime/native-story-acceptance
-# Add --shared-menus --castle-entry to exercise dialogue, key and door flow.
+# Omit --course-return for the shorter grounds/pause check.
 ```
 
-This image is a handoff experiment, not a playable wireless release. Its files
+These are the experimental parameters used for the extended route. Signed
+loader discovery still fails on some boots. This image's files
 must come from the matching parent; a successful hash audit does not prove
 that the native filesystem session has connected. `game-client.json` records
 the parent hash, changed overlay hashes, package hash and audit result. The
@@ -166,10 +265,14 @@ from successful execution.
 The harness uses the unmodified melonDS 1.1 core at commit
 `b86390e4428bf38ce4c1ce0e9ca446d6d25955e8` and its real `LocalMP` packet,
 command, reply and acknowledgement transport. It uses software rendering,
-interpreter execution, supplied native BIOS/firmware, distinct MACs and RAM-only
-save/firmware writes. It does not simulate a client connection or replace the
+interpreter execution, supplied native BIOS/firmware and distinct MACs.
+Cartridge saves stay in RAM unless a test explicitly sets `COOP_SAVE_DIR` to a
+private backup directory; firmware writes are disabled. It does not simulate a client connection or replace the
 wireless protocol. The linked core is GPL-3.0-or-later; upstream source and
 license are retained in `/workspace/references/melonds`.
+The command driver is a custom headless frontend. These results do not yet
+establish equivalent reliability in the standard desktop application or on
+physical DS systems; the ROM does not contain an emulator-specific protocol.
 
 ```bash
 source /workspace/setup/activate.sh
@@ -223,7 +326,7 @@ experimental ROM SHA-256 is recorded by each build in `build/coop/build.json`.
 | Check | Observed result |
 | --- | --- |
 | Existing profile/pin/fingerprint tests | 40 passed |
-| New image-integrity/trampoline tests | 5 passed |
+| New image-integrity/trampoline tests | 6 passed |
 | Local story entry and movement | Passed, **one console** |
 | Retail native Download Play stage | Passed, four consoles |
 | Modified native Download Play stage | **Failed**, three clients in fatal loop |
@@ -260,8 +363,234 @@ four-console entry, independent movement and pause/resume at
 capture reached the castle-key flag on all four consoles, but a subsequent
 position comparison failed: the host's Yoshi differed from the three guests by
 about 29 world units. That is a failed synchronization check, not campaign
-acceptance. The current follow-up isolates actor random draws using the shared
-NET frame and stage-relative actor identity; wireless validation is pending.
+acceptance. A follow-up isolates actor random draws using the shared NET frame
+and stage-relative actor identity. An earlier checkpoint then reproduced
+position divergence after Lakitu, before rabbit pursuit, at
+`/workspace/runtime/actor-random-game/`. The native talk state waits for its
+local camera's transition to complete; the current follow-up broadcasts the
+host's completion bit in unused NET user byte 5 and replaces the two player
+talk/event reads with that echoed status. Local movement and six structural
+checks pass. Four-console locked-door/Lakitu interaction and castle-key
+collection now pass at `/workspace/runtime/shared-camera-game/` and
+`/workspace/runtime/end-mp-game/`. Those runs did not pass interior acceptance.
+The first interior crash came from native entrance loading: entrance 17 in a
+19-record table was consumed as four consecutive player records. The current
+adapter preserves nearby compatible four-player spawn groups, and otherwise
+copies the selected arrival point into four bounded records. It restores the
+original persistent entrance table after the native loader returns.
+
+`/workspace/runtime/entrance-mp-restart-confirmed/` reached four interior player
+objects with shared progress, but its initial entry test accepted a loading
+fade too early. The current check waits for native scene initialization and
+entrance animations, then requires movement from every controller. Independent
+snapshots require exact horizontal positions and allow 1/16 world unit in Y
+for native slope settling between VBlanks. The stricter run at
+`/workspace/runtime/entrance-active-route2/` reached visible interior gameplay
+and host movement. Its next serial position read caught a 12-unit vertical
+collision adjustment; the subsequent diagnostic dumps show identical positions
+on all four consoles. The check now retries the same strict comparison for up
+to three additional 60-frame intervals before reporting divergence.
+
+`--first-course` extends the smoke route through the castle's zero-star door
+and Bob-omb Battlefield painting, then requires active gameplay and independent
+controller movement in course 6. The single-console replay passed at
+`/workspace/runtime/local-first-course-route1/result.json`; this is not wireless
+acceptance. The four-console run at `/workspace/runtime/first-course-route1/`
+passed all interior controls, then failed navigation to the painting. Later
+replays identified the 200-unit west landing's vertical side as the obstacle.
+The route now approaches its northwest-facing collision ramp from the lobby
+and uses actual stylus input for the narrow doorway alignment. Standard-mode
+drags must exceed the player's ten-pixel movement threshold, in addition to
+the input handler's smaller dead zone. The subsequent shared-visibility build
+passed wireless first-course movement and the return trip listed above.
+
+The revised ramp route passed a single-console fast replay at
+`/workspace/runtime/local-stairs-first-course/result.json`, including active
+Bob-omb Battlefield movement. `local_campaign.py --fast` explicitly reports
+that wall-clock pacing is disabled and is never wireless acceptance. Local
+replays now also write a failed result with the completed checks if they abort.
+`--course-return` implies `--first-course`, selects the host's actual Exit
+Course pause-menu row, and requires active castle gameplay and independent
+movement after the return. The local fast replay passed at
+`/workspace/runtime/local-course-return/result.json`; the later four-console
+return trip passed at `/workspace/runtime/shared-visibility-course-return/`.
+The return check retains a paused course checkpoint and compares Goomba
+positions, angles, states, and simulation timers, keyed by actor type and home
+position. Heap pointers and rendering state are excluded. The parser found
+15 Goombas in the local checkpoint and matched all 15 across the four-console
+shared-visibility replay. The readable records are saved as `*-enemies.json`.
+
+The four-console ramp replay at `/workspace/runtime/stairs-first-course/`
+passed the key and all interior controls, climbed the landing, and reached the
+painting. It exposed a real loading failure: the host entered the next STAGE
+while all three guests remained in StarSelect initialization. Read-only RAM
+and DTCM checkpoints (`star-select-stall-*`) show every guest suspended in
+`myFS_ReadFile` after a short read from the scene base's `Initialise3dGraphics`
+path; the host eventually reported native session error 6. The replay was
+interrupted after those checkpoints, and its failed report is retained.
+The follow-up applies the native loading advertisement/acknowledgement and
+completion barrier to StarSelect, starting before base graphics initialization.
+File waits keep NET active for that entire initialization, and menu behavior
+waits for all replicas. The builder verifies the replaced retail setup and
+completion wrappers. Its local course-and-return replay passed at
+`/workspace/runtime/local-menu-barrier/result.json`. Its first wireless retry
+reached only one signed menu, before gameplay; the next transition failure is
+described below.
+
+That startup failure recorded a 1,512-frame spread between the fastest and
+slowest consoles and a native LocalMP packet FIFO overflow. The frontend's
+optional `COOP_MAX_FRAME_LEAD` setting limits how far a console can advance
+ahead of another running console, while retaining the normal frame period.
+It leaves several frames of slack to avoid a per-frame barrier's wireless
+deadlock. The default remains 0 (unlimited); smoke reports record the setting.
+This is an emulator pacing experiment, not a packet or core modification.
+With a limit of 8, one run reached all signed menus and native story gameplay;
+`/workspace/runtime/frame-lead8-repeat-menu/result.json` failed at two menus.
+Its final console-frame spread was only seven frames, so frame drift alone
+does not explain the reconnect failure. Keep this experiment opt-in.
+The one-frame limit experiment at `/workspace/runtime/frame-lead1-loader/`
+advanced only a few frames per second during firmware transfer and was
+interrupted after seven minutes, before signed-menu acceptance.
+
+The StarSelect candidate's four-console run at
+`/workspace/runtime/menu-barrier-frame-lead8/` passed the key, interior controls,
+and painting route, then failed with native session error 6. Its checkpoints
+show a later failure than the preceding build: the guests had queued scene 3
+(STAGE), were loading its overlay, and had not reached scene initialization;
+the host was already advertising STAGE loading. SDK overlay reads call the
+shared reader at `0x0205d688` directly, bypassing `FS_ReadFile`. The current
+candidate hooks that shared reader, retains asynchronous/worker-thread calls,
+and pumps NET during synchronous main-thread reads only while a scene is
+queued or its initialization is running. A reentrancy guard keeps nested
+filesystem callbacks on their native path. Normal scene behavior is not run
+inside those waits. Its first retry at
+`/workspace/runtime/overlay-read-course-return/` stopped at loader discovery;
+the later shared-visibility build passed the complete tested route above.
+The local replay passed with first-course entry, 15-Goomba checkpoint parsing,
+and course return at `/workspace/runtime/local-overlay-read/result.json`.
+Its first four-console retry remained at signed-loader discovery before any
+gameplay, so it does not establish wireless correctness of the new reader.
+`build_host.py --beacon-period 50` is a separate opt-in discovery experiment:
+the native parent's interval is 200..219 802.11 time units. The override is
+reported as `fixedBeaconPeriodTu`; no client image or signature is modified.
+The 50-unit retry remained at signed-loader discovery. A separate candidate
+uses channel 1 and a fixed 203-unit interval, matching several earlier passing
+boot checkpoints; its first run reached all menus and payload transfer at
+`/workspace/runtime/beacon203-course-return/`. These parameters remain opt-in
+and do not establish hardware or repeated startup reliability. The identical
+repeat at `/workspace/runtime/beacon203-repeat-menu/result.json` failed at two
+signed menus; later full-route passes do not erase that startup failure.
+
+An optional `build_host.py --rearm-mp-after-boot` experiment ends MP after the
+firmware clients have departed, retains the parent BSS/channel/TGID, and
+restarts MP when a signed client actually associates. It requires an empty WM
+child bitmap before stopping MP, retired
+native MB child states, no signed-loader requests, and at least one queued
+BOOT command for each child. The actual departure and empty WM child bitmap
+gate the transition; queue acceptance alone does not establish delivery.
+Earlier versions reached game startup and the castle key
+with three guests; repeated boot reliability remains unverified. Stalled-core
+diagnostics capture only peers whose core mutex can be acquired safely.
+`/workspace/runtime/interior-controls-recheck/` stalled during firmware handoff
+even after the optional MP restart executed, so that experiment does not resolve
+the intermittent startup failure.
+The current candidate tracks BOOT requests from bootstrap installation,
+including native requests before the scene tick changes phase. A later protocol
+review found that stopping on the type-11 acknowledgement was itself a defect:
+the child needs a second BOOT request after entering BOOTREQ_ACCEPTED. That
+second request sets `boot_end_flag` and begins the graceful MB shutdown before
+executing the downloaded image. Stopping early made success depend on an extra
+request already being queued. The sender now preserves native BOOT retries
+until the actual WM disconnection, without an attempt limit or an input-timing
+requirement. See the reconstructed
+[child state machine](https://github.com/ntrtwl/NitroSDK/blob/main/libraries/mb/src/mb_child.c#L373).
+Native control serialization is preserved; only
+the signed station's idle heartbeat is specialized. A reconnect starts a new
+state-2 association, and actual WM connection events reset the AID's application
+transfer generation. Stale send callbacks cannot advance a replacement transfer.
+The no-restart candidate reached four-console gameplay, including the dialogue
+fix, at `/workspace/runtime/native-clock-jit-default/result.json`. A cold repeat
+failed at one signed menu. Removing the test frontend's optional frame-lead cap
+produced one three-menu pass and another one-menu failure in
+`/workspace/runtime/native-clock-unbounded{,-repeat}/`; the cap alone does not
+explain the failure. An acknowledged WM_Disconnect experiment sent real parent
+deauthentication frames but stalled firmware; that experiment was removed.
+A separate diagnostic of the SDK's once-per-frame MP clock stalled all three
+guests and was removed. Neither unsuccessful experiment is a startup fix.
+The two-phase BOOT correction is under cold-start and wireless-save validation
+at `/workspace/runtime/two-phase-boot-first/` and
+`/workspace/runtime/two-phase-boot-repeats/`. `tests/repeat_boot.py` preserves
+every result and fails the aggregate if any cold start fails. Its story/course/
+save modes also vary real menu-selection delays; menu-only runs establish only
+signed-loader discovery, not payload or campaign acceptance.
+That correction alone passed 2/5 cold starts. A read-only client trace then
+showed failed signed loaders completing an unwanted second fake MB download
+and BOOT, while successful menus remained at header-accepted state 7. Returning
+associations now retain their station role even when their callback precedes
+the scene's phase transition, and do not progress through legacy image/BOOT.
+The decisive buffer diagnosis was that `WM_WORK->sendBuf` equalled the MB
+message buffer `data_020a9db8`; raw frames showed an MB command containing the
+same first bytes as the concurrent NI menu chunk. The bootstrap allocates a
+separate aligned 1 KB MP workspace before WM starts and frees it only after
+the native MB parent has stopped. The five-menu repeat above passes with this
+change; earlier failed candidates remain recorded.
+
+Two callback wrappers also exposed an ABS32 relocation omission for compiler
+tail-call veneers targeting appended trampolines. The relocation builder now
+recovers those object relocation records even when absolute linker definitions
+leave no record in the final ELF. `tests/test_relocatable.py` compiles real
+tail and non-tail calls with the pinned compiler to check both cases. This
+corrects a concrete callback regression; a corrected four-console retry at
+`/workspace/runtime/relocated-callbacks-delayed/result.json` still failed after
+only one signed menu, so startup remains unfinished.
+Subsequent all-association BOOT retries at
+`/workspace/runtime/association-boot-retry/result.json` booted the signed
+applications but failed rediscovery. Waiting for a new association before
+restarting MP also failed at initial download in
+`/workspace/runtime/connected-mp/result.json`. The latest candidate additionally
+requires all three current native child states to be header-ready (14) before
+asserting START, instead of latching it from a previous frame's roster count.
+No latest-candidate startup pass is claimed.
+The current comparison and wireless-state evidence are summarized in
+[`tests/EMULATOR-HANDOFF.md`](tests/EMULATOR-HANDOFF.md).
+The payload-completion barrier candidate failed before radio initialization
+completed at `/workspace/runtime/complete-body-barrier/result.json`. Its saved
+exception context subsequently identified a null wireless-work read in the
+mod's transfer pump. The pump now waits for an initialized, started MP session
+before accessing the work buffer. `tests/bootstrap_idle.py` reproduces the old
+exception and passes initialization plus 600 idle frames on the guarded ROM at
+`/workspace/runtime/idle-initialized-after/result.json`. Four-console handoff
+acceptance is still pending. `dumpwifi` serializes
+the unmodified core's wireless state for diagnosis and never loads a state.
+
+Read-only native debugger stacks at
+`/workspace/runtime/ack-boot-native-stack-symbols.log` locate the stalled guests
+in `LocalMP::RecvPacketGeneric`, called by `Wifi::USTimer`. The pinned core
+polls every eight emulated microseconds after a missing host frame; a 25 ms
+wall-clock wait at each poll can delay one emulated frame by roughly 52 seconds.
+The smoke frontend uses `COOP_BOOT_MP_TIMEOUT_MS` (default 25) during boot,
+then restores `COOP_MP_TIMEOUT_MS` (default 25) after native party/WFS readiness
+and before story entry. The `mptimeout` command locks every core between frames
+before updating the native LocalMP setting. Reports record both settings and
+whether the gameplay timeout was applied. No core code or packets are changed.
+Zero-timeout boot polling kept frames advancing but failed the loader menu;
+1 ms polling alone also failed that reconnect. With the revised optional MP
+restart, `/workspace/runtime/departed-rearm-first-course/` reached all three
+signed menus and unsigned payload transfer, then passed the key and all four
+interior controller checks before failing navigation to the first painting.
+The signed loader now serves menu requests independently; it still holds
+executable data until every guest has selected the game and acknowledged its
+length. Execution terminators are additionally held until every guest's entire
+payload body has completed, so an uneven transfer cannot boot an early guest
+into the game's connection deadline while another guest is still downloading.
+Transfer readiness is checked with interrupts disabled alongside queueing.
+This barrier executed all three payloads together in the latest four-console
+dialogue/interior pass, including staggered menu selections. Repeated startup
+reliability remains unresolved.
+A fixed-channel option (`--channel 1`, `7`, or `13`) preserves that
+channel across firmware and loader handoff. Channel 1 passed a full boot and
+interior replay, but a repeat reached only two signed menus. Neither this
+option nor the MP restart establishes reliable startup yet.
 Single-console key collection and castle-interior entry passed at
 `/workspace/runtime/local-castle-entry/`.
 The controller-driven `--castle-key` check follows the locked-door and Lakitu
@@ -299,11 +628,56 @@ their normal reads. `COOP_FRAME_US` optionally changes diagnostic pacing
 (default 16667); `COOP_MP_TIMEOUT_MS` configures the unmodified LocalMP transport's
 wall-clock receive timeout (default 25). Smoke reports record both settings.
 
-Progress stays in RAM. Restart before returning to ordinary adventure play:
-the session save guard remains installed until reset. Persistent host-owned
-saves, shared star/key decisions, cutscene/warp/death/disconnect policies, deterministic campaign actors and full campaign completion still need acceptance
-tests and fixes. Story asset access and four independent inputs have passed the
-castle-grounds checks.
+Progress stays in RAM by default. `build.py --save-slot A` (also B or C) enables
+an experimental host-owned adventure file. The host loads that file and sends
+its 68-byte adventure block through acknowledged NET pages before the stage
+loading barrier; guests never write their own cartridge backup. Four-console
+testing caught an earlier deadlock: that native barrier stops MP data sharing,
+so it cannot enclose the page/result exchange. The current save call waits for
+guest readiness while NET runs, publishes the host result with an alternating
+transaction tag, and enters the barrier only after each replica consumes that
+result. A failed initial
+cart read leaves the session in RAM and disables writes. Four-console fresh-key
+saving and orderly quit pass at
+`/workspace/runtime/ordered-quit-new-progress/result.json`. Broader campaign and
+repeated-save acceptance remain in progress, so saving is still opt-in.
+
+The controller-driven single-console persistence test passed at
+`/workspace/runtime/host-save-title-guard-test/result.json`: Save and Quit wrote
+the earned castle key, a fresh launch loaded it, the other adventure slots
+remained unchanged, and the title scene cleared the co-op save policy.
+It used ROM SHA256
+`7ba04c37cade43072b8f8337035aa5dca946259c53122a0db733c8d4b5640e9a`.
+The revised packet-clock ordering also passes the same local save, title,
+fresh-launch reload and unchanged-other-slots test at
+`/workspace/runtime/save-clock-local/result.json`, ROM SHA256
+`ad5b8a07afdd220c401775c12f6a425448f2dfff57e4965491b10f714c4deae7`.
+These are local persistence checks, not wireless acceptance. To repeat one,
+build with `--save-slot A`, then run:
+
+```bash
+python mods/coop/tests/host_save.py \
+  --image build/coop/sm64ds-coop-experimental.nds --slot A \
+  --output /workspace/runtime/fresh-host-save-check
+```
+
+The test writes only a new private backup directory and refuses to replace an
+existing test save. Firmware writes remain disabled in the frontend.
+`bootstrap/smoke.py --story --host-save` adds a real wireless host Save/quit
+check; it requires a host image built with an explicit save slot. It verifies
+host-file sharing, earns the key through input, inspects the resulting cartridge
+backup and unchanged other slots, requires the host's title menu to finish
+initializing, and checks that wireless has stopped on the host and every guest.
+Cartridge-free guests display the session-ended screen and turn their DS off.
+The default RAM-only candidate also passed the local key, castle, first-course
+and course-return route at `/workspace/runtime/local-abs32-dialogue/result.json`
+(ROM `f267b373722db88d2802b5a1cb99f7fbc618aac8e336f142d590fe15897eee36`).
+
+The host-health death checkpoint now passes with all four controllers after
+recovery, although that run's later save-driver check failed by choosing the
+quit-without-saving button. Star progression, further cutscenes/warps, repeated
+saves, additional death cases and full campaign completion still need broader
+acceptance. See `tests/EMULATOR-HANDOFF.md` for current evidence and failures.
 
 ## Full source baseline
 

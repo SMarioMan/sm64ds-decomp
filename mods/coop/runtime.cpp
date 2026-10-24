@@ -8,6 +8,8 @@
 #include "dScStage_c.h"
 #include "PlayerInput.h"
 #include "dActor_c.h"
+#include "dCamera_c.h"
+#include "LVL_Overlay.h"
 
 extern "C" {
 void PrepareVsMode(void);
@@ -19,14 +21,32 @@ void CoopOriginalLoadLevelOverlays(int level);
 int CoopOriginalStageInit(void *scene);
 int CoopOriginalSceneBefore(void *scene);
 int CoopOriginalActorBefore(void *actor);
+void CoopOriginalLoadEntrances(LVL_Overlay::ObjSubTable *table, int area, u32 index);
+void func_0202b0e0(void *entries, u32 count);
 void func_0203d918(void);
 void func_0203d930(void);
 void func_0203d854(void);
-int func_0205d688(void *file, void *destination, int size, int async);
+int func_020308a8(void);
+int CoopOriginalReadFile(void *file, void *destination, int size, int async);
+void func_02030a78(void);
+void func_02030500(void);
+void func_020199a4(void);
+void func_02040aa4(void);
+extern int data_020a0f94;
+extern void *data_0209d4a8;
+void *func_02054ea8(void);
+void *_ZN3G2S13GetBG1CharPtrEv(void);
+void *_ZN2G212GetBG1ScrPtrEv(void);
+void *_ZN3G2S12GetBG1ScrPtrEv(void);
+void CoopOriginalMessageUpdate(void);
+void CoopOriginalKillPlayer(void);
+void CoopOriginalHitDeathPlane(int reason);
 int func_0205d3f4(void *file);
 void func_0201ffcc(void);
 void func_02042778(void);
 void func_0201fe08(void);
+void func_0201a428(void);
+extern void *data_0209d524;
 extern void *data_0209d708;
 extern u16 data_020a1160[];
 extern void *data_020a613c;
@@ -37,22 +57,122 @@ void UnloadArchive(int index);
 extern u8 data_0209caa0[];
 extern u8 data_0209f2d8;
 extern u8 data_0209f250;
+extern u16 data_02092664;
 extern u8 data_020a0f10;
 extern u8 data_0209fc50;
 extern s8 data_02092124;
 extern u8 data_0209f228[];
+extern void *data_0209f394[];
+extern s16 data_02092144[];
 extern u8 data_02092778;
 extern void *data_020a0eac;
 extern int data_0209fc68;
 extern u32 data_0209e650;
 extern u32 data_020a1154[];
+extern u8 data_020a1052[];
+extern u8 data_020a1166[];
+extern dCamera_c *data_0209f318;
 void _ZN4CP1526InvalidateInstructionCacheEjj(u32 address, u32 size);
 void _ZN4CP1514FlushDataCacheEv(void);
+void _ZN4CP1514FlushDataCacheEjj(u32 address, u32 size);
 
 
 // Kept with the executable module in ROOT, across scene/overlay changes.
 u32 coopEnabled = 0;
 u32 coopEntryRetired = 0;
+// 0: loading; 1: host file loaded and shared; 2: cart read failed, RAM only.
+u32 coopSaveState = 0;
+u32 coopSavePage = 0;
+static u32 coopSaveEpoch = 0;
+static u8 coopSaveStorage[100];
+
+static u8 *CoopSaveBuffer() {
+    return (u8 *)(((u32)coopSaveStorage+31)&~31u);
+}
+
+static void CoopApplyHostSave() {
+    u8 *buffer=CoopSaveBuffer();
+    for (unsigned i=0;i<0x44;++i)data_0209caa0[i]=buffer[i];
+    data_0209caa0[0x328]=COOP_SAVE_SLOT;
+    ((SaveData *)data_0209caa0)->flags2|=0x80;
+    SetPlayerGlobals();
+}
+
+static void CoopPublishSavePage(unsigned page) {
+    u8 *buffer=CoopSaveBuffer();
+    for (unsigned i=0;i<9;++i) {
+        unsigned offset=(page-1)*9+i;
+        data_020a1052[7+i]=offset<0x44 ? buffer[offset] : 0;
+    }
+    data_020a1052[6]=0x10+page;
+    coopSavePage=page;
+}
+
+static bool CoopLoadHostSave() {
+    if (COOP_SAVE_SLOT<0 || coopSaveState)return true;
+    if (data_020a0f10==0) {
+        if (!coopSavePage) {
+            if (!SaveData::ReadFileData(COOP_SAVE_SLOT,(FileSaveData *)CoopSaveBuffer())) {
+                // Do not turn an unreadable existing file into a fresh save.
+                coopSaveState=2;
+                data_020a1052[6]=0x7f;
+                return true;
+            }
+            if (!data_0209fc68) {
+                CoopApplyHostSave();
+                coopSaveState=1;
+                return true;
+            }
+            CoopPublishSavePage(1);
+            return false;
+        }
+        u8 acknowledgement=coopSavePage<=8 ? 0x90+coopSavePage : 0xc0;
+        for (unsigned slot=1;slot<data_0209fc50;++slot)
+            if (data_020a1166[slot*36+6]!=acknowledgement)return false;
+        if (coopSavePage<8) {
+            CoopPublishSavePage(coopSavePage+1);
+        } else if (coopSavePage==8) {
+            CoopApplyHostSave();
+            data_020a1052[6]=0x40;
+            coopSavePage=9;
+        } else {
+            data_020a1052[6]=0;
+            coopSaveState=1;
+            return true;
+        }
+        return false;
+    }
+    unsigned tag=data_020a1166[6];
+    if (tag==0x7f) {
+        coopSaveState=2;
+        return true;
+    }
+    if (tag>=0x11 && tag<=0x18 && tag==0x11+coopSavePage) {
+        unsigned page=tag-0x10;
+        for (unsigned i=0;i<9;++i) {
+            unsigned offset=coopSavePage*9+i;
+            if (offset<0x44)CoopSaveBuffer()[offset]=data_020a1166[7+i];
+        }
+        coopSavePage=page;
+        data_020a1052[6]=0x90+page;
+    } else if (tag==0x40 && coopSavePage==8) {
+        CoopApplyHostSave();
+        data_020a1052[6]=0xc0;
+        coopSavePage=9;
+    } else if (!tag && coopSavePage==9) {
+        data_020a1052[6]=0;
+        coopSaveState=1;
+        return true;
+    }
+    return false;
+}
+
+extern u32 coopStageLoading;
+extern u32 coopMenuLoading;
+extern u32 coopSceneInitializing;
+extern u32 coopTitleLoading;
+extern u32 coopSessionEnded;
+extern u32 coopDeathTriggered;
 
 void CoopStartMatch(void *) {
     unsigned count = data_0209fc50;
@@ -61,6 +181,14 @@ void CoopStartMatch(void *) {
 
     PrepareVsMode();
     coopEnabled = 1;
+    coopEntryRetired=0;
+    coopStageLoading=coopMenuLoading=coopSceneInitializing=0;
+    coopTitleLoading=0;
+    coopSessionEnded=0;
+    coopDeathTriggered=0;
+    coopSaveState=coopSavePage=0;
+    coopSaveEpoch=0;
+    data_020a1052[6]=0;
     data_0209f2d8 = 0;
     // Story input is gated until the intro has completed. The lobby replaces
     // that introduction; begin a fresh, RAM-only Yoshi session.
@@ -104,25 +232,232 @@ void CoopLoadLevelOverlays(int level) {
     // overlaps it. Retire ENTRY only once its scene has finished cleanup and
     // STAGE is loading resources; this runtime survives outside either overlay.
     if (coopEnabled && !coopEntryRetired) {
+        // Download Play's auxiliary VS heap occupies 0x0211d9c0..0x02140d80,
+        // inside the story overlay range. ENTRY has finished using it now.
+        // Destroy it while intact, so TITLE cannot later call a virtual
+        // destructor through heap metadata overwritten by story actors.
+        if (data_0209d524)func_0201a428();
         UnloadOverlay(75);
         UnloadOverlay(100);
         UnloadOverlay(102);
         coopEntryRetired = 1;
     }
     CoopOriginalLoadLevelOverlays(level);
+    if (coopEnabled) {
+        // Overlay 2 stays authenticated on disk. Patch only its two native
+        // talk/event camera-completion reads after the story loader runs.
+        extern void CoopCameraFlagsRead(void);
+        extern void CoopLoadEntrances(LVL_Overlay::ObjSubTable *, int, u32);
+        u32 target = (u32)CoopCameraFlagsRead;
+        *(volatile u32 *)0x020c4364 = 0xeb000000 | ((target-0x020c436c)>>2 & 0x00ffffff);
+        *(volatile u32 *)0x020c4b34 = 0xeb000000 | ((target-0x020c4b3c)>>2 & 0x00ffffff);
+        target = (u32)CoopLoadEntrances;
+        *(volatile u32 *)0x020fe6c8 = 0xea000000 | ((target-0x020fe6d0)>>2 & 0x00ffffff);
+        // Player::Render already uses the original per-slot Yoshi material
+        // parameters, initialized for story players too. Enable only its two
+        // palette gates; changing the global VS rule would alter gameplay.
+        *(volatile u32 *)0x020e3ae8 = 0xe3a00001; // mov r0, #1 (body)
+        *(volatile u32 *)0x020e3c88 = 0xe3a00001; // mov r0, #1 (head)
+        _ZN4CP1514FlushDataCacheEv();
+        _ZN4CP1526InvalidateInstructionCacheEjj(0x020c4364, 0x7d4);
+        _ZN4CP1526InvalidateInstructionCacheEjj(0x020e3ae8, 0x1a4);
+        _ZN4CP1526InvalidateInstructionCacheEjj(0x020fe6c8, 4);
+    }
 }
 
-// 0: idle; 1: advertising loading; 2: initializing; 3: servicing a file wait.
+// 0: idle; 1: advertising loading; 2: initializing.
 u32 coopStageLoading = 0;
 u32 coopStageIdentity = 0;
+u32 coopDeathTriggered = 0;
+
+void CoopKillPlayer(void) {
+    if (coopEnabled && data_0209fc68) {
+        if (coopDeathTriggered)return;
+        coopDeathTriggered=1;
+    }
+    CoopOriginalKillPlayer();
+}
+
+void CoopHitDeathPlane(int reason) {
+    if (coopEnabled && data_0209fc68) {
+        if (coopDeathTriggered)return;
+        coopDeathTriggered=1;
+    }
+    // SetNextLevel consumes the return entrance. A second dying player must
+    // not replace the first transition with an already-consumed destination.
+    CoopOriginalHitDeathPlane(reason);
+}
+// Star selection also loads files on the main thread, starting inside the
+// scene base's graphics setup, before its own InitResources is called.
+u32 coopMenuLoading = 0;
+u32 coopSceneInitializing = 0;
+u32 coopTitleLoading = 0;
+u32 coopSessionEnded = 0;
+static u32 coopTitleGuest = 0;
+
+static void CoopSessionEndedScreen() {
+    // A small independent 5x7 alphabet replaces the retail error artwork:
+    // a planned host quit is not a wireless failure. The resident error-screen
+    // setup supplies both BG1 maps and needs no cartridge or WFS resources.
+    static const u8 letters[26][5]={
+        {0x7e,0x11,0x11,0x11,0x7e},{0x7f,0x49,0x49,0x49,0x36},
+        {0x3e,0x41,0x41,0x41,0x22},{0x7f,0x41,0x41,0x22,0x1c},
+        {0x7f,0x49,0x49,0x49,0x41},{0x7f,0x09,0x09,0x09,0x01},
+        {0x3e,0x41,0x49,0x49,0x7a},{0x7f,0x08,0x08,0x08,0x7f},
+        {0,0x41,0x7f,0x41,0},{0x20,0x40,0x41,0x3f,0x01},
+        {0x7f,0x08,0x14,0x22,0x41},{0x7f,0x40,0x40,0x40,0x40},
+        {0x7f,0x02,0x0c,0x02,0x7f},{0x7f,0x04,0x08,0x10,0x7f},
+        {0x3e,0x41,0x41,0x41,0x3e},{0x7f,0x09,0x09,0x09,0x06},
+        {0x3e,0x41,0x51,0x21,0x5e},{0x7f,0x09,0x19,0x29,0x46},
+        {0x46,0x49,0x49,0x49,0x31},{0x01,0x01,0x7f,0x01,0x01},
+        {0x3f,0x40,0x40,0x40,0x3f},{0x1f,0x20,0x40,0x20,0x1f},
+        {0x3f,0x40,0x38,0x40,0x3f},{0x63,0x14,0x08,0x14,0x63},
+        {0x07,0x08,0x70,0x08,0x07},{0x61,0x51,0x49,0x45,0x43}
+    };
+    static const char *lines[]={"SESSION ENDED","THE HOST ENDED THE GAME.",
+                                "TURN YOUR DS OFF.","USE DS DOWNLOAD PLAY",
+                                "TO JOIN A NEW SESSION."};
+    for (unsigned screen=0;screen<2;++screen) {
+        volatile u32 *tiles=(volatile u32 *)(screen?_ZN3G2S13GetBG1CharPtrEv():func_02054ea8());
+        volatile u16 *map=(volatile u16 *)(screen?_ZN3G2S12GetBG1ScrPtrEv():_ZN2G212GetBG1ScrPtrEv());
+        volatile u16 *palette=(volatile u16 *)(screen?0x05000400:0x05000000);
+        palette[0]=0x7fff;
+        palette[1]=0;
+        for (unsigned tile=0;tile<28;++tile)
+            for (unsigned y=0;y<8;++y) {
+                u32 row=0;
+                if (tile>=1 && tile<=26 && y<7)
+                    for (unsigned x=0;x<5;++x)
+                        if (letters[tile-1][x]&(1u<<y))row|=1u<<(4*(x+1));
+                if (tile==27 && y==6)row=1u<<12;
+                tiles[tile*8+y]=row;
+            }
+        for (unsigned cell=0;cell<1024;++cell)map[cell]=0;
+        for (unsigned line=0;line<5;++line) {
+            const char *text=lines[line];
+            unsigned length=0;
+            while (text[length])++length;
+            unsigned start=(5+line*3)*32+(32-length)/2;
+            for (unsigned i=0;i<length;++i)
+                map[start+i]=text[i]=='.'?27:(text[i]>='A' && text[i]<='Z'?text[i]-'A'+1:0);
+        }
+    }
+}
+
+static void CoopConnectionLost() {
+    // Story rules bypass the retail VS disconnection branch. End the file
+    // server before entering its resident error screen, including when the
+    // loss interrupts a synchronous WFS read during a scene transition.
+    coopEnabled=coopTitleLoading=coopMenuLoading=0;
+    coopSaveState=coopSavePage=0;
+    func_02030a78();
+    func_0201ffcc();
+    func_02040aa4();
+    coopSessionEnded=3;
+    data_0209d4a8=0;
+    func_02030500();
+    func_020199a4();
+}
+
+int CoopSceneBeforeInit(dScene_c *scene) {
+    if (coopEnabled && data_0209fc68==6)CoopConnectionLost();
+    if ((scene->actorID==1 || scene->actorID==8) && coopEnabled) {
+        if (!coopTitleLoading && data_0209fc68) {
+            // Every console must finish the transition's overlay reads
+            // before shutting WFS down. Keep normal input sharing alive:
+            // the native loading barrier suspends these user-byte records.
+            coopTitleLoading=1;
+            coopTitleGuest=data_020a0f10!=0;
+            coopMenuLoading=1;
+            data_020a1052[6]=0x50;
+            return 0;
+        }
+        if (coopTitleLoading && coopMenuLoading==1) {
+            if (!coopTitleGuest) {
+                bool ready=true;
+                for (unsigned slot=1;slot<data_0209fc50;++slot)
+                    if (data_020a1166[slot*36+6]!=0x50 &&
+                        data_020a1166[slot*36+6]!=0x52)ready=false;
+                if (ready)data_020a1052[6]=0x51;
+            } else if (data_020a1166[6]==0x51) {
+                data_020a1052[6]=0x52;
+            }
+            bool acknowledged=data_020a1166[6]==0x51;
+            for (unsigned slot=1;slot<data_0209fc50;++slot)
+                if (data_020a1166[slot*36+6]!=0x52)acknowledged=false;
+            if (!acknowledged)return 0;
+            func_02030a78();
+            func_0201ffcc(); // Native mode change resets WM and shuts WFS down.
+            coopMenuLoading=5;
+            return 0;
+        }
+        if (coopTitleLoading && data_020a0f94!=0)return 0;
+        coopEnabled=coopTitleLoading=coopMenuLoading=0;
+        coopSaveState=coopSavePage=0;
+        data_020a1052[6]=0;
+        if (coopTitleGuest) {
+            // A cartridge-free client cannot use an independent file menu.
+            // The resident retail communication-ended screen needs no WFS
+            // reads and remains visible until the player turns the DS off.
+            coopSessionEnded=1;
+            data_0209d4a8=0;
+            func_02030500();
+            CoopSessionEndedScreen();
+            func_020199a4();
+            return 0;
+        }
+        coopSessionEnded=2;
+        SetNumPlayers(1);
+        data_0209fc50=1;
+        data_0209f250=gActivePlayerSlot=0;
+    }
+    coopSceneInitializing = coopEnabled && data_0209fc68 &&
+        (scene->actorID == 3 || scene->actorID == 4);
+    if (!scene->ResetFadersAndSound())
+        return 0;
+    if (coopEnabled && data_0209fc68 && scene->actorID == 4) {
+        if (!coopMenuLoading) {
+            func_0203d854();
+            func_0203d918();
+            coopMenuLoading = 1;
+            return 0;
+        }
+        if (!(data_020a1160[0] & 0x2000))
+            return 0;
+        coopMenuLoading = 2;
+        coopStageLoading = 2;
+    }
+    dScene_c::Initialise3dGraphics();
+    return 1;
+}
+
+void CoopSceneAfterInit(dScene_c *scene, u32 success) {
+    coopSceneInitializing = 0;
+    if (coopEnabled && scene->actorID == 4 && coopMenuLoading == 2) {
+        coopStageLoading = 0;
+        func_0203d930();
+        coopMenuLoading = success == 2 ? 3 : 0;
+    }
+    scene->dBase_c::AfterInitResources(success);
+    if (scene->actorID==1 && success==2 && !data_0209fc68)coopEnabled=0;
+}
 
 int CoopStageInit(void *scene) {
     dScStage_c *stage = (dScStage_c *)scene;
-    if (!coopEnabled || !data_0209fc68)
+    if (!coopEnabled)
         return CoopOriginalStageInit(scene);
+    if (!data_0209fc68) {
+        if (!CoopLoadHostSave())return -1;
+        return CoopOriginalStageInit(scene);
+    }
+    // The native all-loading acknowledgement stops MP data sharing. Publish
+    // and acknowledge the host file while the normal packet clock is alive,
+    // before advertising that this console is ready for the loading barrier.
+    if (!CoopLoadHostSave())return -1;
     if (!stage->mWaitingForLoad) {
         if (!coopStageLoading) {
             coopStageIdentity = stage->uniqueID;
+            coopDeathTriggered=0;
             func_0203d854();
             func_0203d918();
             coopStageLoading = 1;
@@ -142,46 +477,189 @@ int CoopStageInit(void *scene) {
     return result;
 }
 
-int CoopReadFile(void *file, void *destination, int size) {
-    if (coopStageLoading != 2 || data_020a613c != data_020a621c)
-        return func_0205d688(file, destination, size, 0);
-    coopStageLoading = 3;
+u32 coopFileWaiting = 0;
+
+int CoopReadFile(void *file, void *destination, int size, int async) {
+    // SDK overlay-table and overlay-image reads call this shared reader
+    // directly, before a replacement scene reaches BeforeInitResources.
+    // Cover those main-thread waits as well as ordinary FS_ReadFile callers.
+    if (!coopEnabled || !data_0209fc68 || async || coopFileWaiting ||
+        data_020a613c != data_020a621c ||
+        (!coopSceneInitializing && !coopTitleLoading && data_02092664 == 0x187))
+        return CoopOriginalReadFile(file, destination, size, async);
+    coopFileWaiting = 1;
     u32 *fields = (u32 *)file;
     u32 position = fields[0x28 / 4];
-    func_0205d688(file, destination, size, 1);
+    CoopOriginalReadFile(file, destination, size, 1);
     // Keep only NET alive while WFS fills this file. Scene behavior/drawing
-    // must not run against STAGE's partially initialized resources.
+    // must not run against partially initialized or retired resources.
     while (fields[0x0c / 4] & 1) {
+        if (data_0209fc68==6)CoopConnectionLost();
         func_0201ffcc();
         func_02042778();
     }
     int result = func_0205d3f4(file) ? fields[0x28 / 4] - position : -1;
-    coopStageLoading = 2;
+    coopFileWaiting = 0;
     return result;
 }
 
+void CoopLoadEntrances(LVL_Overlay::ObjSubTable *table, int area, u32 index) {
+    if (!coopEnabled) {
+        CoopOriginalLoadEntrances(table, area, index);
+        return;
+    }
+    if (!table->count || !table->entries)
+        return;
+    if (index >= table->count)
+        index = 0;
+    LVL_Overlay::StandardEntry *entries = (LVL_Overlay::StandardEntry *)table->entries;
+    LVL_Overlay::StandardEntry *selected = entries + index;
+    bool group = index + 4 <= table->count;
+    for (unsigned i = 1; group && i < 4; ++i) {
+        LVL_Overlay::StandardEntry *next = selected + i;
+        int dx = next->x - selected->x;
+        int dy = next->y - selected->y;
+        int dz = next->z - selected->z;
+        group = next->raw == selected->raw &&
+                next->rot.x == selected->rot.x && next->rot.y == selected->rot.y &&
+                next->rot.z == selected->rot.z &&
+                (next->param & 0x787) == (selected->param & 0x787) &&
+                dx >= -600 && dx <= 600 && dy >= -300 && dy <= 300 &&
+                dz >= -600 && dz <= 600;
+    }
+    // StandardEntry's Vector3s member has a native constructor. These are
+    // serialized records: copy their four words without constructing vectors.
+    u32 party[16];
+    for (unsigned player = 0; player < 4; ++player)
+        for (unsigned word = 0; word < 4; ++word)
+            party[player*4+word] = ((u32 *)(selected + (group ? player : 0)))[word];
+    LVL_Overlay::ObjSubTable temporary = *table;
+    temporary.count = 4;
+    temporary.entries = party;
+    // Native code consumes one consecutive record per player. Many story
+    // doors have only one arrival record, or sit near the end of the table.
+    // Retain a real four-player group when present; otherwise share the
+    // selected safe arrival point, never another door or an out-of-bounds row.
+    CoopOriginalLoadEntrances(&temporary, area, 0);
+    // The native loader registers its table for later warps/camera setup.
+    // Restore the persistent original instead of leaving our stack registered.
+    func_0202b0e0(entries, table->count);
+}
+
 int CoopSaveCurrentFile(void) {
-    // A session has not selected a host save slot yet. Never let the VS scratch
-    // save overwrite an existing adventure file, on either host or clients.
-    if (coopEnabled)
-        return 0;
+    // Default builds retain the VS scratch file in RAM. An opt-in host slot
+    // must first have been read successfully and distributed to every guest.
+    if (coopEnabled) {
+        if (COOP_SAVE_SLOT<0 || coopSaveState!=1)return 0;
+        if (data_0209fc68) {
+            if (data_0209fc68==6)return 0;
+            coopSaveEpoch^=1;
+            unsigned ready=0x30+2*coopSaveEpoch;
+            unsigned response=0x20+2*coopSaveEpoch;
+            data_020a1052[6]=ready;
+            if (data_020a0f10==0) {
+                // Hold each replica inside this save call, but keep NET
+                // exchanging user bytes until every guest is participating.
+                bool waiting=true;
+                while (waiting) {
+                    if (data_0209fc68==6)return 0;
+                    waiting=false;
+                    for (unsigned slot=1;slot<data_0209fc50;++slot)
+                        if (data_020a1166[slot*36+6]!=ready)waiting=true;
+                    if (waiting) {
+                        func_0201ffcc();
+                        func_02042778();
+                    }
+                }
+                int result=SaveData::SaveFile(COOP_SAVE_SLOT,(FileSaveData *)data_0209caa0);
+                if (result)result=SaveData::SaveMinigames((MinigameSaveData *)(data_0209caa0+0x44));
+                data_020a1052[6]=response+(result!=0);
+            }
+            while ((data_020a1166[6]&0xfe)!=response) {
+                if (data_0209fc68==6)return 0;
+                func_0201ffcc();
+                func_02042778();
+            }
+            int result=data_020a1166[6]&1;
+            // SaveFile marks the live block as used even on a cart failure.
+            ((SaveData *)data_0209caa0)->flags1|=1;
+            // A guest advertises loading only after consuming this result.
+            // Thus stopping the packet clock now cannot strand an unread
+            // result. Alternate the response tag between transactions so a
+            // previous successful save cannot acknowledge a later failure.
+            func_0203d854();
+            func_0203d918();
+            while (!(data_020a1160[0]&0x2000)) {
+                if (data_0209fc68==6)return 0;
+                func_0201ffcc();
+                func_02042778();
+            }
+            func_0203d930();
+            while (!func_020308a8()) {
+                if (data_0209fc68==6)return 0;
+                func_0201ffcc();
+                func_02042778();
+            }
+            data_020a1052[6]=0;
+            return result;
+        }
+    }
     if (!SaveData::SaveFile(data_0209caa0[0x328], (FileSaveData *)data_0209caa0))
         return 0;
     return SaveData::SaveMinigames((MinigameSaveData *)(data_0209caa0 + 0x44));
 }
 
+void CoopMessageUpdate(void) {
+    // Message::Update also runs from display/render helpers, after actor
+    // updates restore the local controller. Every shared text window and
+    // choice must consume the same host packet regardless of that caller.
+    u8 previous=gActivePlayerSlot;
+    if (coopEnabled)gActivePlayerSlot=0;
+    CoopOriginalMessageUpdate();
+    gActivePlayerSlot=previous;
+}
+
 int CoopSceneBefore(void *scene) {
+    if (coopEnabled && data_0209fc68==6)CoopConnectionLost();
+    // Keep the cartridge on the same menu until downloaded clients have
+    // finished their wireless reads. Otherwise it can enter the next stage
+    // while they are still initializing and their synchronous reads fail.
+    unsigned id = ((dScene_c *)scene)->actorID;
+    if (coopEnabled && id==4 && coopMenuLoading==3) {
+        if (!func_020308a8())
+            return 0;
+        coopMenuLoading = 0;
+    }
     int result = CoopOriginalSceneBefore(scene);
     // Shared scene decisions consume the host's synchronized controller.
     // Player behavior still selects each actor's own input record.
-    unsigned id = ((dScene_c *)scene)->actorID;
     if (result && coopEnabled && (id == 3 || id == 4)) {
         gActivePlayerSlot = 0;
         data_0209f250 = 0;
         if (data_0209fc68)
             data_0209e650 = data_020a1154[0] ^ 0x6d2b79f5;
+        // Native story flags occupy NET user bytes 0..4 and 16. Byte 5
+        // carries the host camera's completion status; every replica,
+        // including the host, consumes the same echoed packet below.
+        if (data_0209f318)
+            data_020a1052[5] = (data_0209f318->mFlags & 0x8000) != 0;
     }
     return result;
+}
+
+u32 CoopSharedCameraFlags(dCamera_c *camera) {
+    u32 flags = camera->mFlags;
+    if (coopEnabled && data_0209fc68)
+        flags = (flags & ~0x8000) | ((data_020a1166[5] & 1) << 15);
+    return flags;
+}
+
+// Replace an LDR r0,[r0,#0x154] immediately followed by ANDS. Preserve all
+// other volatile registers; the native function already saves its caller LR.
+__asm void CoopCameraFlagsRead(void) {
+    stmfd sp!, {r1-r3, r12, lr}
+    bl CoopSharedCameraFlags
+    ldmfd sp!, {r1-r3, r12, pc}
 }
 
 void CoopSceneAfter(dScene_c *scene, u32 success) {
@@ -192,7 +670,14 @@ void CoopSceneAfter(dScene_c *scene, u32 success) {
     scene->fBase_c::AfterBehavior(success);
 }
 
+u32 coopBehaviorActor = 0;
+u32 coopBehaviorVisibility = 0;
+static u32 coopBehaviorHealthSaved = 0;
+static u8 coopBehaviorHealth = 0;
+
 int CoopActorBefore(void *actor) {
+    coopBehaviorActor = 0;
+    coopBehaviorHealthSaved = 0;
     // Doors and NPCs run separately from the scene. Their single-player
     // interaction paths must choose the same player and controller on every
     // replica. Player::Behavior still selects its own synchronized input.
@@ -202,6 +687,25 @@ int CoopActorBefore(void *actor) {
     }
     int result = CoopOriginalActorBefore(actor);
     if (result && coopEnabled && data_0209fc68) {
+        for (unsigned slot=0;slot<4;++slot)
+            if (data_0209f394[slot]==actor) {
+                // Retail death states wait for the displayed HUD meter to
+                // reach zero. That meter belongs to a different local player
+                // on each guest. Use this actor's health during its behavior,
+                // then restore the local meter for HUD animation/rendering.
+                volatile u8 *meter=(volatile u8 *)0x0211117c;
+                coopBehaviorHealth=*meter;
+                coopBehaviorHealthSaved=1;
+                *meter=(u8)(data_02092144[slot]>>8);
+                break;
+            }
+        // NET already forces ordinary actors to update beyond the local
+        // camera. Their behavior must also see consistent visibility: Goomba
+        // stuck counters, for example, otherwise depend on each player's view.
+        // Preserve the native clip result for this console's later rendering.
+        coopBehaviorActor = (u32)actor;
+        coopBehaviorVisibility = ((dActor_c *)actor)->mFlags & 0x38;
+        ((dActor_c *)actor)->mFlags &= ~0x38;
         // Local cameras and visual effects consume different random draws.
         // Give each actor update a stream derived from the shared input frame
         // and its stage-relative identity, rather than those local draws.
@@ -221,6 +725,14 @@ int CoopActorBefore(void *actor) {
 }
 
 void CoopActorAfter(dActor_c *actor, u32 success) {
+    if (coopBehaviorHealthSaved) {
+        *(volatile u8 *)0x0211117c=coopBehaviorHealth;
+        coopBehaviorHealthSaved=0;
+    }
+    if (coopBehaviorActor == (u32)actor) {
+        actor->mFlags = (actor->mFlags & ~0x38) | coopBehaviorVisibility;
+        coopBehaviorActor = 0;
+    }
     if (coopEnabled) {
         gActivePlayerSlot = data_020a0f10;
         data_0209f250 = data_020a0f10;
@@ -230,24 +742,30 @@ void CoopActorAfter(dActor_c *actor, u32 success) {
 
 static void Patch(u32 address, void *target) {
     *(volatile u32 *)address = 0xea000000 | (((u32)target-address-8)>>2 & 0x00ffffff);
+    // Invalidate every installed branch, including SDK hooks outside the
+    // scene/actor span. New hook sites must not depend on a fixed cache range.
+    _ZN4CP1514FlushDataCacheEjj(address, 4);
+    _ZN4CP1526InvalidateInstructionCacheEjj(address, 4);
 }
 
 void CoopRuntimeDispatch(unsigned operation, u32 argument) {
     // Reapply the ENTRY hook when that overlay is reloaded for a new party.
     Patch(0x02013b9c, (void *)CoopSaveCurrentFile);
+    Patch(0x0201c0b8, (void *)CoopMessageUpdate);
+    Patch(0x02029b30, (void *)CoopKillPlayer);
+    Patch(0x02029b84, (void *)CoopHitDeathPlane);
     Patch(0x0202ded4, (void *)CoopLoadLevelOverlays);
     Patch(0x0202cc0c, (void *)CoopStageInit);
-    Patch(0x0205d3d4, (void *)CoopReadFile);
+    Patch(0x0205d688, (void *)CoopReadFile);
+    Patch(0x0202e638, (void *)CoopSceneBeforeInit);
+    Patch(0x0202e62c, (void *)CoopSceneAfterInit);
     Patch(0x0202e3d4, (void *)CoopSceneBefore);
     Patch(0x0202e3c8, (void *)CoopSceneAfter);
     Patch(0x0211a210, (void *)CoopEntryCleanup);
     Patch(0x02010fd4, (void *)CoopActorBefore);
     Patch(0x02010fc8, (void *)CoopActorAfter);
-    _ZN4CP1514FlushDataCacheEv();
-    _ZN4CP1526InvalidateInstructionCacheEjj(0x02010fc8, 0x4c410);
-    _ZN4CP1526InvalidateInstructionCacheEjj(0x0211a210, 4);
     if (operation == 0) {
-        coopEntryRetired = coopStageLoading = 0;
+        coopEntryRetired = coopStageLoading = coopMenuLoading = coopFileWaiting = coopSceneInitializing = 0;
         CoopLoadCourseResources((int)argument);
     } else if (operation == 1) {
         CoopStartMatch((void *)argument);

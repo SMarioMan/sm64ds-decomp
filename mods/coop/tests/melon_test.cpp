@@ -1,6 +1,7 @@
 #include "NDS.h"
 #include "Args.h"
 #include "GPU3D_Soft.h"
+#include "Savestate.h"
 #include <fstream>
 #include <iostream>
 #include <sstream>
@@ -13,8 +14,11 @@
 #include <atomic>
 #include <chrono>
 #include <mutex>
+#include <algorithm>
+#include <filesystem>
 
 using namespace melonDS;
+namespace melonDS::Platform { void SetMPRecvTimeout(int timeout); }
 static std::vector<u8> readfile(const std::string& name) {
     std::ifstream f(name,std::ios::binary);
     if(!f)throw std::runtime_error("Cannot read "+name);
@@ -61,10 +65,19 @@ int main(int argc,char** argv) try {
         a.Firmware.GetHeader().MacAddr[5]+=i;
         a.Firmware.UpdateChecksums();
         a.JIT=std::nullopt;
+#ifdef JIT_ENABLED
+        if(std::getenv("COOP_JIT")) {
+            a.JIT=JITArgs();
+            a.JIT->FastMemory=false;
+        }
+#else
+        if(std::getenv("COOP_JIT"))throw std::runtime_error("Frontend built without JIT support");
+#endif
 #ifdef GDBSTUB_ENABLED
         if(i==2)if(const char* port=std::getenv("COOP_GDB_START_ARM9")) {
             GDBArgs debug;
             debug.PortARM9=std::stoi(port);
+            if(const char* arm7=std::getenv("COOP_GDB_START_ARM7"))debug.PortARM7=std::stoi(arm7);
             a.GDB=debug;
         }
 #endif
@@ -73,6 +86,16 @@ int main(int argc,char** argv) try {
             auto rom=readfile(argv[i]);
             auto cart=NDSCart::ParseROM(rom.data(),rom.size(),reinterpret_cast<void*>(uintptr_t(i-1)));
             if(!cart)throw std::runtime_error("ROM parse failed");
+            if(const char* directory=std::getenv("COOP_SAVE_DIR")) {
+                std::filesystem::create_directories(directory);
+                const auto path=std::filesystem::path(directory)/("console-"+std::to_string(i-1)+".sav");
+                if(std::filesystem::exists(path)) {
+                    auto saved=readfile(path.string());
+                    if(saved.size()!=cart->GetSaveMemoryLength())
+                        throw std::runtime_error("Test cartridge save size differs from ROM backup size");
+                    cart->SetSaveMemory(saved.data(),saved.size());
+                }
+            }
             ds->SetNDSCart(std::move(cart));
         }
         ds->Reset();
@@ -85,6 +108,11 @@ int main(int argc,char** argv) try {
     LiveWorkers live;
     const bool realtime=std::getenv("COOP_LIVE")!=nullptr;
     unsigned frameMicros=16667;
+    unsigned maxFrameLead=0;
+    if(const char* lead=std::getenv("COOP_MAX_FRAME_LEAD")) {
+        maxFrameLead=std::stoul(lead);
+        if(maxFrameLead>120)throw std::runtime_error("COOP_MAX_FRAME_LEAD must be between 0 and 120");
+    }
     if(const char* pace=std::getenv("COOP_FRAME_US")) {
         frameMicros=std::stoul(pace);
         if(frameMicros<1000 || frameMicros>1000000)
@@ -93,6 +121,20 @@ int main(int argc,char** argv) try {
     if(realtime)for(size_t i=0;i<consoles.size();i++)live.threads.emplace_back([&,i]{
         auto next=std::chrono::steady_clock::now();
         while(!live.stop) {
+            // A delayed wireless RunFrame must not leave the other consoles
+            // seconds ahead and overwrite LocalMP's finite packet queue.
+            // Leave several frames of slack: a barrier after every frame can
+            // deadlock a core waiting for a peer's next wireless event.
+            if(maxFrameLead) {
+                auto slowest=frames[i].load();
+                for(size_t peer=0;peer<consoles.size();++peer)
+                    if(running[peer])slowest=std::min(slowest,frames[peer].load());
+                if(frames[i].load()>=slowest+maxFrameLead) {
+                    std::this_thread::sleep_for(std::chrono::milliseconds(1));
+                    next=std::chrono::steady_clock::now();
+                    continue;
+                }
+            }
             {
                 std::lock_guard lock(locks[i]);
                 if(consoles[i]->IsRunning()){consoles[i]->RunFrame();++frames[i];}
@@ -111,7 +153,23 @@ int main(int argc,char** argv) try {
     while(std::getline(std::cin,line)) {
         if(line.empty()||line[0]=='#')continue;
         std::istringstream s(line);std::string cmd;s>>cmd;
-        if(cmd=="run") {
+        if(cmd=="mptimeout") {
+            int timeout;if(!(s>>timeout)||timeout<0||timeout>10000)throw std::runtime_error("Bad MP timeout");
+            // LocalMP's setting is not atomic. Change it only while every
+            // console is between frames, without modifying the core or packets.
+            std::vector<std::unique_lock<std::mutex>> held;
+            const auto deadline=std::chrono::steady_clock::now()+std::chrono::seconds(30);
+            while(held.size()!=locks.size()) {
+                held.clear();
+                for(auto& mutex:locks) {
+                    held.emplace_back(mutex,std::try_to_lock);
+                    if(!held.back().owns_lock()){held.clear();break;}
+                }
+                if(std::chrono::steady_clock::now()>deadline)throw std::runtime_error("Could not pause cores to set MP timeout");
+                if(held.empty())std::this_thread::yield();
+            }
+            Platform::SetMPRecvTimeout(timeout);
+        } else if(cmd=="run") {
             unsigned n;if(!(s>>n)||n>36000)throw std::runtime_error("Bad frame count");
             if(realtime) {
                 std::vector<unsigned long> targets;
@@ -130,6 +188,23 @@ int main(int argc,char** argv) try {
                             complete=false;
                             if(now-changed[i]>std::chrono::seconds(60)) {
                                 std::cerr<<"Frame stalled on console "<<i<<" at "<<frame<<std::endl;
+                                // A stuck core owns its mutex. Capture only
+                                // peers we can lock safely, without touching
+                                // the stalled core's live emulated state.
+                                if(const char* directory=std::getenv("COOP_STALL_DUMP_DIR")) {
+                                    for(size_t peer=0;peer<consoles.size();peer++) {
+                                        std::unique_lock capture(locks[peer],std::try_to_lock);
+                                        if(!capture.owns_lock())continue;
+                                        auto& core=*consoles[peer];
+                                        std::string prefix=std::string(directory)+"/stalled-peer-"+std::to_string(peer);
+                                        std::ofstream ram(prefix+".ram",std::ios::binary);
+                                        ram.write(reinterpret_cast<char*>(core.MainRAM),0x400000);
+                                        std::ofstream tcm(prefix+".dtcm",std::ios::binary);
+                                        tcm.write(reinterpret_cast<char*>(core.ARM9.DTCM),0x4000);
+                                        std::cerr<<"Captured peer "<<peer<<" ARM9 PC "<<std::hex<<core.ARM9.R[15]
+                                                 <<" ARM7 PC "<<core.ARM7.R[15]<<std::dec<<std::endl;
+                                    }
+                                }
                                 throw std::runtime_error("A console made no frame progress for 60 seconds");
                             }
                         }
@@ -157,15 +232,48 @@ int main(int argc,char** argv) try {
             if(cmd=="touch") { unsigned x,y;if(!(s>>x>>y)||x>255||y>191)throw std::runtime_error("Bad touch");ds.TouchScreen(x,y); }
             else if(cmd=="release")ds.ReleaseScreen();
             else if(cmd=="keys") { unsigned k;if(!(s>>std::hex>>k))throw std::runtime_error("Bad key mask");ds.SetKeyMask(k); }
+            else if(cmd=="poweroff") {
+                // Remove a console like closing its emulator window. Peers
+                // must detect the missing radio through the normal transport;
+                // no RAM, registers, receive buffers or packets are injected.
+                ds.Stop(Platform::StopReason::PowerOff);
+                Platform::MP_End(reinterpret_cast<void*>(i));
+                running[i]=false;
+            }
 #ifdef GDBSTUB_ENABLED
             else if(cmd=="gdb") { unsigned port;if(!(s>>port)||port>65535)throw std::runtime_error("Bad GDB port");GDBArgs args;args.PortARM9=port;ds.SetGdbArgs(args); }
 #endif
             else if(cmd=="screen") { std::string p;s>>p;image(ds,p); }
+            else if(cmd=="dumpcart") {
+                std::string path;s>>path;
+                const auto length=ds.GetNDSSaveLength();
+                const auto data=ds.GetNDSSave();
+                if(!data || !length)throw std::runtime_error("Console has no cartridge backup memory");
+                std::ofstream file(path,std::ios::binary);
+                file.write(reinterpret_cast<const char*>(data),length);
+                if(!file)throw std::runtime_error("Cannot capture cartridge backup memory");
+            }
+            else if(cmd=="dumpwifi") {
+                // Capture only; never load a state or alter the transport.
+                std::string path;s>>path;
+                Savestate capture(0x10000);
+                ds.Wifi.DoSavestate(&capture);
+                capture.Finish();
+                if(capture.Error)throw std::runtime_error("Cannot capture wireless state");
+                std::ofstream file(path,std::ios::binary);
+                file.write(reinterpret_cast<const char*>(capture.Buffer()),capture.Length());
+                if(!file)throw std::runtime_error("Cannot write wireless state capture");
+            }
             else if(cmd=="read") { unsigned addr,n;s>>std::hex>>addr>>std::dec>>n;if(addr<0x02000000||addr+n>0x02400000||n>1024)throw std::runtime_error("Read outside main RAM");std::cout<<"RAM "<<i<<" "<<std::hex<<addr<<":";for(unsigned j=0;j<n;j++)std::cout<<" "<<unsigned(ds.MainRAM[(addr+j)&ds.MainRAMMask]);std::cout<<std::dec<<"\n"; }
             else if(cmd=="regs") {
                 for(int reg=0;reg<16;reg++)std::cout<<"r"<<reg<<"="<<std::hex<<ds.ARM9.R[reg]<<" ";
                 std::cout<<"arm7:";for(int reg=0;reg<16;reg++)std::cout<<" r"<<reg<<"="<<std::hex<<ds.ARM7.R[reg]<<" ";
                 std::cout<<"dtcm="<<ds.ARM9.DTCMBase<<std::dec<<"\n";
+                std::cout<<"irq9: ime="<<std::hex<<ds.ARM9Read32(0x04000208)
+                         <<" ie="<<ds.ARM9Read32(0x04000210)<<" if="<<ds.ARM9Read32(0x04000214)
+                         <<" dispstat="<<ds.ARM9Read16(0x04000004)<<" vcount="<<ds.ARM9Read16(0x04000006)
+                         <<" cpustop="<<ds.CPUStop<<" cpsr9="<<ds.ARM9.CPSR<<" cpsr7="<<ds.ARM7.CPSR
+                         <<std::dec<<"\n";
                 u32 sp=ds.ARM9.R[13];
                 for(unsigned word=0;word<64;word++) {
                     u32 address=sp+word*4,value=0;

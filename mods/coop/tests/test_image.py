@@ -15,9 +15,9 @@ BASE = Path(os.environ.get('COOP_BASEROM', '/workspace/inputs/sm64ds-eu.nds'))
 BUILD = REPO / 'build/coop'
 
 
-def destination(data, offset, address):
+def destination(data, offset, address, link=False):
     word = struct.unpack_from('<I', data, offset)[0]
-    if word >> 24 != 0xEA:
+    if word >> 24 != (0xEB if link else 0xEA):
         raise AssertionError('Expected unconditional ARM branch')
     signed = word & 0xFFFFFF
     if signed & 0x800000:
@@ -96,7 +96,12 @@ class ImageTests(unittest.TestCase):
             ('CoopOriginalEntryCleanup', 0x0211A210, bytes.fromhex('00402de9')),
             ('CoopOriginalStageInit',0x0202CC0C,bytes.fromhex('f04f2de9')),
             ('CoopOriginalSceneBefore',0x0202E3D4,bytes.fromhex('10402de9')),
-            ('CoopOriginalActorBefore',0x02010FD4,bytes.fromhex('10402de9'))]:
+            ('CoopOriginalActorBefore',0x02010FD4,bytes.fromhex('10402de9')),
+            ('CoopOriginalReadFile',0x0205D688,bytes.fromhex('f0402de9')),
+            ('CoopOriginalMessageUpdate',0x0201C0B8,bytes.fromhex('70402de9')),
+            ('CoopOriginalKillPlayer',0x02029B30,bytes.fromhex('00402de9')),
+            ('CoopOriginalHitDeathPlane',0x02029B84,bytes.fromhex('00402de9')),
+            ('CoopOriginalLoadEntrances',0x020FE6C8,bytes.fromhex('f04f2de9'))]:
             offset=symbols[name]-self.module_base
             self.assertEqual(self.body[offset:offset+4],prologue)
             self.assertEqual(destination(self.body,offset+4,symbols[name]+4),original_address+4)
@@ -106,6 +111,21 @@ class ImageTests(unittest.TestCase):
     def test_control_is_retail(self):
         control = (BUILD / 'baseline.nds').read_bytes()
         self.assertEqual(hashlib.sha256(control).digest(), hashlib.sha256(self.original).digest())
+
+    def test_camera_completion_read_thunk(self):
+        elf=ELFFile(io.BytesIO((BUILD/'runtime.elf').read_bytes()))
+        symbols={s.name:s['st_value'] for s in elf.get_section_by_name('.symtab').iter_symbols()}
+        address=symbols['CoopCameraFlagsRead']
+        offset=address-self.module_base
+        # The replaced native LDR changes only r0. Preserve all the other
+        # volatile registers across the C helper, then return after the BL.
+        self.assertEqual(self.body[offset:offset+4],struct.pack('<I',0xe92d500e))
+        self.assertEqual(self.body[offset+8:offset+12],struct.pack('<I',0xe8bd900e))
+        self.assertEqual(destination(self.body,offset+4,address+4,link=True),symbols['CoopSharedCameraFlags'])
+        player=self.stock.loadArm9Overlays()[2]
+        for site in (0x020c4364,0x020c4b34):
+            start=site-player.ramAddress
+            self.assertEqual(player.data[start:start+8],struct.pack('<2I',0xe5900154,0xe2100902))
 
 
 if __name__ == '__main__':

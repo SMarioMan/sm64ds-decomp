@@ -26,7 +26,7 @@ def main():
     output.mkdir(parents=True, exist_ok=True)
     env = dict(os.environ, COOP_LIVE='1')
     with (output / 'transcript.log').open('w') as log:
-        process = subprocess.Popen([str(REPO / 'build/coop/melon-test'), str(args.rom.resolve()), '-', '-', '-'],
+        process = subprocess.Popen([os.environ.get('COOP_HARNESS_EXE',str(REPO / 'build/coop/melon-test')), str(args.rom.resolve()), '-', '-', '-'],
                                    stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
                                    text=True, bufsize=1, env=env)
         lines = queue.Queue()
@@ -97,7 +97,23 @@ def main():
             run(120)
             screens('confirmation-')
             accept_clients()
-            run(1200)
+            for attempt in range(30):
+                run(120)
+                for i in range(1,4):
+                    if ram(i,0x023ffc40,2)==2:continue
+                    touch(i,180,75)
+                    if ram(i,0x023ffc40,2)==2:continue
+                    command(f'keys {i} ffe')
+                    run(12)
+                    command(f'keys {i} fff')
+                # The unmodified cartridge requires the host's START touch.
+                # Wait for all image headers rather than racing discovery.
+                work=ram(0,0x020a9db8,4)
+                if 0x02000000<=work<0x023f0000 and all(
+                        ram(0,work+0x14e8+4*i,4)==14 for i in range(3)):
+                    touch(0,128,170)
+                if all(ram(i,0x023ffc40,2)==2 for i in range(1,4)):
+                    break
             screens('after-download-')
             reached = False
             for attempt in range(12):

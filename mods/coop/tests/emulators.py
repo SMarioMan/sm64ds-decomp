@@ -10,15 +10,20 @@ ROOT = Path(__file__).resolve().parents[3]
 
 
 class Emulators:
-    def __init__(self, rom, clients, output):
+    def __init__(self, rom, clients, output, mp_timeout_ms=None, real_time=True):
         self.output = Path(output).resolve()
         self.output.mkdir(parents=True, exist_ok=True)
         self.log = (self.output/'transcript.log').open('w')
+        environment=dict(os.environ, COOP_LIVE='1',COOP_STALL_DUMP_DIR=str(self.output))
+        if not real_time:
+            environment.pop('COOP_LIVE',None)
+        if mp_timeout_ms is not None:
+            environment['COOP_MP_TIMEOUT_MS']=str(mp_timeout_ms)
         self.process = subprocess.Popen(
             [os.environ.get('COOP_HARNESS_EXE', str(ROOT/'build/coop/melon-test')),
              str(Path(rom).resolve()), *['-']*clients],
             stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
-            text=True, bufsize=1, env=dict(os.environ, COOP_LIVE='1'))
+            text=True, bufsize=1, env=environment)
         self.count = clients+1
         self.lines = queue.Queue()
         self.reader = threading.Thread(target=self._collect, daemon=True)
@@ -70,6 +75,25 @@ class Emulators:
         self.run(12)
         for i in range(1,self.count):
             self.command(f'keys {i} fff')
+
+    def select_firmware_downloads(self):
+        """Retry real firmware selection without selecting the signed menu.
+
+        The BIOS multiboot marker is mirrored in main RAM. Once it is 2 the
+        console has left firmware; never send these retries to its application.
+        """
+        attempts=0
+        for i in range(1,self.count):
+            if self.read(i,0x023ffc40,2)==b'\x02\0':
+                continue
+            self.touch(i,180,75)
+            if self.read(i,0x023ffc40,2)==b'\x02\0':
+                continue
+            self.command(f'keys {i} ffe')
+            self.run(12)
+            self.command(f'keys {i} fff')
+            attempts+=1
+        return attempts
 
     def screens(self, name):
         for i in range(self.count):

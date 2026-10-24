@@ -26,6 +26,7 @@ from relocatable import pack, relocations
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--station',type=Path,default=Path('/workspace/inputs/download-station.nds'))
     parser.add_argument('--package', type=Path,
                         help='HaxxStation package containing demomenu and rom0000d; defaults to the boot probe')
     parser.add_argument('--output', type=Path,
@@ -34,12 +35,24 @@ def main():
                         help='Number of Download Play clients to bootstrap before changing sessions')
     parser.add_argument('--handoff', action='store_true',
                         help='Return to the native game lobby after every payload finishes')
+    parser.add_argument('--rearm-mp-after-boot', action='store_true',
+                        help='Experiment: restart MP after firmware clients depart; retain the parent BSS')
+    parser.add_argument('--serial-boot',action='store_true',
+                        help='Experiment: boot each signed client after the previous client receives its menu')
+    parser.add_argument('--restart-station-parent',action='store_true',
+                        help='Experiment: recreate the native MB parent after firmware departure, retaining its TGID')
+    parser.add_argument('--channel',type=int,choices=(1,7,13),
+                        help='Use a fixed radio channel instead of the native channel measurement')
+    parser.add_argument('--beacon-period',type=int,
+                        help='Experiment: override the parent beacon interval in 802.11 time units (10..1000)')
     args = parser.parse_args()
+    if args.beacon_period is not None and not 10<=args.beacon_period<=1000:
+        parser.error('--beacon-period must be between 10 and 1000')
     root = ROOT/'build/coop/bootstrap'
     root.mkdir(parents=True, exist_ok=True)
     original = (ROOT/'build/coop/sm64ds-coop-experimental.nds').read_bytes()
     rom = ndspy.rom.NintendoDSRom(original)
-    station = ndspy.rom.NintendoDSRom.fromFile('/workspace/inputs/download-station.nds')
+    station = ndspy.rom.NintendoDSRom.fromFile(args.station)
     signed = station.files[station.filenames.idOf('mb/ds_demo_client.srl')]
     package_path = args.package or root/'haxxstation-boot-probe.nds'
     package = ndspy.rom.NintendoDSRom.fromFile(package_path)
@@ -65,14 +78,23 @@ def main():
     base = 0x02200000
     game['CoopOriginalMBTick'] = base+0x1800
     game['CoopOriginalMBReceive'] = base+0x1808
+    game['CoopOriginalParentEvent'] = base+0x1810
+    game['CoopOriginalMBSend'] = base+0x1818
     boot_size = sum(struct.unpack_from('<I',signed,p)[0] for p in (0x2c,0x3c))+0x1e8
     define = [f'COOP_EXPECTED_CLIENTS={args.clients}', f'COOP_GAME_HANDOFF={int(args.handoff)}',
+              f'COOP_REARM_MP_AFTER_BOOT={int(args.rearm_mp_after_boot)}',
+              f'COOP_SERIAL_BOOT={int(args.serial_boot)}',
+              f'COOP_RESTART_STATION_PARENT={int(args.restart_station_parent)}',
+              f'COOP_BOOT_CHANNEL={args.channel or 0}',
+              f'COOP_BOOT_BEACON_PERIOD={args.beacon_period or 0}',
               f'COOP_SIGNED_BOOT_FILE={ids[1]}', f'COOP_SIGNED_BOOT_SIZE={boot_size}',
               f'COOP_MENU_FILE={ids[2]}', f'COOP_MENU_SIZE={len(menu)}',
               f'COOP_PAYLOAD_FILE={ids[3]}', f'COOP_PAYLOAD_SIZE={len(probe)}']
     body, exports = link(ROOT/'mods/coop/bootstrap/host.cpp', root/'host', base, game, launcher, cc, ld, define)
     game['CoopOriginalMBTick'] = base+len(body)
     game['CoopOriginalMBReceive'] = base+len(body)+8
+    game['CoopOriginalParentEvent'] = base+len(body)+16
+    game['CoopOriginalMBSend'] = base+len(body)+24
     body, exports = link(ROOT/'mods/coop/bootstrap/host.cpp', root/'host', base, game, launcher, cc, ld, define)
     arm9 = ndspy.codeCompression.decompress(rom.arm9)
     old_tick = game['func_0203e20c']
@@ -85,8 +107,19 @@ def main():
     if receive_prologue != bytes.fromhex('f0412de9'):
         raise ValueError('Unexpected MB receive prologue: '+receive_prologue.hex())
     body += receive_prologue + branch(base+len(body)+4,receive+4)
+    parent_event=game['func_02066a94']
+    event_prologue=arm9[parent_event-rom.arm9RamAddress:parent_event-rom.arm9RamAddress+4]
+    if event_prologue!=bytes.fromhex('f0472de9'):
+        raise ValueError('Unexpected MB parent event prologue')
+    body+=event_prologue+branch(base+len(body)+4,parent_event+4)
+    mb_send=game['func_02065f78']
+    send_prologue=arm9[mb_send-rom.arm9RamAddress:mb_send-rom.arm9RamAddress+4]
+    if send_prologue!=bytes.fromhex('30402de9'):
+        raise ValueError('Unexpected MB sender prologue: '+send_prologue.hex())
+    body+=send_prologue+branch(base+len(body)+4,mb_send+4)
     fixups = relocations(root/'host.o',root/'host.elf',base,body)
-    fixups.extend([0x80000000 | (len(body)-12),0x80000000 | (len(body)-4)])
+    fixups.extend([0x80000000 | (len(body)-28),0x80000000 | (len(body)-20),0x80000000 | (len(body)-12),
+                   0x80000000 | (len(body)-4)])
     blob = pack(base,body,exports['CoopBootstrapInit'],sorted(fixups))
     (root/'host-relocatable.bin').write_bytes(blob)
     # This variant offers the station's signed SRL, so the parent's unused
@@ -159,12 +192,27 @@ def main():
             'output':str(result),'sha256':hashlib.sha256(output).hexdigest(),
             'package':str(package_path),
             'clients':args.clients,'nativeGameHandoff':args.handoff,
+            'rearmMPAfterBoot':args.rearm_mp_after_boot,
+            'serialSignedBoot':args.serial_boot,
+            'restartStationParent':args.restart_station_parent,
+            'fixedRadioChannel':args.channel,
+            'fixedBeaconPeriodTu':args.beacon_period,
             'originalFileCount':len(rom.files),'preservedNativeArchives':True,
             'wirelessFilesystemHeader':filesystem_header.hex(),
             'files':dict(zip(('bootstrap','signedClient','menu','unsignedPayload'),ids)),
             'loaderAddress':hex(loader_address),'loaderBytes':len(loader),'bodyBytes':len(body),'fixups':len(fixups),
             'bodyLinkBase':hex(base),'bootstrapEntryOffset':exports['CoopBootstrapInit']-base,
+            'bootstrapDiagnostics':{
+                'tickOffset':exports['CoopBootstrapMBTick']-base,
+                'stationAssociationsOffset':exports['stationAssociations']-base,
+                'bootAcceptedOffset':exports['bootAccepted']-base,
+                'bootControlsOffset':exports['bootControls']-base},
             'signedClientSha256':hashlib.sha256(signed).hexdigest()}
+    if args.restart_station_parent:
+        report['bootstrapDiagnostics']['stationRestartedOffset']=exports['stationRestarted']-base
+    story_report=json.loads((ROOT/'build/coop/build.json').read_text())
+    report['experimentalHostSaveSlot']=story_report.get('experimentalHostSaveSlot')
+    report['runtimeModule']=story_report['runtimeModule']
     report_path = result.with_suffix('.json') if args.output else root/'host.json'
     report_path.write_text(json.dumps(report,indent=2)+'\n')
     print(json.dumps(report,indent=2))

@@ -1,8 +1,9 @@
 """Build relocatable ARM payloads from the pinned CodeWarrior ELF output.
 
 Internal PC-relative branches need no relocation. The final ELF retains internal
-ABS32 fixups, while object relocation records identify external PC24 calls that
-must be adjusted when a heap-loaded payload moves. No instruction scanning.
+ABS32 fixups, while object relocation records recover literals referring to
+absolute linker symbols and identify external PC24 calls that must be adjusted
+when a heap-loaded payload moves. No instruction scanning.
 """
 import io
 import struct
@@ -42,12 +43,14 @@ def relocations(obj_path, elf_path, base, payload):
         if section['sh_type'] not in ('SHT_REL', 'SHT_RELA'):
             continue
         for relocation in section.iter_relocations():
-            if relocation['r_info_type'] != 1:
+            kind = relocation['r_info_type']
+            if kind not in (1, 2):
                 continue
             target = symbols.get_symbol(relocation['r_info_sym'])
             if target['st_shndx'] != 'SHN_UNDEF':
                 continue
-            if base <= values.get(target.name, 0) < base + len(payload):
+            internal = base <= values.get(target.name, 0) < base + len(payload)
+            if (kind == 1 and internal) or (kind == 2 and not internal):
                 continue
             offset = relocation['r_offset']
             owner = next((s for s in functions.get(section['sh_info'], [])
@@ -58,6 +61,16 @@ def relocations(obj_path, elf_path, base, payload):
             if not 0 <= linked <= len(payload) - 4:
                 raise ValueError('Branch outside payload')
             word = struct.unpack_from('<I', payload, linked)[0]
+            if kind == 2:
+                # Absolute linker definitions lose their final ELF relocation.
+                # In particular, a CodeWarrior tail-call veneer contains an
+                # LDR/BX address literal pointing at an appended trampoline.
+                # Recover its ABS32 record from the object, without scanning
+                # instructions or mistaking ordinary constants for pointers.
+                if not base <= word < base + len(payload):
+                    raise ValueError('Internal ABS32 target outside payload')
+                records.add(linked)
+                continue
             if word & 0x0e000000 != 0x0a000000:
                 raise ValueError('PC24 relocation is not an ARM branch')
             records.add(0x80000000 | linked)

@@ -13,6 +13,8 @@
 #include <unistd.h>
 #include <cstdlib>
 #include <stdexcept>
+#include <fstream>
+#include <filesystem>
 
 namespace melonDS::Platform {
 static FILE* fp(FileHandle* p) { return reinterpret_cast<FILE*>(p); }
@@ -22,7 +24,7 @@ static LocalMP& bus() {
     static const bool configured=[] {
         if(const char* value=std::getenv("COOP_MP_TIMEOUT_MS")) {
             const int timeout=std::stoi(value);
-            if(timeout<1 || timeout>10000)throw std::runtime_error("Invalid COOP_MP_TIMEOUT_MS");
+            if(timeout<0 || timeout>10000)throw std::runtime_error("Invalid COOP_MP_TIMEOUT_MS");
             b.SetRecvTimeout(timeout);
         }
         return true;
@@ -30,6 +32,8 @@ static LocalMP& bus() {
     (void)configured;
     return b;
 }
+// The frontend holds every core mutex before changing this transport setting.
+void SetMPRecvTimeout(int timeout) { bus().SetRecvTimeout(timeout); }
 void SignalStop(StopReason r, void* p) { fprintf(stderr,"STOP instance=%d reason=%d\n",instance(p),r); }
 std::string GetLocalFilePath(const std::string& p) { return p; }
 FileHandle* OpenFile(const std::string& p,FileMode m) {
@@ -84,8 +88,20 @@ bool Mutex_TryLock(Mutex* m) { return m->m.try_lock(); }
 void Sleep(u64 us) { std::this_thread::sleep_for(std::chrono::microseconds(us)); }
 u64 GetUSCount() { return std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::steady_clock::now().time_since_epoch()).count(); }
 u64 GetMSCount() { return GetUSCount()/1000; }
-// Tests keep all save and firmware changes in each emulated console's RAM.
-void WriteNDSSave(const u8*,u32,u32,u32,void*) {}
+// Persistence tests opt into a private directory. Ordinary runs retain all
+// save changes in RAM, and firmware is never written back to the inputs.
+void WriteNDSSave(const u8* data,u32 length,u32,u32,void* peer) {
+    const char* directory=std::getenv("COOP_SAVE_DIR");
+    if(!directory)return;
+    const auto path=std::filesystem::path(directory)/("console-"+std::to_string(instance(peer))+".sav");
+    auto temporary=path;
+    temporary+=".tmp";
+    std::ofstream file(temporary,std::ios::binary|std::ios::trunc);
+    file.write(reinterpret_cast<const char*>(data),length);
+    file.close();
+    if(!file)throw std::runtime_error("Cannot persist test cartridge save");
+    std::filesystem::rename(temporary,path);
+}
 void WriteGBASave(const u8*,u32,u32,u32,void*) {}
 void WriteFirmware(const Firmware&,u32,u32,void*) {}
 void WriteDateTime(int,int,int,int,int,int,void*) {}

@@ -25,6 +25,7 @@ ROOT = Path(__file__).resolve().parents[3]
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--host', type=Path, default=ROOT/'build/coop/bootstrap/sm64ds-haxxstation-host-experimental.nds')
+    parser.add_argument('--station',type=Path,default=Path('/workspace/inputs/download-station.nds'))
     args = parser.parse_args()
     root = ROOT/'build/coop/bootstrap'
     host_image=args.host.read_bytes()
@@ -99,7 +100,7 @@ def main():
     client = root/'game-client.nds'
     rom.saveToFile(client)
     output = root/'haxxstation-game-client.nds'
-    subprocess.run(['dspatch', '-s', '/workspace/inputs/download-station.nds',
+    subprocess.run(['dspatch', '-s', str(args.station),
                     '-i', str(client), '-o', str(output)], check=True)
     # WFS sizes its receive table from the running cartridge header before
     # fetching the actual table from the parent. The executable-only SRL has
@@ -111,7 +112,7 @@ def main():
     struct.pack_into('<H',payload,0x15e,_common.crc16(payload[:0x15e]))
     package.files[payload_id]=payload
     package.saveToFile(output)
-    original_station=ndspy.rom.NintendoDSRom.fromFile('/workspace/inputs/download-station.nds')
+    original_station=ndspy.rom.NintendoDSRom.fromFile(args.station)
     for name in ('mb/ds_demo_client.srl','mb/ds_demo_client.sgn'):
         if package.files[package.filenames.idOf(name)]!=original_station.files[original_station.filenames.idOf(name)]:
             raise ValueError('Signed first-stage asset changed: '+name)

@@ -10,6 +10,8 @@ extern dScEntry_c::StepSet data_ov075_0211d8d0;
 extern "C" {
 void CoopOriginalMBTick(void);
 void CoopOriginalMBReceive(void *, u32);
+void CoopOriginalParentEvent(int, void *);
+void CoopOriginalMBSend(void);
 u32 _ZN3IRQ7DisableEv(void);
 void _ZN3IRQ7RestoreEj(u32 state);
 void FS_InitFile(void *file);
@@ -21,7 +23,8 @@ int func_02061c88(int port, void *callback, int argument);
 int func_0206703c(unsigned aid, int request);
 int func_02067250(unsigned aid);
 int func_02068e44(int parentSize, int childSize, int entries);
-void func_02067f2c(u32 size, u32 bitmap, void *data);
+int func_02067f2c(u32 size, u32 bitmap, void *data);
+u8 *func_02065d5c(void *record, u8 *destination);
 void _ZN4CP1514FlushDataCacheEjj(u32 address, u32 size);
 void _ZN4CP1526InvalidateInstructionCacheEjj(u32 address, u32 size);
 extern u8 data_020a0fec[];
@@ -30,6 +33,9 @@ extern int data_020a0f50;
 extern int data_020a0f70;
 extern u8 data_020a0f04;
 extern u8 data_020a0f08;
+extern u16 data_020a0f28;
+extern u16 data_020a0f20;
+extern int data_020a0f40;
 extern u8 data_020a0f9d[];
 extern char *data_020a9db4;
 extern u8 *data_020a9db8;
@@ -48,30 +54,99 @@ struct PortReceive {
 };
 static u32 callbacksInstalled = 0;
 struct Peer {
-    u32 phase, offset, chunk, repeats, cooldown;
+    u32 phase, offset, chunk, repeats, cooldown, generation;
 };
 static Peer peers[4];
 static u8 *menuData = 0;
 static u8 *payloadData = 0;
 static u16 *transmitBuffer = 0;
+static u8 *mpSendWork = 0;
 static volatile u32 transmitBusy = 0;
-static u32 transmitAid, transmitPhase, transmitBytes, nextAid = 1;
+static u32 transmitAid, transmitPhase, transmitBytes, transmitGeneration, nextAid = 1;
 static u32 payloadDone = 0;
 static u32 stationChildren = 0;
+static u32 stationAssociations = 0;
 static u32 bootstrapPhase = 1;
+static volatile u32 bootAccepted = 0;
 static u32 bootControls[4];
 static u32 handoffDelay = 0;
-static const u32 hookAddresses[6]={0x02067e70,0x02067bfc,0x0203e20c,
-                                 0x0206655c,0x02066470,0x02068dc8};
-static u32 originalHooks[6];
+static const u32 hookAddresses[8]={0x02067e70,0x02067bfc,0x0203e20c,
+                                 0x0206655c,0x02066470,0x02068dc8,0x02066a94,0x02065f78};
+static u32 originalHooks[8];
 static u32 originalRegistryId;
 static u16 originalGameId[2];
 static dScEntry_c *entryScene;
 static mHeap::Heap_t *assetHeap;
 static void Pump();
-void CoopBootstrapControl(u8 type, u32 bitmap);
+int CoopBootstrapControl(u8 type, u32 bitmap);
 void func_02065f78(void);
 static volatile u32 *const debug = (volatile u32 *)0x02000000;
+static u32 nextBootAid=1;
+#if COOP_RESTART_STATION_PARENT
+static u32 stationRestarted=0;
+static u16 firmwareTGID=0;
+#endif
+
+void CoopBootstrapMBSend(void) {
+    // Keep the parent available for scans between associations. Empty MP
+    // sends have no recipient and needlessly keep the radio in its data loop.
+    // CONNECTED and the normal tick resume the sender when a child returns.
+    if (!data_020a9db4 || !WM_WORK->childBitmap)return;
+#if COOP_SERIAL_BOOT
+    // Retain the other firmware children in their ready-to-boot state until
+    // this signed client has actually received its menu. Their occupied AIDs
+    // keep the reconnecting client's radio slot stable. Native MB continues
+    // serving its fake-child handshake and NI requests between boot commands.
+    while (nextBootAid<=COOP_EXPECTED_CLIENTS && peers[nextBootAid].phase>=4)
+        ++nextBootAid;
+    u32 interrupts=_ZN3IRQ7DisableEv();
+    u32 hidden=0;
+    for (unsigned aid=1;aid<=COOP_EXPECTED_CLIENTS;++aid) {
+        s32 *state=(s32 *)(data_020a9db8+0x14e8+(aid-1)*4);
+        if (aid!=nextBootAid && *state==8) {
+            *state=0;
+            hidden|=1u<<aid;
+        }
+    }
+    CoopOriginalMBSend();
+    for (unsigned aid=1;aid<=COOP_EXPECTED_CLIENTS;++aid)
+        if (hidden&(1u<<aid))*(s32 *)(data_020a9db8+0x14e8+(aid-1)*4)=8;
+    _ZN3IRQ7RestoreEj(interrupts);
+#else
+    CoopOriginalMBSend();
+#endif
+    // Count every sender invocation, including completion-driven calls.
+    ++debug[15];
+}
+#if COOP_REARM_MP_AFTER_BOOT
+int WM_CheckStateEx(int count, ...);
+void WM_SetCallbackTable(int api, void *callback);
+int WM_SendCommand(s16 api, u16 arguments, ...);
+int func_020625fc(void *callback, int receive, int receiveSize, int send,
+                  u16 sendSize, u16 frequency, u16 minimum, int maximum,
+                  int single, int fixed, int ignoreFatal);
+void func_02069994(char *packet);
+static volatile u32 mpRearm = 0;
+static volatile u32 mpNewAssociation = 0;
+void CoopBootEndMP(void *packet) {
+    u16 error = ((u16 *)packet)[1];
+    debug[31] = bootAccepted | (error << 16) | 0x200;
+    WM_SetCallbackTable(0x10, 0);
+    if (error) {
+        mpRearm = 0;
+        return;
+    }
+    WM_WORK->mpStarted = 0;
+    WM_WORK->mpSending = 0;
+    // EndMP preserves WM's port callback table. Keep the receivers installed
+    // throughout the restart, including a child's first reconnect packet.
+    *(u32 *)(data_020a9db8+0x1324) = 0;
+    // Retain parent mode, channel/TGID and beacons. Wait for an actual new
+    // association before starting another MP clock, rather than a tick delay.
+    mpRearm = 2;
+    mpNewAssociation = 0;
+}
+#endif
 
 static void Patch(u32 address, void *target) {
     *(u32 *)address = 0xea000000 | (((u32)target-address-8)>>2 & 0x00ffffff);
@@ -86,12 +161,14 @@ static void RestoreBootstrap() {
     assetHeap->Deallocate(payloadData);
     assetHeap->Deallocate(menuData);
     assetHeap->Deallocate(transmitBuffer);
+    assetHeap->Deallocate(mpSendWork);
     payloadData=menuData=0;
     transmitBuffer=0;
+    mpSendWork=0;
     *(u32 *)(data_020a0fec+0x14)=originalRegistryId;
     *(u16 *)(data_020a1064+6)=originalGameId[0];
     *(u16 *)(data_020a1064+8)=originalGameId[1];
-    for (unsigned i=0;i<6;++i) {
+    for (unsigned i=0;i<8;++i) {
         *(u32 *)hookAddresses[i]=originalHooks[i];
         _ZN4CP1514FlushDataCacheEjj(hookAddresses[i],4);
         _ZN4CP1526InvalidateInstructionCacheEjj(hookAddresses[i],4);
@@ -99,11 +176,33 @@ static void RestoreBootstrap() {
 }
 
 int CoopBootstrapSetPacketSize(int, int childSize, int entries) {
-    if (WM_WORK->initialized || !func_02068e44(0xfe,childSize,entries))
+    if (!mpSendWork || WM_WORK->initialized || !func_02068e44(0xfe,childSize,entries))
         return 0;
+    // Retail MB aliases its message source with WM's MP assembly workspace.
+    // That single-port shortcut corrupts the MB message when NI menu/payload
+    // packets share a frame: their chunk number becomes an MB command byte.
+    // Keep every queued message source separate from the SDK's output buffer.
+    WM_WORK->sendBuf=(char *)mpSendWork;
+#if COOP_RESTART_STATION_PARENT
+    if (!stationRestarted)firmwareTGID=WM_WORK->parentParam.tgid;
+    else {
+        WM_WORK->parentParam.tgid=firmwareTGID;
+        data_020a0f20=firmwareTGID;
+    }
+#endif
     WM_WORK->parentParam.maxEntry=entries;
     WM_WORK->parentMaxSize=0xfe;
     WM_WORK->childMaxSize=childSize;
+#if COOP_BOOT_BEACON_PERIOD
+    // The signed station scans for this parent after its firmware reset.
+    // Keep this opt-in while checking discovery against the native 200..219 TU.
+    WM_WORK->parentParam.beaconPeriod=COOP_BOOT_BEACON_PERIOD;
+#endif
+#if COOP_BOOT_CHANNEL
+    // Native MB start consumes this measured channel after packet sizing.
+    // Keep the signed loader and subsequent native session on the same radio.
+    data_020a0f28=COOP_BOOT_CHANNEL;
+#endif
     return 1;
 }
 
@@ -156,7 +255,7 @@ void CoopStationSent(u8 *result) {
     if (error)
         return; // retry on the next parent tick, not recursively in the IRQ
     ++debug[26];
-    if (peer->phase==transmitPhase) {
+    if (peer->phase==transmitPhase && peer->generation==transmitGeneration) {
         if (peer->phase==1 || peer->phase==5) {
             if (++peer->repeats>=1) {
                 ++peer->phase; // wait for the child's port-14/15 length ACK
@@ -192,20 +291,31 @@ void CoopStationSent(u8 *result) {
 }
 
 static void Pump() {
-    if (stationChildren!=((1u<<(COOP_EXPECTED_CLIENTS+1))-2))
-        return;
-    for (unsigned aid=1;aid<=COOP_EXPECTED_CLIENTS;++aid)
-        if (!peers[aid].phase)return;
+    // Serve the signed loader's menu as soon as each child asks. Waiting
+    // for the last child here strands earlier requests during mixed firmware
+    // and signed-loader reconnects. Gate only execution payloads, so all
+    // native game clients still start within their connection deadline.
     u32 interrupts=_ZN3IRQ7DisableEv();
-    if (transmitBusy || !transmitBuffer) {
+    if (bootstrapPhase==2 || transmitBusy || !transmitBuffer || !data_020a9db4 ||
+        !WM_WORK->initialized || !WM_WORK->mpStarted || WM_WORK->resetting) {
         _ZN3IRQ7RestoreEj(interrupts);
         return;
+    }
+    bool payloadReady=stationChildren==((1u<<(COOP_EXPECTED_CLIENTS+1))-2);
+    bool payloadTransferred=true;
+    for (unsigned aid=1;aid<=COOP_EXPECTED_CLIENTS;++aid) {
+        if (peers[aid].phase<7)payloadReady=false;
+        if (peers[aid].phase<8 || peers[aid].offset!=COOP_PAYLOAD_SIZE)
+            payloadTransferred=false;
     }
     for (unsigned attempt=0;attempt<3;++attempt) {
         unsigned aid=nextAid;
         nextAid=nextAid==3 ? 1 : nextAid+1;
         Peer *peer=&peers[aid];
         u32 phase=peer->phase;
+        if (!(WM_WORK->childBitmap&(1u<<aid)))continue;
+        if ((phase==7 || phase==8) && !payloadReady)
+            continue;
         if (peer->cooldown) {
             --peer->cooldown;
             continue;
@@ -228,6 +338,10 @@ static void Pump() {
             unsigned capacity=phase==3 ? 30 : 126;
             port=phase==3 ? 14 : 15;
             if (peer->offset==size) {
+                // This terminator executes the received ROM. A slow guest
+                // must finish its body before any earlier guest boots into
+                // the native game's finite connection deadline.
+                if (phase==8 && !payloadTransferred)continue;
                 transmitBuffer[0]=0xffff;
                 length=2;
             } else {
@@ -242,6 +356,7 @@ static void Pump() {
             continue;
         transmitAid=aid;
         transmitPhase=phase;
+        transmitGeneration=peer->generation;
         transmitBusy=1;
         int error=func_02062428((void *)CoopStationSent,0,transmitBuffer,length,
                                 (u16)(1u<<aid),(u16)port,0);
@@ -295,30 +410,106 @@ void CoopStationReceive(PortReceive *packet) {
     Pump();
 }
 
-void CoopBootstrapControl(u8 type, u32 bitmap) {
+static void InstallStationReceivers() {
+    int result=0;
+    for (int port=13;port<=15;++port)
+        result|=func_02061c88(port,(void *)CoopStationReceive,0);
+    callbacksInstalled=result==0;
+    debug[3]=result;
+}
+
+void CoopBootstrapParentEvent(int event, void *packet) {
+    // CONNECTED follows WM initialization and precedes this association's
+    // MP start. Reinstall here even if an earlier initialization cleared the
+    // SDK's tables; the first reliable NI request must have a receiver.
+    if (event==0)InstallStationReceivers();
+    if (event==0 && packet) {
+        unsigned aid=*(u16 *)((u8 *)packet+0x10);
+        // Callbacks can precede the scene's phase transition. Once BOOT has
+        // been submitted, a returning association belongs to the downloaded
+        // station, even if the main-thread tick still reports phase 1.
+        // This role is monotonic for the remainder of the bootstrap.
+        if (aid>=1 && aid<=COOP_EXPECTED_CLIENTS &&
+            (bootstrapPhase==3 || bootControls[aid]))stationAssociations|=1u<<aid;
+    }
+#if COOP_REARM_MP_AFTER_BOOT
+    if (event==0 && mpRearm==2)mpNewAssociation=1;
+#endif
+    if (event==0 && bootstrapPhase==1 && packet) {
+        unsigned aid=*(u16 *)((u8 *)packet+0x10);
+        if (aid>=1 && aid<=COOP_EXPECTED_CLIENTS && !(stationAssociations&(1u<<aid))) {
+            // Firmware can leave and retry before the group starts. A radio
+            // slot reused by that association has not acknowledged its BOOT.
+            bootControls[aid]=0;
+            bootAccepted&=~(1u<<aid);
+        }
+    }
+    // WM's CONNECTED callback identifies the new association, before MB
+    // processes its first request. An AID is a reusable radio slot, not a
+    // permanent player identity. Invalidate callbacks from its previous use.
+    if (bootstrapPhase==3 && (event==0 || event==1) && packet) {
+        unsigned aid=*(u16 *)((u8 *)packet+0x10);
+        if (aid>=1 && aid<=COOP_EXPECTED_CLIENTS) {
+            Peer *peer=&peers[aid];
+            // A finished executable is expected to leave this association.
+            // Retain its completion until the party handoff. Earlier losses
+            // abandon the transfer immediately instead of pumping a dead AID.
+            if (event==0 || peer->phase<9) {
+                peer->phase=peer->offset=peer->chunk=peer->repeats=peer->cooldown=0;
+                ++peer->generation;
+                stationChildren&=~(1u<<aid);
+                payloadDone&=~(1u<<aid);
+            }
+        }
+    }
+    CoopOriginalParentEvent(event,packet);
+    debug[16]=(u32)event;
+}
+
+int CoopBootstrapControl(u8 type, u32 bitmap) {
+    if (bootstrapPhase==2)return 0;
+#if COOP_REARM_MP_AFTER_BOOT
+    if (mpRearm == 1)return 0;
+#endif
     if (type==5) {
+        // BOOT is a two-phase firmware handshake. The first request enters
+        // BOOTREQ_ACCEPTED (reply 11); a later BOOT sets boot_end_flag and
+        // starts MBi_CommEnd. Keep the native request active until actual
+        // disconnection. Stopping on reply 11 makes success depend on whether
+        // another request happened to be queued before that reply arrived.
         u32 pending=0;
         for (unsigned aid=1;aid<=COOP_EXPECTED_CLIENTS;++aid)
-            if ((bitmap&(1u<<aid)) && bootControls[aid]<3) {
-                ++bootControls[aid];
+            if ((bitmap&(1u<<aid)) && !(stationAssociations&(1u<<aid)) &&
+                func_02067250(aid)==8 && !peers[aid].phase) {
                 pending|=1u<<aid;
             }
         if (pending)bitmap=pending;
         else {type=0;bitmap=0xffff;}
     }
-    // The loader has left the MB image protocol once it requests an asset.
-    // Keep that protocol's packets out of the application's port transfers.
     u32 active=0;
     for (unsigned aid=1;aid<=COOP_EXPECTED_CLIENTS;++aid)
         if (peers[aid].phase)active|=1u<<aid;
-    if (active==((1u<<(COOP_EXPECTED_CLIENTS+1))-2))return;
+    if (active==((1u<<(COOP_EXPECTED_CLIENTS+1))-2))return 0;
     // Download Station keeps a small application heartbeat on port 1 after
     // multiboot. Its loader expects the original station heartbeat contents.
-    data_020a9db8[0]=type;
-    data_020a9db8[1]=0;
-    *(u16 *)(data_020a9db8+2)=type==0 ? 0x48 : 0;
-    *(u16 *)(data_020a9db8+4)=type==0 ? 2 : 0;
-    func_02067f2c(6,bitmap,data_020a9db8);
+    if (type==0 && bootstrapPhase==3) {
+        data_020a9db8[0]=0;
+        data_020a9db8[1]=0;
+        *(u16 *)(data_020a9db8+2)=0x48;
+        *(u16 *)(data_020a9db8+4)=2;
+    } else {
+        // Preserve the SDK's firmware control serialization, including bytes
+        // outside the selected record. Only the station heartbeat differs.
+        u32 record[2];
+        record[0]=type;
+        record[1]=0;
+        func_02065d5c(record,data_020a9db8);
+    }
+    int result=func_02067f2c(6,bitmap,data_020a9db8);
+    if (type==5 && result==0)
+        for (unsigned aid=1;aid<=COOP_EXPECTED_CLIENTS;++aid)
+            if (bitmap&(1u<<aid))++bootControls[aid];
+    return result;
 }
 
 void CoopBootstrapMBReceive(void *packet, u32 aid) {
@@ -327,23 +518,44 @@ void CoopBootstrapMBReceive(void *packet, u32 aid) {
     if (aid>=1 && aid<=3 && packet) {
         u8 type=((u8 *)packet)[10];
         debug[12]=type;
-        if (type==11 && func_02067250(aid)==8) {
+        // Tracking begins at bootstrap installation, so acknowledgements of
+        // native BOOT requests preceding the scene-phase change count too.
+        if (type==11 && bootControls[aid] && func_02067250(aid)==8) {
             ++debug[13];
+            bootAccepted |= 1u<<aid;
         }
     }
     if (aid<=3 && peers[aid].phase)
         return;
+    if (aid>=1 && aid<=3 && packet && (stationAssociations&(1u<<aid))) {
+        // The signed loader's fake MB child needs the file header, then
+        // requests its menu over NI. It must not enter a second legacy image
+        // transfer or BOOT cycle while that NI request is being initialized.
+        // Allow the first type-8 header ACK to reach native state 14, but
+        // never consume a stale SEND_START response on a subsequent ACK.
+        unsigned type=((u8 *)packet)[10];
+        if ((type==8 && func_02067250(aid)!=5) || type==9 || type==10 || type==11)
+            return;
+    }
     CoopOriginalMBReceive(packet,aid);
 }
 
 void CoopBootstrapMBTick(void) {
+    if (!callbacksInstalled && data_020a9db4 && WM_WORK->mpStarted && !WM_WORK->resetting)
+        InstallStationReceivers();
     // Keep the parent SDK alive after each signed client boots. The ordinary
     // game ends MB once every child boots; HaxxStation still needs its second
     // transfer over ports 13/14/15 before switching to the game session.
-    if (bootstrapPhase!=1 && data_020a0f50 == 3)
-        data_020a0f70 = 0;
-    if (bootstrapPhase==1 && data_020a0f50==3 && data_020a0f08==COOP_EXPECTED_CLIENTS+1)
-        data_020a0f70=1;
+    if (data_020a0f50==3) {
+        bool ready=bootstrapPhase==1 && data_020a0f08==COOP_EXPECTED_CLIENTS+1;
+        // A roster name alone does not establish download readiness. Native
+        // state 14 means this association acknowledged the image header and
+        // is waiting for permission to request its data. Require every guest,
+        // rather than latching START from a previous frame's roster count.
+        for (unsigned aid=1;aid<=COOP_EXPECTED_CLIENTS;++aid)
+            if (func_02067250(aid)!=14)ready=false;
+        data_020a0f70=ready;
+    }
     if (COOP_GAME_HANDOFF && bootstrapPhase==3 &&
         payloadDone==((1u<<(COOP_EXPECTED_CLIENTS+1))-2) && ++handoffDelay>=3) {
         // Every end packet has completed. Leave only a short callback grace
@@ -359,7 +571,38 @@ void CoopBootstrapMBTick(void) {
         bootstrapPhase=4;
         data_020a0f50=6;
     }
+#if COOP_RESTART_STATION_PARENT
+    bool restart=bootstrapPhase==3 && !stationRestarted && !stationAssociations;
+    if (restart)
+        for (unsigned aid=1;aid<=COOP_EXPECTED_CLIENTS;++aid)
+            if (peers[aid].phase || func_02067250(aid)!=0 || !bootControls[aid])restart=false;
+    if (restart && data_020a9db4 && !WM_WORK->childBitmap && !WM_WORK->resetting) {
+        // The firmware associations have all ended. Recreate the parent
+        // through its native shutdown/start sequence before any signed
+        // application associates; no user timing or fixed delay is involved.
+        stationRestarted=1;
+        bootstrapPhase=2;
+        data_020a0f50=6;
+        data_020a0f70=0;
+    }
+#endif
     CoopOriginalMBTick();
+#if COOP_RESTART_STATION_PARENT
+    if (bootstrapPhase==2) {
+        if (data_020a0f04==0) {
+            // Native case 8 has released the old WM/MB work allocation.
+            // Hide its retired pointers until the new case 2 initializes it.
+            data_020a9db4=0;
+            data_020a9db8=0;
+            callbacksInstalled=0;
+            data_020a0f40=0;
+            data_020a0f50=0;
+            data_020a0f04=3;
+            bootstrapPhase=3;
+        }
+        return;
+    }
+#endif
     if (bootstrapPhase==4 && data_020a0f04==0) {
         // Enter the ordinary host player-sync step to initialize native
         // parent networking/WFS. Restore every RAM hook
@@ -378,18 +621,50 @@ void CoopBootstrapMBTick(void) {
         bootstrapPhase=3;
         Patch(0x02066470, (void *)CoopBootstrapControl);
     }
+#if COOP_REARM_MP_AFTER_BOOT
+    bool firmwareReady=true;
+    for (unsigned aid=1;aid<=COOP_EXPECTED_CLIENTS;++aid)
+        if (peers[aid].phase || func_02067250(aid)!=0 ||
+            !bootControls[aid])
+            firmwareReady=false;
+    if (bootstrapPhase==3 && !mpRearm &&
+        firmwareReady &&
+        WM_WORK->mpStarted && !WM_WORK->mpSending && !WM_WORK->childBitmap &&
+        WM_CheckStateEx(2,9,10)==0) {
+        WM_SetCallbackTable(0x10,(void *)CoopBootEndMP);
+        int result=WM_SendCommand(0x10,0);
+        debug[31]=bootAccepted | (result<<16) | 0x100;
+        if (result==2)mpRearm=1;
+        else WM_SetCallbackTable(0x10,0);
+    }
+    if (mpRearm==2 && mpNewAssociation && WM_WORK->childBitmap) {
+        if (WM_WORK->mpStarted) {
+            mpRearm=4;
+            debug[31]=bootAccepted | 0x400;
+        } else if (WM_CheckStateEx(1,7)==0) {
+            u32 interrupts=_ZN3IRQ7DisableEv();
+            bool available=*(u32 *)(data_020a9db8+0x1324)==0;
+            if (available)*(u32 *)(data_020a9db8+0x1324)=1;
+            _ZN3IRQ7RestoreEj(interrupts);
+            if (available) {
+                int result=func_020625fc((void *)func_02069994,(int)WM_WORK->recvBuf,
+                    WM_WORK->recvBufSize,(int)WM_WORK->sendBuf,WM_WORK->sendBufSize,
+                    WM_WORK->mpContinuous ? 0 : 1,0,0,0,1,1);
+                debug[31]=bootAccepted | 0x300 | (result<<16);
+                if (result==2)mpRearm=3;
+                else *(u32 *)(data_020a9db8+0x1324)=0;
+            }
+        }
+    }
+    if (mpRearm==3 && WM_WORK->mpStarted) {
+        mpRearm=4;
+        debug[31]=bootAccepted | 0x400;
+    }
+#endif
     debug[1] = data_020a0f50;
     for (unsigned aid=1;aid<=3;++aid)debug[19+aid]=peers[aid].phase;
     debug[29]=peers[1].offset;
     debug[30]=peers[1].chunk;
-    if (bootstrapPhase==3 && !callbacksInstalled && data_020a9db4 && WM_WORK->mpStarted && !WM_WORK->resetting) {
-        int result = 0;
-        for (int port=13; port<=15; ++port)
-            result |= func_02061c88(port, (void *)CoopStationReceive, 0);
-        if (result == 0)
-            callbacksInstalled = 1;
-        debug[3] = result;
-    }
     // The older parent SDK clears mpSending on WM send error 0x0a, then
     // dispatches MB event 0x2a, which its MB handler does not handle. Its
     // callback-driven sender otherwise remains idle indefinitely. Resume it
@@ -399,7 +674,6 @@ void CoopBootstrapMBTick(void) {
     u32 interrupts = _ZN3IRQ7DisableEv();
     if ((bootstrapPhase==1 || bootstrapPhase==3) && data_020a9db8 &&
         WM_WORK->mpStarted && !WM_WORK->resetting && !WM_WORK->mpSending) {
-        ++debug[15];
         func_02065f78();
     }
     _ZN3IRQ7RestoreEj(interrupts);
@@ -443,17 +717,19 @@ int CoopBootstrapInit(void *scene) {
         debug[i] = 0;
     debug[0] = 0x58584148;
     debug[24] = (u32)CoopBootstrapMBTick;
-    for (unsigned i=0;i<6;++i)originalHooks[i]=*(u32 *)hookAddresses[i];
+    for (unsigned i=0;i<8;++i)originalHooks[i]=*(u32 *)hookAddresses[i];
     originalRegistryId=*(u32 *)(data_020a0fec+0x14);
     originalGameId[0]=*(u16 *)(data_020a1064+6);
     originalGameId[1]=*(u16 *)(data_020a1064+8);
     menuData=ReadAsset(COOP_MENU_FILE,COOP_MENU_SIZE);
     payloadData=ReadAsset(COOP_PAYLOAD_FILE,COOP_PAYLOAD_SIZE);
     transmitBuffer=(u16 *)_ZN6Memory8AllocateEji(160,32);
-    if (!menuData || !payloadData || !transmitBuffer) {
+    mpSendWork=(u8 *)_ZN6Memory8AllocateEji(0x400,32);
+    if (!menuData || !payloadData || !transmitBuffer || !mpSendWork) {
         debug[31]=1;
         return 0;
     }
+    for (unsigned i=0;i<0x400/4;++i)((u32 *)mpSendWork)[i]=0;
     // Download Station's client searches for the Download Station GGID.
     *(u32 *)(data_020a0fec+0x14) = 0x00400120;
     *(u16 *)(data_020a1064+6) = 0x0120;
@@ -462,6 +738,9 @@ int CoopBootstrapInit(void *scene) {
     Patch(0x02067bfc, (void *)CoopSignedBootRead);
     Patch(0x0203e20c, (void *)CoopBootstrapMBTick);
     Patch(0x0206655c, (void *)CoopBootstrapMBReceive);
+    Patch(0x02066470, (void *)CoopBootstrapControl);
+    Patch(0x02066a94, (void *)CoopBootstrapParentEvent);
+    Patch(0x02065f78, (void *)CoopBootstrapMBSend);
     Patch(0x02068dc8, (void *)CoopBootstrapSetPacketSize);
     return 1;
 }
