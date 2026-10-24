@@ -53,6 +53,9 @@ static RuntimeEntry LoadRuntime() {
         else
             *word += delta;
     }
+    // Relocation records are installation-only. Return their tail to ROOT;
+    // Reallocate shrinks this native expanding-heap block in place.
+    data_020a0e9c->Reallocate(body, header[2]);
     _ZN4CP1514FlushDataCacheEjj((u32)body, header[2]);
     _ZN4CP1526InvalidateInstructionCacheEjj((u32)body, header[2]);
     cache[1] = (u32)body + header[3];

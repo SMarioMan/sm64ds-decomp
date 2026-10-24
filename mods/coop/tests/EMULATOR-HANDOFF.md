@@ -1,8 +1,9 @@
 # Download Play handoff investigation
 
 The mod remains unfinished. Current evidence establishes four-player gameplay
-on an unmodified melonDS core, but also reproduces intermittent cold-start
-failures. Campaign completion and physical hardware have not been verified.
+on an unmodified melonDS core. Earlier bootstrap versions reproduced
+intermittent cold-start failures; the current cartridge passes three staggered
+story cold starts. Campaign completion and physical hardware remain unverified.
 
 The latest separate-MP-workspace bootstrap passed **5/5** four-console signed
 menu cold starts: `/workspace/runtime/separate-mp-work-repeats/result.json`,
@@ -12,7 +13,104 @@ campaign passes. Full payload/story repetitions are in
 `/workspace/runtime/separate-mp-story-repeats/`; extended course/save acceptance
 is in `/workspace/runtime/title-reader-course-save/`.
 
-## Current four-console evidence
+## Star-return ownership and shared coins: latest continuation
+
+The old `0e78e2b0...` image really earned and saved the Chain Chomp star in
+`/workspace/runtime/persistent-first-star/`, but failed to restore controls
+on Castle return. Keep that failure report: multiple native Player arrival
+and tutorial routines were competing over one shared level-clear/dialog state.
+Player 0/1 were in Talk and 2/3 in LevelEnter, with identical state on peers.
+
+Runtime hooks now make slot 0 the owner of star/course progression tutorials.
+On star/key return, other slots use the normal grounded arrival, retain native
+full healing, and wait for the owner's result/dialog to finish. The overlay-2
+hooks are applied in RAM after loading; its authenticated disk image stays
+intact. The relocatable runtime's builder bound is now 16 KiB, within the
+loader's existing 64 KiB limit; ROOT allocates its actual size dynamically.
+
+`/workspace/runtime/story-owner-host.nds`, SHA256
+`a8bad15c18c28e4a41d65ec3ef46443a1e5d3f96b133dea416134363437fa532`,
+passed the actual four-console star route on its first attempt:
+`/workspace/runtime/story-owner-first-star/result.json`. The course bitmap
+changed from zero to `80 00…`; Save & Continue persisted it in both host backup
+banks, Castle return completed, and all four controllers moved again.
+`/workspace/runtime/story-owner-consecutive-save/result.json` then passed a
+second save through Pause → Save & Quit with that same live party, retaining
+the star in both banks, preserving other files, returning the host to Title,
+and cleanly ending all three guests. The persistent server was shut down.
+
+The current source also repairs gold-coin accounting: retail NumCoins sums
+individual slots, but its hundred-coin helper checks only the collector's
+slot. CoopGiveCoins mirrors a canonical team total, then calls the real helper
+with the actual collector; CoopNumCoins exposes the total once. Scene cleanup
+propagates the native tally reset. Red/silver aggregation remains unchanged.
+Seven Unicorn ARM unit tests execute the compiled hooks and the original
+retail counter/trigger routines, observing Actor::Spawn's allocation-failure
+path. They prove split retail coins fail to spawn, shared guest coin 100
+requests star actor 0xb2 at the guest, clamps, reset, and retail fallbacks.
+These are synthetic ARM unit fixtures, not wireless play evidence.
+
+The combined image is `/workspace/runtime/shared-story-host.nds`, SHA256
+`ef7a09ef25a3f6c809057996af246added0273b278325c48756e93a013df8587`.
+Six structural image checks and all seven ARM coin checks pass. The initial
+guest-star regression `/workspace/runtime/guest-star-combined/` FAILED: the
+input route fell under the bridge, then its recovery's fixed movement check
+failed. A new party at `/workspace/runtime/guest-star-party/` reproduced the
+movement failure even with four tested directions. Read-only snapshots show
+native tutorial event 7, step 3, message-active=1, on slot 0 on every console;
+NoControl was zero. The first movement opens this native tutorial after the
+stage-readiness check. The driver now finishes dialogs opened during input
+checks and also waits for Player::mEventId to clear. No product patch was made
+to dismiss dialogs automatically. Preserve both failed reports.
+
+The new actual four-console run is `/workspace/runtime/guest-coin-star-regression/`,
+with immutable drivers and a fresh copy of the controller-earned key-only save.
+Guest console 2 first collects a real gold coin from the lower floor beneath
+the bridge; guest console 1 then takes the deck route and collects the star.
+The test requires mirrored nonzero team counters, two host saves, and restored
+Castle controls on every console. Inspect result.json for its final status.
+The new bridge bot walks short segments along the deck center and checks Y
+against the real ramp height, rejecting a route below the deck immediately.
+
+## Explicit diagnostic stage compatibility checks
+
+`build.py --diagnostic-start-level N` changes only the compile-time initial
+native LoadLevelNoReturn target. The integrated builder accepts the same flag
+but requires a separate --output, so a diagnostic cannot replace the normal
+host cartridge. Runtime metadata records diagnosticStartLevel; smoke.py then
+runs stage compatibility checks and rejects campaign/save checkpoints. The
+normal compile has no diagnostic override and still enters castle grounds.
+These images do not prove progression through doors/paintings, earned stars,
+boss victories, unlocks, or the ending.
+
+`tests/local_stage_matrix.py` serializes builds, preserves each image/report and
+actual controller-only emulator transcripts, and records every failed case.
+The fast mode is an unpaced **single-console** diagnostic, never wireless
+acceptance. `/workspace/runtime/later-course-local-matrix/` passed IDs
+7,8,10..17,19,20. IDs 9 and 18 initially FAILED movement because directions
+alone only turn an underwater Yoshi. The driver now presses B for the native
+swimming stroke when Player::mIsUnderwater is set. Fresh reruns of 9 and 18
+passed, along with Bowser arena IDs 36,38,40, at
+`/workspace/runtime/water-boss-local-matrix/result.json`.
+
+Native SUBLEVEL_LEVEL_TABLE confirms that IDs 6..28 cover the fifteen main
+courses including their subareas; stage IDs are not course numbers. The
+remaining castle, course, secret and character stages are running at
+`/workspace/runtime/remaining-stage-local-matrix/`. The separately built
+four-console Bowser diagnostic image is `/workspace/runtime/diagnostic-bowser-host.nds`,
+SHA256 `4a228488b25fdf28c0d20072870d3ab0fbc2fc0702d553b136ca03292c5c1972`;
+its wireless test has not run yet.
+
+The live controller route now uses each console's outgoing camera angle,
+carefully crosses the first bridge, and passes west of the mountain bulge on
+the way to the post. Misses are typed ControllerRouteFailure and may retry via
+real exits/death recovery only; networking, save, and synchronization failures
+are never retried as navigation. Every attempt is retained. A read-only native
+input-tick history compares 12 common completed ticks rather than mismatched
+VBlank snapshots. COOP_BATCH_INPUT combines actual controller/touch events;
+readv batches related observations without freezing or changing the cores.
+
+## Earlier four-console evidence
 
 `/workspace/runtime/native-clock-host.nds`, SHA256
 `e761898ad4ce9218c0cae1c888b6c1a8b6c07100f1f0d5cd03df4004a1581171`,
@@ -273,3 +371,154 @@ star, Save and Continue, cartridge persistence and restored castle control:
 changes from zero to `0x80` and matches the saved file afterward. This is a
 single-console diagnostic, not wireless star acceptance. The private initial
 fixture contains only the castle key earned in an earlier controller test.
+
+
+## Restored environment and current regression cartridge
+
+The workspace was restored with source checkpoint `7a3295380`; the two runs
+interrupted by environment loss (`party-death-save-correct` and
+`party-star-short-route`) had not completed and are not passing evidence.
+The matching current cartridge is `/workspace/runtime/party-death-host.nds`,
+SHA256 `0e78e2b0bf80e29a02d8f904b45b44955ec65f57cbf6a4dd44a1a80b20437c64`.
+The one-command `mods/coop/build_download_play.py` reproduced that image from
+the personal EU revision-0 game and USA Download Station Volume 1 dumps.
+The canonical `build/coop/bootstrap/sm64ds-haxxstation-game-handoff.nds`
+contains the same bytes. Both input hashes are recorded in its JSON.
+
+Host power-off passes on this cartridge in
+`/workspace/runtime/party-host-disconnect/result.json`. All three remaining
+guests stop co-op and WFS and enter the native resident error screen without
+exceptions. This complements the earlier guest power-off check.
+
+The local controller-only star route also passes on the current runtime in
+`/workspace/runtime/party-local-star-analog/result.json`: fresh key collection,
+castle and first-course entry, real Chain Chomp star, Save and Continue,
+matching star flags in both backup banks, and restored castle control.
+The approach route now uses shorter bursts and intermediate points so the
+camera turn does not send the bot into the eastern mountain wall. A route
+failure is not automatically a game failure; preserve its screenshots.
+
+`smoke.py --course-death --death-controller N` now supports an actual guest
+controller, using that console's native player-slot mapping and synchronized
+camera angle. No emulated position, health, register, scene or packet writes
+are used. The death checkpoint records the actual controller and player slot
+in `course-death.json`. `--use-key-fixture` explicitly records an existing key
+fixture; it does not establish new key persistence.
+
+Fresh four-console regressions after recovery are running in
+`/workspace/runtime/restored-guest-death/` (guest death, recovery, Save and Quit),
+`/workspace/runtime/restored-party-star/` (star, Save and Continue, Save and Quit),
+and `/workspace/runtime/restored-story-repeats/` (three cold starts with differing
+menu-selection delays). Consult their final JSON before treating them as passes.
+
+
+The first restored star attempt failed `castle-input-1` on a 12-unit Y
+mismatch, with exactly matching X/Z and adventure data:
+`/workspace/runtime/restored-party-star/result.json`. Do not discard it.
+The subsequent full RAM snapshots were taken at native input ticks 7764,
+7766, 7768 and 7769. They cannot establish equality at the same simulation
+time. The frontend now optionally retains read-only, frame-boundary player
+positions/progress by native input tick (`COOP_FRAME_SAMPLES=1`, command
+`partyhistory`). Workers keep running; the diagnostic neither changes the
+core nor pauses one console while its peers await wireless replies.
+
+With sampling enabled, campaign checks require 12 consecutive matching
+completed input ticks across all consoles. Horizontal equality and the
+existing 1/16-unit vertical tolerance are retained. Each check saves its
+comparison in `*-same-tick.json`. The newest two ticks are excluded because
+they can still receive actor updates. The diagnostic is enabled in
+`/workspace/runtime/same-tick-party-star/` and
+`/workspace/runtime/same-tick-guest-death/`; these runs use
+`build/coop/melon-test-jit-samples` and the unchanged current cartridge.
+
+The original guest-death route failed before enemy contact by walking off the
+upper platform at `(1800,4900)`. The decoded retail KCL shows the western edge
+there runs diagonally; the old `(1250,5000)` approach lay on that edge. The
+route now crosses east at z=5500, then heads north along x=2000 in shorter
+bursts. This is a controller-driver fix, not a change to collision geometry.
+
+
+The current cartridge passed all three restored story cold starts:
+`/workspace/runtime/restored-story-repeats/result.json`. Guest menu schedules
+were [0,0,0], [0,600,1800], and [1800,0,600] frames. Every run reached all four
+story controllers with green/red/blue/yellow Yoshis and passed shared host
+pause/resume. Standard JIT, 25 ms LocalMP, 16667 us pacing, no frame-lead cap;
+no emulator core changes. These are story-start regressions, not three full
+campaign passes.
+
+The matching-tick diagnostic passes all ten castle/first-course input
+checkpoints so far in `same-tick-party-star`. The earlier height failure is
+retained; the new run does not retroactively turn that old run into a pass.
+
+
+`/workspace/runtime/same-tick-guest-death/result.json` now passes end to end on
+the current cartridge. Controller 1 mapped to native player slot 3 and reached
+actual zero health. All four consoles returned to initialized castle gameplay;
+each controller moved again and matching-tick comparisons passed. Host file A
+saved, other adventure slots remained unchanged, the host initialized title
+with wireless off, and all guests reached planned-session marker 1 with radio
+state 0. Both guest screens visibly render the independent "SESSION ENDED"
+alphabet correctly (`/workspace/runtime/current-guest-session-ended.png`).
+This run uses the previously earned key fixture, not a newly collected key.
+
+The same-tick star run failed when its controller died before completing the
+post, after passing castle/course and input checks. The fine-control loop made
+many separately locked reads while the live game kept advancing. It now uses
+optional batched read-only observations (`readv`) and combined key/stylus
+controller events (`input`) in the test frontend. This is not a core change,
+RAM write or protocol substitute. The new run is
+`/workspace/runtime/batched-party-star/`, using `COOP_BATCH_INPUT=1` and
+`build/coop/melon-test-jit-batched`. It logs actual native input ticks, health
+and player states during the post sequence. Consult its result before claiming
+wireless star acceptance.
+
+
+Save-slot B and C local persistence regressions both pass, including newly
+controller-earned key collection, Save and Quit, fresh-launch reload and
+unchanged other adventure slots in both backup banks:
+`/workspace/runtime/restored-slot-b-save/result.json` (runtime
+`3962ddc231240ac28b96aa656f9cb5e8cd155601917d314dec8779319a8f55fa`) and
+`/workspace/runtime/restored-slot-c-save/result.json` (runtime
+`27b81c606c16ab566aba84862575d5ebd55ec366913268c755407fabfc1fa78a`).
+These are single-console diagnostics, not wireless acceptance of slots B/C.
+Six image-structure checks pass with the slot-C build. The base image/report
+have been rebuilt for slot A afterward and byte-match the current runtime;
+the canonical integrated cartridge still has SHA256 `0e78e2b0...437c64`.
+
+
+## Persistent controller diagnostics
+
+Repeated first-star attempts still fail in the automated approach; none is a
+four-console star acceptance pass. A local first-star/save/return pass with the
+batched post controller is in `batched-local-star-north/result.json`. Later
+attempts are retained separately. The fast analog ramp passes the four-console
+crossing, but long jumps near the mountain can still drift into its collision
+wall. Navigation errors now have a distinct `ControllerRouteFailure` type.
+Only those can be retried through real course exits or death recovery; network,
+synchronization and save failures fail immediately. Attempts retain independent
+folders and a `course-star-route-attempts.json` ledger. The painting-room/lobby
+re-entry distinction has also been corrected in the controller helper.
+
+`recoverable-party-star` passed a real four-console pause/exit before its
+re-entry driver failed: all 14 remaining Goomba simulation states matched and
+all four castle controllers recovered. Its failed re-entry targeted the room
+directly from the lobby, hitting the wall. Do not turn that overall failed run
+into a pass. Frozen driver sources and hashes for the following attempt are in
+`/workspace/runtime/analog-approach-party-star/driver/`.
+
+The driver now steers using local outgoing camera angle `0x020a1050`, which
+`dCamera_c::Behavior` writes through `func_0203dafc`. The old echoed angle
+`0x020a1164 + 36*slot` belongs to an earlier input tick; it is not the angle that
+will accompany a newly supplied physical input. This is a controller diagnostic
+fix, not a game/network patch. New local verification is in
+`/workspace/runtime/outgoing-yaw-local-star/`.
+
+`smoke.py --story --control-socket PATH` keeps the actual emulator session alive
+for subsequent controller clients. `tests/session_control.py` exposes
+`RemoteEmulators`, reusing the existing input/read helpers through a private
+Unix socket. Clients leave the game paused with actual START input; no core
+memory, register or packet substitution is introduced. A fresh four-console
+session is starting in `/workspace/runtime/persistent-party/`, socket
+`/workspace/runtime/persistent-party.sock`. Read `control-session.json` for
+readiness before connecting. Its ordinary startup report remains running until
+the controller session is explicitly shut down.

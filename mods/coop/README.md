@@ -1,75 +1,58 @@
 # Experimental four-player co-op
 
-Four-player castle-grounds, castle-interior, and Bob-omb Battlefield controller
-checks through DS Download Play have passed with one cartridge parent and
-three firmware-only melonDS clients. Each console
-controls a distinct player, positions synchronize across the party, and shared
-pause/resume follows the host. This is still an unfinished campaign mod:
-persistent wireless host saves, campaign transitions, stars/keys, cutscenes, deaths,
-disconnects and completion need implementation or broader acceptance.
+One cartridge host and three firmware-only guests can enter the main game
+through DS Download Play, using HaxxStation for the signed first stage. The mod
+uses the native wireless game protocol and filesystem. Standard melonDS 1.1
+runs it; the automated test frontend does not modify the emulation core.
 
-The latest bootstrap separates the native MB message buffer from the SDK's
-MP assembly workspace. The retail single-port implementation aliases them;
-adding NI packets could overwrite an MB command with a menu chunk number.
-With separate aligned storage, all **five repeated four-console signed-menu
-cold starts passed** at `/workspace/runtime/separate-mp-work-repeats/result.json`
-(ROM `a83287a9d8e222da930f35a6e2fafeed5b0325590c8c6e0dd449e4d345ab95f9`).
-They used unmodified melonDS 1.1, standard JIT, the default 25 ms receive
-timeout and no frame-lead cap. These are menu checks, not five campaign passes.
-Full payload/story repetitions passed two of three starts; the third failed
-before signed-menu selection. A subsequent opt-in
-`--restart-station-parent` experiment recreates the native parent after all
-firmware associations depart and preserves its TGID. That candidate also
-passed five menu cold starts at
-`/workspace/runtime/recreated-station-repeats/result.json`; its full campaign
-acceptance is still in progress. Neither repeat depends on selecting menus
-within a particular time window.
+Verified four-console behavior includes separate controls, the original
+green/red/blue/yellow Yoshi palettes, shared pause, the castle key, castle
+interiors, Bob-omb Battlefield, course exit, guest death with party recovery,
+and ordered Save & Quit. Three staggered story cold starts passed at
+`/workspace/runtime/restored-story-repeats/result.json`; guests selected their
+menus at different times. Startup uses protocol acknowledgments rather than a
+human timing window.
 
-Wireless host saving has persisted a controller-earned castle key without
-changing the other adventure slots. Save-and-quit exposed an overwritten
-VS heap and a guest menu-loading stall. The runtime now retires that heap
-before story overlays load. A later capture identified cartridge-lock
-contention between backup reads and a WFS interrupt while returning to TITLE.
-The current candidate acknowledges every peer's completed transition reads,
-shuts wireless sharing down, then opens the host's normal file menu. Guests
-show the resident retail communication-ended screen. This avoids concurrent
-backup access and downloaded menu reads. Four-console fresh key collection,
-host persistence and orderly quit pass at
-`/workspace/runtime/ordered-quit-new-progress/result.json`. Local initialized
-TITLE and fresh-launch reload pass at
-`/workspace/runtime/ordered-quit-local-save/result.json`. Host saves remain an
-explicit experimental option while campaign and repeated-save checks continue.
+A later fix gives the host ownership of the shared star/key return and
+progression dialogs. Without it, several players could reopen one shared
+result/dialog state machine and leave everyone without controls. The corrected
+build passed real Chain Chomp star collection, Save & Continue, castle return,
+and restored controls for all four players at
+`/workspace/runtime/story-owner-first-star/result.json`. A second save through
+Pause → Save & Quit passed at
+`/workspace/runtime/story-owner-consecutive-save/result.json`; the star remained
+in both host backup banks and the guests ended cleanly. That image has SHA256
+`a8bad15c18c28e4a41d65ec3ef46443a1e5d3f96b133dea416134363437fa532`.
 
-The runtime loads into a persistent ROOT allocation to make room for those
-policies. This layout passes four-console story entry, independent movement
-and shared pause/resume in `/workspace/runtime/short-handoff-game/result.json`.
-`/workspace/runtime/first-course-route1/result.json` additionally records passing
-shared key collection, castle entry, and independent interior controls. That
-run failed its later route to the painting; it is not a complete acceptance pass.
-The shared-reader candidate at `/workspace/runtime/beacon203-course-return/result.json`
-passed first-course entry and all four controllers, then failed its stronger
-paused-enemy checkpoint: two Goombas' stuck counters depended on local camera
-visibility. The follow-up preserves local clip flags for rendering while
-presenting consistent visibility during actor behavior. Its four-console
-replay passed the complete tested route, including all 15 Goombas and a return
-to active castle gameplay with all controllers, at
-`/workspace/runtime/shared-visibility-course-return/result.json`.
-The cache-corrected image also passed that route independently at
-`/workspace/runtime/shared-visibility-cache-course-return/result.json`:
-`61fdd6a4603702267a8c1eafd0456e041d51f85daeb3c047c22452605eeff071`.
-It flushes and invalidates each installed branch individually, including the
-shared SDK reader outside the old scene/actor cache range. Its local replay
-also passed at `/workspace/runtime/local-shared-visibility-cache/result.json`.
-In that checkpoint, all 15 Goombas' positions, angles and states agreed; two
-had different `mStuckTimer` values. Native Goomba behavior increments that
-counter only when camera clip bit 8 is clear, eventually using it to hop or
-respawn. The runtime now saves each actor's local visibility bits, clears
-them for its behavior, then restores them before rendering. Existing native
-NET behavior still determines which actors update.
-Earlier
-passing evidence is in `/workspace/runtime/frame-progress-game/` and
-`/workspace/runtime/appended-files-timeout100/`. Direct stock Download Play
-still rejects the modified overlay; the integrated HaxxStation path is required.
+The current source additionally shares the gold coin total, so coins split
+among players can trigger the native 100-coin star at the collecting player's
+position. Seven isolated ARM unit checks cover the compiled hooks and retail
+trigger. These unit checks do not establish a wireless 100-coin-star pass.
+Red-coin and silver-star totals retain their native aggregate behavior. The
+combined candidate is undergoing a guest-collected-star and save regression.
+
+Separate diagnostic builds can enter a later native stage for compatibility
+checks. Single-console tests have passed multiple course areas, underwater
+movement, and all three Bowser arena entries; these do not prove boss wins or
+wireless compatibility. The native table gives some courses several stage IDs.
+Run the matrix with a fresh output directory and the activated test toolchain:
+
+```bash
+COOP_JIT=1 COOP_BATCH_INPUT=1 \
+COOP_HARNESS_EXE=/workspace/sm64ds-decomp/build/coop/melon-test-jit-batched \
+python mods/coop/tests/local_stage_matrix.py --fast \
+  --output /workspace/runtime/new-stage-matrix
+```
+
+For a diagnostic Download Play build, explicitly pass both
+`--diagnostic-start-level N` and a separate `--output` to
+`build_download_play.py`. Diagnostic images must not be used as campaign
+acceptance or release images.
+
+**The mod is still experimental.** Full campaign completion, later bosses,
+character unlocks, and physical hardware remain unverified. The checkpoint
+reports above do not establish a complete campaign. Detailed earlier evidence
+and failed experiments are preserved in [the emulator handoff](tests/EMULATOR-HANDOFF.md).
 
 Only the supplied **Europe revision 0** cartridge is supported:
 `ce5829aaa79f06c67140ed1f45cbca738b0a9d0180538c8c1498472d859db032`.
@@ -110,9 +93,9 @@ python mods/coop/build_download_play.py /workspace/inputs/sm64ds-eu.nds \
 
 The output is `build/coop/bootstrap/sm64ds-haxxstation-game-handoff.nds`.
 Its adjacent JSON records input hashes, client overlay authentication and
-wireless parameters. The completed pipeline reproduces the current regression
-cartridge SHA256
-`0e78e2b0bf80e29a02d8f904b45b44955ec65f57cbf6a4dd44a1a80b20437c64`.
+wireless parameters. The adjacent report identifies the exact build. The older regression image
+`0e78e2b0bf80e29a02d8f904b45b44955ec65f57cbf6a4dd44a1a80b20437c64`
+predates the star-return fix and must not be treated as a release candidate.
 The lower-level commands below are useful for individual diagnostics; the
 base `build.py` image by itself does not supply the HaxxStation handoff.
 
@@ -122,6 +105,9 @@ source /workspace/setup/activate.sh
 python mods/coop/build.py /workspace/inputs/sm64ds-eu.nds --baseline
 python mods/coop/build.py /workspace/inputs/sm64ds-eu.nds
 python mods/coop/tests/test_image.py
+# Optional compiled-ARM coin checks (test dependency only):
+# python -m pip install -r mods/coop/tests/requirements-arm.txt
+python mods/coop/tests/test_game_counters.py
 python mods/coop/tests/test_relocatable.py
 bash mods/coop/tests/build_harness.sh
 bash mods/coop/tests/local_story.sh
@@ -142,7 +128,7 @@ tests check those limits, hook destinations, zeroed module state, the original
 original-instruction trampolines and the camera-read wrapper's register
 preservation. Gameplay is checked separately in melonDS.
 
-## Why native Download Play currently fails
+## Why the base image fails stock Download Play
 
 There are two independent authentication stages:
 
@@ -265,7 +251,8 @@ from successful execution.
 The harness uses the unmodified melonDS 1.1 core at commit
 `b86390e4428bf38ce4c1ce0e9ca446d6d25955e8` and its real `LocalMP` packet,
 command, reply and acknowledgement transport. It uses software rendering,
-interpreter execution, supplied native BIOS/firmware and distinct MACs.
+supplied native BIOS/firmware and distinct MACs. The frontend supports the
+interpreter and standard JIT; each acceptance report records which was used.
 Cartridge saves stay in RAM unless a test explicitly sets `COOP_SAVE_DIR` to a
 private backup directory; firmware writes are disabled. It does not simulate a client connection or replace the
 wireless protocol. The linked core is GPL-3.0-or-later; upstream source and
@@ -317,11 +304,12 @@ committed `tests/local_story.sh` also passes: right input changes position from
 (-1200, 254, 6800) to approximately (-946, 254, 6826) world units, in mode 0
 with one player. Its RAM snapshots and screenshots are under `build/coop/`.
 
-The final modified-image replay failed as expected on all three clients at
+The historical direct-Download-Play replay of the base image failed as expected
+on all three clients at
 `0x02014104`/`0x020140fc`, before a story stage. Its complete transcript and all
 four fatal-state screens are in `/workspace/runtime/coop-automated-mod-final/`.
-This is an acceptance failure, not a passing multiplayer test. The current
-experimental ROM SHA-256 is recorded by each build in `build/coop/build.json`.
+That direct-boot path is an acceptance failure; the integrated HaxxStation
+path is tested separately. The current experimental ROM SHA-256 is recorded by each build in `build/coop/build.json`.
 
 | Check | Observed result |
 | --- | --- |

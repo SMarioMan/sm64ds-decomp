@@ -101,7 +101,11 @@ class ImageTests(unittest.TestCase):
             ('CoopOriginalMessageUpdate',0x0201C0B8,bytes.fromhex('70402de9')),
             ('CoopOriginalKillPlayer',0x02029B30,bytes.fromhex('00402de9')),
             ('CoopOriginalHitDeathPlane',0x02029B84,bytes.fromhex('00402de9')),
-            ('CoopOriginalLoadEntrances',0x020FE6C8,bytes.fromhex('f04f2de9'))]:
+            ('CoopOriginalLoadEntrances',0x020FE6C8,bytes.fromhex('f04f2de9')),
+            ('CoopOriginalStarTutorial',0x020C6E14,bytes.fromhex('30402de9')),
+            ('CoopOriginalCourseTutorial',0x020C44C4,bytes.fromhex('30402de9')),
+            ('CoopOriginalLevelEnterInit',0x020C7838,bytes.fromhex('f0402de9')),
+            ('CoopOriginalGiveCoins',0x0202A7B8,bytes.fromhex('00402de9'))]:
             offset=symbols[name]-self.module_base
             self.assertEqual(self.body[offset:offset+4],prologue)
             self.assertEqual(destination(self.body,offset+4,symbols[name]+4),original_address+4)
@@ -126,6 +130,20 @@ class ImageTests(unittest.TestCase):
         for site in (0x020c4364,0x020c4b34):
             start=site-player.ramAddress
             self.assertEqual(player.data[start:start+8],struct.pack('<2I',0xe5900154,0xe2100902))
+
+    def test_particle_pool_calls_retain_call_semantics(self):
+        import ndspy.codeCompression
+        arm9=ndspy.codeCompression.decompress(self.stock.arm9)
+        calls=self.report['lateRamCalls']
+        self.assertEqual([int(call['address'],16) for call in calls],[0x02022f88,0x020231bc])
+        for call in calls:
+            address=int(call['address'],16)
+            self.assertEqual(destination(arm9,address-self.stock.arm9RamAddress,address,link=True),
+                             int(call['originalTarget'],16))
+            offset=int(call['targetOffset'],16)
+            self.assertEqual(offset%4,0)
+            self.assertLess(offset,len(self.body))
+        self.assertTrue(self.report['runtimeModule']['particlePoolFallback'])
 
 
 if __name__ == '__main__':

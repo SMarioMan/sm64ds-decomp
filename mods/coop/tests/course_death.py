@@ -1,16 +1,31 @@
 """Exercise a real enemy death and the party's return to castle gameplay."""
-from campaign import (PLAYER_POINTERS, PlayerUnavailable, assert_party_synchronized,
-                      direction_toward, finish_messages, player_position,
-                      snapshot, walk_to)
+import json
+
+from campaign import (ControllerRouteFailure, PLAYER_POINTERS, PlayerUnavailable, assert_party_synchronized,
+                      check_controller_movement, direction_toward, finish_messages, player_position,
+                      snapshot, touch_walk_to, walk_to)
 
 
 def walk_to_chain_field(ds, console=0):
     # Cross the level's actual ramps to the Chain Chomp field. All movement
-    # uses the host controller; no damage, health, scene or position writes.
-    for point in ((-5000,5200),(-4000,4500),(-1500,5500),(-700,5500),
-                  (900,5500),(1250,5000),(1800,4900),(2000,4500),
-                  (2200,4200),(1750,3800),(1700,3500)):
-        walk_to(ds,*point,console=console)
+    # uses the selected controller; no damage, health, scene or position writes.
+    for point in ((-5000,5200),(-4000,4500),(-1500,5500)):
+        walk_to(ds,*point,console=console,tolerance=60,pulse_frames=6)
+    # Keep analog steering and running traction on the sloped bridge. Slow
+    # walking can slide backward; repeated jumps can leave its side and then
+    # continue under it. The lower floor is not successful deck traversal.
+    slot=ds.read(console,0x020a0f10,1)[0]
+    touch_walk_to(ds,1100,5500,console=console,tolerance=100,limit=400,run=True)
+    px,py,pz=player_position(ds,console,slot)
+    if py<690:
+        snapshot(ds,'bridge-route-below-deck')
+        raise ControllerRouteFailure(f'Controller {console} left the bridge deck at {(px,py,pz)}')
+    for point in ((2000,5500),(2000,4900),(2000,4500),
+                  (2000,4200),(1750,3800),(1700,3500)):
+        # The upper corridor has a drop on its west edge. Cross east while
+        # still on the wide southern platform, then turn north in short
+        # bursts instead of cutting diagonally over that edge.
+        walk_to(ds,*point,console=console,tolerance=60,pulse_frames=6)
 
 
 def check_course_death(ds, controller=0):
@@ -37,19 +52,13 @@ def check_course_death(ds, controller=0):
             finish_messages(ds)
             assert_party_synchronized(ds,'course-death-arrival')
             for console in range(ds.count):
-                player=ds.read(console,0x020a0f10,1)[0]
-                before=player_position(ds,0,player)
-                ds.command(f'keys {console} fef')
-                ds.run(24)
-                ds.command(f'keys {console} fff')
-                ds.run(120)
-                after=player_position(ds,0,player)
-                if before[0]==after[0] and before[2]==after[2]:
-                    snapshot(ds,'course-death-input-failed')
-                    raise RuntimeError(f'Console {console} could not move after death')
-                assert_party_synchronized(ds,'course-death-input-'+str(console))
+                check_controller_movement(ds,console,'course-death')
             snapshot(ds,'course-death-recovery')
-            print(f'Enemy death returned {ds.count} synchronized controllers to the castle.',flush=True)
+            (ds.output/'course-death.json').write_text(json.dumps({
+                'consoles':ds.count,'controller':controller,'playerSlot':slot,
+                'actualZeroHealthObserved':death_seen,
+                'castleControlRestored':True},indent=2)+'\n')
+            print(f'Enemy death on controller {controller} (player {slot}) returned {ds.count} synchronized controllers to the castle.',flush=True)
             return
         try:
             held=direction_toward(ds,600,2100,controller)|0x800 if level==6 and not death_seen else 0

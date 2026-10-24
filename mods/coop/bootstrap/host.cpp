@@ -492,7 +492,15 @@ int CoopBootstrapControl(u8 type, u32 bitmap) {
     if (active==((1u<<(COOP_EXPECTED_CLIENTS+1))-2))return 0;
     // Download Station keeps a small application heartbeat on port 1 after
     // multiboot. Its loader expects the original station heartbeat contents.
-    if (type==0 && bootstrapPhase==3) {
+    if (type==0 && (bootstrapPhase==3
+#if COOP_SERIAL_BOOT
+        // Serial BOOT keeps later firmware clients connected while an earlier
+        // signed station downloads its menu. Its application heartbeat is
+        // needed as soon as that station associates, before the group phase
+        // changes. Firmware ignores the extra fields of an idle command.
+        || stationAssociations
+#endif
+        )) {
         data_020a9db8[0]=0;
         data_020a9db8[1]=0;
         *(u16 *)(data_020a9db8+2)=0x48;

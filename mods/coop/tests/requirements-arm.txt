@@ -1,0 +1,2 @@
+# Optional isolated ARM counter tests only; not required to build/play the mod.
+unicorn==2.1.4

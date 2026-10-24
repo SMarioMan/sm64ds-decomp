@@ -83,7 +83,9 @@ def link(source, prefix, address, game_symbols, launcher, cc, ld, defines=()):
     payload = bytearray(prefix.with_suffix('.bin').read_bytes())
     end = max([address + len(payload)] + [emitted[n] + sizes[n] for n in defined])
     payload.extend(bytes(end - address - len(payload)))
-    if not payload or end > address + 0x2000:
+    # The runtime is dynamically allocated in ROOT; the loader accepts 64 KiB.
+    # Retain a tighter build bound while allowing additional story policies.
+    if not payload or end > address + 0x4000:
         raise RuntimeError('Invalid linked payload span')
     return payload, emitted
 
@@ -108,7 +110,15 @@ def main():
     parser.add_argument('--baseline', action='store_true', help='Copy the verified retail control')
     parser.add_argument('--save-slot',choices=('A','B','C'),
                         help='Experimental: load and save this host adventure slot; default keeps progress in RAM')
+    parser.add_argument('--diagnostic-start-level',type=int,choices=range(1,52),
+                        help='TEST ONLY: start in this native stage; does not validate campaign progression')
+    parser.add_argument('--diagnostic-stage-cycle',action='store_true',
+                        help='TEST ONLY: synchronized L+R+Select requests the next native stage')
     args = parser.parse_args()
+    if args.baseline and args.diagnostic_start_level is not None:
+        parser.error('--baseline cannot select a diagnostic stage')
+    if args.diagnostic_stage_cycle and args.diagnostic_start_level is None:
+        parser.error('--diagnostic-stage-cycle requires --diagnostic-start-level')
     original = args.rom.read_bytes()
     if hashlib.sha256(original).hexdigest() != ROM_SHA256:
         parser.error('Expected verified Europe revision-0 ROM; other revisions are unsupported')
@@ -151,10 +161,18 @@ def main():
             ('CoopOriginalMessageUpdate', game['_ZN7Message6UpdateEv'], bytes.fromhex('70402de9')),
             ('CoopOriginalKillPlayer', game['KillPlayer'], bytes.fromhex('00402de9')),
             ('CoopOriginalHitDeathPlane', game['HitDeathPlane'], bytes.fromhex('00402de9')),
-            ('CoopOriginalLoadEntrances', 0x020fe6c8, bytes.fromhex('f04f2de9'))]
+            ('CoopOriginalLoadEntrances', 0x020fe6c8, bytes.fromhex('f04f2de9')),
+            ('CoopOriginalStarTutorial',0x020c6e14,bytes.fromhex('30402de9')),
+            ('CoopOriginalCourseTutorial',0x020c44c4,bytes.fromhex('30402de9')),
+            ('CoopOriginalLevelEnterInit',0x020c7838,bytes.fromhex('f0402de9')),
+            ('CoopOriginalGiveCoins',game['GiveCoins'],bytes.fromhex('00402de9'))]
         imports = dict(game, **{name:PAYLOAD_ADDRESS+0x1800+i*8
                                for i,(name,_,_) in enumerate(trampolines)})
         defines=[f'COOP_SAVE_SLOT={ord(args.save_slot)-ord("A") if args.save_slot else -1}']
+        if args.diagnostic_start_level is not None:
+            defines.append(f'COOP_DIAGNOSTIC_START_LEVEL={args.diagnostic_start_level}')
+        if args.diagnostic_stage_cycle:
+            defines.append('COOP_DIAGNOSTIC_STAGE_CYCLE=1')
         runtime, emitted = link(REPO/'mods/coop/runtime.cpp',root/'runtime',PAYLOAD_ADDRESS,imports,launcher,cc,ld,defines)
         body_size = len(runtime)
         imports.update({name:PAYLOAD_ADDRESS+body_size+i*8 for i,(name,_,_) in enumerate(trampolines)})
@@ -162,7 +180,7 @@ def main():
         if len(runtime)!=body_size:
             raise RuntimeError('Unstable runtime module size')
         for name,address,prologue in trampolines:
-            if address == 0x020fe6c8:
+            if player_overlay.ramAddress<=address<player_overlay.ramAddress+len(player_overlay.data):
                 image,base = player_overlay.data,player_overlay.ramAddress
             else:
                 image,base = (overlay.data,overlay.ramAddress) if address>=overlay.ramAddress else (arm9,rom.arm9RamAddress)
@@ -239,7 +257,15 @@ def main():
             raise RuntimeError('Native boot code or overlay table changed')
         if len(checked.files)!=len(rom.files)+1 or any(checked.files[i]!=f for i,f in enumerate(rom.files) if i!=overlay.fileID):
             raise RuntimeError('An unrelated native file changed')
-        pairs=[(game[SAVE_CURRENT],'CoopSaveCurrentFile'),(game['_Z17LoadLevelOverlaysi'],'CoopLoadLevelOverlays'),
+        if arm9[game['NumCoins']-rom.arm9RamAddress:game['NumCoins']-rom.arm9RamAddress+8]!=bytes.fromhex('38009fe538209fe5'):
+            raise RuntimeError('Unexpected native coin accessor')
+        particle_calls=[(0x02022f88,game['_ZN6Memory13operator_new2Ej'],'CoopAllocateParticlePool'),
+                        (0x020231bc,game['func_0203cbc0'],'CoopFreeParticlePool')]
+        for address,target,_ in particle_calls:
+            offset=address-rom.arm9RamAddress
+            if arm9[offset:offset+4]!=branch(address,target)[:3]+b'\xeb':
+                raise RuntimeError(f'Unexpected native particle-pool call at {address:#x}')
+        pairs=[(game['NumCoins'],'CoopNumCoins'),(game['GiveCoins'],'CoopGiveCoins'),(game[SAVE_CURRENT],'CoopSaveCurrentFile'),(game['_Z17LoadLevelOverlaysi'],'CoopLoadLevelOverlays'),
                (game['_ZN7Message6UpdateEv'],'CoopMessageUpdate'),
                (game['KillPlayer'],'CoopKillPlayer'),(game['HitDeathPlane'],'CoopHitDeathPlane'),
                (ov_symbols['_ZN10dScEntry_c16CleanupResourcesEv'],'CoopEntryCleanup'),
@@ -252,11 +278,17 @@ def main():
         module_report={'fileID':module_id,'linkBase':hex(PAYLOAD_ADDRESS),'bodyBytes':len(runtime),
                        'entryOffset':hex(emitted['CoopRuntimeDispatch']-PAYLOAD_ADDRESS),'fixups':len(records),
                        'sha256':hashlib.sha256(blob).hexdigest(),'cacheAddress':'0x02004180'}
+        module_report['sharedCourseCoins']=True
+        module_report['particlePoolFallback']=True
+        if args.diagnostic_start_level is not None:
+            module_report['diagnosticStartLevel']=args.diagnostic_start_level
+            module_report['diagnosticStageCycle']=args.diagnostic_stage_cycle
         module_report['diagnosticOffsets']={name:emitted[name]-PAYLOAD_ADDRESS
                                            for name in ('coopEnabled','coopSaveState','coopSavePage',
                                                         'coopSaveEpoch','coopStageLoading','coopMenuLoading',
                                                         'coopSceneInitializing','coopTitleLoading','coopFileWaiting',
-                                                        'coopSessionEnded','coopDeathTriggered')}
+                                                        'coopSessionEnded','coopDeathTriggered','coopGuestTutorialSkips',
+                                                        'coopParticleFallbacks')}
         patches.append({'purpose':'ROOT module loader in unused VS result routines','address':hex(CAVE_START),
                         'size':CAVE_END-CAVE_START,'installerBytes':len(installer)})
     output=root/('baseline.nds' if args.baseline else 'sm64ds-coop-experimental.nds')
@@ -266,6 +298,9 @@ def main():
             'experimentalHostSaveSlot':args.save_slot,
             'bootImagesUnchanged':True,'nativeFileExtentsUnchanged':True,'patches':patches,
             'runtimeModule':module_report,'lateRamHooks':ram_hooks,
+            'lateRamCalls':([] if args.baseline else [
+                {'address':hex(a),'originalTarget':hex(t),'targetOffset':hex(emitted[n]-PAYLOAD_ADDRESS),'symbol':n}
+                for a,t,n in particle_calls]),
             'downloadPlayOverlayAuthentication':audit(output_data),
             'limitations':['Native Download Play rejects modified overlay 75: HMAC mismatch',
                            'Base image requires the separate HaxxStation bootstrap build for unsigned clients',

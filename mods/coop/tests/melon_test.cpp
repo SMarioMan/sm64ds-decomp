@@ -16,6 +16,8 @@
 #include <mutex>
 #include <algorithm>
 #include <filesystem>
+#include <array>
+#include <deque>
 
 using namespace melonDS;
 namespace melonDS::Platform { void SetMPRecvTimeout(int timeout); }
@@ -49,6 +51,31 @@ struct LiveWorkers {
     }
     ~LiveWorkers() { finish(); }
 };
+// Read-only samples at frame boundaries let tests compare the same native
+// input tick without stopping one core while another waits for its radio.
+struct PartySample {
+    u32 tick;
+    unsigned level, count;
+    std::array<s32,12> positions{};
+    std::array<u8,64> progress{};
+};
+static bool sampleParty(NDS& ds, PartySample& out) {
+    auto valid=[](u32 a,unsigned size){return a>=0x02000000 && a<=0x02400000-size;};
+    auto word=[&](u32 a){u32 v;std::memcpy(&v,ds.MainRAM+(a-0x02000000),4);return v;};
+    const u32 scene=word(0x0209f5c0);
+    out.count=ds.MainRAM[0x9fc50];
+    if(!valid(scene,0x14)||out.count<1||out.count>4)return false;
+    if(ds.MainRAM[scene-0x02000000+0xc]!=3 || (ds.MainRAM[scene-0x02000000+0x13]&1))return false;
+    out.tick=word(0x020a1154);
+    out.level=ds.MainRAM[0x9f2f8];
+    for(unsigned p=0;p<out.count;++p) {
+        const u32 actor=word(0x0209f394+p*4);
+        if(!valid(actor,0x788))return false;
+        std::memcpy(out.positions.data()+p*3,ds.MainRAM+actor-0x02000000+0x5c,12);
+    }
+    std::memcpy(out.progress.data(),ds.MainRAM+0x9caa0,out.progress.size());
+    return true;
+}
 int main(int argc,char** argv) try {
     if(argc<2) { std::cerr<<"usage: melon-test ROM|- [ROM|- ...] < commands\n";return 1; }
     const char* configured = std::getenv("COOP_INPUT_DIR");
@@ -106,6 +133,9 @@ int main(int argc,char** argv) try {
     }
     std::vector<std::mutex> locks(consoles.size());
     LiveWorkers live;
+    const bool sampleFrames=std::getenv("COOP_FRAME_SAMPLES")!=nullptr;
+    std::vector<std::deque<PartySample>> partyHistory(consoles.size());
+    std::mutex historyMutex;
     const bool realtime=std::getenv("COOP_LIVE")!=nullptr;
     unsigned frameMicros=16667;
     unsigned maxFrameLead=0;
@@ -137,7 +167,17 @@ int main(int argc,char** argv) try {
             }
             {
                 std::lock_guard lock(locks[i]);
-                if(consoles[i]->IsRunning()){consoles[i]->RunFrame();++frames[i];}
+                if(consoles[i]->IsRunning()){
+                    consoles[i]->RunFrame();++frames[i];
+                    PartySample sample;
+                    if(sampleFrames && sampleParty(*consoles[i],sample)) {
+                        std::lock_guard historyLock(historyMutex);
+                        auto& history=partyHistory[i];
+                        if(!history.empty() && history.back().tick==sample.tick)history.back()=sample;
+                        else history.push_back(sample);
+                        if(history.size()>128)history.pop_front();
+                    }
+                }
                 running[i]=consoles[i]->IsRunning();
             }
             next+=std::chrono::microseconds(frameMicros);
@@ -223,6 +263,18 @@ int main(int argc,char** argv) try {
             for(size_t i=0;i<consoles.size();i++)workers.emplace_back([&,i]{for(unsigned f=0;f<n;f++){if(consoles[i]->IsRunning()){consoles[i]->RunFrame();++frames[i];}gate.arrive_and_wait();}});
             for(auto& t:workers)t.join();
             }
+        } else if(cmd=="partyhistory") {
+            if(!sampleFrames)throw std::runtime_error("Set COOP_FRAME_SAMPLES to enable read-only histories");
+            std::vector<std::deque<PartySample>> copy;
+            {std::lock_guard historyLock(historyMutex);copy=partyHistory;}
+            const char* hex="0123456789abcdef";
+            for(size_t i=0;i<copy.size();++i)for(const auto& sample:copy[i]) {
+                std::cout<<"PARTY "<<i<<" "<<sample.tick<<" "<<sample.level<<" "<<sample.count;
+                for(unsigned p=0;p<sample.count*3;++p)std::cout<<" "<<sample.positions[p];
+                std::cout<<" ";
+                for(u8 byte:sample.progress)std::cout<<hex[byte>>4]<<hex[byte&15];
+                std::cout<<"\n";
+            }
         } else if(cmd=="status") {
             for(size_t i=0;i<consoles.size();i++){std::lock_guard lock(locks[i]);std::cout<<"console="<<i<<" frame="<<frames[i]<<" running="<<consoles[i]->IsRunning()<<" arm9pc="<<std::hex<<consoles[i]->ARM9.R[15]<<" arm7pc="<<consoles[i]->ARM7.R[15]<<std::dec<<"\n";}
         } else {
@@ -230,6 +282,23 @@ int main(int argc,char** argv) try {
             std::lock_guard lock(locks[i]);
             auto& ds=*consoles[i];
             if(cmd=="touch") { unsigned x,y;if(!(s>>x>>y)||x>255||y>191)throw std::runtime_error("Bad touch");ds.TouchScreen(x,y); }
+            else if(cmd=="input") {
+                unsigned keys;int x,y;
+                if(!(s>>std::hex>>keys>>std::dec>>x>>y)||keys>0xfff||x<-1||x>255||y<0||y>191)
+                    throw std::runtime_error("Bad controller input");
+                ds.SetKeyMask(keys);
+                if(x<0)ds.ReleaseScreen();else ds.TouchScreen(x,y);
+            }
+            else if(cmd=="readv") {
+                unsigned address,size,total=0;
+                while(s>>std::hex>>address>>std::dec>>size) {
+                    if(size>1024||address<0x02000000||address>0x02400000-size||(total+=size)>4096)
+                        throw std::runtime_error("Read vector outside main RAM");
+                    std::cout<<"RAM "<<i<<" "<<std::hex<<address<<":";
+                    for(unsigned j=0;j<size;++j)std::cout<<" "<<unsigned(ds.MainRAM[address+j-0x02000000]);
+                    std::cout<<std::dec<<"\n";
+                }
+            }
             else if(cmd=="release")ds.ReleaseScreen();
             else if(cmd=="keys") { unsigned k;if(!(s>>std::hex>>k))throw std::runtime_error("Bad key mask");ds.SetKeyMask(k); }
             else if(cmd=="poweroff") {

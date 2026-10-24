@@ -11,6 +11,19 @@
 #include "dCamera_c.h"
 #include "LVL_Overlay.h"
 
+namespace Memory { extern mHeap::Heap_t *defaultHeapPtr; }
+
+// Test builds can enter a later stage through the normal native loader.
+// Shipping builds always start at the castle grounds.
+#ifndef COOP_DIAGNOSTIC_START_LEVEL
+#define COOP_DIAGNOSTIC_START_LEVEL 1
+#endif
+#ifdef COOP_DIAGNOSTIC_STAGE_CYCLE
+static bool coopDiagnosticChordHeld=false;
+extern "C" u16 data_020a0e58[];
+extern "C" u8 data_0209f2f8;
+#endif
+
 extern "C" {
 void PrepareVsMode(void);
 void SetPlayerGlobals(void);
@@ -41,6 +54,15 @@ void *_ZN3G2S12GetBG1ScrPtrEv(void);
 void CoopOriginalMessageUpdate(void);
 void CoopOriginalKillPlayer(void);
 void CoopOriginalHitDeathPlane(int reason);
+int CoopOriginalStarTutorial(void *player);
+int CoopOriginalCourseTutorial(void *player);
+int CoopOriginalLevelEnterInit(void *player);
+void CoopOriginalGiveCoins(int player, int amount);
+int GiveHealth(int player, int amount);
+static void Patch(u32 address, void *target);
+static void PatchCall(u32 address, void *target);
+void *_ZN6Memory13operator_new2Ej(u32 size);
+void func_0203cbc0(void *ptr);
 int func_0205d3f4(void *file);
 void func_0201ffcc(void);
 void func_02042778(void);
@@ -57,9 +79,14 @@ void UnloadArchive(int index);
 extern u8 data_0209caa0[];
 extern u8 data_0209f2d8;
 extern u8 data_0209f250;
+extern u8 data_0209f2fc;
+extern u8 data_0209f20c;
+extern u8 data_0209d660;
 extern u16 data_02092664;
 extern u8 data_020a0f10;
 extern u8 data_0209fc50;
+extern u8 data_0209f21c;
+extern s16 data_0209f358[];
 extern s8 data_02092124;
 extern u8 data_0209f228[];
 extern void *data_0209f394[];
@@ -173,6 +200,8 @@ extern u32 coopSceneInitializing;
 extern u32 coopTitleLoading;
 extern u32 coopSessionEnded;
 extern u32 coopDeathTriggered;
+extern u32 coopGuestTutorialSkips;
+extern u32 coopParticleFallbacks;
 
 void CoopStartMatch(void *) {
     unsigned count = data_0209fc50;
@@ -186,6 +215,11 @@ void CoopStartMatch(void *) {
     coopTitleLoading=0;
     coopSessionEnded=0;
     coopDeathTriggered=0;
+    coopGuestTutorialSkips=0;
+    coopParticleFallbacks=0;
+#ifdef COOP_DIAGNOSTIC_STAGE_CYCLE
+    coopDiagnosticChordHeld=false;
+#endif
     coopSaveState=coopSavePage=0;
     coopSaveEpoch=0;
     data_020a1052[6]=0;
@@ -195,7 +229,7 @@ void CoopStartMatch(void *) {
     ((SaveData *)data_0209caa0)->flags2 |= 0x80;
     SetPlayerGlobals();
     SetNumPlayers(count);
-    LoadLevelNoReturn(1, 0, 1, 0);
+    LoadLevelNoReturn(COOP_DIAGNOSTIC_START_LEVEL, 0, 1, 0);
     data_02092124 = 6;
     data_0209f228[0] = 0;
     Sound::StopLoadedMusic_Layer1(0x3c);
@@ -248,6 +282,12 @@ void CoopLoadLevelOverlays(int level) {
         // talk/event camera-completion reads after the story loader runs.
         extern void CoopCameraFlagsRead(void);
         extern void CoopLoadEntrances(LVL_Overlay::ObjSubTable *, int, u32);
+        extern int CoopStarTutorial(void *);
+        extern int CoopCourseTutorial(void *);
+        extern int CoopLevelEnterInit(void *);
+        Patch(0x020c6e14,(void *)CoopStarTutorial);
+        Patch(0x020c44c4,(void *)CoopCourseTutorial);
+        Patch(0x020c7838,(void *)CoopLevelEnterInit);
         u32 target = (u32)CoopCameraFlagsRead;
         *(volatile u32 *)0x020c4364 = 0xeb000000 | ((target-0x020c436c)>>2 & 0x00ffffff);
         *(volatile u32 *)0x020c4b34 = 0xeb000000 | ((target-0x020c4b3c)>>2 & 0x00ffffff);
@@ -263,6 +303,39 @@ void CoopLoadLevelOverlays(int level) {
         _ZN4CP1526InvalidateInstructionCacheEjj(0x020e3ae8, 0x1a4);
         _ZN4CP1526InvalidateInstructionCacheEjj(0x020fe6c8, 4);
     }
+}
+
+// Shared arrival results and progression messages have one owner. Retail
+// starts them independently from each Player, which lets multiple return
+// animations reopen the result and dialogue state machines over one another.
+u32 coopGuestTutorialSkips=0;
+
+int CoopStarTutorial(void *player) {
+    if (coopEnabled && data_0209fc68 && *((u8 *)player+0x6d8)!=0) {
+        ++coopGuestTutorialSkips;
+        return 0;
+    }
+    return CoopOriginalStarTutorial(player);
+}
+
+int CoopCourseTutorial(void *player) {
+    if (coopEnabled && data_0209fc68 && *((u8 *)player+0x6d8)!=0) {
+        ++coopGuestTutorialSkips;
+        return 0;
+    }
+    return CoopOriginalCourseTutorial(player);
+}
+
+int CoopLevelEnterInit(void *player) {
+    if (coopEnabled && data_0209fc68 && data_0209f2fc==1 &&
+        *((u8 *)player+0x6d8)!=0)
+        // Native normal arrival grounds this player without starting another
+        // star/key victory or loading a duplicate carried-key model.
+    {
+        *((u8 *)player+0x6e3)=0;
+        GiveHealth(*((u8 *)player+0x6d8),0x880);
+    }
+    return CoopOriginalLevelEnterInit(player);
 }
 
 // 0: idle; 1: advertising loading; 2: initializing.
@@ -609,6 +682,71 @@ int CoopSaveCurrentFile(void) {
     return SaveData::SaveMinigames((MinigameSaveData *)(data_0209caa0 + 0x44));
 }
 
+static bool CoopSharedCoins() {
+    return coopEnabled && data_0209fc68 && data_0209f2d8==0;
+}
+
+static mHeap::Heap_t *coopParticleHeap=0;
+static void *coopParticlePool=0;
+u32 coopParticleFallbacks=0;
+
+void *CoopAllocateParticlePool(u32 size) {
+    if (!coopEnabled || !data_0209fc68)
+        return _ZN6Memory13operator_new2Ej(size);
+    mHeap::Heap_t *owner=Memory::defaultHeapPtr;
+    mHeap::Heap_t *game=(mHeap::Heap_t *)data_020a0eac;
+    // Four characters and story maps can fragment ROOT just below the native
+    // particle pool size. Use spare game-heap space for this fixed pool when
+    // needed; its native system/particle counts and contents stay unchanged.
+    if (owner->MaxAllocationUnitSize()<size && game && game!=owner &&
+        game->MaxAllocationUnitSize()>=size) {
+        owner=game;
+        ++coopParticleFallbacks;
+    }
+    void *pool=owner->Allocate(size);
+    coopParticleHeap=owner;
+    coopParticlePool=pool;
+    return pool;
+}
+
+void CoopFreeParticlePool(void *ptr) {
+    if (ptr && ptr==coopParticlePool && coopParticleHeap) {
+        mHeap::Heap_t *owner=coopParticleHeap;
+        coopParticlePool=0;
+        coopParticleHeap=0;
+        owner->Deallocate(ptr);
+    } else {
+        func_0203cbc0(ptr);
+    }
+}
+
+s16 CoopNumCoins(void) {
+    if (CoopSharedCoins())return data_0209f358[0];
+    // Preserve the native sum outside story co-op. Its first instruction is
+    // PC-relative, so reproduce this small accessor instead of relocating it.
+    s16 total=data_0209f358[0];
+    for (unsigned slot=1;slot<data_0209f21c;++slot)
+        total=(s16)(total+data_0209f358[slot]);
+    return total;
+}
+
+void CoopGiveCoins(int player, int amount) {
+    if (!CoopSharedCoins()) {
+        CoopOriginalGiveCoins(player,amount);
+        return;
+    }
+    if ((unsigned)player>=4)return;
+    int total=data_0209f358[0]+amount;
+    if (total<0)total=0;
+    if (total>255)total=255;
+    for (unsigned slot=0;slot<4;++slot)data_0209f358[slot]=(s16)total;
+    // Native GiveCoins checks the collector's individual counter to spawn
+    // the hundred-coin star. Mirror the team total first, then retain that
+    // native check at the actual collector's position. Coin healing remains
+    // on the original collecting Player in daCoin_c.
+    CoopOriginalGiveCoins(player,0);
+}
+
 void CoopMessageUpdate(void) {
     // Message::Update also runs from display/render helpers, after actor
     // updates restore the local controller. Every shared text window and
@@ -643,6 +781,19 @@ int CoopSceneBefore(void *scene) {
         // including the host, consumes the same echoed packet below.
         if (data_0209f318)
             data_020a1052[5] = (data_0209f318->mFlags & 0x8000) != 0;
+#ifdef COOP_DIAGNOSTIC_STAGE_CYCLE
+        // Explicit test builds only: the host's synchronized L+R+Select
+        // requests the next native stage. Use the normal transition/loader,
+        // never a frontend write to scenes, actors, positions or progress.
+        bool chord=(data_020a0e58[0] & 0x304)==0x304;
+        if (id==3 && chord && !coopDiagnosticChordHeld) {
+            unsigned next=(unsigned)data_0209f2f8+1;
+            if (next==41)++next; // Unused native stage.
+            if (next>=52)next=1;
+            LoadLevelNoReturn(next,0,1,0);
+        }
+        coopDiagnosticChordHeld=chord;
+#endif
     }
     return result;
 }
@@ -667,6 +818,10 @@ void CoopSceneAfter(dScene_c *scene, u32 success) {
         data_0209f250 = data_020a0f10;
         gActivePlayerSlot = data_020a0f10;
     }
+    if (scene->actorID==3 && CoopSharedCoins())
+        // The level-clear tally clears slot 0. Keep local coin displays and
+        // later per-player reads on the same team total after that reset.
+        for (unsigned slot=1;slot<4;++slot)data_0209f358[slot]=data_0209f358[0];
     scene->fBase_c::AfterBehavior(success);
 }
 
@@ -686,6 +841,15 @@ int CoopActorBefore(void *actor) {
         data_0209f250 = 0;
     }
     int result = CoopOriginalActorBefore(actor);
+    if (result && coopEnabled && data_0209fc68 && data_0209f2fc==1 &&
+        data_0209f394[0] && actor!=data_0209f394[0]) {
+        for (unsigned slot=1;slot<4;++slot)
+            if (data_0209f394[slot]==actor && *((u8 *)actor+0x709) &&
+                (*((u8 *)data_0209f394[0]+0x709) || data_0209f20c || data_0209d660))
+                // Spectators finish their ordinary arrival only after the
+                // leader's result menu and shared dialogue have completed.
+                result=0;
+    }
     if (result && coopEnabled && data_0209fc68) {
         for (unsigned slot=0;slot<4;++slot)
             if (data_0209f394[slot]==actor) {
@@ -748,12 +912,22 @@ static void Patch(u32 address, void *target) {
     _ZN4CP1526InvalidateInstructionCacheEjj(address, 4);
 }
 
+static void PatchCall(u32 address, void *target) {
+    *(volatile u32 *)address=0xeb000000 | (((u32)target-address-8)>>2 & 0x00ffffff);
+    _ZN4CP1514FlushDataCacheEjj(address,4);
+    _ZN4CP1526InvalidateInstructionCacheEjj(address,4);
+}
+
 void CoopRuntimeDispatch(unsigned operation, u32 argument) {
+    PatchCall(0x02022f88,(void *)CoopAllocateParticlePool);
+    PatchCall(0x020231bc,(void *)CoopFreeParticlePool);
     // Reapply the ENTRY hook when that overlay is reloaded for a new party.
     Patch(0x02013b9c, (void *)CoopSaveCurrentFile);
     Patch(0x0201c0b8, (void *)CoopMessageUpdate);
     Patch(0x02029b30, (void *)CoopKillPlayer);
     Patch(0x02029b84, (void *)CoopHitDeathPlane);
+    Patch(0x0202a770, (void *)CoopNumCoins);
+    Patch(0x0202a7b8, (void *)CoopGiveCoins);
     Patch(0x0202ded4, (void *)CoopLoadLevelOverlays);
     Patch(0x0202cc0c, (void *)CoopStageInit);
     Patch(0x0205d688, (void *)CoopReadFile);

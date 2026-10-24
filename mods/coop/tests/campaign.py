@@ -1,4 +1,5 @@
 """Campaign checks driven only by controller input and read-only RAM snapshots."""
+import os
 import math
 import json
 import struct
@@ -7,8 +8,27 @@ MIPS_VTABLE = 0x021300f8
 PLAYER_POINTERS = 0x0209f394
 
 
+class ControllerRouteFailure(RuntimeError):
+    """The input driver missed a route; distinct from a game/network failure."""
+
+
 class PlayerUnavailable(RuntimeError):
     """The old scene's player objects have been retired during a transition."""
+
+
+def wait_controller_buttons(ds, console, mask, held=False):
+    """Wait for a real button edge to appear in native synchronized input.
+
+    A one-emulator-frame release may occur while NET is waiting for peers.
+    Keep the physical input unchanged until its decoded state is observed.
+    """
+    slot=ds.read(console,0x020a0f10,1)[0]
+    for attempt in range(90):
+        value=int.from_bytes(ds.read(console,0x020a0e58+4*slot,2),'little')
+        if (value&mask)==(mask if held else 0):return
+        ds.run(1)
+    snapshot(ds,'controller-edge-not-acknowledged')
+    raise RuntimeError(f'Console {console} button state was not decoded by native input')
 
 
 def check_yoshi_colors(ds):
@@ -43,6 +63,38 @@ def player_position(ds, console=0, player=0):
     return tuple(v/4096 for v in struct.unpack('<iii',ds.read(console,actor+0x5c,12)))
 
 
+def check_controller_movement(ds, console, checkpoint):
+    """Require real horizontal movement, allowing an adjacent player or wall.
+
+    Native entry points can place a party side by side. One fixed direction
+    can push into another player even while input works; try other physical
+    directions before declaring lost control. Never change a player position.
+    """
+    slot=ds.read(console,0x020a0f10,1)[0]
+    for direction in (0x10,0x20,0x80,0x40)*2:
+        if any(ds.read(i,0x0209d660,1)[0] for i in range(ds.count)):
+            finish_messages(ds)
+        actor=ds.word(console,PLAYER_POINTERS+4*slot)
+        swimming=bool(ds.read(console,actor+0x706,1)[0])
+        before=player_position(ds,console,slot)
+        # Underwater directions only turn Yoshi; B supplies the native stroke.
+        ds.set_input(console,0xfff^(direction | (2 if swimming else 0)))
+        ds.run(24)
+        ds.set_input(console,0xfff)
+        ds.run(120)
+        if any(ds.read(i,0x0209d660,1)[0] for i in range(ds.count)):
+            # A first movement can open the native control/cap tutorial after
+            # stage readiness. Finish it with host input before testing again.
+            finish_messages(ds)
+            continue
+        after=player_position(ds,console,slot)
+        if before[0]!=after[0] or before[2]!=after[2]:
+            assert_party_synchronized(ds,f'{checkpoint}-input-{console}')
+            return {'console':console,'slot':slot,'direction':direction,'swimming':swimming,'before':before,'after':after}
+    snapshot(ds,checkpoint+'-input-failed')
+    raise RuntimeError(f'Console {console} could not move in any tested direction after {checkpoint}')
+
+
 def snapshot(ds, name):
     ds.screens(name+'-')
     for console in range(ds.count):
@@ -50,6 +102,35 @@ def snapshot(ds, name):
         ds.command(f'dumptcm {console} {ds.output/(name+"-"+str(console)+".dtcm")}')
         ds.command(f'dump7 {console} {ds.output/(name+"-"+str(console)+".arm7")}')
         ds.command(f'regs {console}')
+
+
+def _same_tick_party(ds, name):
+    lines=ds.command('partyhistory')
+    histories=[{} for _ in range(ds.count)]
+    for line in lines:
+        if not line.startswith('PARTY '):continue
+        fields=line.split()
+        console,tick,level,count=map(int,fields[1:5])
+        if count!=ds.count:continue
+        positions=tuple(map(int,fields[5:5+count*3]))
+        histories[console][tick]=(level,positions,fields[5+count*3])
+    # The latest tick can still receive its final actor updates. Compare
+    # completed ticks retained independently by each running console.
+    completed=[set(sorted(history)[:-2]) for history in histories]
+    ticks=sorted(set.intersection(*completed))[-12:]
+    matched=len(ticks)==12 and ticks==list(range(ticks[0],ticks[0]+12))
+    for tick in ticks:
+        reference=histories[0][tick]
+        for history in histories[1:]:
+            level,positions,progress=history[tick]
+            if level!=reference[0] or progress!=reference[2]:matched=False
+            for component,(a,b) in enumerate(zip(reference[1],positions)):
+                if (abs(a-b)>256 if component%3==1 else a!=b):matched=False
+    (ds.output/(name+'-same-tick.json')).write_text(json.dumps({
+        'matched':matched,'ticks':ticks,
+        'samples':[{str(tick):history[tick] for tick in ticks} for history in histories]
+    },indent=2)+'\n')
+    return matched
 
 
 def assert_party_synchronized(ds, name):
@@ -61,6 +142,13 @@ def assert_party_synchronized(ds, name):
     # divergence; a subsequent diagnostic dump previously showed all four
     # replicas identical after a transient 12-unit vertical difference.
     for attempt in range(4):
+        if os.environ.get('COOP_FRAME_SAMPLES') and ds.count>1:
+            if _same_tick_party(ds,name):return
+            if attempt<3:
+                ds.run(60)
+                continue
+            snapshot(ds,name+'-desynchronized')
+            raise RuntimeError(f'Player positions or campaign progress differ at matching input ticks after {name}')
         positions=[tuple(player_position(ds,i,p) for p in range(ds.count))
                    for i in range(ds.count)]
         progress=[ds.read(i,0x0209caa0,0x40) for i in range(ds.count)]
@@ -94,10 +182,11 @@ def find_castle_rabbit(ds):
 
 def direction_toward(ds, x, z, console=0):
     slot=ds.read(console,0x020a0f10,1)[0]
-    px,_,pz=player_position(ds,0,slot)
-    # GetAngleToCamera(0) reads this synchronized NET record. Native actor
-    # velocity uses x=sin(heading), z=cos(heading).
-    yaw=struct.unpack('<h',ds.read(console,0x020a1164+36*slot,2))[0]
+    px,_,pz=player_position(ds,console,slot)
+    # Physical input is paired with this console's outgoing camera angle.
+    # The echoed NET angle is older and can drift badly while the camera
+    # rotates. Native actor velocity uses x=sin(heading), z=cos(heading).
+    yaw=struct.unpack('<h',ds.read(console,0x020a1050,2))[0]
     desired=math.atan2(x-px,z-pz)-yaw*math.tau/65536
     # Native Standard-mode D-pad angles, relative to the synchronized camera.
     choices=((0x10,math.pi/2),(0x20,-math.pi/2),(0x40,math.pi),(0x80,0),
@@ -114,7 +203,7 @@ def advance_message(ds):
     ds.run(30)
 
 
-def finish_messages(ds):
+def finish_messages(ds, level_clear_choice=None):
     ds.command('keys 0 fff')
     def ready():
         for console in range(ds.count):
@@ -122,9 +211,13 @@ def finish_messages(ds):
             for slot in range(ds.count):
                 actor=ds.word(console,PLAYER_POINTERS+4*slot)
                 if not 0x02000000<=actor<0x023ff000:return False
-                if ds.read(console,actor+0x709,1)[0]:return False
+                if ds.read(console,actor+0x709,1)[0] or ds.read(console,actor+0x71e,1)[0]:return False
         return True
     for step in range(120):
+        if level_clear_choice is not None and ds.read(0,0x0209f2d4,1)==b'\x03':
+            ds.touch(0,*level_clear_choice)
+            ds.run(120)
+            continue
         if ready():
             ds.run(30)
             if ready():return
@@ -149,12 +242,12 @@ def walk_to(ds, x, z, tolerance=100, limit=160, pulse_frames=12, stop_when=None,
         if any(ds.read(i,0x0209d660,1)[0] for i in range(ds.count)):
             advance_message(ds)
             continue
-        px,_,pz=player_position(ds,0,slot)
+        px,_,pz=player_position(ds,console,slot)
         distance=math.hypot(x-px,z-pz)
         if distance<tolerance:
             ds.command(f'keys {console} fff')
             ds.run(30)
-            stopped=player_position(ds,0,slot)
+            stopped=player_position(ds,console,slot)
             if math.hypot(x-stopped[0],z-stopped[2])<tolerance:
                 return
             continue
@@ -168,43 +261,50 @@ def walk_to(ds, x, z, tolerance=100, limit=160, pulse_frames=12, stop_when=None,
         # Shorten the final input burst so narrow doors can be approached
         # accurately without stylus input being consumed by map controls.
         ds.run(max(1,min(pulse_frames,int(distance/30))))
-        after=player_position(ds,0,slot)
+        after=player_position(ds,console,slot)
         stalled=stalled+1 if math.hypot(after[0]-px,after[2]-pz)<3 else 0
         if step%30==0:
-            print('Waypoint:',(x,z),'position',player_position(ds,0,slot),flush=True)
+            print('Waypoint:',(x,z),'position',player_position(ds,console,slot),flush=True)
     snapshot(ds,'waypoint-failed')
-    raise RuntimeError(f'Controller route could not reach {(x,z)}')
+    raise ControllerRouteFailure(f'Controller route could not reach {(x,z)}')
 
 
-def touch_walk_to(ds, x, z, tolerance=30, limit=160):
-    # Native CheckInput has a five-update touch-origin delay, a four-pixel
-    # dead zone, and a 36-pixel analog range in Standard mode. Player movement
-    # has a further ten-pixel threshold: smaller drags register but stand still.
-    # Keep real
-    # stylus input held across NET updates instead of losing one-frame keys.
-    ds.command('keys 0 fff')
-    ds.command('touch 0 128 96')
+def touch_walk_to(ds, x, z, tolerance=30, limit=160, console=0, jump=False, run=False):
+    # Keep the real stylus held through native NET updates. Batched reads
+    # observe position and camera together; no scene or position is written.
+    slot=ds.read(console,0x020a0f10,1)[0]
+    actor=ds.word(console,PLAYER_POINTERS+slot*4)
+    initial_level=ds.read(console,0x0209f2f8,1)
+    if not 0x02000000<=actor<0x023ff000:
+        raise PlayerUnavailable("Analog controller has no live player")
+    ds.set_input(console,0xfff,(128,96))
     ds.run(24)
-    origin=ds.read(0,0x0209f4a8,2)
-    radius=18 if ds.read(0,0x0209f4ae,1)[0]==2 else 14
+    origin=ds.read(console,0x0209f4a8+24*slot,2)
+    radius=24 if jump or run else (18 if ds.read(console,0x0209f4ae+24*slot,1)[0]==2 else 14)
     try:
         for step in range(limit):
-            px,_,pz=player_position(ds)
+            position,yaw_data,level,live_actor=ds.readv(console,(
+                (actor+0x5c,12),(0x020a1050,2),(0x0209f2f8,1),
+                (PLAYER_POINTERS+slot*4,4)))
+            if level!=initial_level or int.from_bytes(live_actor,'little')!=actor:
+                snapshot(ds,'analog-route-scene-changed')
+                raise ControllerRouteFailure('Analog controller route changed scenes')
+            px,_,pz=(v/4096 for v in struct.unpack('<iii',position))
             distance=math.hypot(x-px,z-pz)
-            if distance<tolerance:
-                return
-            yaw=struct.unpack('<h',ds.read(0,0x020a1164,2))[0]
+            if distance<tolerance:return
+            yaw=struct.unpack('<h',yaw_data)[0]
             angle=math.atan2(x-px,z-pz)-yaw*math.tau/65536
             tx=origin[0]+round(radius*math.sin(angle))
             ty=origin[1]+round(radius*math.cos(angle))
-            ds.command(f'touch 0 {tx} {ty}')
-            ds.run(12)
-            if step%20==0:
-                print('Analog waypoint:',(x,z),'position',player_position(ds),flush=True)
+            held=(0x800 if jump or run else 0) | (2 if jump and step%8<6 else 0)
+            ds.set_input(console,0xfff^held,(tx,ty))
+            ds.run(6)
+            if step%40==0:
+                print('Analog waypoint:',(x,z),'controller',console,'position',(px,pz),flush=True)
         snapshot(ds,'analog-waypoint-failed')
-        raise RuntimeError(f'Analog controller route could not reach {(x,z)}')
+        raise ControllerRouteFailure(f'Analog controller route could not reach {(x,z)}')
     finally:
-        ds.command('release 0')
+        ds.set_input(console,0xfff)
         ds.run(30)
 
 
@@ -320,17 +420,7 @@ def check_castle_entry(ds):
             ds.run(180)
             assert_party_synchronized(ds,'castle-entry')
             for console in range(ds.count):
-                player=ds.read(console,0x020a0f10,1)[0]
-                before=player_position(ds,0,player)
-                ds.command(f'keys {console} fef')
-                ds.run(24)
-                ds.command(f'keys {console} fff')
-                ds.run(120)
-                after=player_position(ds,0,player)
-                if before[0]==after[0] and before[2]==after[2]:
-                    snapshot(ds,'castle-input-failed')
-                    raise RuntimeError(f'Console {console} could not move its player after castle entry')
-                assert_party_synchronized(ds,'castle-input-'+str(console))
+                check_controller_movement(ds,console,'castle-entry')
             snapshot(ds,'castle-entry')
             print(f'Castle interior playable with {ds.count} synchronized controllers.',flush=True)
             return
@@ -353,18 +443,22 @@ def check_first_course(ds):
     # The west landing is 200 units above the lobby. Its collision ramp
     # runs northwest from (-2317, 412) to (-2564, 164); approaching the
     # landing directly from the east hits its vertical side.
-    for point in ((-1000,500),(-2300,430),(-2580,150)):
-        walk_to(ds,*point)
-    # The doorway is narrow. The general 100-unit waypoint tolerance can
-    # accept its north edge and make the following diagonal hit the wall.
-    # The KCL opening is centered near z=-825. Aim through its center;
-    # z=-700 can meet the jamb with a 45-degree D-pad heading.
-    # Input has native wireless latency. If the approach already carries us
-    # through the opening, continue into the room instead of backtracking to
-    # an obsolete approach point and orbiting the door.
-    through_door=lambda: player_position(ds)[0]<-3100
-    walk_to(ds,-2850,-825,tolerance=45,limit=600,pulse_frames=2,stop_when=through_door)
-    walk_to(ds,-3350,-825,tolerance=60,limit=600,pulse_frames=2)
+    px,py,pz=player_position(ds)
+    # Course returns spawn inside the painting room, beyond the lobby door.
+    in_painting_room=px<-3100 and -1500<pz<500 and 0<=py<=600
+    if not in_painting_room:
+        for point in ((-1000,500),(-2300,430),(-2580,150)):
+            walk_to(ds,*point)
+        # The doorway is narrow. The general 100-unit waypoint tolerance can
+        # accept its north edge and make the following diagonal hit the wall.
+        # The KCL opening is centered near z=-825. Aim through its center;
+        # z=-700 can meet the jamb with a 45-degree D-pad heading.
+        # Input has native wireless latency. If the approach already carries us
+        # through the opening, continue into the room instead of backtracking to
+        # an obsolete approach point and orbiting the door.
+        through_door=lambda: player_position(ds)[0]<-3100
+        walk_to(ds,-2850,-825,tolerance=45,limit=600,pulse_frames=2,stop_when=through_door)
+        walk_to(ds,-3350,-825,tolerance=60,limit=600,pulse_frames=2)
     walk_to(ds,-4500,-450)
     previous_scene_state=None
     for step in range(300):
@@ -397,17 +491,7 @@ def check_first_course(ds):
             finish_messages(ds)
             assert_party_synchronized(ds,'first-course-arrival')
             for console in range(ds.count):
-                player=ds.read(console,0x020a0f10,1)[0]
-                before=player_position(ds,0,player)
-                ds.command(f'keys {console} fef')
-                ds.run(24)
-                ds.command(f'keys {console} fff')
-                ds.run(120)
-                after=player_position(ds,0,player)
-                if before[0]==after[0] and before[2]==after[2]:
-                    snapshot(ds,'first-course-input-failed')
-                    raise RuntimeError(f'Console {console} could not move in the first course')
-                assert_party_synchronized(ds,'first-course-input-'+str(console))
+                check_controller_movement(ds,console,'first-course')
             snapshot(ds,'first-course')
             print(f'Bob-omb Battlefield playable with {ds.count} synchronized controllers.',flush=True)
             return
@@ -464,17 +548,7 @@ def check_course_return(ds):
             finish_messages(ds)
             assert_party_synchronized(ds,'course-return-arrival')
             for console in range(ds.count):
-                player=ds.read(console,0x020a0f10,1)[0]
-                before=player_position(ds,0,player)
-                ds.command(f'keys {console} fef')
-                ds.run(24)
-                ds.command(f'keys {console} fff')
-                ds.run(120)
-                after=player_position(ds,0,player)
-                if before[0]==after[0] and before[2]==after[2]:
-                    snapshot(ds,'course-return-input-failed')
-                    raise RuntimeError(f'Console {console} could not move after returning from the course')
-                assert_party_synchronized(ds,'course-return-input-'+str(console))
+                check_controller_movement(ds,console,'course-return')
             snapshot(ds,'course-return')
             print(f'Course return playable with {ds.count} synchronized controllers.',flush=True)
             return

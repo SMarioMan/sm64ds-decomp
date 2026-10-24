@@ -1,5 +1,6 @@
 """Command driver for real melonDS cores; no emulated memory writes or protocol substitutes."""
 import os
+import json
 from pathlib import Path
 import queue
 import re
@@ -104,6 +105,24 @@ class Emulators:
         line=next(line for line in result if line.startswith('RAM '))
         return bytes(int(v,16) for v in line.split(':',1)[1].split())
 
+    def readv(self, index, fields):
+        """Read related observations under one core lock, without advancing it."""
+        if not os.environ.get('COOP_BATCH_INPUT'):
+            return [self.read(index,address,size) for address,size in fields]
+        lines=self.command(f'readv {index} '+ ' '.join(f'{address:08x} {size}' for address,size in fields))
+        values=[bytes(int(v,16) for v in line.split(':',1)[1].split())
+                for line in lines if line.startswith('RAM ')]
+        if len(values)!=len(fields):raise RuntimeError('Incomplete read vector')
+        return values
+
+    def set_input(self, index, keys, touch=None):
+        if os.environ.get('COOP_BATCH_INPUT'):
+            x,y=touch if touch is not None else (-1,0)
+            self.command(f'input {index} {keys:03x} {x} {y}')
+        else:
+            self.command(f'keys {index} {keys:03x}')
+            self.command(f'touch {index} {touch[0]} {touch[1]}' if touch is not None else f'release {index}')
+
     def word(self, index, address):
         return int.from_bytes(self.read(index,address),'little')
 
@@ -111,6 +130,20 @@ class Emulators:
         return self
 
     def __exit__(self, *error):
+        retained=os.environ.get('COOP_FAILURE_CONTROL_SOCKET')
+        if error[0] is not None and retained and self.process.poll() is None:
+            # Keep the original failure, even if later physical-input work
+            # succeeds. A separate continuation report must record that work.
+            (self.output/'retained-failure.json').write_text(json.dumps({
+                'status':'failed','error':f'{error[0].__name__}: {error[1]}',
+                'controlSocket':retained},indent=2)+'\n')
+            report=self.output/'result.json'
+            if report.exists():
+                result=json.loads(report.read_text())
+                result.update(status='failed',error=f'{error[0].__name__}: {error[1]}')
+                report.write_text(json.dumps(result,indent=2)+'\n')
+            from session_control import serve
+            serve(self,Path(retained))
         self.process.stdin.close()
         try:
             self.process.wait(timeout=10)

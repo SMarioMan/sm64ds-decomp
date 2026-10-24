@@ -28,6 +28,9 @@ def main():
     parser.add_argument('--course-death',action='store_true',help='Take actual enemy damage and require the party to recover in the castle')
     parser.add_argument('--death-controller',type=int,default=0,help='Console whose player takes enemy damage (0 is host)')
     parser.add_argument('--course-star',action='store_true',help='Collect the actual Chain Chomp star, Save and Continue, and check the shared castle return')
+    parser.add_argument('--star-controller',type=int,default=0,help='Console that collects the course star (0 is host)')
+    parser.add_argument('--course-coins',action='store_true',help='Collect a real course coin and require the shared team total on every console')
+    parser.add_argument('--coin-controller',type=int,default=0,help='Console that collects the course coin (0 is host)')
     parser.add_argument('--host-save',action='store_true',help='Save a controller-earned key to the explicitly selected host slot and quit on every console')
     parser.add_argument('--quit-loaded-save',action='store_true',help='Isolate save/quit using a private host backup that already contains the castle key; does not test new progress persistence')
     parser.add_argument('--use-key-fixture',action='store_true',help='Use a private backup with a previously earned castle key for a later campaign checkpoint; record that fixture in the report')
@@ -40,10 +43,19 @@ def main():
     parser.add_argument('--clients',type=int,choices=(1,2,3),default=1)
     parser.add_argument('--menu-select-delays',type=int,nargs='+',
                         help='Frames before each guest selects the signed menu, in guest order; tests users joining at different times')
+    parser.add_argument('--control-socket',type=Path,help='Keep the real consoles alive behind a local controller socket after checks')
+    parser.add_argument('--diagnostic-cycle-count',type=int,default=0,
+                        help='TEST ONLY: request this many next-stage transitions in a diagnostic cycle build')
     parser.add_argument('--output',type=Path,required=True)
     args=parser.parse_args()
+    if not 0<=args.coin_controller<=args.clients or (args.coin_controller and not args.course_coins):
+        parser.error('--coin-controller requires --course-coins and a connected console')
     if not 0<=args.death_controller<=args.clients or (args.death_controller and not args.course_death):
         parser.error('--death-controller requires --course-death and a connected console')
+    if not 0<=args.star_controller<=args.clients or (args.star_controller and not args.course_star):
+        parser.error('--star-controller requires --course-star and a connected console')
+    if args.control_socket and (not args.story or args.host_save or args.disconnect_client or args.disconnect_host):
+        parser.error('--control-socket requires --story and a live session after the checks')
     if args.use_key_fixture and not os.environ.get('COOP_SAVE_DIR'):
         parser.error('--use-key-fixture requires an explicit private COOP_SAVE_DIR')
     selection_delays=args.menu_select_delays or [0]*args.clients
@@ -51,7 +63,9 @@ def main():
         parser.error('--menu-select-delays requires one nonnegative frame count per guest')
     if sum((args.course_return,args.course_death,args.course_star))>1:
         parser.error('Choose one course-return, course-death or course-star checkpoint for one run')
-    if args.course_return or args.course_death or args.course_star:
+    if args.course_coins and (args.course_return or args.course_death or (args.host_save and not args.course_star)):
+        parser.error('--course-coins can run alone or before --course-star; host saving requires the star return')
+    if args.course_return or args.course_death or args.course_star or args.course_coins:
         args.first_course=True
     if args.host_save and args.quit_loaded_save:
         parser.error('Choose --host-save for new progress or --quit-loaded-save for an existing private fixture')
@@ -81,6 +95,12 @@ def main():
     checks=[]
     image_metadata=image_path.with_suffix('.json')
     metadata=json.loads(image_metadata.read_text()) if image_metadata.exists() else {}
+    diagnostic_level=metadata.get('runtimeModule',{}).get('diagnosticStartLevel')
+    if not 0<=args.diagnostic_cycle_count<=50 or (args.diagnostic_cycle_count and
+            not metadata.get('runtimeModule',{}).get('diagnosticStageCycle')):
+        parser.error('--diagnostic-cycle-count requires an explicitly marked stage-cycle image and a count of 1..50')
+    if diagnostic_level is not None and (not args.story or args.castle_key or args.castle_entry or args.host_save or args.quit_loaded_save or args.disconnect_client or args.disconnect_host):
+        parser.error('A diagnostic stage image requires --story without campaign/save checkpoints')
     firmware_confirmations=0
     boot_timeout=int(os.environ.get('COOP_BOOT_MP_TIMEOUT_MS','25'))
     game_timeout=int(os.environ.get('COOP_MP_TIMEOUT_MS','25'))
@@ -94,6 +114,9 @@ def main():
             'maxEmulatedFrameLead':int(os.environ.get('COOP_MAX_FRAME_LEAD','0')),
             'melonDSMPTransport':'local',
             'cpuExecution':'jit' if os.environ.get('COOP_JIT') else 'interpreter',
+            'sameInputTickComparison':bool(os.environ.get('COOP_FRAME_SAMPLES')),
+            'batchedControllerObservations':bool(os.environ.get('COOP_BATCH_INPUT')),
+            'driverSourceSnapshot':os.environ.get('COOP_DRIVER_SNAPSHOT'),
             'mpReceiveTimeoutMs':game_timeout if game_timeout_applied else boot_timeout,
             'bootMpReceiveTimeoutMs':boot_timeout,
             'gameMpReceiveTimeoutMs':game_timeout,
@@ -105,6 +128,13 @@ def main():
             'persistentCartSaveDirectory':os.environ.get('COOP_SAVE_DIR'),
             'experimentalHostSaveSlot':metadata.get('experimentalHostSaveSlot'),
             'preexistingKeyFixture':args.quit_loaded_save or args.use_key_fixture,
+            'deathController':args.death_controller if args.course_death else None,
+            'starController':args.star_controller if args.course_star else None,
+            'coinController':args.coin_controller if args.course_coins else None,
+            'sharedCourseCoins':metadata.get('runtimeModule',{}).get('sharedCourseCoins',False),
+            'particlePoolFallback':metadata.get('runtimeModule',{}).get('particlePoolFallback',False),
+            'diagnosticStartLevel':diagnostic_level,
+            'diagnosticCycleCount':args.diagnostic_cycle_count,
             'campaignCompletionVerified':False},indent=2)+'\n')
     original_exception_hook=sys.excepthook
     def report_failure(kind, error, traceback):
@@ -113,6 +143,8 @@ def main():
     sys.excepthook=report_failure
     report()
     with Emulators(image_path,args.clients,args.output,mp_timeout_ms=boot_timeout) as ds:
+        ds.shared_course_coins=metadata.get('runtimeModule',{}).get('sharedCourseCoins',False)
+        ds.runtime_module=metadata.get('runtimeModule')
         ds.run(300)
         if args.parent=='native':
             ds.touch(0,128,120)
@@ -283,7 +315,7 @@ def main():
                 ds.run(300)
                 if all(ds.read(i,0x0209f21c,1)==bytes([ds.count]) and
                        ds.read(i,0x0209f2d8,1)==b'\0' and
-                       ds.read(i,0x0209f2f8,1)==b'\x01' and
+                       ds.read(i,0x0209f2f8,1)==bytes([diagnostic_level or 1]) and
                        ds.read(i,0x02092778,1)==b'\0' and
                        all(ds.word(i,0x0209f394+4*j) for j in range(ds.count))
                        for i in range(ds.count)):
@@ -298,11 +330,16 @@ def main():
                     ds.command(f'dump {i} {ds.output / ("story-entry-failed-"+str(i)+".ram")}')
                     ds.command(f'dumptcm {i} {ds.output / ("story-entry-failed-"+str(i)+".dtcm")}')
                     ds.command(f'regs {i}')
-                raise RuntimeError('The Download Play party did not enter multiplayer castle grounds')
+                raise RuntimeError(f'The Download Play party did not enter native stage {diagnostic_level or 1}')
             ds.run(180)
-            from campaign import check_yoshi_colors
-            check_yoshi_colors(ds)
-            checks.append('standard-multiplayer-yoshi-palettes')
+            if diagnostic_level is None:
+                from campaign import check_yoshi_colors
+                check_yoshi_colors(ds)
+                checks.append('standard-multiplayer-yoshi-palettes')
+            else:
+                from diagnostic_stage import check_characters
+                check_characters(ds)
+                checks.append('diagnostic-native-character-selection')
             if metadata.get('experimentalHostSaveSlot') is not None:
                 module=metadata['runtimeModule']
                 for console in range(ds.count):
@@ -315,6 +352,20 @@ def main():
                 if len(set(progress))!=1:
                     raise RuntimeError('The full host adventure file differs between consoles')
                 checks.append('host-adventure-file-loaded-and-shared')
+            if diagnostic_level is not None:
+                from diagnostic_stage import check_stage
+                check_stage(ds,diagnostic_level)
+                if args.diagnostic_cycle_count:
+                    from diagnostic_stage import check_cycle
+                    check_cycle(ds,args.diagnostic_cycle_count)
+                    checks.append('diagnostic-native-stage-cycle')
+                checks.extend(['diagnostic-native-stage-entry','diagnostic-independent-controls-and-shared-pause'])
+                report()
+                if args.control_socket:
+                    from session_control import serve
+                    serve(ds,args.control_socket)
+                report('passed')
+                return
             def positions():
                 return [tuple(struct.unpack('<iii',ds.read(i,ds.word(i,0x0209f394+4*j)+0x5c,12)))
                         for i in range(ds.count) for j in range(ds.count)]
@@ -396,13 +447,22 @@ def main():
                 from campaign import check_course_return
                 check_course_return(ds)
                 checks.append('controller-driven-shared-course-return')
+            if args.course_star:
+                from course_star import check_repeated_jumps
+                check_repeated_jumps(ds,args.star_controller)
+                checks.append('native-acknowledged-repeated-guest-jump-edges')
+            if args.course_coins:
+                from course_coins import check_shared_coin_pickup
+                check_shared_coin_pickup(ds,args.coin_controller)
+                checks.append('controller-driven-coin-pickup-and-shared-team-total')
+                report()
             if args.course_death:
                 from course_death import check_course_death
                 check_course_death(ds,args.death_controller)
                 checks.append('controller-driven-enemy-death-and-party-recovery')
             if args.course_star:
                 from course_star import check_chain_star
-                check_chain_star(ds)
+                check_chain_star(ds,args.star_controller)
                 checks.append('controller-driven-star-collection-persistence-and-party-return')
             if args.host_save:
                 from host_save import check_wireless_save
@@ -414,6 +474,9 @@ def main():
                 from disconnect import check_guest_disconnect
                 check_guest_disconnect(ds,metadata,0 if args.disconnect_host else None)
                 checks.append(('host' if args.disconnect_host else 'guest')+'-poweroff-and-clean-session-end')
+        if args.control_socket:
+            from session_control import serve
+            serve(ds,args.control_socket)
         report('passed')
 
 
