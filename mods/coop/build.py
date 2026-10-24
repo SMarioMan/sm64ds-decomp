@@ -113,7 +113,7 @@ def main():
     parser.add_argument('--diagnostic-start-level',type=int,choices=range(1,52),
                         help='TEST ONLY: start in this native stage; does not validate campaign progression')
     parser.add_argument('--diagnostic-stage-cycle',action='store_true',
-                        help='TEST ONLY: synchronized L+R+Select requests the next native stage')
+                        help='TEST ONLY: synchronized L+R+X requests the next native stage')
     args = parser.parse_args()
     if args.baseline and args.diagnostic_start_level is not None:
         parser.error('--baseline cannot select a diagnostic stage')
@@ -165,7 +165,10 @@ def main():
             ('CoopOriginalStarTutorial',0x020c6e14,bytes.fromhex('30402de9')),
             ('CoopOriginalCourseTutorial',0x020c44c4,bytes.fromhex('30402de9')),
             ('CoopOriginalLevelEnterInit',0x020c7838,bytes.fromhex('f0402de9')),
-            ('CoopOriginalGiveCoins',game['GiveCoins'],bytes.fromhex('00402de9'))]
+            ('CoopOriginalGiveCoins',game['GiveCoins'],bytes.fromhex('00402de9')),
+            ('CoopOriginalTrimModel',game['func_02017060'],bytes.fromhex('30402de9')),
+            ('CoopOriginalResolveFile',game['func_020186c0'],bytes.fromhex('70402de9')),
+            ('CoopOriginalOpenFile',game['func_020185c0'],bytes.fromhex('f0412de9'))]
         imports = dict(game, **{name:PAYLOAD_ADDRESS+0x1800+i*8
                                for i,(name,_,_) in enumerate(trampolines)})
         defines=[f'COOP_SAVE_SLOT={ord(args.save_slot)-ord("A") if args.save_slot else -1}']
@@ -259,13 +262,30 @@ def main():
             raise RuntimeError('An unrelated native file changed')
         if arm9[game['NumCoins']-rom.arm9RamAddress:game['NumCoins']-rom.arm9RamAddress+8]!=bytes.fromhex('38009fe538209fe5'):
             raise RuntimeError('Unexpected native coin accessor')
-        particle_calls=[(0x02022f88,game['_ZN6Memory13operator_new2Ej'],'CoopAllocateParticlePool'),
-                        (0x020231bc,game['func_0203cbc0'],'CoopFreeParticlePool')]
-        for address,target,_ in particle_calls:
+        if arm9[0x02023178-rom.arm9RamAddress:0x02023194-rom.arm9RamAddress]!=bytes.fromhex('10109fe5003091e5002083e00300a0e1002081e51eff2fe178ee0902'):
+            raise RuntimeError('Unexpected native particle arena allocator')
+        memory_calls=[(0x02022f88,game['_ZN6Memory13operator_new2Ej'],'CoopAllocateParticlePool'),
+                        (0x020231bc,game['func_0203cbc0'],'CoopFreeParticlePool'),
+                        (0x02017c98,game['_ZN6Memory8AllocateEj'],'CoopAllocateResource'),
+                        (0x02017cd8,game['_ZN6Memory8AllocateEji'],'CoopAllocateAlignedResource'),
+                        (0x02017d40,game['_ZN6Memory8AllocateEji'],'CoopAllocateAlignedResource'),
+                        (0x02017da8,game['_ZN6Memory8AllocateEj'],'CoopAllocateResource'),
+                        (0x02017dcc,game['_ZN6Memory8AllocateEj'],'CoopAllocateResource'),
+                        (0x02017c3c,game['_ZN6Memory10DeallocateEPv'],'CoopFreeResource'),
+                        (0x02017dc4,game['_ZN6Memory10DeallocateEPv'],'CoopFreeResource'),
+                        (0x02017de4,game['_ZN6Memory10DeallocateEPv'],'CoopFreeResource'),
+                        (0x020181c4,game['_ZN6Memory8AllocateEj'],'CoopAllocateResource'),
+                        (0x02018204,game['_ZN6Memory8AllocateEji'],'CoopAllocateAlignedResource'),
+                        (0x02018378,game['_ZN6Memory8AllocateEji'],'CoopAllocateAlignedResource'),
+                        (0x020183c4,game['_ZN6Memory8AllocateEj'],'CoopAllocateResource'),
+                        (0x020183e0,game['_ZN6Memory8AllocateEj'],'CoopAllocateResource'),
+                        (0x020183fc,game['_ZN6Memory10DeallocateEPv'],'CoopFreeResource'),
+                        (0x0201815c,game['_ZN6Memory10DeallocateEPv'],'CoopFreeResource')]
+        for address,target,_ in memory_calls:
             offset=address-rom.arm9RamAddress
             if arm9[offset:offset+4]!=branch(address,target)[:3]+b'\xeb':
-                raise RuntimeError(f'Unexpected native particle-pool call at {address:#x}')
-        pairs=[(game['NumCoins'],'CoopNumCoins'),(game['GiveCoins'],'CoopGiveCoins'),(game[SAVE_CURRENT],'CoopSaveCurrentFile'),(game['_Z17LoadLevelOverlaysi'],'CoopLoadLevelOverlays'),
+                raise RuntimeError(f'Unexpected native memory allocation/free call at {address:#x}')
+        pairs=[(game['func_020186c0'],'CoopResolveFile'),(game['func_020185c0'],'CoopOpenFile'),(game['func_02023178'],'CoopAllocateParticleChunk'),(game['func_02017060'],'CoopTrimResourceModel'),(game['NumCoins'],'CoopNumCoins'),(game['GiveCoins'],'CoopGiveCoins'),(game[SAVE_CURRENT],'CoopSaveCurrentFile'),(game['_Z17LoadLevelOverlaysi'],'CoopLoadLevelOverlays'),
                (game['_ZN7Message6UpdateEv'],'CoopMessageUpdate'),
                (game['KillPlayer'],'CoopKillPlayer'),(game['HitDeathPlane'],'CoopHitDeathPlane'),
                (ov_symbols['_ZN10dScEntry_c16CleanupResourcesEv'],'CoopEntryCleanup'),
@@ -280,15 +300,20 @@ def main():
                        'sha256':hashlib.sha256(blob).hexdigest(),'cacheAddress':'0x02004180'}
         module_report['sharedCourseCoins']=True
         module_report['particlePoolFallback']=True
+        module_report['particleSplitFallback']=True
+        module_report['sharedResourceFallback']=True
+        module_report['streamUncachedNarcMembers']=True
         if args.diagnostic_start_level is not None:
             module_report['diagnosticStartLevel']=args.diagnostic_start_level
             module_report['diagnosticStageCycle']=args.diagnostic_stage_cycle
+            if args.diagnostic_stage_cycle:module_report['diagnosticStageChord']=0x700
         module_report['diagnosticOffsets']={name:emitted[name]-PAYLOAD_ADDRESS
                                            for name in ('coopEnabled','coopSaveState','coopSavePage',
                                                         'coopSaveEpoch','coopStageLoading','coopMenuLoading',
                                                         'coopSceneInitializing','coopTitleLoading','coopFileWaiting',
                                                         'coopSessionEnded','coopDeathTriggered','coopGuestTutorialSkips',
-                                                        'coopParticleFallbacks')}
+                                                        'coopStreamedNarcReads','coopParticleFallbacks','coopParticleSplitFallbacks','coopParticleSegmentCount','coopResourceFallbacks',
+                                                        'coopResourceFallbacksLive','coopResourceFallbacksPeak')}
         patches.append({'purpose':'ROOT module loader in unused VS result routines','address':hex(CAVE_START),
                         'size':CAVE_END-CAVE_START,'installerBytes':len(installer)})
     output=root/('baseline.nds' if args.baseline else 'sm64ds-coop-experimental.nds')
@@ -300,7 +325,7 @@ def main():
             'runtimeModule':module_report,'lateRamHooks':ram_hooks,
             'lateRamCalls':([] if args.baseline else [
                 {'address':hex(a),'originalTarget':hex(t),'targetOffset':hex(emitted[n]-PAYLOAD_ADDRESS),'symbol':n}
-                for a,t,n in particle_calls]),
+                for a,t,n in memory_calls]),
             'downloadPlayOverlayAuthentication':audit(output_data),
             'limitations':['Native Download Play rejects modified overlay 75: HMAC mismatch',
                            'Base image requires the separate HaxxStation bootstrap build for unsigned clients',

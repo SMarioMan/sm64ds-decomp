@@ -8,7 +8,7 @@ import json
 import struct
 
 from campaign import (advance_message, assert_party_synchronized, check_controller_movement, finish_messages,
-                      snapshot)
+                      snapshot, wait_controller_buttons, ControllerRouteFailure)
 
 
 def check_characters(ds):
@@ -17,19 +17,25 @@ def check_characters(ds):
     Direct course entry retains the native Mario/Luigi/Wario/Yoshi slot array;
     ordinary castle startup creates the four Yoshis tested by campaign smoke.
     """
-    parties=[]
-    for console in range(ds.count):
-        characters=[]
-        for slot in range(ds.count):
-            actor=ds.word(console,0x0209f394+4*slot)
-            character=ds.word(console,actor+8)
-            if character>3 or ds.read(console,actor+0x6d8,1)[0]!=slot:
-                raise RuntimeError('Invalid native player character in diagnostic fixture')
-            characters.append(character)
-        parties.append(characters)
-    if any(party!=parties[0] for party in parties[1:]):
-        raise RuntimeError('Diagnostic native characters differ between consoles')
-    return parties[0]
+    for attempt in range(6):
+        parties=[]
+        for console in range(ds.count):
+            actors=[ds.word(console,0x0209f394+4*slot) for slot in range(ds.count)]
+            fields=ds.readv(console,tuple(field for actor in actors
+                                         for field in ((actor+8,4),(actor+0x6d8,1))))
+            characters=[]
+            for slot in range(ds.count):
+                character=int.from_bytes(fields[slot*2],'little')
+                if character>3 or fields[slot*2+1][0]!=slot:
+                    raise RuntimeError('Invalid native player character in diagnostic fixture')
+                characters.append(character)
+            parties.append(characters)
+        if all(party==parties[0] for party in parties[1:]):return parties[0]
+        # A real cap loss changes a native character during gameplay. Reads
+        # from different emulated frames can straddle that transformation.
+        if attempt<5:ds.run(6)
+    snapshot(ds,'diagnostic-characters-differ')
+    raise RuntimeError('Diagnostic native characters persistently differ between consoles')
 
 
 def heap_status(ds):
@@ -41,6 +47,17 @@ def heap_status(ds):
         base=ds.word(console,0x02004184)-int(module['entryOffset'],16)
         state={'console':console,'particleFallbacks':ds.word(
             console,base+module['diagnosticOffsets']['coopParticleFallbacks'])}
+        if module.get('streamUncachedNarcMembers'):
+            state['streamedNarcReads']=ds.word(console,base+module['diagnosticOffsets']['coopStreamedNarcReads'])
+        if module.get('particleSplitFallback'):
+            for key,symbol in (('particleSplitFallbacks','coopParticleSplitFallbacks'),
+                               ('particleSegments','coopParticleSegmentCount')):
+                state[key]=ds.word(console,base+module['diagnosticOffsets'][symbol])
+        if module.get('sharedResourceFallback'):
+            for key,symbol in (('resourceFallbacks','coopResourceFallbacks'),
+                               ('resourceFallbacksLive','coopResourceFallbacksLive'),
+                               ('resourceFallbacksPeak','coopResourceFallbacksPeak')):
+                state[key]=ds.word(console,base+module['diagnosticOffsets'][symbol])
         for name,address in (('root',0x020a0e9c),('game',0x020a0eac)):
             heap=ds.word(console,address)
             fields=struct.unpack('<6I',ds.read(console,heap,24))
@@ -62,6 +79,14 @@ def heap_status(ds):
     return result
 
 
+def check_living_party(ds):
+    for console in range(ds.count):
+        health=struct.unpack('<'+'h'*ds.count,ds.read(console,0x02092144,ds.count*2))
+        if any(value<=0 for value in health):
+            snapshot(ds,'diagnostic-controller-died')
+            raise ControllerRouteFailure(f'Diagnostic input route killed a player: {health}')
+
+
 def check_stage(ds, level):
     resume_stage(ds)
     # Some native entrance-0 records are star-return arrivals and open the
@@ -69,18 +94,38 @@ def check_stage(ds, level):
     finish_messages(ds,level_clear_choice=(128,136))
     characters=check_characters(ds)
     assert_party_synchronized(ds,'diagnostic-stage-entry')
+    check_living_party(ds)
     movement=[]
     for console in range(ds.count):
-        movement.append(check_controller_movement(ds,console,'diagnostic-stage'))
+        movement.append(check_controller_movement(ds,console,'diagnostic-stage',
+                                                  press_frames=8,release_frames=12))
+        check_living_party(ds)
         if any(ds.read(i,0x0209f2f8,1)!=bytes([level]) for i in range(ds.count)):
             snapshot(ds,'diagnostic-stage-unexpected-transition')
             raise RuntimeError('Diagnostic movement left the selected stage')
     def paused():return [ds.read(i,0x0209f2c4,1)[0] for i in range(ds.count)]
     def start(console):
+        expected=not bool(paused()[0])
+        if not console and not expected:
+            for _ in range(180):
+                ready=True
+                for peer in range(ds.count):
+                    if (ds.read(peer,0x0209f300,2)!=b'\0\0' or
+                            ds.read(peer,0x0209f22c,1)!=b'\0' or
+                            ds.read(peer,0x0209f248,1)[0] not in (1,3,11)):
+                        ready=False
+                if ready:break
+                ds.run(1)
+            else:raise RuntimeError('Native pause menu did not finish opening')
         ds.set_input(console,0xff7)
-        ds.run(18)
+        wait_controller_buttons(ds,console,8,held=True)
         ds.set_input(console,0xfff)
-        ds.run(90)
+        wait_controller_buttons(ds,console,8)
+        if not console:
+            for _ in range(60):
+                if all(bool(value)==expected for value in paused()):break
+                ds.run(1)
+        else:ds.run(12)
     for console in range(1,ds.count):
         start(console)
         if any(paused()):raise RuntimeError('Guest changed shared pause in a diagnostic stage')
@@ -90,6 +135,7 @@ def check_stage(ds, level):
     start(0)
     if any(paused()):raise RuntimeError('Host resume did not reach the diagnostic party')
     assert_party_synchronized(ds,'diagnostic-stage-resume')
+    check_living_party(ds)
     snapshot(ds,'diagnostic-stage-passed')
     (ds.output/'diagnostic-stage.json').write_text(json.dumps({
         'level':level,'consoles':ds.count,'characters':characters,'movement':movement,
@@ -122,10 +168,19 @@ def next_stage(ds):
         ds.run(24)
         ds.set_input(0,0xfff)
         ds.run(90)
-    ds.set_input(0,0xfff^0x304)
+    chord=getattr(ds,'runtime_module',{}).get('diagnosticStageChord',0x304)
+    ds.set_input(0,0xfff^chord)
     ds.run(24)
     ds.set_input(0,0xfff)
     for attempt in range(360):
+        exceptions=[i for i in range(ds.count) if ds.word(i,0x0209cddc)]
+        if exceptions:
+            snapshot(ds,'diagnostic-transition-native-exception')
+            raise RuntimeError(f'Native exception during stage transition on consoles {exceptions}')
+        crashed=[i for i in range(ds.count) if ds.read(i,0x0209d4d8,1)!=b'\0']
+        if crashed:
+            snapshot(ds,'diagnostic-transition-native-crash')
+            raise RuntimeError(f'Native Crash() during stage transition on consoles {crashed}')
         ready=True
         for console in range(ds.count):
             if ds.word(console,0x0209fc68)==6:

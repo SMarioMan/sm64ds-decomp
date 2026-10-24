@@ -17,12 +17,15 @@ def main():
     parser.add_argument('--image',type=Path,required=True)
     parser.add_argument('--output',type=Path,required=True)
     parser.add_argument('--runs',type=int,default=5)
+    parser.add_argument('--parent',choices=('native','station'),default='native')
     parser.add_argument('--clients',type=int,choices=(1,2,3),default=3)
     parser.add_argument('--timeout',type=int,default=900,help='Maximum wall-clock seconds per cold start')
-    parser.add_argument('--checkpoint',choices=('menu','story','course-return','course-death','course-star','host-save'),default='story')
+    parser.add_argument('--checkpoint',choices=('menu','probe','story','course-return','course-death','course-star','host-save'),default='story')
     args=parser.parse_args()
     if args.runs<2:parser.error('--runs must be at least 2')
     if args.timeout<1:parser.error('--timeout must be positive')
+    if args.parent=='station' and args.checkpoint not in ('menu','probe'):
+        parser.error('Original Download Station controls support menu/probe checkpoints')
     if args.output.exists():parser.error('Use a fresh output directory; previous evidence is never replaced')
     args.image=args.image.resolve()
     args.output=args.output.resolve()
@@ -30,7 +33,7 @@ def main():
     digest=hashlib.sha256(args.image.read_bytes()).hexdigest()
     results=[]
     report={'romSha256':digest,'requestedRuns':args.runs,
-            'checkpoint':args.checkpoint,'timeoutSecondsPerRun':args.timeout,
+            'checkpoint':args.checkpoint,'parent':args.parent,'timeoutSecondsPerRun':args.timeout,
             'status':'running','runs':results}
 
     def write():
@@ -42,10 +45,12 @@ def main():
             raise RuntimeError('The cartridge image changed during the repeat test')
         output=args.output/f'run-{index+1}'
         command=[sys.executable,str(ROOT/'mods/coop/bootstrap/smoke.py'),
-                 '--parent','native','--image',str(args.image),
+                 '--parent',args.parent,'--image',str(args.image),
                  '--clients',str(args.clients),'--output',str(output)]
         if args.checkpoint=='menu':
             command.append('--loader-only')
+        elif args.checkpoint=='probe':
+            command.append('--probe')
         else:
             command.extend(['--story','--shared-menus'])
             # Real users can select their menus at different times. Exercise

@@ -11,7 +11,16 @@ interiors, Bob-omb Battlefield, course exit, guest death with party recovery,
 and ordered Save & Quit. Three staggered story cold starts passed at
 `/workspace/runtime/restored-story-repeats/result.json`; guests selected their
 menus at different times. Startup uses protocol acknowledgments rather than a
-human timing window.
+human timing window. Later cold starts still exposed intermittent signed-loader
+failures, so reliable startup remains an open acceptance requirement.
+
+An opt-in startup change closes wireless association entry and advertises that
+closure before allowing firmware clients to boot, then waits for both SDK
+acknowledgments. It passed five four-console signed-menu cold boots at
+`/workspace/runtime/closed-entry-v2-menu-repeats/result.json`. Full payload and
+staggered course-return repetitions are still running; this is not yet the
+default. To build that experiment, add `--close-entry-before-boot` and a separate
+`--output` to the integrated command below.
 
 A later fix gives the host ownership of the shared star/key return and
 progression dialogs. Without it, several players could reopen one shared
@@ -29,7 +38,19 @@ among players can trigger the native 100-coin star at the collecting player's
 position. Seven isolated ARM unit checks cover the compiled hooks and retail
 trigger. These unit checks do not establish a wireless 100-coin-star pass.
 Red-coin and silver-star totals retain their native aggregate behavior. The
-combined candidate is undergoing a guest-collected-star and save regression.
+combined candidate has passed actual guest coin pickups with all four totals
+mirrored; guest star collection, Save & Continue, Castle controls, and a consecutive
+Save & Quit have also passed on the earlier resource-high cartridge. The newest
+raw-resource candidate is undergoing its own cold-boot/course-return repetitions.
+
+Four-console stage cycling exposed ROOT heap exhaustion entering Hazy Maze
+Cave after stages 7–12. The current source preserves native resource sizes
+and uses spare GAME heap for particle pools and shared/plain-file buffers when
+ROOT cannot fit, tracking the owning heap for release. Seven particle and
+twelve model/resource and four plain-file ARM checks reproduce the captured failures and verify fallback,
+alignment, model resizing, and release. Live four-console HMC entry, controls, synchronization, and shared pause now
+pass. Transitions into the next two stages also pass and release all tracked
+resource owners. The wider later-stage cycle remains in progress.
 
 Separate diagnostic builds can enter a later native stage for compatibility
 checks. Single-console tests have passed multiple course areas, underwater

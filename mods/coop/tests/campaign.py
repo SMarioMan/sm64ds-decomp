@@ -63,7 +63,7 @@ def player_position(ds, console=0, player=0):
     return tuple(v/4096 for v in struct.unpack('<iii',ds.read(console,actor+0x5c,12)))
 
 
-def check_controller_movement(ds, console, checkpoint):
+def check_controller_movement(ds, console, checkpoint, press_frames=24, release_frames=120):
     """Require real horizontal movement, allowing an adjacent player or wall.
 
     Native entry points can place a party side by side. One fixed direction
@@ -75,13 +75,21 @@ def check_controller_movement(ds, console, checkpoint):
         if any(ds.read(i,0x0209d660,1)[0] for i in range(ds.count)):
             finish_messages(ds)
         actor=ds.word(console,PLAYER_POINTERS+4*slot)
+        if ds.read(console,0x02092144+2*slot,2)==b'\0\0':
+            snapshot(ds,checkpoint+'-controller-dead')
+            raise ControllerRouteFailure(f'Console {console} died before its movement check')
         swimming=bool(ds.read(console,actor+0x706,1)[0])
         before=player_position(ds,console,slot)
         # Underwater directions only turn Yoshi; B supplies the native stroke.
         ds.set_input(console,0xfff^(direction | (2 if swimming else 0)))
-        ds.run(24)
+        wait_controller_buttons(ds,console,direction,held=True)
+        ds.run(press_frames)
         ds.set_input(console,0xfff)
-        ds.run(120)
+        wait_controller_buttons(ds,console,direction | (2 if swimming else 0))
+        ds.run(release_frames)
+        if ds.read(console,0x02092144+2*slot,2)==b'\0\0':
+            snapshot(ds,checkpoint+'-controller-died')
+            raise ControllerRouteFailure(f'Console {console} died during its movement check')
         if any(ds.read(i,0x0209d660,1)[0] for i in range(ds.count)):
             # A first movement can open the native control/cap tutorial after
             # stage readiness. Finish it with host input before testing again.
@@ -100,6 +108,8 @@ def snapshot(ds, name):
     for console in range(ds.count):
         ds.command(f'dump {console} {ds.output/(name+"-"+str(console)+".ram")}')
         ds.command(f'dumptcm {console} {ds.output/(name+"-"+str(console)+".dtcm")}')
+        if os.environ.get('COOP_DUMP_ITCM'):
+            ds.command(f'dumpitcm {console} {ds.output/(name+"-"+str(console)+".itcm")}')
         ds.command(f'dump7 {console} {ds.output/(name+"-"+str(console)+".arm7")}')
         ds.command(f'regs {console}')
 

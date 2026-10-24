@@ -10,6 +10,7 @@
 #include "dActor_c.h"
 #include "dCamera_c.h"
 #include "LVL_Overlay.h"
+#include "ExpandingHeapAllocator.h"
 
 namespace Memory { extern mHeap::Heap_t *defaultHeapPtr; }
 
@@ -63,6 +64,21 @@ static void Patch(u32 address, void *target);
 static void PatchCall(u32 address, void *target);
 void *_ZN6Memory13operator_new2Ej(u32 size);
 void func_0203cbc0(void *ptr);
+void *_ZN6Memory8AllocateEji(u32 size,int align);
+void _ZN6Memory10DeallocateEPv(void *ptr);
+u32 CoopOriginalTrimModel(void *ptr);
+u32 func_020469e0(void *ptr);
+void Crash(void);
+extern u8 *data_0209ee78;
+void *CoopOriginalResolveFile(u32 fileID);
+int CoopOriginalOpenFile(void *file,u32 fileID);
+void FS_InitFile(void *file);
+int FS_ReadFile(void *file,void *dst,int size);
+int FS_CloseFile(void *file);
+int func_02018d98(void *file,const char *path);
+int func_0205d368(void *file,int offset,int origin);
+int func_0205d5e8(void *file,void *archive,u32 top,u32 bottom,u32 index);
+extern mHeap::Heap_t *data_020a0e9c;
 int func_0205d3f4(void *file);
 void func_0201ffcc(void);
 void func_02042778(void);
@@ -202,6 +218,11 @@ extern u32 coopSessionEnded;
 extern u32 coopDeathTriggered;
 extern u32 coopGuestTutorialSkips;
 extern u32 coopParticleFallbacks;
+extern u32 coopParticleSplitFallbacks;
+extern u32 coopResourceFallbacks;
+extern u32 coopStreamedNarcReads;
+extern u32 coopResourceFallbacksLive;
+extern u32 coopResourceFallbacksPeak;
 
 void CoopStartMatch(void *) {
     unsigned count = data_0209fc50;
@@ -217,6 +238,10 @@ void CoopStartMatch(void *) {
     coopDeathTriggered=0;
     coopGuestTutorialSkips=0;
     coopParticleFallbacks=0;
+    coopParticleSplitFallbacks=0;
+    coopResourceFallbacks=0;
+    coopStreamedNarcReads=0;
+    coopResourceFallbacksPeak=coopResourceFallbacksLive;
 #ifdef COOP_DIAGNOSTIC_STAGE_CYCLE
     coopDiagnosticChordHeld=false;
 #endif
@@ -689,24 +714,92 @@ static bool CoopSharedCoins() {
 static mHeap::Heap_t *coopParticleHeap=0;
 static void *coopParticlePool=0;
 u32 coopParticleFallbacks=0;
+u32 coopParticleSplitFallbacks=0;
+struct CoopParticleSegment {
+    mHeap::Heap_t *heap;
+    u8 *ptr, *cursor, *end;
+};
+static CoopParticleSegment coopParticleSegments[8];
+u32 coopParticleSegmentCount=0;
+static u32 coopParticleBudget=0,coopParticleUsed=0;
 
 void *CoopAllocateParticlePool(u32 size) {
     if (!coopEnabled || !data_0209fc68)
         return _ZN6Memory13operator_new2Ej(size);
     mHeap::Heap_t *owner=Memory::defaultHeapPtr;
     mHeap::Heap_t *game=(mHeap::Heap_t *)data_020a0eac;
-    // Four characters and story maps can fragment ROOT just below the native
-    // particle pool size. Use spare game-heap space for this fixed pool when
-    // needed; its native system/particle counts and contents stay unchanged.
-    if (owner->MaxAllocationUnitSize()<size && game && game!=owner &&
-        game->MaxAllocationUnitSize()>=size) {
+    u32 available=owner->MaxAllocationUnitSize();
+    u32 spare=game && game!=owner ? game->MaxAllocationUnitSize() : 0;
+    coopParticleSegmentCount=0;
+    bool split=false;
+    u32 allocated=size;
+    if (available<size && spare>=size) {
         owner=game;
         ++coopParticleFallbacks;
+    } else if (available<size && available+spare>=size) {
+        // The native manager requests separate contiguous arrays through its
+        // bump callback. Keep those arrays/counts intact across heap segments
+        // when neither heap can hold the entire conservative arena reserve.
+        if (spare>available) { owner=game; available=spare; }
+        allocated=available;
+        split=true;
+        ++coopParticleFallbacks;
+        ++coopParticleSplitFallbacks;
     }
-    void *pool=owner->Allocate(size);
+    void *pool=owner->Allocate(allocated);
     coopParticleHeap=owner;
     coopParticlePool=pool;
+    if (split) {
+        coopParticleSegments[0].heap=owner;
+        coopParticleSegments[0].ptr=(u8 *)pool;
+        coopParticleSegments[0].cursor=(u8 *)pool;
+        coopParticleSegments[0].end=(u8 *)pool+allocated;
+        coopParticleSegmentCount=1;
+        coopParticleBudget=size;
+        coopParticleUsed=0;
+    }
     return pool;
+}
+
+void *CoopAllocateParticleChunk(u32 size) {
+    if (!coopParticleSegmentCount) {
+        // Native func_02023178 is just this pointer bump. Its first LDR is
+        // PC-relative, so reproduce it rather than relocating that prologue.
+        u8 *result=data_0209ee78;
+        data_0209ee78=result+size;
+        return result;
+    }
+    if (size>coopParticleBudget-coopParticleUsed) { Crash(); return 0; }
+    for (unsigned pass=0;pass<2;++pass) {
+        for (unsigned i=0;i<coopParticleSegmentCount;++i) {
+            CoopParticleSegment *segment=&coopParticleSegments[i];
+            if ((u32)(segment->end-segment->cursor)>=size) {
+                u8 *result=segment->cursor;
+                segment->cursor+=size;
+                coopParticleUsed+=size;
+                data_0209ee78=segment->cursor;
+                return result;
+            }
+        }
+        if (pass || coopParticleSegmentCount==8)break;
+        mHeap::Heap_t *owner=Memory::defaultHeapPtr;
+        mHeap::Heap_t *game=(mHeap::Heap_t *)data_020a0eac;
+        u32 available=owner->MaxAllocationUnitSize();
+        u32 remaining=coopParticleBudget-coopParticleUsed;
+        if (available<remaining && game && game!=owner) {
+            u32 spare=game->MaxAllocationUnitSize();
+            if (spare>available) { owner=game; available=spare; }
+        }
+        if (available<size)break;
+        u32 allocated=available<remaining ? available : remaining;
+        CoopParticleSegment *segment=&coopParticleSegments[coopParticleSegmentCount++];
+        segment->heap=owner;
+        segment->ptr=(u8 *)owner->Allocate(allocated);
+        segment->cursor=segment->ptr;
+        segment->end=segment->ptr+allocated;
+    }
+    Crash();
+    return 0;
 }
 
 void CoopFreeParticlePool(void *ptr) {
@@ -714,10 +807,162 @@ void CoopFreeParticlePool(void *ptr) {
         mHeap::Heap_t *owner=coopParticleHeap;
         coopParticlePool=0;
         coopParticleHeap=0;
-        owner->Deallocate(ptr);
-    } else {
-        func_0203cbc0(ptr);
+        if (coopParticleSegmentCount) {
+            while (coopParticleSegmentCount) {
+                CoopParticleSegment *segment=&coopParticleSegments[--coopParticleSegmentCount];
+                segment->heap->Deallocate(segment->ptr);
+            }
+        } else owner->Deallocate(ptr);
+    } else func_0203cbc0(ptr);
+}
+
+struct CoopArchiveEntry {
+    void *image;
+    mHeap::Heap_t *heap;
+    u16 first,limit;
+    const char *name,*path;
+};
+extern CoopArchiveEntry data_0208ecf4[];
+u32 coopStreamedNarcReads=0;
+
+static CoopArchiveEntry *CoopUncachedArchive(u32 fileID) {
+    if (!coopEnabled || !data_0209fc68 || fileID<0x8000)return 0;
+    for (unsigned i=0;i<13;++i) {
+        CoopArchiveEntry *entry=&data_0208ecf4[i];
+        if (entry->first<=fileID && fileID<entry->limit)
+            return entry->image ? 0 : entry;
     }
+    return 0;
+}
+
+void *CoopResolveFile(u32 fileID) {
+    // Both native callers copy/decompress the returned cached member, or
+    // load it through OpenFile when null. Stream an unmounted archive member
+    // instead of temporarily allocating the entire NARC beside its result.
+    if (CoopUncachedArchive(fileID))return 0;
+    return CoopOriginalResolveFile(fileID);
+}
+
+static int CoopOpenNarcMember(void *file,CoopArchiveEntry *entry,u32 member) {
+    FS_InitFile(file);
+    if (!func_02018d98(file,entry->path))return 0;
+    u32 *fields=(u32 *)file;
+    u32 top=fields[8],length=fields[9]-top;
+    void *archive=(void *)fields[2];
+    u32 index=fields[7];
+    u32 header[4];
+    bool valid=false,haveMember=false;
+    u32 first=0,last=0,data=0;
+    if (FS_ReadFile(file,header,16)==16 && header[0]==0x4352414e &&
+        (header[1]&0xffff)==0xfffe && header[2]<=length) {
+        u32 position=header[3]&0xffff,blocks=header[3]>>16;
+        if (position>=16 && blocks<=32) {
+            for (unsigned block=0;block<blocks;++block) {
+                if (position>length || length-position<8 ||
+                    !func_0205d368(file,position,0) || FS_ReadFile(file,header,8)!=8)break;
+                u32 kind=header[0],size=header[1];
+                if (size<8 || size>length-position)break;
+                if (kind==0x46415442 && size>=12) { // BTAF, file extents.
+                    if (FS_ReadFile(file,header,4)!=4 || member>=(header[0]&0xffff) ||
+                        member>=(size-12)/8 ||
+                        !func_0205d368(file,position+12+member*8,0) ||
+                        FS_ReadFile(file,header,8)!=8)break;
+                    first=header[0];last=header[1];haveMember=true;
+                } else if (kind==0x46494d47) { // GMIF, member image.
+                    if (haveMember && first<=last && last<=size-8) {
+                        data=position+8;
+                        valid=true;
+                    }
+                    break;
+                }
+                position+=size;
+            }
+        }
+    }
+    FS_CloseFile(file);
+    if (!valid)return 0;
+    FS_InitFile(file);
+    return func_0205d5e8(file,archive,top+data+first,top+data+last,index);
+}
+
+int CoopOpenFile(void *file,u32 fileID) {
+    CoopArchiveEntry *entry=CoopUncachedArchive(fileID);
+    if (entry && CoopOpenNarcMember(file,entry,fileID-entry->first)) {
+        ++coopStreamedNarcReads;
+        return 1;
+    }
+    return CoopOriginalOpenFile(file,fileID);
+}
+
+struct CoopResourceOwner {
+    void *ptr;
+    mHeap::Heap_t *heap;
+};
+static CoopResourceOwner coopResourceOwners[64];
+u32 coopResourceFallbacks=0;
+u32 coopResourceFallbacksLive=0;
+u32 coopResourceFallbacksPeak=0;
+
+static u32 CoopAlignedFree(mHeap::Heap_t *heap,int align) {
+    // ROOT and GAME are native expanding heaps. Their allocator follows the
+    // common Heap_t header; query the actual requested alignment, not just 4.
+    ExpandingHeapAllocator *allocator=*(ExpandingHeapAllocator **)
+        ((u8 *)heap+sizeof(mHeap::Heap_t));
+    return allocator->MaxAllocatableSize(align);
+}
+
+void *CoopAllocateAlignedResource(u32 size,int align) {
+    mHeap::Heap_t *root=Memory::defaultHeapPtr;
+    mHeap::Heap_t *game=(mHeap::Heap_t *)data_020a0eac;
+    // Restrict balancing to file buffers allocated from ROOT. Actor
+    // private heaps retain their original allocation and lifetime rules.
+    if (coopEnabled && data_0209fc68 && root==data_020a0e9c &&
+        game && game!=root && CoopAlignedFree(root,align)<size &&
+        CoopAlignedFree(game,align)>=size) {
+        for (unsigned slot=0;slot<64;++slot)
+            if (!coopResourceOwners[slot].ptr) {
+                void *ptr=game->Allocate(size,align);
+                coopResourceOwners[slot].ptr=ptr;
+                coopResourceOwners[slot].heap=game;
+                ++coopResourceFallbacks;
+                ++coopResourceFallbacksLive;
+                if (coopResourceFallbacksLive>coopResourceFallbacksPeak)
+                    coopResourceFallbacksPeak=coopResourceFallbacksLive;
+                return ptr;
+            }
+    }
+    return _ZN6Memory8AllocateEji(size,align);
+}
+
+void *CoopAllocateResource(u32 size) {
+    return CoopAllocateAlignedResource(size,4);
+}
+
+u32 CoopTrimResourceModel(void *ptr) {
+    if (ptr)
+        for (unsigned slot=0;slot<64;++slot)
+            if (coopResourceOwners[slot].ptr==ptr) {
+                // Shared models shed their uploaded texture tail. Keep the
+                // native size and in-place resize, using the allocating heap.
+                mHeap::Heap_t *owner=coopResourceOwners[slot].heap;
+                owner->_Sizeof(ptr);
+                return owner->Reallocate(ptr,func_020469e0(ptr));
+            }
+    return CoopOriginalTrimModel(ptr);
+}
+
+void CoopFreeResource(void *ptr) {
+    if (ptr)
+        for (unsigned slot=0;slot<64;++slot)
+            if (coopResourceOwners[slot].ptr==ptr) {
+                mHeap::Heap_t *owner=coopResourceOwners[slot].heap;
+                coopResourceOwners[slot].ptr=0;
+                coopResourceOwners[slot].heap=0;
+                --coopResourceFallbacksLive;
+                owner->Deallocate(ptr);
+                return;
+            }
+    _ZN6Memory10DeallocateEPv(ptr);
 }
 
 s16 CoopNumCoins(void) {
@@ -782,10 +1027,10 @@ int CoopSceneBefore(void *scene) {
         if (data_0209f318)
             data_020a1052[5] = (data_0209f318->mFlags & 0x8000) != 0;
 #ifdef COOP_DIAGNOSTIC_STAGE_CYCLE
-        // Explicit test builds only: the host's synchronized L+R+Select
+        // Explicit test builds only: the host's synchronized L+R+X
         // requests the next native stage. Use the normal transition/loader,
         // never a frontend write to scenes, actors, positions or progress.
-        bool chord=(data_020a0e58[0] & 0x304)==0x304;
+        bool chord=(data_020a0e58[0] & 0x700)==0x700;
         if (id==3 && chord && !coopDiagnosticChordHeld) {
             unsigned next=(unsigned)data_0209f2f8+1;
             if (next==41)++next; // Unused native stage.
@@ -919,8 +1164,29 @@ static void PatchCall(u32 address, void *target) {
 }
 
 void CoopRuntimeDispatch(unsigned operation, u32 argument) {
+    Patch(0x02017060,(void *)CoopTrimResourceModel);
+    Patch(0x020186c0,(void *)CoopResolveFile);
+    Patch(0x020185c0,(void *)CoopOpenFile);
+    Patch(0x02023178,(void *)CoopAllocateParticleChunk);
     PatchCall(0x02022f88,(void *)CoopAllocateParticlePool);
     PatchCall(0x020231bc,(void *)CoopFreeParticlePool);
+    PatchCall(0x02017c98,(void *)CoopAllocateResource);
+    PatchCall(0x02017cd8,(void *)CoopAllocateAlignedResource);
+    PatchCall(0x02017d40,(void *)CoopAllocateAlignedResource);
+    PatchCall(0x02017da8,(void *)CoopAllocateResource);
+    PatchCall(0x02017dcc,(void *)CoopAllocateResource);
+    PatchCall(0x02017c3c,(void *)CoopFreeResource);
+    PatchCall(0x02017dc4,(void *)CoopFreeResource);
+    PatchCall(0x02017de4,(void *)CoopFreeResource);
+    // The plain LoadFile path (including map graphics) also holds a scratch
+    // copy while allocating its result. Track both buffers and its release.
+    PatchCall(0x020181c4,(void *)CoopAllocateResource);
+    PatchCall(0x02018204,(void *)CoopAllocateAlignedResource);
+    PatchCall(0x02018378,(void *)CoopAllocateAlignedResource);
+    PatchCall(0x020183c4,(void *)CoopAllocateResource);
+    PatchCall(0x020183e0,(void *)CoopAllocateResource);
+    PatchCall(0x020183fc,(void *)CoopFreeResource);
+    PatchCall(0x0201815c,(void *)CoopFreeResource);
     // Reapply the ENTRY hook when that overlay is reloaded for a new party.
     Patch(0x02013b9c, (void *)CoopSaveCurrentFile);
     Patch(0x0201c0b8, (void *)CoopMessageUpdate);

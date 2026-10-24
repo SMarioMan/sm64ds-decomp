@@ -23,12 +23,14 @@ def main():
     parser.add_argument('--diagnostic-start-level',type=int,choices=range(1,52),
                         help='TEST ONLY: enter a native stage directly, not a campaign progression check')
     parser.add_argument('--diagnostic-stage-cycle',action='store_true',
-                        help='TEST ONLY: synchronized L+R+Select requests the next native stage')
+                        help='TEST ONLY: synchronized L+R+X requests the next native stage')
     parser.add_argument('--clients',type=int,choices=(1,2,3),default=3)
     parser.add_argument('--channel',type=int,choices=(1,7,13),default=1)
     parser.add_argument('--beacon-period',type=int,default=100)
-    parser.add_argument('--station-handoff',choices=('restart-parent','serial','rearm-mp','keep-parent'),
-                        default='restart-parent',help='Bootstrap strategy; serial keeps the parent while booting guests in order')
+    parser.add_argument('--station-handoff',choices=('closed-restart-parent','restart-parent','serial','rearm-mp','keep-parent'),
+                        default='closed-restart-parent',help='Default acknowledges closed entry before BOOT and recreates the parent')
+    parser.add_argument('--close-entry-before-boot',action='store_true',
+                        help='Explicitly enable acknowledged entry closure with the legacy restart-parent strategy')
     parser.add_argument('--output',type=Path,default=ROOT/'build/coop/bootstrap/sm64ds-haxxstation-game-handoff.nds')
     args=parser.parse_args()
     args.rom=args.rom.resolve()
@@ -40,6 +42,8 @@ def main():
         parser.error('Diagnostic builds require --output to keep the normal cartridge separate')
     for path in (args.rom,args.station):
         if not path.is_file():parser.error(f'Input ROM does not exist: {path}')
+    if args.close_entry_before_boot and args.station_handoff not in ('closed-restart-parent','restart-parent'):
+        parser.error('--close-entry-before-boot requires a restart-parent strategy')
     if args.output in (args.rom,args.station):parser.error('Output must not replace an input ROM')
     if not 10<=args.beacon_period<=1000:parser.error('Beacon interval must be between 10 and 1000')
     if not shutil.which('dspatch'):parser.error('dspatch is not on PATH; activate the configured toolchain')
@@ -48,8 +52,11 @@ def main():
     root.mkdir(parents=True,exist_ok=True)
     def run(script,*arguments):
         subprocess.run([sys.executable,str(ROOT/'mods/coop'/script),*map(str,arguments)],cwd=ROOT,check=True)
-    strategy={'restart-parent':('--restart-station-parent',),'serial':('--serial-boot',),
+    strategy={'closed-restart-parent':('--restart-station-parent','--close-entry-before-boot'),
+              'restart-parent':('--restart-station-parent',),'serial':('--serial-boot',),
               'rearm-mp':('--rearm-mp-after-boot',),'keep-parent':()}[args.station_handoff]
+    if args.close_entry_before_boot and '--close-entry-before-boot' not in strategy:
+        strategy+=('--close-entry-before-boot',)
     radio=('--clients',args.clients,*strategy,'--channel',args.channel,
            '--beacon-period',args.beacon_period,'--station',args.station)
     diagnostic=('--diagnostic-start-level',args.diagnostic_start_level) if args.diagnostic_start_level is not None else ()

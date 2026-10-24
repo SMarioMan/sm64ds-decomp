@@ -41,6 +41,8 @@ def main():
                         help='Experiment: boot each signed client after the previous client receives its menu')
     parser.add_argument('--restart-station-parent',action='store_true',
                         help='Experiment: recreate the native MB parent after firmware departure, retaining its TGID')
+    parser.add_argument('--close-entry-before-boot',action='store_true',
+                        help='Experiment: acknowledge closed association/beacon entry before firmware BOOT')
     parser.add_argument('--channel',type=int,choices=(1,7,13),
                         help='Use a fixed radio channel instead of the native channel measurement')
     parser.add_argument('--beacon-period',type=int,
@@ -48,6 +50,8 @@ def main():
     args = parser.parse_args()
     if args.beacon_period is not None and not 10<=args.beacon_period<=1000:
         parser.error('--beacon-period must be between 10 and 1000')
+    if args.close_entry_before_boot and (not args.restart_station_parent or args.serial_boot or args.rearm_mp_after_boot):
+        parser.error('--close-entry-before-boot requires only --restart-station-parent')
     root = ROOT/'build/coop/bootstrap'
     root.mkdir(parents=True, exist_ok=True)
     original = (ROOT/'build/coop/sm64ds-coop-experimental.nds').read_bytes()
@@ -85,6 +89,7 @@ def main():
               f'COOP_REARM_MP_AFTER_BOOT={int(args.rearm_mp_after_boot)}',
               f'COOP_SERIAL_BOOT={int(args.serial_boot)}',
               f'COOP_RESTART_STATION_PARENT={int(args.restart_station_parent)}',
+              f'COOP_CLOSE_ENTRY_BEFORE_BOOT={int(args.close_entry_before_boot)}',
               f'COOP_BOOT_CHANNEL={args.channel or 0}',
               f'COOP_BOOT_BEACON_PERIOD={args.beacon_period or 0}',
               f'COOP_SIGNED_BOOT_FILE={ids[1]}', f'COOP_SIGNED_BOOT_SIZE={boot_size}',
@@ -195,6 +200,7 @@ def main():
             'rearmMPAfterBoot':args.rearm_mp_after_boot,
             'serialSignedBoot':args.serial_boot,
             'restartStationParent':args.restart_station_parent,
+            'closeEntryBeforeBoot':args.close_entry_before_boot,
             'fixedRadioChannel':args.channel,
             'fixedBeaconPeriodTu':args.beacon_period,
             'originalFileCount':len(rom.files),'preservedNativeArchives':True,

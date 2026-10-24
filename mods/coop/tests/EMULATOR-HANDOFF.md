@@ -1,17 +1,249 @@
 # Download Play handoff investigation
 
-The mod remains unfinished. Current evidence establishes four-player gameplay
-on an unmodified melonDS core. Earlier bootstrap versions reproduced
-intermittent cold-start failures; the current cartridge passes three staggered
-story cold starts. Campaign completion and physical hardware remain unverified.
+The mod remains unfinished. Four-player gameplay works on an unmodified
+melonDS core, but intermittent signed-loader startup and later-stage memory
+failures remain under investigation. Campaign completion and physical hardware
+remain unverified. Read the current regressions first; later sections preserve
+historical checkpoints and failures rather than release acceptance.
 
-The latest separate-MP-workspace bootstrap passed **5/5** four-console signed
-menu cold starts: `/workspace/runtime/separate-mp-work-repeats/result.json`,
-ROM SHA256 `a83287a9d8e222da930f35a6e2fafeed5b0325590c8c6e0dd449e4d345ab95f9`.
-This is the first repeated-menu acceptance of the buffer correction, not five
-campaign passes. Full payload/story repetitions are in
-`/workspace/runtime/separate-mp-story-repeats/`; extended course/save acceptance
-is in `/workspace/runtime/title-reader-course-save/`.
+## Latest active runs and driver corrections
+
+- Closed-entry V2 is still opt-in. Five acknowledged menu cold boots pass.
+  Full course-return repeat 1 passed with simultaneous selections [0,0,0];
+  repeat 2 is testing actual delays [0,600,1800] and is still running. Do not
+  describe the first run as staggered. Session 4131 owns the 3-run repeat.
+- Old-default raw-resource course-return finished FAILED overall: 2/3 passed,
+  one signed-menu failure. This confirms the original startup path remains
+  unreliable; do not promote it or call the mod complete.
+- The initial fast pause driver failed locally because it requested resume
+  during the native menu's opening fade. It now observes fade 0x0209f300==0,
+  debounce 0x0209f22c==0 and ready menu state 1/3 before sending START.
+  `/workspace/runtime/healthy-thi-menu-ready-rerun/result.json` passes on the
+  exact same local stage-24 image that failed the earlier driver.
+- The direct four-player stage-24 run failed a character comparison. Read-only
+  pause inspection at `/workspace/runtime/thi-character-inspection/characters.json`
+  shows all replicas identical: a real Wario cap loss converted slot 2 to
+  Yoshi. Sequential reads straddled the change. The driver now reads each
+  console atomically and retries transient character changes briefly.
+- The same party then PASSED healthy four-console stage 24 with the corrected
+  driver: `/workspace/runtime/healthy-thi-wireless-continuation/diagnostic-stage.json`.
+  Its attempt to continue into 25 FAILED after the party returned to Castle 1;
+  do not count 25. There was no Crash flag or exception, and the prior stage-24
+  snapshot has slot 2 at health 640. The party has been shut down cleanly.
+- A fresh direct-25 run eliminates the prior stage's hazard/queued-death issue:
+  `/workspace/runtime/closed-entry-stage25-matrix/`, session 15502, failure socket
+  `/workspace/runtime/closed-entry-stage25-matrix.sock`. It runs 15 further
+  transitions through 40. Cartridge `closed-entry-stage25-cycle-host.nds` SHA256
+  `7c896c841ec4bf0ea316574e01283fbcbc2dc5412768e469628658e314992e08`.
+- Remaining secret/castle/early stages 42..51,1..12 (21 transitions) are running
+  at `/workspace/runtime/closed-entry-secret-castle-matrix/`, session 1302,
+  failure socket `/workspace/runtime/closed-entry-secret-castle-matrix.sock`.
+  Cartridge `closed-entry-secret-castle-cycle-host.nds` SHA256
+  `b05072ff262af30c74fca819c18d5c8a9993c87ce47ac7ec13f5a09c3852ffdb`.
+  Both new runs use frozen drivers and replace blind diagnostic 180-frame
+  idle with a short initialization step followed by actual readiness checks.
+- No agents, no core patches, no live emulated-memory writes. Do not interrupt
+  pending RemoteEmulators RPCs. Source archive includes every untracked test.
+
+## Current work: acknowledged entry closure and healthy stage checks
+
+The mod is still experimental. Do not report a stable/complete release.
+The normal memory-fix cartridge `raw-resource-host.nds` failed the first of
+three new course-return cold starts before one signed menu. Run 2 passed the
+full course-return check; run 3 is still running at
+`/workspace/runtime/raw-resource-course-return-repeats/` (exec session 39667).
+An opt-in bootstrap now closes associations with WM_SetEntry(0), publishes
+closed ENTRY in the MB beacon through WM_SetGameInfo, and waits for both ARM7
+acknowledgments before sending the firmware's remaining BOOT requests. It
+keeps native BEACON_SENT handling from replacing the pending callback. New
+parent recreation then restores ordinary entry acceptance. This tests the
+race where a signed app associates while the old parent is being shut down.
+
+`--close-entry-before-boot` requires restart-parent and a separate output;
+it is NOT the default. Its first version only gated phase 1 and never ran,
+because the control hook starts in phase 3. Three menu passes for that image
+are NOT proof of entry closure: `/workspace/runtime/closed-entry-menu-repeats/`.
+V2 gates the old parent in phase 1 or 3, before recreation; debug[31]=0x1005
+proves both acknowledgments. The smoke check now requires that marker when
+this option is enabled. V2 PASSED all five real four-console menu cold starts:
+`/workspace/runtime/closed-entry-v2-menu-repeats/result.json`; immutable driver
+`/workspace/runtime/closed-entry-v2-driver/`. Cartridge
+`/workspace/runtime/closed-entry-host-v2.nds` SHA256
+`5b98cafa0a72a96c95e91743cfa12a6a0f7b80cd21d0e004d66c472f3043644c`.
+A default reproduction after adding the opt-in feature is byte-identical to
+raw-resource (`/workspace/runtime/default-entry-experiment-control.nds`).
+
+V2 full payload/story/course-return is running for 3 cold starts with staggered
+signed-menu selection at `/workspace/runtime/closed-entry-course-return-repeats/`,
+exec session 4131; frozen drivers `/workspace/runtime/closed-entry-campaign-driver/`.
+Do not promote the option until full game handoff and repetitions pass.
+
+The raw-resource HMC diagnostic passed stages 13–23 with all four controllers,
+same-tick synchronization and shared pause. Final saved snapshots show full
+health on every slot for stages 14–23. Its stage-24 claim is INVALIDATED:
+slots 1 and 2 were dead in the saved passed snapshot. The old input check
+accepted their death movement, and the party returned normally to Castle 1,
+so the requested next stage 25 was never entered. Original reports remain;
+`/workspace/runtime/raw-resource-hmc-matrix/stage-24-assessment.json` records
+this correction. The retained party was shut down cleanly.
+
+Movement checks now reject dead controllers and wait for decoded button edges.
+Diagnostic checks use short 8/12-frame press/release intervals and native START
+acknowledgments instead of prolonged idle waits, and reject any dead party
+member before, during or after the check. V2 plus the memory fixes is rerunning
+stage 24 through 40 (16 transitions) at
+`/workspace/runtime/closed-entry-thi-matrix/`, exec session 28553. Failure socket
+`/workspace/runtime/closed-entry-thi-matrix.sock`. Its cartridge is
+`closed-entry-thi-cycle-host.nds`, SHA256
+`5000459590827da6951bdcb238ef82bd17546e037b98ff94b0bcd536207a1c49`.
+A one-console fast check of the new healthy/input guards is running at
+`/workspace/runtime/healthy-thi-local-rerun/`; this is not wireless acceptance.
+The separately prepared old-default stage 42 image is
+`raw-resource-secret-castle-cycle-host.nds` SHA256
+`c2bab21f8d63453680de095b7f4a946fd816f4fd88de01165b4c5db81ae44f08`.
+For remaining stages, rebuild 42 with the acknowledged entry option if V2
+passes; then cycle 21 transitions through stage 12, skipping unused 41.
+
+## Latest continuation: plain-file map loader
+
+HEAD is `b3fbc48df` on `co-op-multiplayer`. Source changes are uncommitted;
+`.git` is read-only. The source recovery archive/patch are in `/workspace/runtime/`.
+
+Both resource-high stage cycling and resource-owner direct HMC entry FAILED.
+The former passed four-console stages 7–12, then failed entering 13. The latter
+failed entering 13 directly. Both failed parties were shut down cleanly after
+captures. The new failure stack in
+`/workspace/runtime/resource-owner-hmc-matrix/story-entry-failed-0.dtcm`
+shows `func_0201834c` requesting 17396 bytes for plain LoadFile's result while
+its scratch copy is retained. The actual file is FAT 0x55b,
+`data/stage/cave/cave_icg.bin`; SharedFilePtr's last-file 0x300 is stale here.
+ROOT largest free block is 12372, GAME 64968. No particle/shared-resource
+fallback was reached. Physical debug buttons reveal the native heap screen at
+`/workspace/runtime/raw-load-crash-inspection/native-crash-0.png`.
+
+The runtime now also hooks plain LoadFile's raw/compressed/archive buffer
+allocation sites, scratch free, and the common Deallocate wrapper. The same
+ownership table covers all fallback buffers. Four additional ARM tests execute
+the failure, native CpuCopy8 with the exact captured map file bytes, negative
+alignment, and repeated release. All 41 tests pass: image 7, coin 7, particle 7,
+model/resource 12, plain map 4, relocation 2, controller RPC 2. Logs are
+`/workspace/runtime/raw-resource-*-tests.log`.
+
+Newest normal cartridge: `/workspace/runtime/raw-resource-host.nds`, SHA256
+`d42d379d6567277f0e66efde39c49f6729d4f1986350e800efd26db701c9d38c`.
+Newest HMC-cycle diagnostic: `/workspace/runtime/raw-resource-hmc-cycle-host.nds`,
+SHA256 `fc40c65afcd4bf7131b3e719feca51acf996eb753d0ee29f4e084afc52c56142`.
+Live HMC entry plus 27 further stage transitions is running at
+`/workspace/runtime/raw-resource-hmc-matrix/`, exec session 87328; failure socket
+`/workspace/runtime/raw-resource-hmc-matrix.sock`. Inspect its final report;
+this build has not yet passed live HMC. It uses the new early native Crash flag
+check, so allocator failures preserve RAM/DTCM promptly.
+
+The older `/workspace/runtime/resource-high-guest-star/` is still running,
+exec session 20353. Its actual guest coin 0→1 mirrored on all four consoles,
+and its three successive guest jumps passed with decoded button edges.
+Its first two star routes died to Chain Chomp; the third reached one remaining
+post hit. Preserve every attempt and inspect the final result. New driver source
+approaches from the south, away from the head's initial northern position,
+acknowledges B/R release before the post loop, and runs while approaching.
+Those last driver changes are not in this frozen running test.
+
+### Live results of the plain-file fix
+
+The new raw-resource diagnostic PASSED actual four-console HMC (13) entry,
+all four independent controls, same-tick synchronization, and shared host
+pause/resume. Its paused heap report proves particle fallback on every console,
+one raw-map fallback on host, and twelve file fallbacks on each guest with
+three live model owners. Subsequent stages 14 and 15 also passed. Every resource
+owner was released on transition (live count zero on all peers), with GAME's
+largest block recovering to 180108 bytes in stage 15. The 27-stage cycle is
+still running; initial HMC success does not imply later stages passed.
+
+`/workspace/runtime/resource-high-guest-star/result.json` PASSED. A real guest
+coin pickup mirrored 0→1, three repeated guest jumps passed, guest console 1
+(native slot 3) earned the Chain Chomp star on its third physical route attempt,
+Save & Continue wrote both host banks, Castle returned with all four controls,
+and a second Pause → Save & Quit persisted the star and ended all three guests.
+First two deaths remain recorded; no savestate or live state injection occurred.
+That party ended naturally. Its cartridge is the older resource-high image,
+not the newest raw-resource image.
+
+The newest normal raw-resource cartridge is undergoing three cold boots with
+staggered signed-menu selections, real castle key/story/course entry, all four
+controls, and course return at
+`/workspace/runtime/raw-resource-course-return-repeats/` (exec session pending;
+inspect process/log). This is real native firmware Download Play throughout.
+
+## Current memory and bootstrap regressions
+
+The mod is not complete or stable. Four-console stage cycling passes native
+stages 7–12, then Hazy Maze Cave (13) runs out of ROOT heap. Captured native
+allocator execution reproduces two failures: host particle pool 35840 bytes
+versus largest free block 35496; guest shared-file raw model 6532 bytes versus
+largest aligned block 6488. GAME retains enough spare space. The original
+failures remain in `/workspace/runtime/four-player-stage-cycle-continuation/`
+and `/workspace/runtime/particle-four-player-matrix/`.
+
+Current source allocates the permanent runtime at ROOT's high end, discards
+installation-only relocation records, and falls back to GAME for full-sized
+particle pools and SharedFilePtr buffers when ROOT cannot fit. Exact alignment
+and owning-heap frees are preserved; a bounded resource ownership map is used.
+Seven particle and nine resource ARM unit checks execute native allocation,
+free, and heap integrity checks on the private failure captures. These do not
+establish a live HMC pass. The latest normal integrated candidate is
+`/workspace/runtime/resource-high-host.nds`, SHA256
+`b60d91d34a4d303ab32890447c083a1cb3f9959adc27e8a114c127c0509b19c7`.
+Its four-console regression is running at
+`/workspace/runtime/resource-high-four-player-matrix/` using the separate
+`resource-high-stage-cycle-host.nds` image (stage 7 followed by 33 transitions).
+The normal guest coin/star/save run is `/workspace/runtime/resource-high-guest-star/`.
+Inspect result.json and logs; an active/running test is not a pass. Both retain
+failed sessions at the corresponding `/workspace/runtime/<name>.sock` path.
+Original failed particle-matrix party has been shut down cleanly.
+
+Serial signed-client boot is an experimental builder option; default remains
+restart-parent. Serial menu repeats passed 3/5, with two frontend progress
+watchdog failures. A frame lead cap of 8 failed both further repeats (one
+incomplete signed-menu download and one 900-second timeout). Do not promote
+serial or present the earlier three cold starts as proof of reliability.
+An original Download Station sender control passed both of two four-console
+cold starts at `/workspace/runtime/native-station-probe-control/result.json`. This isolates the signed-loader transport from the
+custom host sender, and verifies all menu bytes before testing probe launch.
+
+Actual guest gold-coin pickups have passed with all four counters mirrored:
+`/workspace/runtime/guest-coin-star-retained/shared-coin-pickup.json` and
+`/workspace/runtime/guest-star-retained-continuation/shared-coin-pickup.json`.
+Guest star navigation has not passed; failed/interrupted attempts remain
+recorded. The input driver now waits for decoded button transitions and tests
+three successive jumps before its star route. No live RAM writes are allowed.
+The persistent controller server now survives disconnected clients; two RPC
+unit tests pass. Do not interrupt old RPC clients during pending commands.
+
+### Model-resize ownership correction
+
+Further review found SharedFilePtr models call native `func_02017060` to
+shrink their uploaded texture tail. That routine uses the current heap,
+so a GAME fallback model would shrink through ROOT. A new isolated ARM
+reproduction returns success but permanently loses GAME heap space after
+release. The runtime now hooks this trim routine, retains the original
+routine for untracked models, and resizes tracked models through their
+allocating heap even after co-op policy ends. Resource ARM checks now number
+12, including the native leak reproduction and the corrected trim/free cycle.
+
+Newest normal image: `/workspace/runtime/resource-owner-host.nds`, SHA256
+`c9f18361860a8f639a50df753ec0faec250cf967dcf3de063ee37da778822369`.
+Newest diagnostic cycle: `/workspace/runtime/resource-owner-stage-cycle-host.nds`,
+SHA256 `04a2d91fb92b63499310f63a7e4226a9256a66a72e23fb349057390788eba113`.
+These supersede resource-high images in source correctness. A new live run
+starts directly in HMC and cycles through stages 14–40 at
+`/workspace/runtime/resource-owner-hmc-matrix/`, using
+`resource-owner-hmc-cycle-host.nds` SHA256
+`37122f82f74e59444148f620bd45c552b839e4e680684502517ea0c5a8038752`.
+It has not yet passed; inspect its reports and log. The failed-session retention
+socket is `/workspace/runtime/resource-owner-hmc-matrix.sock`.
+Seven image, seven coin, seven particle, twelve resource, two relocation, and
+two controller checks pass (37 total); logs are `/workspace/runtime/resource-owner-*-tests.log`. The resource-high live runs are still useful
+for reproducing memory pressure; do not call them the final candidate.
 
 ## Star-return ownership and shared coins: latest continuation
 

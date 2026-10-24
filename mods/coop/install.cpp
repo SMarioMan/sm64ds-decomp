@@ -32,7 +32,9 @@ static RuntimeEntry LoadRuntime() {
         return 0;
     }
     u32 storedSize = header[2] + header[4] * 4;
-    u32 *body = (u32 *)data_020a0e9c->Allocate(storedSize, 32);
+    // This module lives for the session. Keep it at ROOT's high end so
+    // transient models/files can coalesce their ordinary low-end blocks.
+    u32 *body = (u32 *)data_020a0e9c->Allocate(storedSize, -32);
     if (FS_ReadFile(file, body, storedSize) != (int)storedSize) {
         FS_CloseFile(file);
         data_020a0e9c->Deallocate(body);

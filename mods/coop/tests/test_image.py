@@ -105,7 +105,10 @@ class ImageTests(unittest.TestCase):
             ('CoopOriginalStarTutorial',0x020C6E14,bytes.fromhex('30402de9')),
             ('CoopOriginalCourseTutorial',0x020C44C4,bytes.fromhex('30402de9')),
             ('CoopOriginalLevelEnterInit',0x020C7838,bytes.fromhex('f0402de9')),
-            ('CoopOriginalGiveCoins',0x0202A7B8,bytes.fromhex('00402de9'))]:
+            ('CoopOriginalGiveCoins',0x0202A7B8,bytes.fromhex('00402de9')),
+            ('CoopOriginalTrimModel',0x02017060,bytes.fromhex('30402de9')),
+            ('CoopOriginalResolveFile',0x020186C0,bytes.fromhex('70402de9')),
+            ('CoopOriginalOpenFile',0x020185C0,bytes.fromhex('f0412de9'))]:
             offset=symbols[name]-self.module_base
             self.assertEqual(self.body[offset:offset+4],prologue)
             self.assertEqual(destination(self.body,offset+4,symbols[name]+4),original_address+4)
@@ -131,11 +134,15 @@ class ImageTests(unittest.TestCase):
             start=site-player.ramAddress
             self.assertEqual(player.data[start:start+8],struct.pack('<2I',0xe5900154,0xe2100902))
 
-    def test_particle_pool_calls_retain_call_semantics(self):
+    def test_memory_calls_retain_call_semantics(self):
         import ndspy.codeCompression
         arm9=ndspy.codeCompression.decompress(self.stock.arm9)
         calls=self.report['lateRamCalls']
-        self.assertEqual([int(call['address'],16) for call in calls],[0x02022f88,0x020231bc])
+        self.assertEqual([int(call['address'],16) for call in calls],
+                         [0x02022f88,0x020231bc,0x02017c98,0x02017cd8,0x02017d40,
+                          0x02017da8,0x02017dcc,0x02017c3c,0x02017dc4,0x02017de4,
+                          0x020181c4,0x02018204,0x02018378,0x020183c4,0x020183e0,
+                          0x020183fc,0x0201815c])
         for call in calls:
             address=int(call['address'],16)
             self.assertEqual(destination(arm9,address-self.stock.arm9RamAddress,address,link=True),
@@ -144,6 +151,7 @@ class ImageTests(unittest.TestCase):
             self.assertEqual(offset%4,0)
             self.assertLess(offset,len(self.body))
         self.assertTrue(self.report['runtimeModule']['particlePoolFallback'])
+        self.assertTrue(self.report['runtimeModule']['sharedResourceFallback'])
 
 
 if __name__ == '__main__':

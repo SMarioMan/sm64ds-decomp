@@ -148,6 +148,47 @@ void CoopBootEndMP(void *packet) {
 }
 #endif
 
+#if COOP_CLOSE_ENTRY_BEFORE_BOOT
+int func_020635d8(void *callback,int enabled);
+int func_02063648(void *callback,int *info,int length,int ggidLow,
+                  u16 ggidHigh,u16 tgid,u8 attributes);
+int func_020688e4(void);
+int func_020688cc(void);
+int func_020688b4(void);
+int func_02068844(void);
+void WM_SetCallbackTable(int api,void *callback);
+void func_02069994(char *packet);
+// 1/3 request SDK operations, 2/4 wait for their callbacks, 5 permits BOOT.
+static volatile u32 bootEntryState=0;
+void CoopBootEntryClosed(void *packet) {
+    bootEntryState=((u16 *)packet)[1] ? 1 : 3;
+    debug[31]=0x1000|bootEntryState;
+    WM_SetCallbackTable(0x19,(void *)func_02069994);
+}
+void CoopBootClosedBeacon(void *packet) {
+    bootEntryState=((u16 *)packet)[1] ? 3 : 5;
+    debug[31]=0x1000|bootEntryState;
+    WM_SetCallbackTable(0x18,0);
+}
+static void CloseBootEntry() {
+    if (bootEntryState==1) {
+        // Existing firmware associations remain. Returning signed loaders
+        // must wait for the recreated parent instead of joining one closing.
+        WM_WORK->parentParam.entryFlag=0;
+        bootEntryState=2;
+        if (func_020635d8((void *)CoopBootEntryClosed,0)!=2)bootEntryState=1;
+    } else if (bootEntryState==3) {
+        // Publish the closed ENTRY attribute using the native valid MB
+        // beacon body. Await its ARM7 acknowledgement before sending BOOT.
+        bootEntryState=4;
+        if (func_02063648((void *)CoopBootClosedBeacon,(int *)0x020a9d40,0x70,
+                func_020688e4(),func_020688cc(),func_020688b4(),
+                func_02068844()|2)!=2)bootEntryState=3;
+    }
+    debug[31]=0x1000|bootEntryState;
+}
+#endif
+
 static void Patch(u32 address, void *target) {
     *(u32 *)address = 0xea000000 | (((u32)target-address-8)>>2 & 0x00ffffff);
     _ZN4CP1514FlushDataCacheEjj(address, 4);
@@ -462,6 +503,11 @@ void CoopBootstrapParentEvent(int event, void *packet) {
             }
         }
     }
+#if COOP_CLOSE_ENTRY_BEFORE_BOOT
+    // Native BEACON_SENT handling queues SetGameInfo without a callback.
+    // Keep it from replacing our outstanding SetGameInfo completion handler.
+    if (event==0x1c && (bootEntryState==3 || bootEntryState==4))return;
+#endif
     CoopOriginalParentEvent(event,packet);
     debug[16]=(u32)event;
 }
@@ -470,6 +516,14 @@ int CoopBootstrapControl(u8 type, u32 bitmap) {
     if (bootstrapPhase==2)return 0;
 #if COOP_REARM_MP_AFTER_BOOT
     if (mpRearm == 1)return 0;
+#endif
+#if COOP_CLOSE_ENTRY_BEFORE_BOOT
+    if (type==5 && (bootstrapPhase==1 || bootstrapPhase==3) &&
+        !stationRestarted && bootEntryState!=5) {
+        if (!bootEntryState)bootEntryState=1;
+        type=0;
+        bitmap=0xffff;
+    }
 #endif
     if (type==5) {
         // BOOT is a two-phase firmware handshake. The first request enters
@@ -595,6 +649,10 @@ void CoopBootstrapMBTick(void) {
     }
 #endif
     CoopOriginalMBTick();
+#if COOP_CLOSE_ENTRY_BEFORE_BOOT
+    if ((bootstrapPhase==1 || bootstrapPhase==3) &&
+        !stationRestarted && bootEntryState)CloseBootEntry();
+#endif
 #if COOP_RESTART_STATION_PARENT
     if (bootstrapPhase==2) {
         if (data_020a0f04==0) {

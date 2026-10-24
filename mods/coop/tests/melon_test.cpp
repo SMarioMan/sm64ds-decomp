@@ -343,6 +343,13 @@ int main(int argc,char** argv) try {
                          <<" dispstat="<<ds.ARM9Read16(0x04000004)<<" vcount="<<ds.ARM9Read16(0x04000006)
                          <<" cpustop="<<ds.CPUStop<<" cpsr9="<<ds.ARM9.CPSR<<" cpsr7="<<ds.ARM7.CPSR
                          <<std::dec<<"\n";
+                std::cout<<"banked9:";
+                for(unsigned bank=0;bank<3;++bank) {
+                    const u32* values=bank==0?ds.ARM9.R_IRQ:bank==1?ds.ARM9.R_ABT:ds.ARM9.R_SVC;
+                    std::cout<<" "<<(bank==0?"irq":bank==1?"abt":"svc")<<"=";
+                    for(unsigned reg=0;reg<3;++reg)std::cout<<std::hex<<values[reg]<<",";
+                }
+                std::cout<<" cp15="<<ds.ARM9.CP15Control<<std::dec<<"\n";
                 u32 sp=ds.ARM9.R[13];
                 for(unsigned word=0;word<64;word++) {
                     u32 address=sp+word*4,value=0;
@@ -361,6 +368,10 @@ int main(int argc,char** argv) try {
                 }
             }
             else if(cmd=="dump") { std::string path;s>>path;std::ofstream out(path,std::ios::binary);out.write(reinterpret_cast<char*>(ds.MainRAM),0x400000); }
+            else if(cmd=="dumpitcm") {
+                std::string path;s>>path;std::ofstream out(path,std::ios::binary);
+                out.write(reinterpret_cast<char*>(ds.ARM9.ITCM),sizeof(ds.ARM9.ITCM));
+            }
             else if(cmd=="dumptcm") {
                 std::string path;s>>path;std::ofstream out(path,std::ios::binary);
                 out.write(reinterpret_cast<char*>(ds.ARM9.DTCM),0x4000);

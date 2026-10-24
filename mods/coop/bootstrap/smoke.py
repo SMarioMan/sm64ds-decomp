@@ -132,6 +132,7 @@ def main():
             'starController':args.star_controller if args.course_star else None,
             'coinController':args.coin_controller if args.course_coins else None,
             'sharedCourseCoins':metadata.get('runtimeModule',{}).get('sharedCourseCoins',False),
+            'sharedResourceFallback':metadata.get('runtimeModule',{}).get('sharedResourceFallback',False),
             'particlePoolFallback':metadata.get('runtimeModule',{}).get('particlePoolFallback',False),
             'diagnosticStartLevel':diagnostic_level,
             'diagnosticCycleCount':args.diagnostic_cycle_count,
@@ -203,6 +204,27 @@ def main():
                 if 0x02000000<=context<0x023fff80:
                     raise RuntimeError(f'Parent ARM9 exception at {ds.word(0,context+0x40):#010x}; see saved context and RAM')
                 raise RuntimeError('Signed loader menu did not finish on every client')
+        else:
+            # The original Download Station sender is a useful control for
+            # the custom parent's handoff. Require the actual complete menu
+            # buffer on every guest; elapsed frames alone do not prove it.
+            import ndspy.rom
+            station=ndspy.rom.NintendoDSRom.fromFile(image_path)
+            menu=station.files[station.filenames.idOf('ds_demo/demomenu')]
+            ready=set()
+            for attempt in range(0,args.menu_frames,60):
+                for console in range(1,ds.count):
+                    if console in ready:continue
+                    path=ds.output/f'station-menu-check-{console}.ram'
+                    ds.command(f'dump {console} {path}')
+                    if menu in path.read_bytes():ready.add(console)
+                if len(ready)==args.clients:break
+                ds.run(60)
+                firmware_confirmations+=ds.select_firmware_downloads()
+            else:
+                ds.screens('station-menu-not-ready-')
+                raise RuntimeError(f'Original station menu reached only {sorted(ready)}')
+            checks.append('native-station-complete-signed-menu-on-every-guest')
         ds.screens('signed-loader-')
         ds.command('status')
         for i in range(ds.count):
@@ -211,6 +233,10 @@ def main():
         if args.parent=='native':
             debug=struct.unpack('<32I',ds.read(0,0x02000000,128))
             print('Native bootstrap diagnostics:',debug,flush=True)
+            if metadata.get('closeEntryBeforeBoot'):
+                if debug[31]!=0x1005:
+                    raise RuntimeError('Closed-entry BOOT gating was enabled but not acknowledged')
+                checks.append('association-and-beacon-entry-closed-before-boot')
             if not debug[2] or not debug[4]:
                 raise RuntimeError('No signed-loader read or no Download Station port request')
             print('Native parent launched the signed loader and received a second-stage request.',flush=True)
@@ -277,7 +303,7 @@ def main():
                 print('Unsigned SM64DS clients initialized native child networking with overlay verification intact; gameplay handoff still unverified.',flush=True)
             else:
                 checks.append('unsigned-arm9-probe-on-every-client')
-                print('HaxxStation executed modified SM64DS ARM9 on cartridge-free clients; boot kind 2 retained.',flush=True)
+                print('HaxxStation executed the unsigned ARM9 boot probe on cartridge-free clients; boot kind 2 retained.',flush=True)
         if args.story:
             for elapsed in range(0,args.payload_frames,60):
                 if all(ds.read(i,0x0209fc50,1)==bytes([ds.count]) and
@@ -298,6 +324,16 @@ def main():
             report()
             entered=False
             for attempt in range(30):
+                exceptions=[i for i in range(ds.count) if ds.word(i,0x0209cddc)]
+                if exceptions:
+                    from campaign import snapshot
+                    snapshot(ds,'story-entry-native-exception')
+                    raise RuntimeError(f'Native exception during story entry on consoles {exceptions}')
+                crashed=[i for i in range(ds.count) if ds.read(i,0x0209d4d8,1)!=b'\0']
+                if crashed:
+                    from campaign import snapshot
+                    snapshot(ds,'story-entry-native-crash')
+                    raise RuntimeError(f'Native Crash() during story entry on consoles {crashed}')
                 if attempt%5==0:
                     print('Story progress:',[{
                         'console':i,'net':ds.read(i,0x020a0f04,1)[0],
@@ -331,7 +367,9 @@ def main():
                     ds.command(f'dumptcm {i} {ds.output / ("story-entry-failed-"+str(i)+".dtcm")}')
                     ds.command(f'regs {i}')
                 raise RuntimeError(f'The Download Play party did not enter native stage {diagnostic_level or 1}')
-            ds.run(180)
+            # Diagnostic readiness is observed below. A blind three-second
+            # idle can let enemies attack an untested party at its entrance.
+            ds.run(180 if diagnostic_level is None else 12)
             if diagnostic_level is None:
                 from campaign import check_yoshi_colors
                 check_yoshi_colors(ds)

@@ -69,11 +69,11 @@ def _check_chain_star(ds, controller=0):
         from course_coins import check_shared_coin_pickup
         check_shared_coin_pickup(ds,(controller+1)%ds.count)
     walk_to_chain_field(ds,controller)
-    # The mountain bulges west around z=2600. Move onto the flat x=1400
-    # corridor before heading north, outside the chained head's reach.
+    # Approach the post from the south. The head starts north of it; the
+    # northern route put this controller directly in its lunging corridor.
     walk_to(ds,1400,3000,tolerance=60,pulse_frames=6,console=controller)
-    for target in ((1400,800),(400,800)):
-        touch_walk_to(ds,*target,tolerance=80,limit=400,jump=True,console=controller)
+    touch_walk_to(ds,400,3000,tolerance=80,limit=400,run=True,
+                  jump=False,console=controller)
     check_chain_post(ds,before,controller)
 
 
@@ -93,6 +93,7 @@ def check_chain_post(ds, before=None, controller=0):
     ds.command(f'keys {controller} fff')
     ds.command(f'touch {controller} 128 96')
     ds.run(24)
+    wait_controller_buttons(ds,controller,0x102)
     origin=ds.read(controller,0x0209f4a8+24*slot,2)
     actor=ds.word(controller,PLAYER_POINTERS+4*slot)
     # State descriptors are resident for this overlay. Their function pointers
@@ -106,7 +107,7 @@ def check_chain_post(ds, before=None, controller=0):
         radius=24 if (400-px)**2+(1900-pz)**2>150**2 else 14
         return (origin[0]+round(radius*math.sin(angle)),origin[1]+round(radius*math.cos(angle)))
     def drive(held,active):
-        ds.set_input(controller,0xfff^held,steer(active))
+        ds.set_input(controller,0xfff^(held|(0x800 if active else 0)),steer(active))
     completed=False
     previous_health=None
     shared_coin_witness=False

@@ -29,11 +29,12 @@ class NativeAllocationFailure(Exception):
     pass
 
 
-class ParticleHeapTests(unittest.TestCase):
+class HeapHarness:
+    fixture_variable='COOP_HEAP_FIXTURE'
+    default_fixture='/workspace/runtime/hmc-wireless-load-inspection/hmc-load-0'
     @classmethod
     def setUpClass(cls):
-        fixture=Path(os.environ.get('COOP_HEAP_FIXTURE',
-            '/workspace/runtime/hmc-wireless-load-inspection/hmc-load-0'))
+        fixture=Path(os.environ.get(cls.fixture_variable,cls.default_fixture))
         cls.ram=fixture.with_suffix('.ram').read_bytes()
         cls.dtcm=fixture.with_suffix('.dtcm').read_bytes()
         cls.stock=ndspy.rom.NintendoDSRom.fromFile('/workspace/inputs/sm64ds-eu.nds')
@@ -101,6 +102,9 @@ class ParticleHeapTests(unittest.TestCase):
 
     def intact(self,heap):
         return self.call(self.game['_ZN5mHeap6Heap_t6IntactEv'],heap)
+
+
+class ParticleHeapTests(HeapHarness,unittest.TestCase):
 
     def test_original_pool_request_reproduces_captured_failure(self):
         self.assertLess(self.largest(self.root),0x8c00)
