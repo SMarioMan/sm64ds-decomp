@@ -4,7 +4,7 @@
 #include "types.h"
 #include "dActor_c.h"
 #include "dExtSimpleModel_c.h"
-#include "TextureSequence.h"
+#include "dExtAnmTexPat_c.h"
 
 /* 1-Up logo popup -- ov002/daObj1UpLogo_c, profile OBJ_1UPLOGO (331 / 0x14b).
  * Player::IncMegaKillCount spawns one as actor 0x14b. Direct base dActor_c.
@@ -24,9 +24,9 @@ struct daObj1UpLogo_c : dActor_c {
     /* dExtSimpleModel_c member, named by _ZN17dExtSimpleModel_cD1Ev at +0xd4 in the cartridge's own
        ~daObj1UpLogo_c (D1/D0), a relocation the ROM build checks. */
     dExtSimpleModel_c mModel; /* 0x0d4 */
-    /* TextureSequence member, named by _ZN15TextureSequenceD1Ev at +0x124 in
+    /* dExtAnmTexPat_c member, named by _ZN15dExtAnmTexPat_cD1Ev at +0x124 in
        the same destructor, called before the dExtSimpleModel_c's (reverse order). */
-    TextureSequence mTextureSequence; /* 0x124 */
+    dExtAnmTexPat_c mTextureSequence; /* 0x124 */
     /* Follow target. Behavior looks this uniqueID up with FindWithID.
        0 means the logo is not following anyone. IncMegaKillCount passes
        a null owner, so a mega-kill logo stays where it spawned. */

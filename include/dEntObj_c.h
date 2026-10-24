@@ -20,7 +20,7 @@
 #include "dExtSimpleModel_c.h"
 #include "dExtAnmModel_c.h"
 #include "dExtBlendAnmModel_c.h"
-#include "TextureSequence.h"
+#include "dExtAnmTexPat_c.h"
 #include "dExtShadowModel_c.h"
 
 /* One figure on the entry stage. mMoveState and mAnimState index the two
@@ -51,7 +51,7 @@ struct UnknownVsPlayer {
 
     dExtBlendAnmModel_c mModel;       /* 0x000 */
     dExtAnmModel_c mAnimation;        /* 0x070 */
-    TextureSequence mTextureSequence; /* 0x0d4 */
+    dExtAnmTexPat_c mTextureSequence; /* 0x0d4 */
     dExtShadowModel_c mShadow;        /* 0x0e8 */
     s32 mMoveState;                   /* 0x110 */
     s32 mAnimState;                   /* 0x114 */

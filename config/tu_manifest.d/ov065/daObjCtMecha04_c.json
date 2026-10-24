@@ -7,7 +7,7 @@
   "boundary_confidence": "medium",
   "boundary_evidence": [
     "contiguous linker run: 0x211a494..0x211aae0, 9 function(s), from build/tu_map.json (tools/tu_map.py)",
-    "adjacent CT_MECHA04L/CT_MECHA04S factories at 0x0211aae0..0x0211ab60 allocate sizeof(daObjCtMecha04_c), construct dBgActor_c plus TextureTransformer/dExtShadowModel_c, and install this class vptr; the factory join is registry/factory-backed rather than tu_map-proven",
+    "adjacent CT_MECHA04L/CT_MECHA04S factories at 0x0211aae0..0x0211ab60 allocate sizeof(daObjCtMecha04_c), construct dBgActor_c plus dExtAnmTexSRT_c/dExtShadowModel_c, and install this class vptr; the factory join is registry/factory-backed rather than tu_map-proven",
     "class label(s): daObjCtMecha04_c",
     "module sinit corroboration: 10 sinit(s) / 10 .ctor entries, sinit_vs_tu=ok, corroborated=False (module-wide, NOT narrowed to this one TU -- see notes/tu-reconstruction-pilot-report.md sec 2 for the by-hand narrowing step)"
   ],

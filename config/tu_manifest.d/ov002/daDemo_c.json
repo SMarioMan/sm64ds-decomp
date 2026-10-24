@@ -844,7 +844,7 @@
       "ordinal": 116
     },
     {
-      "symbol": "_ZN8daDemo_c7param_c19func_ov002_020f6a50Ev",
+      "symbol": "_ZN8daDemo_c7param_cC2Ev",
       "address": "0x020f6a50",
       "size": "0x0000004c",
       "legacy_source": "src/func_ov002_020f6a50.c",
@@ -1354,6 +1354,24 @@
       "canonical_module": "arm9",
       "canonical_address": "0x020072c0",
       "reason": "A Vector3 local emits the inline destructor. The ROM homes that four-byte body in arm9 at 0x020072c0; this copy is discarded."
+    },
+    {
+      "symbol": "_ZN7Vector3C1Ev",
+      "disposition": "deadstrip-duplicate",
+      "canonical_symbol": "func_0203d384",
+      "canonical_module": "arm9",
+      "canonical_address": "0x0203d384",
+      "reason": "param_c's constructor builds its Vector3 mScale[1] through __cxa_vec_ctor(this, 1, 0xc, func_0203d384, _ZN7Vector3D1Ev), as the retail body at 0x020f6a50 does. The emitted 4-byte inline Vector3 default constructor is that arm9 callback; this copy is discarded."
+    },
+    {
+      "symbol": "_ZN8daDemo_c7param_cC1Ev",
+      "disposition": "deadstrip",
+      "reason": "Homeless. The out-of-line param_c constructor emits C1 and C2 with identical bodies. param_c is only ever a base, so every retail caller (the seven inlined new-expressions in InitResources) calls C2, which is the 0x020f6a50 body; the cartridge has no C1."
+    },
+    {
+      "symbol": "_ZN8daDemo_c7param_cD2Ev",
+      "disposition": "deadstrip",
+      "reason": "Homeless and unreferenced. Declaring param_c's constructor makes the TU emit the implicit param_c destructor (the mScale cleanup) out of line; the nested model destructors still destroy the array inline, as retail does, and nothing calls this copy."
     },
     {
       "symbol": "_ZTV8daDemo_c",

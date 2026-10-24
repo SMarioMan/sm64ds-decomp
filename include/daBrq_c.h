@@ -5,8 +5,8 @@
 #include "dExtAnmModel_c.h"
 #include "dCcAcPos_c.h"
 #include "dExtShadowModel_c.h"
-#include "TextureSequence.h"
-#include "TextureTransformer.h"
+#include "dExtAnmTexPat_c.h"
+#include "dExtAnmTexSRT_c.h"
 #include "dBgCh_Actr.h"
 #include "dActor_c.h"
 
@@ -31,8 +31,8 @@ struct daBrq_c : dActor_c {
     u8                        pad_0d0[0x4];
     dExtAnmModel_c mModelAnim;                               /* 0x0d4 */
     dExtSimpleModel_c mModel;                                /* 0x138 */
-    TextureSequence           mTextureSequence;              /* 0x188 */
-    TextureTransformer        mTextureTransformer;           /* 0x19c */
+    dExtAnmTexPat_c mTextureSequence;                        /* 0x188 */
+    dExtAnmTexSRT_c mTextureTransformer;                     /* 0x19c */
     dExtShadowModel_c               mShadowModel;                  /* 0x1b0 */
     dCcAcPos_c                mdCcAcPos_c;                  /* 0x1d8 */
     dBgCh_Actr                mWithMeshClsn;                /* 0x218 */

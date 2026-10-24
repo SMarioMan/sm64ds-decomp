@@ -10,7 +10,7 @@
     "contiguous linker run: 0x21113d4..0x2111690, 6 function(s), from build/tu_map.json (tools/tu_map.py)",
     "class label(s): daObjTtWater_c",
     "module sinit corroboration: 2 sinit(s) / 2 .ctor entries, sinit_vs_tu=ok, corroborated=False (module-wide, NOT narrowed to this one TU -- see notes/tu-reconstruction-pilot-report.md sec 2 for the by-hand narrowing step)",
-    "fold-lane-c-0929: loose src/d_a_obj_tt_water.c (daObjTtWater_c_classInit, 0x02111690..0x021116c8) sits immediately after this TU's InitResources with no gap before the next symbol, __sinit_ov033_021119e8 (this module's static initializer, outside this .text run); folded in as `return new daObjTtWater_c();` -- daObjTtWater_c declares no constructor of its own, so the compiler-synthesized default constructor reproduces the loose file's hand-written fBase_c::operator new(832) + dBgActor_c::dBgActor_c() + vtable store + TextureTransformer sub-object construction sequence byte-for-byte."
+    "fold-lane-c-0929: loose src/d_a_obj_tt_water.c (daObjTtWater_c_classInit, 0x02111690..0x021116c8) sits immediately after this TU's InitResources with no gap before the next symbol, __sinit_ov033_021119e8 (this module's static initializer, outside this .text run); folded in as `return new daObjTtWater_c();` -- daObjTtWater_c declares no constructor of its own, so the compiler-synthesized default constructor reproduces the loose file's hand-written fBase_c::operator new(832) + dBgActor_c::dBgActor_c() + vtable store + dExtAnmTexSRT_c sub-object construction sequence byte-for-byte."
   ],
   "sections": [
     {

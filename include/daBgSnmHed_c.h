@@ -3,7 +3,7 @@
 
 #include "dActor_c.h"
 #include "dExtSimpleModel_c.h"
-#include "TextureSequence.h"
+#include "dExtAnmTexPat_c.h"
 #include "dCcAc_c.h"
 #include "dBgCh_Actr.h"
 
@@ -26,7 +26,7 @@
 struct daBgSnmHed_c : dActor_c {
     u8 mPad0d0[0x4];                    /* 0x0d0 */
     dExtSimpleModel_c mModel;           /* 0x0d4 */
-    TextureSequence mTextureSequence;   /* 0x124 */
+    dExtAnmTexPat_c mTextureSequence;   /* 0x124 */
     dCcAc_c mCylinder;                  /* 0x138 */
     dBgCh_Actr mWithMeshClsn;           /* 0x16c */
 

@@ -6,7 +6,7 @@
  * with no ROM home. Source order is ROM order. The factory was
  * SnowmanHead_Spawn; `new daBgSnmHed_c()` is the same sequence.
  */
-/* leftovers: TextureSequence::SetFile, dActor_c::Earthquake,
+/* leftovers: dExtAnmTexPat_c::SetFile, dActor_c::Earthquake,
  * Particle::System::NewSimple, Sound::PlaySub, dCcAc_c::Init and
  * dBgCh_Actr::Init stay mangled. This file calls each of them, and every
  * one of those definitions takes Fix12<int> by value.
@@ -18,7 +18,7 @@
 #include "daBgSnmHed_c.h"
 #include "Player.h"
 #include "SharedFilePtr.h"
-#include "TextureSequence.h"
+#include "dExtAnmTexPat_c.h"
 #include "dBgCh_Gnd.h"
 
 struct BMD_File;
@@ -30,8 +30,9 @@ extern int gBigSnowmanCryTextureSequenceFile[];
 
 extern "C" {
 void Matrix4x3_FromRotationY(void *matrix, int angle);
-void _ZN15TextureSequence7SetFileER8BTP_Filei5Fix12IiEj(
-    void *self, void *file, int flags, int speed, unsigned int startFrame);
+/* local extern: the matched free-function spelling of SetFile; a member call is pending. */
+void _ZN15dExtAnmTexPat_c7SetFileER8BTP_Fileiit(void *self, void *file, int flags, int speed,
+                                                unsigned int startFrame);
 void _ZN8dActor_c10EarthquakeERK7Vector35Fix12IiE(
     void *self, const void *pos, int magnitude);
 int func_0201267c(int id, void *pos);
@@ -114,7 +115,7 @@ int daBgSnmHed_c::State3()
 // @symbol _ZN12daBgSnmHed_c10InitState3Ev
 int daBgSnmHed_c::InitState3()
 {
-    _ZN15TextureSequence7SetFileER8BTP_Filei5Fix12IiEj(
+    _ZN15dExtAnmTexPat_c7SetFileER8BTP_Fileiit(
         &mTextureSequence, (void *)gBigSnowmanSmileTextureSequenceFile[1], 0, 0x1000, 0);
     mVertAccel = 0;
     mTerminalVelocity = 0;
@@ -235,7 +236,7 @@ int daBgSnmHed_c::State0()
 // @symbol _ZN12daBgSnmHed_c10InitState0Ev
 int daBgSnmHed_c::InitState0()
 {
-    _ZN15TextureSequence7SetFileER8BTP_Filei5Fix12IiEj(
+    _ZN15dExtAnmTexPat_c7SetFileER8BTP_Fileiit(
         &mTextureSequence, (void *)gBigSnowmanCryTextureSequenceFile[1], 0, 0x1000, 0);
     mVertAccel = 0;
     mTerminalVelocity = 0;
@@ -308,8 +309,8 @@ int daBgSnmHed_c::InitResources()
 
     for (i = 0; i < 2; i++) {
         void *tex = ((void **)&data_ov072_02121ffc)[i];
-        TextureSequence::LoadFile(*(SharedFilePtr *)tex);
-        TextureSequence::Prepare(*(BMD_File *)((void **)&data_ov072_02122bc4)[1],
+        dExtAnmTexPat_c::LoadFile(*(SharedFilePtr *)tex);
+        dExtAnmTexPat_c::Prepare(*(BMD_File *)((void **)&data_ov072_02122bc4)[1],
                                  *(BTP_File *)((void **)tex)[1]);
     }
 

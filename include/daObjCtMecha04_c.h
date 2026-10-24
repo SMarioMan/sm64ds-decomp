@@ -3,7 +3,7 @@
  * class and select the resource set through actorID in InitResources.
  *
  * The inheritance and ownership are visible in both lifecycle directions:
- * the factories construct dBgActor_c, then TextureTransformer at 0x320 and
+ * the factories construct dBgActor_c, then dExtAnmTexSRT_c at 0x320 and
  * dExtShadowModel_c at 0x334; the destructor tears those members down in reverse
  * order before inlining dBgActor_c's destruction. The allocation literal in
  * both factories is 0x3a0, independently fixing the complete object size. */
@@ -15,10 +15,10 @@
 extern "C" void *_ZN7fBase_cnwEj(unsigned size);
 #include "dBgActor_c.h"
 #include "dExtShadowModel_c.h"
-#include "TextureTransformer.h"
+#include "dExtAnmTexSRT_c.h"
 
 struct daObjCtMecha04_c : dBgActor_c {
-    TextureTransformer mTextureTransformer; /* 0x320 */
+    dExtAnmTexSRT_c mTextureTransformer;           /* 0x320 */
     dExtShadowModel_c mShadowModel;                /* 0x334 */
     /* UpdateShadow builds this from mAngleY, then writes the actor's X/Z and
      * ground Y into its translation before passing it to DropShadowScaleXYZ. */

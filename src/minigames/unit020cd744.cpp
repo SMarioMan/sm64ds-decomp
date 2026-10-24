@@ -36,7 +36,7 @@
 
 extern int ApproachLinear(int &, int, int);
 #include "dExtSimpleModel_c.h"
-#include "TextureTransformer.h"
+#include "dExtAnmTexSRT_c.h"
 #include "SharedFilePtr.h"
 
 // Partial callback interface only. ROM vtables at 0x0213b2c4/0x0213b2e0
@@ -944,7 +944,7 @@ extern "C" void TrmpItem_UpdateMatrix(char *self) {
                               TRMPITEM(self)->mPos.z);
     MulMat4x3Mat4x3(&rotation, &data_020a0e68, &data_020a0e68);
     ((dExtSimpleModel_c *)TRMPITEM(self)->mModel)->mat4x3 = data_020a0e68;
-    ((TextureTransformer *)TRMPITEM(self)->mTexAnim)
+    ((dExtAnmTexSRT_c *)TRMPITEM(self)->mTexAnim)
         ->Update(((dExtSimpleModel_c *)TRMPITEM(self)->mModel)->data);
     ((dExtSimpleModel_c *)TRMPITEM(self)->mModel)->ApplyOpacity(TRMPITEM(self)->mAlpha, 0);
     ((dExtSimpleModel_c *)TRMPITEM(self)->mModel)->Render(&TRMPITEM(self)->mScale);
@@ -963,7 +963,7 @@ extern "C" void TrmpItem_Update(char *item) {
     PMF *state = (PMF *)item;
     (((C *)item)->**state)();
     AddVec3(&TRMPITEM(item)->mPos, &TRMPITEM(item)->mVel, &TRMPITEM(item)->mPos);
-    ((TextureTransformer *)TRMPITEM(item)->mTexAnim)->Advance();
+    ((dExtAnmTexSRT_c *)TRMPITEM(item)->mTexAnim)->Advance();
     TRMPITEM(item)->mPrevPos.x = TRMPITEM(item)->mPos.x;
     TRMPITEM(item)->mPrevPos.y = TRMPITEM(item)->mPos.y;
     TRMPITEM(item)->mPrevPos.z = TRMPITEM(item)->mPos.z;
@@ -1083,8 +1083,8 @@ void TrmpItem_Hide(int *p);
    ROM name carries by-value class parameters (e.g. Fix12<int>), which
    mwccarm passes differently at the call site, so declaring the true
    types breaks the byte match. See notes/mwccarm-codegen.md 6az. */
-extern "C" void _ZN18TextureTransformer7SetFileER8BTA_Filei5Fix12IiEj(void *, BTA_File &, int, int,
-                                                                      unsigned int);
+extern "C" void _ZN15dExtAnmTexSRT_c7SetFileER8BTA_Filei5Fix12IiEj(void *, BTA_File &, int, int,
+                                                                   unsigned int);
 
 extern "C" {
 extern SharedFilePtr sTrmpItemRingAModelFile;
@@ -1109,9 +1109,9 @@ extern "C" void TrmpItem_Load(char *c) {
     ((dExtSimpleModel_c *)TRMPITEM(c)->mModels[0])->SetPolygonID(1);
     ((dExtSimpleModel_c *)TRMPITEM(c)->mModels[1])->SetPolygonID(2);
     ((dExtSimpleModel_c *)TRMPITEM(c)->mModels[2])->SetPolygonID(3);
-    TextureTransformer::Prepare(*(BMD_File *)sTrmpItemRingAModelFile.filePtr, sTrmpItemTextureAnim);
-    _ZN18TextureTransformer7SetFileER8BTA_Filei5Fix12IiEj(
-        (TextureTransformer *)TRMPITEM(c)->mTexAnim, sTrmpItemTextureAnim, 0, 0x1000, 0);
+    dExtAnmTexSRT_c::Prepare(*(BMD_File *)sTrmpItemRingAModelFile.filePtr, sTrmpItemTextureAnim);
+    _ZN15dExtAnmTexSRT_c7SetFileER8BTA_Filei5Fix12IiEj((dExtAnmTexSRT_c *)TRMPITEM(c)->mTexAnim,
+                                                       sTrmpItemTextureAnim, 0, 0x1000, 0);
     TrmpItem_Hide((int *)c);
 }
 }

@@ -6,10 +6,10 @@
  * This is the manager, not daBgSnmBdy_c (body) and not the penguin.
  *
  * deslop leftovers:
- * - TextureSequence::SetFile / dCcAcPos_c::Init / DropShadowRadHeight 6az:
+ * - dExtAnmTexPat_c::SetFile / dCcAcPos_c::Init / DropShadowRadHeight 6az:
  *   InitResources and func_ov072_021208d8 pass Fix12<int> by value
  *   (notes/mwccarm-codegen.md 6az).
- * - InitResources' TextureSequence::Prepare / SetFile read the BMD/BTP
+ * - InitResources' dExtAnmTexPat_c::Prepare / SetFile read the BMD/BTP
  *   through gdaBgSnwmnBigSnowmanHeadModelFile / 02122c50's filePtr.
  * - gdaBgSnwmnBigSnowmanBodyModelFile / 02122c48 / 02122c50 model/BTP handles and
  *   data_ov072_02122c70 cylinder offset are defined at the end of this file.
@@ -35,8 +35,9 @@ enum daBgSnwmn_c_AssetId {
 extern "C" {
 extern int IsStarCollectedInLevel(s8 levelID, int starID);
 void Matrix4x3_FromRotationY(void *, short);
-void _ZN15TextureSequence7SetFileER8BTP_Filei5Fix12IiEj(
-    void *self, void *textureFile, int animation, int speed, u32 flags);
+/* local extern: the matched free-function spelling of SetFile; a member call is pending. */
+void _ZN15dExtAnmTexPat_c7SetFileER8BTP_Fileiit(void *self, void *textureFile, int animation,
+                                                int speed, u32 flags);
 void _ZN10dCcAcPos_c4InitEP8dActor_cRK7Vector35Fix12IiES6_jj(
     void *self, void *actor, const void *offset, int radius, int height,
     u32 flags, u32 unk);
@@ -114,10 +115,10 @@ s32 daBgSnwmn_c::InitResources()
     model = dExtSimpleModel_c::LoadFile(gdaBgSnwmnBigSnowmanBodyModelFile);
     mModel2.SetFile((BMD_File *)model, 1, 1);
 
-    TextureSequence::LoadFile(gdaBgSnwmnBigSnowmanSmileTextureSequenceFile);
-    TextureSequence::Prepare(*(BMD_File *)gdaBgSnwmnBigSnowmanHeadModelFile.filePtr,
+    dExtAnmTexPat_c::LoadFile(gdaBgSnwmnBigSnowmanSmileTextureSequenceFile);
+    dExtAnmTexPat_c::Prepare(*(BMD_File *)gdaBgSnwmnBigSnowmanHeadModelFile.filePtr,
                              *(BTP_File *)gdaBgSnwmnBigSnowmanSmileTextureSequenceFile.filePtr);
-    _ZN15TextureSequence7SetFileER8BTP_Filei5Fix12IiEj(
+    _ZN15dExtAnmTexPat_c7SetFileER8BTP_Fileiit(
         &mTexSeq, gdaBgSnwmnBigSnowmanSmileTextureSequenceFile.filePtr, 0, 0x1000, 0);
 
     if (mShadow.InitCylinder() == 0)

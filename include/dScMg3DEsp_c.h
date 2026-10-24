@@ -6,7 +6,7 @@
  * The factory and the destructor fix the members after the base:
  *   - two Models at 0x4f38 and 0x4f88, 0x50 bytes each
  *   - a dMg3DEspModel_c at 0x4fd8, 0x21c bytes (mEspModel)
- *   - a TextureTransformer at 0x51f4, 0x14 bytes
+ *   - a dExtAnmTexSRT_c at 0x51f4, 0x14 bytes
  *   - this class's own fields from 0x5208 to 0x5558
  * The factory constructs the four in declaration order and the destructor
  * tears them down in reverse, so they could become typed members. They stay
@@ -79,7 +79,7 @@ struct dScMg3DEsp_c : dScMgSingle3DBase_c {
     u8 mModel1[0x50];              /* 0x4f38, a dExtSimpleModel_c */
     u8 mModel2[0x50];              /* 0x4f88, a dExtSimpleModel_c */
     u8 mEspModel[0x21c];           /* 0x4fd8, a dMg3DEspModel_c */
-    u8  mTextureTransformer[0x14]; /* 0x51f4, a TextureTransformer */
+    u8 mTextureTransformer[0x14];  /* 0x51f4, a dExtAnmTexSRT_c */
     Card mCards[5];                /* 0x5208 */
     Row mRows[3];                  /* 0x5280 */
     Slot mSlots[20];               /* 0x52bc */

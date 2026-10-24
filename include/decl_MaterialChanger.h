@@ -20,10 +20,10 @@
 extern "C" {
 #endif
 
-extern void _ZN15MaterialChanger7PrepareER8BMD_FileR8BMA_File(void*, void*);
-extern void _ZN15MaterialChanger7SetFileER8BMA_Filei5Fix12IiEj(void*, void*, int, int, unsigned int);
-extern void *_ZN15MaterialChangerC1Ev(void*);
-
+extern void _ZN17dExtAnmMaterial_c7PrepareER8BMD_FileR8BMA_File(void *, void *);
+extern void _ZN17dExtAnmMaterial_c7SetFileER8BMA_Filei5Fix12IiEj(void *, void *, int, int,
+                                                                 unsigned int);
+extern void *_ZN17dExtAnmMaterial_cC1Ev(void *);
 
 #ifdef __cplusplus
 }

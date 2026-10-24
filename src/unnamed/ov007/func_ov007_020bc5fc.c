@@ -7,7 +7,7 @@ typedef struct Ov007Model {
     void **model; /* 0x00: the ModelComponents; its first word is the BMD file */
     char pad_04[0x24];
     int numTexSeqAnims; /* 0x28 */
-    int *texSeqAnims;   /* 0x2c: BTP_File table (func_02046bbc, TextureSequence) */
+    int *texSeqAnims;   /* 0x2c: BTP_File table (func_02046bbc, dExtAnmTexPat_c) */
     void *texSeqAnim;   /* 0x30 */
 } Ov007Model;
 

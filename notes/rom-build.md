@@ -519,7 +519,7 @@ individually with `match.py` before the link confirmed them:
 | function | source named | ROM uses |
 |---|---|---|
 | `_ZN9daPeach_c6RenderEv` | `CommonModel::Render` | `dExtSimpleModel_c::Render` |
-| `_ZN7daTor_c6RenderEv`, `_ZN14daWater_Ring_c6RenderEv` | `TextureSequence::Update` | `TextureTransformer::Update` |
+| `_ZN7daTor_c6RenderEv`, `_ZN14daWater_Ring_c6RenderEv` | `dExtAnmTexPat_c::Update` | `dExtAnmTexSRT_c::Update` |
 | `_ZN18daObjBkKillerdai_c4KillEv` (then `func_ov079_02126e58`) | `Actor::DisappearPoofDustAt` | `Actor::PoofDustAt` |
 | [func_ov085_0212e778](../src/game/actors/d_a_c_jugem.cpp) | `…ApplyInPlaceToRotationXYZExt` | `…ApplyInPlaceToRotationZXYExt` |
 | [func_ov006_0211a048](../src/minigames/d_s_mg_sound.cpp)(func 17 used to assemble TU), [func_ov006_0211a5ec](../src/minigames/d_s_mg_sound.cpp)(func 29 used to assemble TU) | wrong `data_ov006_*` base | the adjacent one |

@@ -53,9 +53,9 @@ struct System {
 #include "dScMg3DEsp_c.h"
 #include "dMg3DEspModel_c.h"
 #include "dMg3DEspAnimSet_c.h"
-#include "TextureTransformer.h"
-#include "TextureSequence.h"
-#include "MaterialChanger.h"
+#include "dExtAnmTexSRT_c.h"
+#include "dExtAnmTexPat_c.h"
+#include "dExtAnmMaterial_c.h"
 #include "G3X.h"
 #include "Sound.h"
 #include "PlayerInput.h"
@@ -108,9 +108,11 @@ void _ZN15dExtFrameCtrl_c7AdvanceEv(void* a);
 int _ZN15dExtFrameCtrl_c8FinishedEv(void* a);
 /* local extern: the call passes an untyped this, so it cannot use the header method. */
 int _ZNK15dExtFrameCtrl_c12WillHitFrameEi(void* anim, int frame);
-void _ZN15MaterialChanger7SetFileER8BMA_Filei5Fix12IiEj(char *t, void *f, int a, int b, unsigned u);
-void _ZN15TextureSequence7SetFileER8BTP_Filei5Fix12IiEj(void* self, void* btp, int a, int b, u16 d);
-void _ZN18TextureTransformer7SetFileER8BTA_Filei5Fix12IiEj(void* self, void* bta, int a, int b, u16 d);
+void _ZN17dExtAnmMaterial_c7SetFileER8BMA_Filei5Fix12IiEj(char *t, void *f, int a, int b,
+                                                          unsigned u);
+/* local extern: the matched free-function spelling of SetFile; a member call is pending. */
+void _ZN15dExtAnmTexPat_c7SetFileER8BTP_Fileiit(void *self, void *btp, int a, int b, u16 d);
+void _ZN15dExtAnmTexSRT_c7SetFileER8BTA_Filei5Fix12IiEj(void *self, void *bta, int a, int b, u16 d);
 void func_02046208(char* a, int b, int c);
 int func_020179b4(void* r0, void* r1, int r2);
 /* The last four parameters are unsigned short in the real signature;
@@ -172,7 +174,7 @@ extern volatile Matrix4x3 sEsp3DIdentityMtx;
 // @symbol _ZN12dScMg3DEsp_cD0Ev
 dScMg3DEsp_c::~dScMg3DEsp_c()
 {
-    ((TextureTransformer *)mTextureTransformer)->TextureTransformer::~TextureTransformer();
+    ((dExtAnmTexSRT_c *)mTextureTransformer)->dExtAnmTexSRT_c::~dExtAnmTexSRT_c();
     ((dMg3DEspModel_c *)mEspModel)->~dMg3DEspModel_c();
     ((dExtSimpleModel_c *)mModel2)->dExtSimpleModel_c::~dExtSimpleModel_c();
     ((dExtSimpleModel_c *)mModel1)->dExtSimpleModel_c::~dExtSimpleModel_c();
@@ -206,7 +208,7 @@ void dMg3DEspAnimSet_c::Render()
     do {
         if (mActive[i] != 0) {
             ((dExtAnmModel_c *)r5)->mat4x3 = data_020a0e68;
-            ((MaterialChanger*)r4)->Update(*(ModelComponents*)(r5 + 8));
+            ((dExtAnmMaterial_c *)r4)->Update(*(ModelComponents *)(r5 + 8));
             ((Obj_777c*)r5)->m(zero);
         }
         i++;
@@ -233,7 +235,7 @@ void dMg3DEspAnimSet_c::Behavior() {
         int i;
         char *a = self;
         char *b = (char *)mMaterialChangers;
-        /* cc steps by one MaterialChanger: mMaterialChangers[i] grows
+        /* cc steps by one dExtAnmMaterial_c: mMaterialChangers[i] grows
            Behavior from 0xf8 to 0xfc bytes. */
         char *cc = self;
         for (i = 0; i < 3; i++) {
@@ -300,14 +302,14 @@ void dMg3DEspAnimSet_c::InitResources()
     mSpeed = 0x800;
     bmd = (int)dExtSimpleModel_c::LoadFile(gEspHamonModelFile);
     bca = (int)dExtFrameCtrl_c::LoadFile(gEspHamonAnimFile);
-    MaterialChanger::Prepare(*(BMD_File *)bmd, *(BMA_File *)&sEsp3DMaterialAnim);
+    dExtAnmMaterial_c::Prepare(*(BMD_File *)bmd, *(BMA_File *)&sEsp3DMaterialAnim);
     w = o;
     w2 = (char *)mMaterialChangers;
     for (i = 0; i < 3; i++) {
         ((dExtModel_c *)w)->SetFile((BMD_File *)bmd, 1, m1);
         ((dExtAnmModel_c *)w)->SetAnim((BCA_File *)bca, 0x40000000, mSpeed, z1);
-        _ZN15MaterialChanger7SetFileER8BMA_Filei5Fix12IiEj(w2, &sEsp3DMaterialAnim, 0x40000000,
-                                                           mSpeed, z2);
+        _ZN17dExtAnmMaterial_c7SetFileER8BMA_Filei5Fix12IiEj(w2, &sEsp3DMaterialAnim, 0x40000000,
+                                                             mSpeed, z2);
         ((dExtSimpleModel_c *)w)->SetPolygonID((i + 1) & 0xff);
         mActive[i] = 0;
         w += 0x64;
@@ -478,15 +480,15 @@ int dMg3DEspModel_c::InitResources()
     char* c = (char*)this;
     if (func_020179b4(&gEspCardModelFile, (char *)&mModelAnim, 1) == 0)
         return 0;
-    TextureSequence::LoadFile(gEspCardTexSeqFile);
+    dExtAnmTexPat_c::LoadFile(gEspCardTexSeqFile);
     dExtFrameCtrl_c::LoadFile(gEspCardStartAnimFile);
     dExtFrameCtrl_c::LoadFile(gEspCardWaitAnimFile);
     dExtFrameCtrl_c::LoadFile(gEspCardOpenAnimFile);
     dExtFrameCtrl_c::LoadFile(gEspCardOpenWaitAnimFile);
-    TextureSequence::Prepare(**(BMD_File **)((void **)&gEspCardModelFile + 1),
+    dExtAnmTexPat_c::Prepare(**(BMD_File **)((void **)&gEspCardModelFile + 1),
                              **(BTP_File **)((void **)&gEspCardTexSeqFile + 1));
-    _ZN15TextureSequence7SetFileER8BTP_Filei5Fix12IiEj(
-        (char *)&mTextureSequence, *((void **)&gEspCardTexSeqFile + 1), 0, 0x1000, 0);
+    _ZN15dExtAnmTexPat_c7SetFileER8BTP_Fileiit((char *)&mTextureSequence,
+                                               *((void **)&gEspCardTexSeqFile + 1), 0, 0x1000, 0);
     mModelAnim.SetAnim(*((BCA_File **)&gEspCardStartAnimFile + 1), 0x40000000, 0x800, 0);
     mAnimSet.InitResources();
     ResetTransform();
@@ -1489,7 +1491,7 @@ s32 dScMg3DEsp_c::Render()
     mCameraAngle = 0xc00;
     Camera_UpdateMatrices(pad_4660);
     /* dExtSimpleModel_c::data, at +8. Naming the member makes mwcc add the 8 in a separate instruction. */
-    ((TextureTransformer *)mTextureTransformer)->Update(*(ModelComponents *)(mModel1 + 8));
+    ((dExtAnmTexSRT_c *)mTextureTransformer)->Update(*(ModelComponents *)(mModel1 + 8));
     ((dExtSimpleModel_c *)mModel1)->Render(0);
     ((dMg3DEspModel_c *)mEspModel)->Render();
     ((dExtSimpleModel_c *)mModel2)->Render(0);
@@ -1504,7 +1506,7 @@ s32 dScMg3DEsp_c::Behavior()
 {
     (this->*s3DEspRoundTable[mRoundState])();
     UpdateSlots();
-    ((TextureTransformer *)mTextureTransformer)->Advance();
+    ((dExtAnmTexSRT_c *)mTextureTransformer)->Advance();
     ((dMg3DEspModel_c *)mEspModel)->Behavior();
     return 1;
 }
@@ -1541,10 +1543,10 @@ s32 dScMg3DEsp_c::InitResources()
     if (func_020179b4(&gEspIrieModelFile, mModel1, 1) == 0)
         return 0;
 
-    TextureTransformer::Prepare(**(BMD_File **)((void **)&gEspIrieModelFile + 1),
-                                *(BTA_File *)&sEsp3DTextureAnim);
-    _ZN18TextureTransformer7SetFileER8BTA_Filei5Fix12IiEj(mTextureTransformer, &sEsp3DTextureAnim,
-                                                          0, 0x1000, 0);
+    dExtAnmTexSRT_c::Prepare(**(BMD_File **)((void **)&gEspIrieModelFile + 1),
+                             *(BTA_File *)&sEsp3DTextureAnim);
+    _ZN15dExtAnmTexSRT_c7SetFileER8BTA_Filei5Fix12IiEj(mTextureTransformer, &sEsp3DTextureAnim, 0,
+                                                       0x1000, 0);
 
     if (((dMg3DEspModel_c *)mEspModel)->InitResources() == 0)
         return 0;
@@ -1611,7 +1613,7 @@ extern void *_ZN11dScMgBase_cC2Ev(void *p);
 extern void _ZN8Particle10SysTrackerC1Ev(void *);
 extern void *_ZN17dExtSimpleModel_cC1Ev(void *);
 extern void *_ZN15dMg3DEspModel_cC1Ev(void *);
-extern void *_ZN18TextureTransformerC1Ev(void *);
+extern void *_ZN15dExtAnmTexSRT_cC1Ev(void *);
 extern int _ZTV19dScMgSingle3DBase_c[];
 extern int _ZTV12dScMg3DEsp_c[];
 void *dScMg3DEsp_c_classInit(void);
@@ -1630,7 +1632,7 @@ void *dScMg3DEsp_c_classInit(void){
         _ZN17dExtSimpleModel_cC1Ev(((dScMg3DEsp_c *)o)->mModel1);
         _ZN17dExtSimpleModel_cC1Ev(((dScMg3DEsp_c *)o)->mModel2);
         _ZN15dMg3DEspModel_cC1Ev(((dScMg3DEsp_c *)o)->mEspModel);
-        _ZN18TextureTransformerC1Ev(((dScMg3DEsp_c *)o)->mTextureTransformer);
+        _ZN15dExtAnmTexSRT_cC1Ev(((dScMg3DEsp_c *)o)->mTextureTransformer);
     }
     return o;
 }

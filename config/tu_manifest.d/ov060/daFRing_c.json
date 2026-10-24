@@ -9,7 +9,7 @@
     "HISTORY: contiguous linker run: 0x2118cfc..0x21191f4, 6 function(s), from build/tu_map.json (tools/tu_map.py)",
     "class label(s): daFRing_c",
     "module sinit corroboration: 6 sinit(s) / 6 .ctor entries, sinit_vs_tu=ok, corroborated=False (module-wide, NOT narrowed to this one TU -- see notes/tu-reconstruction-pilot-report.md sec 2 for the by-hand narrowing step)",
-    "CLASSINIT TAIL FOLD (2026-10-09): daFRing_c_classInit (0x021191f4..0x02119264) abuts this TU's .text end with no gap and is now inside it, appended last under the file-level #pragma defer_codegen off and spelled `return new daFRing_c;` (operator new 0x218, dActor_c base ctor, _ZTV9daFRing_c vptr store, then dExtAnmModel_c/TextureSequence/MaterialChanger/TextureTransformer twice -- the retired shard's hand-spelled sequence). It builds only this class, for the FIRERING profile; 0x02119264 is the end of ov060 .text."
+    "CLASSINIT TAIL FOLD (2026-10-09): daFRing_c_classInit (0x021191f4..0x02119264) abuts this TU's .text end with no gap and is now inside it, appended last under the file-level #pragma defer_codegen off and spelled `return new daFRing_c;` (operator new 0x218, dActor_c base ctor, _ZTV9daFRing_c vptr store, then dExtAnmModel_c/dExtAnmTexPat_c/dExtAnmMaterial_c/dExtAnmTexSRT_c twice -- the retired shard's hand-spelled sequence). It builds only this class, for the FIRERING profile; 0x02119264 is the end of ov060 .text."
   ],
   "sections": [
     {
@@ -98,7 +98,7 @@
       "address": "0x0211b200",
       "size": "0x8",
       "binding": "STB_GLOBAL",
-      "evidence": "texture-sequence resource handle constructed with file ID 0x385; TextureSequence::LoadFile takes it by address and InitResources reads .words[1]"
+      "evidence": "texture-sequence resource handle constructed with file ID 0x385; dExtAnmTexPat_c::LoadFile takes it by address and InitResources reads .words[1]"
     },
     {
       "symbol": "data_ov060_0211b208",

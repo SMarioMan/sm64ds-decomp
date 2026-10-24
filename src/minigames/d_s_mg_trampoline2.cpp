@@ -22,7 +22,7 @@ enum d_s_mg_trampoline2_AssetId {
  * - Camera 0 is passed as dScMgD3DBase_c.h's pad_466c. Camera 1 (0x4728,
  *   mid-pad_4726) and the factory loop's end (0x47e4) stay raw: their
  *   member spellings move bytes (measured).
- * - dExtSimpleModel_c / TextureTransformer / SysTracker C1/D1 stay mangled (built on
+ * - dExtSimpleModel_c / dExtAnmTexSRT_c / SysTracker C1/D1 stay mangled (built on
  *   raw storage); NewUnkCallback818 takes Fix12 by value, which costs the
  *   caller bytes (notes/mwccarm-codegen.md 6az); the G2 BG getters stay
  *   mangled because decl_common.h's global G2 hides the namespace;
@@ -224,7 +224,7 @@ extern void Trmp2Mario_Construct(void);
 extern void TrmpLine_Reset(void);
 extern void Jump2Popup_ElemCtor(void *object);
 extern void Trmp_Nothing2(void);
-extern void *_ZN18TextureTransformerC1Ev(void *transformer);
+extern void *_ZN15dExtAnmTexSRT_cC1Ev(void *transformer);
 /* local extern: only sibling minigame headers (dScMgAmida_c.h and four
    others) declare it; this TU includes none of them */
 extern void NullDestructor_0203d47c(void);
@@ -317,7 +317,7 @@ extern "C" void *TrmpItem_Construct(char *raw) {
     _ZN17dExtSimpleModel_cC1Ev(((TrmpItem *)raw)->mModels[0]);
     _ZN17dExtSimpleModel_cC1Ev(((TrmpItem *)raw)->mModels[1]);
     _ZN17dExtSimpleModel_cC1Ev(((TrmpItem *)raw)->mModels[2]);
-    _ZN18TextureTransformerC1Ev(((TrmpItem *)raw)->mTexAnim);
+    _ZN15dExtAnmTexSRT_cC1Ev(((TrmpItem *)raw)->mTexAnim);
     /* TrmpItem.h's pad_1a8: five 8-byte elements, role unknown. */
     __cxa_vec_ctor(((TrmpItem *)raw)->pad_1a8, 5, 8, (void *)func_0203d738,
                    (void *)NullDestructor_0203d47c);
@@ -1380,13 +1380,13 @@ extern "C" void Trmp2Spinner_UpdateMatrix(char *raw) {
 extern "C" {
 /* local extern: no header declares it (the include/ hits are comments) */
 extern void __cxa_vec_cleanup(void *a, int b, int c, void *d);
-extern void _ZN18TextureTransformerD1Ev(void *);
+extern void _ZN15dExtAnmTexSRT_cD1Ev(void *);
 /* local extern: D1 is called by entry name; only two scene headers declare it */
 extern void _ZN17dExtSimpleModel_cD1Ev(void *);
 // @symbol Trmp2_DestructJumperModels
 int Trmp2_DestructJumperModels(char *raw) {
     __cxa_vec_cleanup(((TrmpItem *)raw)->pad_1a8, 5, 8, (void *)NullDestructor_0203d47c);
-    _ZN18TextureTransformerD1Ev(((TrmpItem *)raw)->mTexAnim);
+    _ZN15dExtAnmTexSRT_cD1Ev(((TrmpItem *)raw)->mTexAnim);
     _ZN17dExtSimpleModel_cD1Ev(((TrmpItem *)raw)->mModels[2]);
     _ZN17dExtSimpleModel_cD1Ev(((TrmpItem *)raw)->mModels[1]);
     _ZN17dExtSimpleModel_cD1Ev(((TrmpItem *)raw)->mModels[0]);

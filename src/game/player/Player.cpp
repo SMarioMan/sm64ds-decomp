@@ -907,14 +907,15 @@ void Player::InitMetalWario()
 // @symbol _ZN6Player19func_ov002_020bdef0Ev
 extern "C" {
 void Player::func_ov002_020bdef0(){
-    extern int _ZN15TextureSequence6UpdateER15ModelComponents(void*, void*);
-  if(mIsVanish==0) return;
-  _ZN15TextureSequence6UpdateER15ModelComponents(&mTexSeqPlayer[0], &mBodyModels[1]->data);
-  _ZN15TextureSequence6UpdateER15ModelComponents(&mTexSeqPlayer[1], &mHeadModels[1]->data);
-  mTexSeqPlayer[0].currFrame = 0;
-  mTexSeqPlayer[1].currFrame = 0;
-  mIsVanish=0;
-  EndPowerupMusic(0x33);
+    extern int _ZN15dExtAnmTexPat_c6UpdateER15ModelComponents(void *, void *);
+    if (mIsVanish == 0)
+        return;
+    _ZN15dExtAnmTexPat_c6UpdateER15ModelComponents(&mTexSeqPlayer[0], &mBodyModels[1]->data);
+    _ZN15dExtAnmTexPat_c6UpdateER15ModelComponents(&mTexSeqPlayer[1], &mHeadModels[1]->data);
+    mTexSeqPlayer[0].currFrame = 0;
+    mTexSeqPlayer[1].currFrame = 0;
+    mIsVanish = 0;
+    EndPowerupMusic(0x33);
 }
 }
 
@@ -1483,7 +1484,7 @@ extern "C" {
 void Player::SetAnim(u32 animId, int flags, Fix12i speed, u16 startFrame) {
     extern void _ZN15dExtFrameCtrl_c8LoadFileER13SharedFilePtr(void*);
     extern int _ZNK6Player14GetBodyModelIDEjb(void *, u32 a, int b);
-    extern void _ZN15TextureSequence7SetFileER8BTP_Filei5Fix12IiEj(void*, void*, int b, Fix12i c, u32 d);
+    extern void _ZN15dExtAnmTexPat_c7SetFileER8BTP_Fileiit(void *, void *, int b, Fix12i c, u32 d);
     extern u8 data_0209f2d8;
     extern void *data_ov002_020ff480[];
     extern void *data_ov002_020ff2f0[];
@@ -1550,9 +1551,9 @@ void Player::SetAnim(u32 animId, int flags, Fix12i speed, u16 startFrame) {
     sl += (field8 & 3);
     param2 = 0;
     if (((int)sl >> 2) == 1) param2 = 0x40000000;
-    _ZN15TextureSequence7SetFileER8BTP_Filei5Fix12IiEj(
-        &player->mTexSeqBody[field8], ((SharedFilePtr *)data_ov002_020ff2f0[sl])->filePtr, param2,
-        0x1000, 0);
+    _ZN15dExtAnmTexPat_c7SetFileER8BTP_Fileiit(&player->mTexSeqBody[field8],
+                                               ((SharedFilePtr *)data_ov002_020ff2f0[sl])->filePtr,
+                                               param2, 0x1000, 0);
 
     player->mCharFileBase = newVal;
 }
@@ -23560,7 +23561,7 @@ int Player::Render()
     extern void _ZN11dExtModel_c12ApplyOpacityEjj(void *self, unsigned int opacity,
                                                   unsigned int unused);
     extern void _ZN17dExtSimpleModel_c6RenderEPK7Vector3(void *self, void *pos);
-    extern void _ZN15TextureSequence6UpdateER15ModelComponents(void* self, void* mc);
+    extern void _ZN15dExtAnmTexPat_c6UpdateER15ModelComponents(void *self, void *mc);
     extern void Matrix4x3_FromTranslation(void* m, int x, int y, int z);
     extern void Matrix4x3_ApplyInPlaceToRotationZ(void* m, int ang);
     extern void MulMat4x3Mat4x3(void* a, void* b, void* c);
@@ -23607,7 +23608,7 @@ int Player::Render()
             }
             _ZN17dExtSimpleModel_c6RenderEPK7Vector3(bodyMdl, &mScale);
             if (param1 == 1) {
-                _ZN15TextureSequence6UpdateER15ModelComponents(&mTexSeqPlayer[0],
+                _ZN15dExtAnmTexPat_c6UpdateER15ModelComponents(&mTexSeqPlayer[0],
                                                                &mBodyModels[1]->data);
                 mTexSeqPlayer[0].currFrame = mPlayerTexFrame << 12;
             }
@@ -23659,12 +23660,12 @@ int Player::Render()
                     ((VObj *)(char *)mHeadModels[i])->m14((char *)&mScaleX);
                 }
                 if (param1 == 1) {
-                    _ZN15TextureSequence6UpdateER15ModelComponents(&mTexSeqPlayer[1],
+                    _ZN15dExtAnmTexPat_c6UpdateER15ModelComponents(&mTexSeqPlayer[1],
                                                                    &mHeadModels[1]->data);
                     mTexSeqPlayer[1].currFrame = mPlayerTexFrame << 12;
                 }
                 if (func_ov002_020bea7c() == 0) {
-                    _ZN15TextureSequence6UpdateER15ModelComponents(&mTexSeqBody[mBodyModelId],
+                    _ZN15dExtAnmTexPat_c6UpdateER15ModelComponents(&mTexSeqBody[mBodyModelId],
                                                                    &mHeadModels[i]->data);
                 }
                 func_ov002_020e3e00((char *)mHeadModels[i], &mScale, mOpacity);
@@ -24671,7 +24672,7 @@ void func_ov002_020e5948(void* arg0)
     typedef struct OneUpLogoModelFile OneUpLogoModelFile;
     extern void _ZN15dExtFrameCtrl_c8LoadFileER13SharedFilePtr(void* sfp);
     extern void *_ZN17dExtSimpleModel_c8LoadFileER13SharedFilePtr(void *sfp);
-    extern void _ZN15TextureSequence8LoadFileER13SharedFilePtr(void* sfp);
+    extern void _ZN15dExtAnmTexPat_c8LoadFileER13SharedFilePtr(void *sfp);
     extern void LoadSilverStarAndNumber(void);
     extern int _ZN11dExtModel_c7SetFileEP8BMD_Fileii(void *thiz, void *bmd, s32 a, s32 b);
     extern void func_ov002_020bec2c(void* p);
@@ -24679,8 +24680,9 @@ void func_ov002_020e5948(void* arg0)
     extern void func_ov002_020e6780(void* p);
     extern void _ZN17dExtShadowModel_c12InitCylinderEv(void* thiz);
     extern s32 _ZNK6Player14GetBodyModelIDEjb(void* thiz, u32 a, s32 b);
-    extern void _ZN15TextureSequence7PrepareER8BMD_FileR8BTP_File(void* bmd, void* btp);
-    extern void _ZN15TextureSequence7SetFileER8BTP_Filei5Fix12IiEj(void* thiz, void* f, s32 i, Fix12i fx, u32 j);
+    extern void _ZN15dExtAnmTexPat_c7PrepareER8BMD_FileR8BTP_File(void *bmd, void *btp);
+    extern void _ZN15dExtAnmTexPat_c7SetFileER8BTP_Fileiit(void *thiz, void *f, s32 i, Fix12i fx,
+                                                           u32 j);
     extern s8 data_0209f310[];
     extern u8 data_0209f2d8;
     extern s8 data_0209f2f8;
@@ -24828,32 +24830,32 @@ void func_ov002_020e5948(void* arg0)
     }
     }
 
-    _ZN15TextureSequence8LoadFileER13SharedFilePtr(data_ov002_0210e500);
-    _ZN15TextureSequence8LoadFileER13SharedFilePtr(data_ov002_0210e1c8);
-    _ZN15TextureSequence8LoadFileER13SharedFilePtr(data_ov002_0210e770);
-    _ZN15TextureSequence8LoadFileER13SharedFilePtr(data_ov002_0210e230);
-    _ZN15TextureSequence8LoadFileER13SharedFilePtr(data_ov002_0210e288);
-    _ZN15TextureSequence8LoadFileER13SharedFilePtr(data_ov002_0210e478);
-    _ZN15TextureSequence8LoadFileER13SharedFilePtr(data_ov002_0210e9d0);
-    _ZN15TextureSequence8LoadFileER13SharedFilePtr(data_ov002_0210ea10);
-    _ZN15TextureSequence8LoadFileER13SharedFilePtr(data_ov002_0210e538);
-    _ZN15TextureSequence8LoadFileER13SharedFilePtr(data_ov002_0210eac8);
-    _ZN15TextureSequence8LoadFileER13SharedFilePtr(data_ov002_0210e898);
-    _ZN15TextureSequence8LoadFileER13SharedFilePtr(data_ov002_0210e9e8);
-    _ZN15TextureSequence8LoadFileER13SharedFilePtr(data_ov002_0210eba8);
-    _ZN15TextureSequence8LoadFileER13SharedFilePtr(data_ov002_0210eb70);
-    _ZN15TextureSequence8LoadFileER13SharedFilePtr(data_ov002_0210eaf0);
-    _ZN15TextureSequence8LoadFileER13SharedFilePtr(data_ov002_0210e640);
-    _ZN15TextureSequence8LoadFileER13SharedFilePtr(data_ov002_0210e670);
-    _ZN15TextureSequence8LoadFileER13SharedFilePtr(data_ov002_0210e680);
-    _ZN15TextureSequence8LoadFileER13SharedFilePtr(data_ov002_0210e438);
-    _ZN15TextureSequence8LoadFileER13SharedFilePtr(data_ov002_0210e3b0);
-    _ZN15TextureSequence8LoadFileER13SharedFilePtr(data_ov002_0210e3c8);
-    _ZN15TextureSequence8LoadFileER13SharedFilePtr(data_ov002_0210e408);
-    _ZN15TextureSequence8LoadFileER13SharedFilePtr(data_ov002_0210e400);
-    _ZN15TextureSequence8LoadFileER13SharedFilePtr(data_ov002_0210ecb8);
-    _ZN15TextureSequence8LoadFileER13SharedFilePtr(data_ov002_0210e8d0);
-    _ZN15TextureSequence8LoadFileER13SharedFilePtr(data_ov002_0210ebd8);
+    _ZN15dExtAnmTexPat_c8LoadFileER13SharedFilePtr(data_ov002_0210e500);
+    _ZN15dExtAnmTexPat_c8LoadFileER13SharedFilePtr(data_ov002_0210e1c8);
+    _ZN15dExtAnmTexPat_c8LoadFileER13SharedFilePtr(data_ov002_0210e770);
+    _ZN15dExtAnmTexPat_c8LoadFileER13SharedFilePtr(data_ov002_0210e230);
+    _ZN15dExtAnmTexPat_c8LoadFileER13SharedFilePtr(data_ov002_0210e288);
+    _ZN15dExtAnmTexPat_c8LoadFileER13SharedFilePtr(data_ov002_0210e478);
+    _ZN15dExtAnmTexPat_c8LoadFileER13SharedFilePtr(data_ov002_0210e9d0);
+    _ZN15dExtAnmTexPat_c8LoadFileER13SharedFilePtr(data_ov002_0210ea10);
+    _ZN15dExtAnmTexPat_c8LoadFileER13SharedFilePtr(data_ov002_0210e538);
+    _ZN15dExtAnmTexPat_c8LoadFileER13SharedFilePtr(data_ov002_0210eac8);
+    _ZN15dExtAnmTexPat_c8LoadFileER13SharedFilePtr(data_ov002_0210e898);
+    _ZN15dExtAnmTexPat_c8LoadFileER13SharedFilePtr(data_ov002_0210e9e8);
+    _ZN15dExtAnmTexPat_c8LoadFileER13SharedFilePtr(data_ov002_0210eba8);
+    _ZN15dExtAnmTexPat_c8LoadFileER13SharedFilePtr(data_ov002_0210eb70);
+    _ZN15dExtAnmTexPat_c8LoadFileER13SharedFilePtr(data_ov002_0210eaf0);
+    _ZN15dExtAnmTexPat_c8LoadFileER13SharedFilePtr(data_ov002_0210e640);
+    _ZN15dExtAnmTexPat_c8LoadFileER13SharedFilePtr(data_ov002_0210e670);
+    _ZN15dExtAnmTexPat_c8LoadFileER13SharedFilePtr(data_ov002_0210e680);
+    _ZN15dExtAnmTexPat_c8LoadFileER13SharedFilePtr(data_ov002_0210e438);
+    _ZN15dExtAnmTexPat_c8LoadFileER13SharedFilePtr(data_ov002_0210e3b0);
+    _ZN15dExtAnmTexPat_c8LoadFileER13SharedFilePtr(data_ov002_0210e3c8);
+    _ZN15dExtAnmTexPat_c8LoadFileER13SharedFilePtr(data_ov002_0210e408);
+    _ZN15dExtAnmTexPat_c8LoadFileER13SharedFilePtr(data_ov002_0210e400);
+    _ZN15dExtAnmTexPat_c8LoadFileER13SharedFilePtr(data_ov002_0210ecb8);
+    _ZN15dExtAnmTexPat_c8LoadFileER13SharedFilePtr(data_ov002_0210e8d0);
+    _ZN15dExtAnmTexPat_c8LoadFileER13SharedFilePtr(data_ov002_0210ebd8);
 
     {
         s32 mode;
@@ -24864,50 +24866,50 @@ void func_ov002_020e5948(void* arg0)
             _ZN17dExtSimpleModel_c8LoadFileER13SharedFilePtr(data_ov002_0210d9a8);
             _ZN17dExtSimpleModel_c8LoadFileER13SharedFilePtr(&data_ov002_02110aa4);
             _ZN15dExtFrameCtrl_c8LoadFileER13SharedFilePtr(data_ov002_0210e588);
-            _ZN15TextureSequence8LoadFileER13SharedFilePtr(data_ov002_0210e7e8);
-            _ZN15TextureSequence8LoadFileER13SharedFilePtr(data_ov002_0210e450);
-            _ZN15TextureSequence8LoadFileER13SharedFilePtr(data_ov002_0210e788);
-            _ZN15TextureSequence8LoadFileER13SharedFilePtr(data_ov002_0210e1e8);
-            _ZN15TextureSequence8LoadFileER13SharedFilePtr(data_ov002_0210e1e0);
-            _ZN15TextureSequence8LoadFileER13SharedFilePtr(data_ov002_0210e4d0);
-            _ZN15TextureSequence8LoadFileER13SharedFilePtr(data_ov002_0210e4e8);
-            _ZN15TextureSequence8LoadFileER13SharedFilePtr(data_ov002_0210e1d0);
-            _ZN15TextureSequence8LoadFileER13SharedFilePtr(data_ov002_0210e800);
-            _ZN15TextureSequence8LoadFileER13SharedFilePtr(data_ov002_0210e4b8);
-            _ZN15TextureSequence8LoadFileER13SharedFilePtr(data_ov002_0210e270);
-            _ZN15TextureSequence8LoadFileER13SharedFilePtr(data_ov002_0210e458);
-            _ZN15TextureSequence8LoadFileER13SharedFilePtr(data_ov002_0210ea70);
-            _ZN15TextureSequence8LoadFileER13SharedFilePtr(data_ov002_0210e540);
-            _ZN15TextureSequence8LoadFileER13SharedFilePtr(data_ov002_0210e8e8);
-            _ZN15TextureSequence8LoadFileER13SharedFilePtr(data_ov002_0210eca8);
-            _ZN15TextureSequence8LoadFileER13SharedFilePtr(data_ov002_0210ec98);
-            _ZN15TextureSequence8LoadFileER13SharedFilePtr(data_ov002_0210e600);
-            _ZN15TextureSequence8LoadFileER13SharedFilePtr(data_ov002_0210ea88);
-            _ZN15TextureSequence8LoadFileER13SharedFilePtr(data_ov002_0210e910);
-            _ZN15TextureSequence8LoadFileER13SharedFilePtr(data_ov002_0210e460);
-            _ZN15TextureSequence8LoadFileER13SharedFilePtr(data_ov002_0210e2f0);
-            _ZN15TextureSequence8LoadFileER13SharedFilePtr(data_ov002_0210e958);
-            _ZN15TextureSequence8LoadFileER13SharedFilePtr(data_ov002_0210eb38);
-            _ZN15TextureSequence8LoadFileER13SharedFilePtr(data_ov002_0210e660);
-            _ZN15TextureSequence8LoadFileER13SharedFilePtr(data_ov002_0210ea30);
-            _ZN15TextureSequence8LoadFileER13SharedFilePtr(data_ov002_0210e3e8);
-            _ZN15TextureSequence8LoadFileER13SharedFilePtr(data_ov002_0210eb90);
-            _ZN15TextureSequence8LoadFileER13SharedFilePtr(data_ov002_0210e6b8);
-            _ZN15TextureSequence8LoadFileER13SharedFilePtr(data_ov002_0210e620);
-            _ZN15TextureSequence8LoadFileER13SharedFilePtr(data_ov002_0210e6a0);
-            _ZN15TextureSequence8LoadFileER13SharedFilePtr(data_ov002_0210eb58);
-            _ZN15TextureSequence8LoadFileER13SharedFilePtr(data_ov002_0210e3e0);
-            _ZN15TextureSequence8LoadFileER13SharedFilePtr(data_ov002_0210eb10);
-            _ZN15TextureSequence8LoadFileER13SharedFilePtr(data_ov002_0210e708);
-            _ZN15TextureSequence8LoadFileER13SharedFilePtr(data_ov002_0210ebc8);
-            _ZN15TextureSequence8LoadFileER13SharedFilePtr(data_ov002_0210e6e0);
-            _ZN15TextureSequence8LoadFileER13SharedFilePtr(data_ov002_0210e430);
-            _ZN15TextureSequence8LoadFileER13SharedFilePtr(data_ov002_0210ec40);
-            _ZN15TextureSequence8LoadFileER13SharedFilePtr(data_ov002_0210e738);
-            _ZN15TextureSequence8LoadFileER13SharedFilePtr(data_ov002_0210e250);
-            _ZN15TextureSequence8LoadFileER13SharedFilePtr(data_ov002_0210ec10);
-            _ZN15TextureSequence8LoadFileER13SharedFilePtr(data_ov002_0210ec00);
-            _ZN15TextureSequence8LoadFileER13SharedFilePtr(data_ov002_0210e728);
+            _ZN15dExtAnmTexPat_c8LoadFileER13SharedFilePtr(data_ov002_0210e7e8);
+            _ZN15dExtAnmTexPat_c8LoadFileER13SharedFilePtr(data_ov002_0210e450);
+            _ZN15dExtAnmTexPat_c8LoadFileER13SharedFilePtr(data_ov002_0210e788);
+            _ZN15dExtAnmTexPat_c8LoadFileER13SharedFilePtr(data_ov002_0210e1e8);
+            _ZN15dExtAnmTexPat_c8LoadFileER13SharedFilePtr(data_ov002_0210e1e0);
+            _ZN15dExtAnmTexPat_c8LoadFileER13SharedFilePtr(data_ov002_0210e4d0);
+            _ZN15dExtAnmTexPat_c8LoadFileER13SharedFilePtr(data_ov002_0210e4e8);
+            _ZN15dExtAnmTexPat_c8LoadFileER13SharedFilePtr(data_ov002_0210e1d0);
+            _ZN15dExtAnmTexPat_c8LoadFileER13SharedFilePtr(data_ov002_0210e800);
+            _ZN15dExtAnmTexPat_c8LoadFileER13SharedFilePtr(data_ov002_0210e4b8);
+            _ZN15dExtAnmTexPat_c8LoadFileER13SharedFilePtr(data_ov002_0210e270);
+            _ZN15dExtAnmTexPat_c8LoadFileER13SharedFilePtr(data_ov002_0210e458);
+            _ZN15dExtAnmTexPat_c8LoadFileER13SharedFilePtr(data_ov002_0210ea70);
+            _ZN15dExtAnmTexPat_c8LoadFileER13SharedFilePtr(data_ov002_0210e540);
+            _ZN15dExtAnmTexPat_c8LoadFileER13SharedFilePtr(data_ov002_0210e8e8);
+            _ZN15dExtAnmTexPat_c8LoadFileER13SharedFilePtr(data_ov002_0210eca8);
+            _ZN15dExtAnmTexPat_c8LoadFileER13SharedFilePtr(data_ov002_0210ec98);
+            _ZN15dExtAnmTexPat_c8LoadFileER13SharedFilePtr(data_ov002_0210e600);
+            _ZN15dExtAnmTexPat_c8LoadFileER13SharedFilePtr(data_ov002_0210ea88);
+            _ZN15dExtAnmTexPat_c8LoadFileER13SharedFilePtr(data_ov002_0210e910);
+            _ZN15dExtAnmTexPat_c8LoadFileER13SharedFilePtr(data_ov002_0210e460);
+            _ZN15dExtAnmTexPat_c8LoadFileER13SharedFilePtr(data_ov002_0210e2f0);
+            _ZN15dExtAnmTexPat_c8LoadFileER13SharedFilePtr(data_ov002_0210e958);
+            _ZN15dExtAnmTexPat_c8LoadFileER13SharedFilePtr(data_ov002_0210eb38);
+            _ZN15dExtAnmTexPat_c8LoadFileER13SharedFilePtr(data_ov002_0210e660);
+            _ZN15dExtAnmTexPat_c8LoadFileER13SharedFilePtr(data_ov002_0210ea30);
+            _ZN15dExtAnmTexPat_c8LoadFileER13SharedFilePtr(data_ov002_0210e3e8);
+            _ZN15dExtAnmTexPat_c8LoadFileER13SharedFilePtr(data_ov002_0210eb90);
+            _ZN15dExtAnmTexPat_c8LoadFileER13SharedFilePtr(data_ov002_0210e6b8);
+            _ZN15dExtAnmTexPat_c8LoadFileER13SharedFilePtr(data_ov002_0210e620);
+            _ZN15dExtAnmTexPat_c8LoadFileER13SharedFilePtr(data_ov002_0210e6a0);
+            _ZN15dExtAnmTexPat_c8LoadFileER13SharedFilePtr(data_ov002_0210eb58);
+            _ZN15dExtAnmTexPat_c8LoadFileER13SharedFilePtr(data_ov002_0210e3e0);
+            _ZN15dExtAnmTexPat_c8LoadFileER13SharedFilePtr(data_ov002_0210eb10);
+            _ZN15dExtAnmTexPat_c8LoadFileER13SharedFilePtr(data_ov002_0210e708);
+            _ZN15dExtAnmTexPat_c8LoadFileER13SharedFilePtr(data_ov002_0210ebc8);
+            _ZN15dExtAnmTexPat_c8LoadFileER13SharedFilePtr(data_ov002_0210e6e0);
+            _ZN15dExtAnmTexPat_c8LoadFileER13SharedFilePtr(data_ov002_0210e430);
+            _ZN15dExtAnmTexPat_c8LoadFileER13SharedFilePtr(data_ov002_0210ec40);
+            _ZN15dExtAnmTexPat_c8LoadFileER13SharedFilePtr(data_ov002_0210e738);
+            _ZN15dExtAnmTexPat_c8LoadFileER13SharedFilePtr(data_ov002_0210e250);
+            _ZN15dExtAnmTexPat_c8LoadFileER13SharedFilePtr(data_ov002_0210ec10);
+            _ZN15dExtAnmTexPat_c8LoadFileER13SharedFilePtr(data_ov002_0210ec00);
+            _ZN15dExtAnmTexPat_c8LoadFileER13SharedFilePtr(data_ov002_0210e728);
         }
     }
 
@@ -25036,27 +25038,29 @@ void func_ov002_020e5948(void* arg0)
             texseq = player->mTexSeqBody;
             do {
                 entry = data_ov002_020ff2f0[outer + k];
-                _ZN15TextureSequence7PrepareER8BMD_FileR8BTP_File(
+                _ZN15dExtAnmTexPat_c7PrepareER8BMD_FileR8BTP_File(
                     ((SharedFilePtr *)data_ov002_0210a69c[k])->filePtr,
                     ((SharedFilePtr *)entry)->filePtr);
                 if (n == 0x18) {
-                    _ZN15TextureSequence7SetFileER8BTP_Filei5Fix12IiEj(
+                    _ZN15dExtAnmTexPat_c7SetFileER8BTP_Fileiit(
                         texseq, ((SharedFilePtr *)entry)->filePtr, 0, 0x1000, 0);
                 }
                 k++;
-                texseq = (TextureSequence *)texseq + 1;
+                texseq = (dExtAnmTexPat_c *)texseq + 1;
             } while (k < 4);
             n++;
             outer += 4;
         } while (n < 0x19);
     }
 
-    _ZN15TextureSequence7PrepareER8BMD_FileR8BTP_File((void*)data_ov002_0210ebb8[1], (void*)data_ov002_0210e8d0[1]);
-    _ZN15TextureSequence7SetFileER8BTP_Filei5Fix12IiEj(
-        player->mTexSeqPlayer, (void *)data_ov002_0210e8d0[1], 0, 0x1000, 0);
-    _ZN15TextureSequence7PrepareER8BMD_FileR8BTP_File((void*)data_ov002_0210eb20[1], (void*)data_ov002_0210ebd8[1]);
-    _ZN15TextureSequence7SetFileER8BTP_Filei5Fix12IiEj(
-        &player->mTexSeqPlayer[1], (void *)data_ov002_0210ebd8[1], 0, 0x1000, 0);
+    _ZN15dExtAnmTexPat_c7PrepareER8BMD_FileR8BTP_File((void *)data_ov002_0210ebb8[1],
+                                                      (void *)data_ov002_0210e8d0[1]);
+    _ZN15dExtAnmTexPat_c7SetFileER8BTP_Fileiit(player->mTexSeqPlayer,
+                                               (void *)data_ov002_0210e8d0[1], 0, 0x1000, 0);
+    _ZN15dExtAnmTexPat_c7PrepareER8BMD_FileR8BTP_File((void *)data_ov002_0210eb20[1],
+                                                      (void *)data_ov002_0210ebd8[1]);
+    _ZN15dExtAnmTexPat_c7SetFileER8BTP_Fileiit(&player->mTexSeqPlayer[1],
+                                               (void *)data_ov002_0210ebd8[1], 0, 0x1000, 0);
 }
 }
 #pragma pop
@@ -25282,10 +25286,10 @@ extern int data_ov002_0210a83c[];
 void *_ZN8dActor_cC2Ev(void*);
 void *_ZN14dExtAnmModel_cC1Ev(void *);
 void __cxa_vec_ctor(void*,int,int,void*,void*);
-void *_ZN15TextureSequenceC1Ev(void*);
-void _ZN15TextureSequenceD1Ev(void*);
-void *_ZN15MaterialChangerC1Ev(void*);
-void _ZN15MaterialChangerD1Ev(void*);
+void *_ZN15dExtAnmTexPat_cC1Ev(void *);
+void _ZN15dExtAnmTexPat_cD1Ev(void *);
+void *_ZN17dExtAnmMaterial_cC1Ev(void *);
+void _ZN17dExtAnmMaterial_cD1Ev(void *);
 void *_ZN17dExtShadowModel_cC1Ev(void*);
 void *_ZN10dCcAcPos_cC1Ev(void*);
 void *_ZN10dBgCh_ActrC1Ev(void*);
@@ -25298,12 +25302,12 @@ void* _ZN6PlayerC1Ev(void* c){
     *(int *)p = (int)data_ov002_0210a83c;
     _ZN14dExtAnmModel_cC1Ev(r4 + 0x14);
     _ZN14dExtAnmModel_cC1Ev(r4 + 0x98);
-    __cxa_vec_ctor(r4 + 0x100, 4, 0x14, (void *)_ZN15TextureSequenceC1Ev,
-                   (void *)_ZN15TextureSequenceD1Ev);
-    __cxa_vec_ctor(r4 + 0x150, 2, 0x14, (void *)_ZN15MaterialChangerC1Ev,
-                   (void *)_ZN15MaterialChangerD1Ev);
-    __cxa_vec_ctor(r4 + 0x178, 2, 0x14, (void *)_ZN15TextureSequenceC1Ev,
-                   (void *)_ZN15TextureSequenceD1Ev);
+    __cxa_vec_ctor(r4 + 0x100, 4, 0x14, (void *)_ZN15dExtAnmTexPat_cC1Ev,
+                   (void *)_ZN15dExtAnmTexPat_cD1Ev);
+    __cxa_vec_ctor(r4 + 0x150, 2, 0x14, (void *)_ZN17dExtAnmMaterial_cC1Ev,
+                   (void *)_ZN17dExtAnmMaterial_cD1Ev);
+    __cxa_vec_ctor(r4 + 0x178, 2, 0x14, (void *)_ZN15dExtAnmTexPat_cC1Ev,
+                   (void *)_ZN15dExtAnmTexPat_cD1Ev);
     _ZN17dExtShadowModel_cC1Ev(&p->mShadowModel);
     _ZN10dCcAcPos_cC1Ev(&p->mdCcAcPos_c);
     _ZN10dCcAcPos_cC1Ev(&p->mAttackClsn);

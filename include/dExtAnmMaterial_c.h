@@ -1,20 +1,20 @@
-#ifndef MATERIALCHANGER_H
-#define MATERIALCHANGER_H
+#ifndef DEXTANMMATERIAL_C_H
+#define DEXTANMMATERIAL_C_H
 
 #include "types.h"
 #include "dExtFrameCtrl_c.h"
 #include "math/Fix12.h"
 
-/* dExtFrameCtrl_c child that drives BMA-file playback, vtable _ZTV15MaterialChanger at 0x0208e7f4:
+/* dExtFrameCtrl_c child that drives BMA-file playback, vtable _ZTV17dExtAnmMaterial_c at 0x0208e7f4:
  * two slots, the destructor pair, nothing else. Update is a plain method;
  * Prepare is static, for the reason set out below.
  *
  * THE DESTRUCTOR IS DECLARED FIRST AND D1 IS A REAL METHOD -- see
  * include/dExtModel_c.h for the key-function rule and the objisolate exemption
- * to it. One ~MaterialChanger() emits D0 and D1 together; the whole class
- * folds into src/engine/model/MaterialChanger.cpp.
+ * to it. One ~dExtAnmMaterial_c() emits D0 and D1 together; the whole class
+ * folds into src/engine/model/d_ext_anm_material.cpp.
  *
- * PREPARE IS STATIC, on exactly the evidence set out in TextureSequence.h for
+ * PREPARE IS STATIC, on exactly the evidence set out in dExtAnmTexPat_c.h for
  * the sibling veneer. Its ROM body is a 0xc long-call veneer (ldr ip, [pc];
  * bx ip; .word func_020470e8) that shuffles no arguments, and func_020470e8
  * reads only r0 and r1:
@@ -35,15 +35,15 @@
 struct ModelComponents;
 struct BMD_File;
 struct BMA_File { u16 numFrames; };
-struct MaterialChanger : dExtFrameCtrl_c {
+struct dExtAnmMaterial_c : dExtFrameCtrl_c {
     BMA_File *file;           /* 0x10 */
 
     /* --- vtable: the destructor pair only. --- */
-    virtual ~MaterialChanger();                       /* slots 0 (D1), 1 (D0) */
+    virtual ~dExtAnmMaterial_c(); /* slots 0 (D1), 1 (D0) */
 
-    /* DEFINED in the promoted TU -- one MaterialChanger() emits C1 (and a
+    /* DEFINED in the promoted TU -- one dExtAnmMaterial_c() emits C1 (and a
        deadstripped C2 sibling); see notes/ctor-migration.md section 2. */
-    MaterialChanger();
+    dExtAnmMaterial_c();
 
     /* --- non-virtual --- */
     void Update(ModelComponents &model);
@@ -56,7 +56,7 @@ struct MaterialChanger : dExtFrameCtrl_c {
 
 #ifndef SM64DS_PLATFORM_PC
 /* ROM layout under mwccarm; host ABI divergence is tracked separately. */
-typedef char MaterialChanger_size_must_be_0x14[sizeof(MaterialChanger) == 0x14 ? 1 : -1];
+typedef char dExtAnmMaterial_c_size_must_be_0x14[sizeof(dExtAnmMaterial_c) == 0x14 ? 1 : -1];
 #endif
 
 #endif /* __cplusplus */

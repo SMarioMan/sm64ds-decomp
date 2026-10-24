@@ -3,7 +3,7 @@
 
 #include "types.h"
 #include "dBgActor_c.h"
-#include "TextureTransformer.h"
+#include "dExtAnmTexSRT_c.h"
 
 extern "C" void *_ZN7fBase_cnwEj(unsigned size);
 
@@ -20,7 +20,7 @@ extern "C" void *_ZN7fBase_cnwEj(unsigned size);
  *                           (InitResources, 0x021127f0).
  *   g_profile_TD_WATER      ov032 0x02113980
  *   size  0x334             the factory's own literal: dBgActor_c's 0x320
- *                           plus TextureTransformer at 0x320 (0x14 bytes).
+ *                           plus dExtAnmTexSRT_c at 0x320 (0x14 bytes).
  * Ugly RTTI name is final. Historical alias: HugeWater.
  *
  * THE VTABLE was diffed slot by slot against _ZTV10dBgActor_c. Only the
@@ -37,7 +37,7 @@ struct daObjTdWater_c : dBgActor_c {
     /* THIS CLASS'S OWN. InitResources hands it the BTA at ov032 0x02112f64 and
        Behavior sets its rate to 0x1000 and advances it every frame -- that is
        the whole scroll. */
-    TextureTransformer mTextureTransformer;    /* 0x320 */
+    dExtAnmTexSRT_c mTextureTransformer; /* 0x320 */
 
     /* MEASURED -- INLINE ON PURPOSE. The class TU is the only place these
        two are emitted; with the body out of line mwcc emits D0 ahead of D1

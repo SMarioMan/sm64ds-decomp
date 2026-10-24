@@ -7,7 +7,7 @@
   "boundary_confidence": "medium",
   "boundary_evidence": [
     "Contiguous linker run arm9:0x020458e0..0x020468a0.",
-    "TOP EDGE: func_020458a8 ends at 0x020458e0. BOTTOM EDGE: TextureSequence::UpdateFileOffsets begins at 0x020468a0 and is the next file, not this one.",
+    "TOP EDGE: func_020458a8 ends at 0x020458e0. BOTTOM EDGE: dExtAnmTexPat_c::UpdateFileOffsets begins at 0x020468a0 and is the next file, not this one.",
     "Separate from src/engine/model/d_ext_simple_model.cpp (0x02016b78..0x02016df8): the two runs are not contiguous. The file name is the tree class dExtSimpleModel_c plus the numeric suffix already used for a second translation unit."
   ],
   "sections": [

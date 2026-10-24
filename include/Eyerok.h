@@ -18,7 +18,7 @@
  *     dExtBlendAnmModel_c     0x360 + 0x70 = 0x3d0
  *     dExtSimpleModel_c              0x3d0 + 0x50 = 0x420
  *     dExtShadowModel_c  0x420 + 0x28 = 0x448
- *     TextureSequence    0x448 + 0x14 = 0x45c
+ *     dExtAnmTexPat_c    0x448 + 0x14 = 0x45c
  *
  * 0x45c..0x4d6 is a run of individually evidenced scalars. At 0x4dc,
  * Vector3[0x14] (0xc == sizeof(Vector3)) -- destroyed with
@@ -51,7 +51,7 @@
 #include "dCcAcPos_c.h"
 #include "dExtBlendAnmModel_c.h"
 #include "dExtShadowModel_c.h"
-#include "TextureSequence.h"
+#include "dExtAnmTexPat_c.h"
 
 /* Defined in d_a_iwante.cpp: the enter/run pointer-to-member pair. */
 struct EyerokState;
@@ -61,7 +61,7 @@ struct Eyerok : dBgActor_c {
     dExtBlendAnmModel_c mBlendModelAnim;                    /* 0x360 */
     dExtSimpleModel_c mModel2;                              /* 0x3d0 */
     dExtShadowModel_c mShadowModel;                         /* 0x420 */
-    TextureSequence mTextureSequence;                       /* 0x448 */
+    dExtAnmTexPat_c mTextureSequence;                       /* 0x448 */
     /* Drop-shadow matrix, flat words. A Matrix4x3 member would run another
        ~Vector3 from ~Eyerok. */
     s32 mShadowMtx[12];                                     /* 0x45c */

@@ -19,7 +19,7 @@ struct System {
  *   InitResources walk segment rows through char* bases. Indexing
  *   mSegmentPos[seg] / &mModelAnims[i].mat4x3 changes those sizes, and
  *   UpdateSegments' NormalizeVec3IfNonZero relocation moves with them.
- * - func_ov002_020c51d0 is ov002's. dExtAnmModel_c::SetAnim, TextureSequence::SetFile,
+ * - func_ov002_020c51d0 is ov002's. dExtAnmModel_c::SetAnim, dExtAnmTexPat_c::SetFile,
  *   dCcAcPos_c::Init, dBgCh_Actr::Init, Player::Hurt and Particle::System::New
  *   stay mangled (Fix12<int> by value).
  */
@@ -136,7 +136,8 @@ extern void func_020092c4(void *arg0, void *out, void *target);
 extern u32 data_ov034_02113828[];
 extern s16 data_02082214[];
 extern void *data_0209f318;
-extern void _ZN15TextureSequence7SetFileER8BTP_Filei5Fix12IiEj(void *ts, void *btp, int i, int fix, u32 j);
+/* local extern: the matched free-function spelling of SetFile; a member call is pending. */
+extern void _ZN15dExtAnmTexPat_c7SetFileER8BTP_Fileiit(void *ts, void *btp, int i, int fix, u32 j);
 extern void _ZN10dCcAcPos_c4InitEP8dActor_cRK7Vector35Fix12IiES6_jj(void *self, void *actor, void *pos, int fix, u32 a, u32 b, u32 cc);
 extern void _ZN10dBgCh_Actr4InitEP8dActor_c5Fix12IiES3_P10Vector3_16S5_(void *self, void *actor, int fix1, int fix2, void *v, int t);
 }
@@ -960,7 +961,7 @@ int daHanachan_c::Render()
 {
     int i = 0;
     dExtAnmModel_c *model = &mModelAnims[0];
-    TextureSequence *tex = &mTextureSequences[0];
+    dExtAnmTexPat_c *tex = &mTextureSequences[0];
     Vector3 *scale = &mSegmentScale[0];
     for (; i < 5; i++) {
         tex->Update(model->data);
@@ -1133,7 +1134,7 @@ int daHanachan_c::InitResources()
     char *c = (char *)this;
     s32 i;
     dExtAnmModel_c *animRow;
-    TextureSequence *texSeq;
+    dExtAnmTexPat_c *texSeq;
     char *posRow;
     char *rotRow;
     Vector3 *segPos;
@@ -1189,7 +1190,7 @@ int daHanachan_c::InitResources()
         modelFile = data_ov034_02113838[i];
         dExtSimpleModel_c::LoadFile(*modelFile);
         texFile = data_ov034_0211384c[i];
-        TextureSequence::LoadFile(*texFile);
+        dExtAnmTexPat_c::LoadFile(*texFile);
         animFile = (SharedFilePtr *)data_ov034_02113860[i];
         dExtFrameCtrl_c::LoadFile(*animFile);
         dExtFrameCtrl_c::LoadFile(*(SharedFilePtr *)data_ov034_02113874[i]);
@@ -1198,9 +1199,8 @@ int daHanachan_c::InitResources()
         dExtFrameCtrl_c::LoadFile(*(SharedFilePtr *)data_ov034_021138b0[i]);
         animRow->SetFile((BMD_File *)modelFile->filePtr, one, minusOne);
         ((dExtAnmModel_c *)animRow)->SetAnim((BCA_File *)animFile->filePtr, zeroA, 0x1000, zeroA);
-        TextureSequence::Prepare(*(BMD_File *)modelFile->filePtr, *(BTP_File *)texFile->filePtr);
-        _ZN15TextureSequence7SetFileER8BTP_Filei5Fix12IiEj(texSeq, texFile->filePtr, zeroB, 0x1000,
-                                                           zeroB);
+        dExtAnmTexPat_c::Prepare(*(BMD_File *)modelFile->filePtr, *(BTP_File *)texFile->filePtr);
+        _ZN15dExtAnmTexPat_c7SetFileER8BTP_Fileiit(texSeq, texFile->filePtr, zeroB, 0x1000, zeroB);
         ((daHanachan_c *)texRow)->mTextureSequences[0].speed = zeroC;
         if (i == 0) {
             ((daHanachan_c *)posRow)->mSegmentPos[0].x = mPosX;

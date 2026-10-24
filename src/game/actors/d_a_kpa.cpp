@@ -132,7 +132,7 @@ enum daKpa_c_AssetId {
 #include "dActor_c.h"
 #include "dBgCh_Actr.h"
 #include "SharedFilePtr.h"
-#include "TextureSequence.h"
+#include "dExtAnmTexPat_c.h"
 #include "dExtFrameCtrl_c.h"
 #include "Sound.h"
 #include "Message.h"
@@ -426,7 +426,9 @@ extern KpaAnimationFileHandle data_ov060_0211ac90;
 extern short data_ov060_02119294[];
 extern short data_ov060_02119296[];
 extern short data_ov060_02119298[];
-extern void _ZN15TextureSequence7SetFileER8BTP_Filei5Fix12IiEj(void *self, void *btp, int a, int b, unsigned int d);
+/* local extern: the matched free-function spelling of SetFile; a member call is pending. */
+extern void _ZN15dExtAnmTexPat_c7SetFileER8BTP_Fileiit(void *self, void *btp, int a, int b,
+                                                       unsigned int d);
 extern void _ZN10dCcAcPos_c4InitEP8dActor_cRK7Vector35Fix12IiES6_jj(void *self, void *act, void *pos, int c3, int d, unsigned int e, unsigned int f);
 extern void _ZN10dBgCh_Actr4InitEP8dActor_c5Fix12IiES3_P10Vector3_16S5_(void *self, void *act, int a, int b, void *d1, void *d2);
 extern void func_02011d50(void *a);
@@ -590,7 +592,7 @@ daKpaTail_c::~daKpaTail_c()
  *
  * `new daKpa_c` is the whole sequence the loose factory spelled by hand:
  * fBase_c::operator new(0x454), dActor_c's base constructor, the vptr store,
- * then the dExtAnmModel_c, TextureSequence, dBgCh_Actr, dExtShadowModel_c and
+ * then the dExtAnmModel_c, dExtAnmTexPat_c, dBgCh_Actr, dExtShadowModel_c and
  * dCcAcPos_c member constructors in declaration order. */
 extern "C" daKpa_c *daKpa_c_classInit(void)
 {
@@ -628,7 +630,7 @@ int daKpaTail_c::InitResources()
 // @symbol _ZN7daKpa_c13InitResourcesEv
 /*
 Bowser's setup, in order: load the model file and hand it to dExtModel_c::SetFile,
-load the 0x1c Animation files and the six TextureSequence files, then two more
+load the 0x1c Animation files and the six dExtAnmTexPat_c files, then two more
 dExtSimpleModel_c files (CleanupResources releases the same set); shadow cylinder; start the
 idle animation (0x10) and its texture pattern; body collider (cylinder, radius 0x78000 = 120 units, height
 0x118000 = 280, flags 0x200004); remember the spawn position in mHomePos; gravity
@@ -661,7 +663,7 @@ int daKpa_c::InitResources()
         dExtFrameCtrl_c::LoadFile(*data_ov060_021192dc[i]);
 
     for (i = 0; i < 6; i++)
-        TextureSequence::LoadFile(*data_ov060_0211927c[i]);
+        dExtAnmTexPat_c::LoadFile(*data_ov060_0211927c[i]);
 
     dExtSimpleModel_c::LoadFile(*(SharedFilePtr *)data_ov060_0211b208);
     dExtSimpleModel_c::LoadFile(data_ov089_02132c50);
@@ -671,11 +673,11 @@ int daKpa_c::InitResources()
 
     func_ov060_02111cc0(BOWSER_ANIM_IDLE, 0);
 
-    TextureSequence::Prepare(*(BMD_File *)data_ov060_0211ac78.filePtr,
+    dExtAnmTexPat_c::Prepare(*(BMD_File *)data_ov060_0211ac78.filePtr,
                              *(BTP_File *)data_ov060_0211ac28.filePtr);
 
-    _ZN15TextureSequence7SetFileER8BTP_Filei5Fix12IiEj(&this->mTextureSequence,
-                                                       data_ov060_0211ac28.filePtr, 0, 0x1000, 0);
+    _ZN15dExtAnmTexPat_c7SetFileER8BTP_Fileiit(&this->mTextureSequence, data_ov060_0211ac28.filePtr,
+                                               0, 0x1000, 0);
 
     this->mTextureSequence.SetFlags(0x40000000);
 
@@ -3547,47 +3549,47 @@ void daKpa_c::func_ov060_02111cc0(int idx, int animFlags){
     this->mModelAnim.SetAnim((BCA_File *)(data_ov060_021192dc[idx]->filePtr), a, 0x1000, 0);
     switch (idx) {
     case 1:
-        TextureSequence::Prepare(*(BMD_File *)data_ov060_0211ac78.filePtr,
+        dExtAnmTexPat_c::Prepare(*(BMD_File *)data_ov060_0211ac78.filePtr,
                                  *(BTP_File *)data_ov060_0211ac40.filePtr);
-        _ZN15TextureSequence7SetFileER8BTP_Filei5Fix12IiEj(
-            &this->mTextureSequence, data_ov060_0211ac40.filePtr, 0, 0x1000, 0);
+        _ZN15dExtAnmTexPat_c7SetFileER8BTP_Fileiit(&this->mTextureSequence,
+                                                   data_ov060_0211ac40.filePtr, 0, 0x1000, 0);
         this->mTextureSequence.SetFlags(0x40000000);
         return;
     case 2:
-        TextureSequence::Prepare(*(BMD_File *)data_ov060_0211ac78.filePtr,
+        dExtAnmTexPat_c::Prepare(*(BMD_File *)data_ov060_0211ac78.filePtr,
                                  *(BTP_File *)data_ov060_0211acb8.filePtr);
-        _ZN15TextureSequence7SetFileER8BTP_Filei5Fix12IiEj(
-            &this->mTextureSequence, data_ov060_0211acb8.filePtr, 0, 0x1000, 0);
+        _ZN15dExtAnmTexPat_c7SetFileER8BTP_Fileiit(&this->mTextureSequence,
+                                                   data_ov060_0211acb8.filePtr, 0, 0x1000, 0);
         this->mTextureSequence.SetFlags(0x40000000);
         return;
     case 3:
     case 5:
-        TextureSequence::Prepare(*(BMD_File *)data_ov060_0211ac78.filePtr,
+        dExtAnmTexPat_c::Prepare(*(BMD_File *)data_ov060_0211ac78.filePtr,
                                  *(BTP_File *)data_ov060_0211ac10.filePtr);
-        _ZN15TextureSequence7SetFileER8BTP_Filei5Fix12IiEj(
-            &this->mTextureSequence, data_ov060_0211ac10.filePtr, 0, 0x1000, 0);
+        _ZN15dExtAnmTexPat_c7SetFileER8BTP_Fileiit(&this->mTextureSequence,
+                                                   data_ov060_0211ac10.filePtr, 0, 0x1000, 0);
         this->mTextureSequence.SetFlags(0);
         return;
     case 14:
-        TextureSequence::Prepare(*(BMD_File *)data_ov060_0211ac78.filePtr,
+        dExtAnmTexPat_c::Prepare(*(BMD_File *)data_ov060_0211ac78.filePtr,
                                  *(BTP_File *)data_ov060_0211abf0.filePtr);
-        _ZN15TextureSequence7SetFileER8BTP_Filei5Fix12IiEj(
-            &this->mTextureSequence, data_ov060_0211abf0.filePtr, 0, 0x1000, 0);
+        _ZN15dExtAnmTexPat_c7SetFileER8BTP_Fileiit(&this->mTextureSequence,
+                                                   data_ov060_0211abf0.filePtr, 0, 0x1000, 0);
         this->mTextureSequence.SetFlags(0);
         return;
     case 10:
-        TextureSequence::Prepare(*(BMD_File *)data_ov060_0211ac78.filePtr,
+        dExtAnmTexPat_c::Prepare(*(BMD_File *)data_ov060_0211ac78.filePtr,
                                  *(BTP_File *)data_ov060_0211ac30.filePtr);
-        _ZN15TextureSequence7SetFileER8BTP_Filei5Fix12IiEj(
-            &this->mTextureSequence, data_ov060_0211ac30.filePtr, 0, 0x1000, 0);
+        _ZN15dExtAnmTexPat_c7SetFileER8BTP_Fileiit(&this->mTextureSequence,
+                                                   data_ov060_0211ac30.filePtr, 0, 0x1000, 0);
         this->mTextureSequence.SetFlags(0x40000000);
         return;
     case 0:
     default:
-        TextureSequence::Prepare(*(BMD_File *)data_ov060_0211ac78.filePtr,
+        dExtAnmTexPat_c::Prepare(*(BMD_File *)data_ov060_0211ac78.filePtr,
                                  *(BTP_File *)data_ov060_0211ac28.filePtr);
-        _ZN15TextureSequence7SetFileER8BTP_Filei5Fix12IiEj(
-            &this->mTextureSequence, data_ov060_0211ac28.filePtr, 0, 0x1000, 0);
+        _ZN15dExtAnmTexPat_c7SetFileER8BTP_Fileiit(&this->mTextureSequence,
+                                                   data_ov060_0211ac28.filePtr, 0, 0x1000, 0);
         this->mTextureSequence.SetFlags(0);
         return;
     }

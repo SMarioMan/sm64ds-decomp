@@ -2047,75 +2047,75 @@
     },
     "arm9:0x0201577c": {
       "author": "ruspecial",
-      "name": "_ZN15MaterialChanger7PrepareER8BMD_FileR8BMA_File"
+      "name": "_ZN17dExtAnmMaterial_c7PrepareER8BMD_FileR8BMA_File"
     },
     "arm9:0x02015788": {
       "author": "ruspecial",
-      "name": "_ZN15MaterialChanger6UpdateER15ModelComponents"
+      "name": "_ZN17dExtAnmMaterial_c6UpdateER15ModelComponents"
     },
     "arm9:0x020157ac": {
       "author": "tangosdev",
-      "name": "_ZN15MaterialChanger7SetFileER8BMA_Filei5Fix12IiEj"
+      "name": "_ZN17dExtAnmMaterial_c7SetFileER8BMA_Filei5Fix12IiEj"
     },
     "arm9:0x02015800": {
       "author": "tangosdev",
-      "name": "_ZN15MaterialChangerD0Ev"
+      "name": "_ZN17dExtAnmMaterial_cD0Ev"
     },
     "arm9:0x0201582c": {
       "author": "tangosdev",
-      "name": "_ZN15MaterialChangerD1Ev"
+      "name": "_ZN17dExtAnmMaterial_cD1Ev"
     },
     "arm9:0x02015850": {
       "author": "tangosdev",
-      "name": "_ZN15MaterialChangerC1Ev"
+      "name": "_ZN17dExtAnmMaterial_cC1Ev"
     },
     "arm9:0x0201587c": {
       "author": "ruspecial",
-      "name": "_ZN18TextureTransformer7PrepareER8BMD_FileR8BTA_File"
+      "name": "_ZN15dExtAnmTexSRT_c7PrepareER8BMD_FileR8BTA_File"
     },
     "arm9:0x02015888": {
       "author": "ruspecial",
-      "name": "_ZN18TextureTransformer6UpdateER15ModelComponents"
+      "name": "_ZN15dExtAnmTexSRT_c6UpdateER15ModelComponents"
     },
     "arm9:0x020158ac": {
       "author": "tangosdev",
-      "name": "_ZN18TextureTransformer7SetFileER8BTA_Filei5Fix12IiEj"
+      "name": "_ZN15dExtAnmTexSRT_c7SetFileER8BTA_Filei5Fix12IiEj"
     },
     "arm9:0x02015900": {
       "author": "tangosdev",
-      "name": "_ZN18TextureTransformerD0Ev"
+      "name": "_ZN15dExtAnmTexSRT_cD0Ev"
     },
     "arm9:0x0201592c": {
       "author": "tangosdev",
-      "name": "_ZN18TextureTransformerD1Ev"
+      "name": "_ZN15dExtAnmTexSRT_cD1Ev"
     },
     "arm9:0x02015950": {
       "author": "tangosdev",
-      "name": "_ZN18TextureTransformerC1Ev"
+      "name": "_ZN15dExtAnmTexSRT_cC1Ev"
     },
     "arm9:0x0201597c": {
       "author": "ruspecial",
-      "name": "_ZN15TextureSequence7PrepareER8BMD_FileR8BTP_File"
+      "name": "_ZN15dExtAnmTexPat_c7PrepareER8BMD_FileR8BTP_File"
     },
     "arm9:0x02015988": {
       "author": "ruspecial",
-      "name": "_ZN15TextureSequence6UpdateER15ModelComponents"
+      "name": "_ZN15dExtAnmTexPat_c6UpdateER15ModelComponents"
     },
     "arm9:0x020159ac": {
       "author": "tangosdev",
-      "name": "_ZN15TextureSequence7SetFileER8BTP_Filei5Fix12IiEj"
+      "name": "_ZN15dExtAnmTexPat_c7SetFileER8BTP_Fileiit"
     },
     "arm9:0x02015a00": {
       "author": "tangosdev",
-      "name": "_ZN15TextureSequenceD0Ev"
+      "name": "_ZN15dExtAnmTexPat_cD0Ev"
     },
     "arm9:0x02015a2c": {
       "author": "tangosdev",
-      "name": "_ZN15TextureSequenceD1Ev"
+      "name": "_ZN15dExtAnmTexPat_cD1Ev"
     },
     "arm9:0x02015a50": {
       "author": "tangosdev",
-      "name": "_ZN15TextureSequenceC1Ev"
+      "name": "_ZN15dExtAnmTexPat_cC1Ev"
     },
     "arm9:0x02015a7c": {
       "author": "tangosdev",
@@ -2639,7 +2639,7 @@
     },
     "arm9:0x020178e4": {
       "author": "tangosdev",
-      "name": "_ZN15TextureSequence8LoadFileER13SharedFilePtr"
+      "name": "_ZN15dExtAnmTexPat_c8LoadFileER13SharedFilePtr"
     },
     "arm9:0x0201791c": {
       "author": "tangosdev",
@@ -7595,7 +7595,7 @@
     },
     "arm9:0x020468a0": {
       "author": "tangosdev",
-      "name": "_ZN15TextureSequence17UpdateFileOffsetsER8BTP_File"
+      "name": "_ZN15dExtAnmTexPat_c17UpdateFileOffsetsER8BTP_File"
     },
     "arm9:0x020469ac": {
       "author": "tangosdev",
@@ -18211,7 +18211,7 @@
     },
     "ov002:0x020f6a50": {
       "author": "tangosdev",
-      "name": "_ZN8daDemo_c7param_c19func_ov002_020f6a50Ev"
+      "name": "_ZN8daDemo_c7param_cC2Ev"
     },
     "ov002:0x020f6a9c": {
       "author": "tangosdev",

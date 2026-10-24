@@ -21,7 +21,7 @@ enum d_a_obj_ks_water_AssetId {
  * first and emits no D2 body.
  *
  * deslop leftovers:
- * - TextureTransformer::SetFile / dBgW_KcMbg::SetFile 6az: InitResources
+ * - dExtAnmTexSRT_c::SetFile / dBgW_KcMbg::SetFile 6az: InitResources
  *   passes Fix12<int> by value; the header method form size-DIFFs.
  * - Sound::PlayLong: Behavior's long water sound; Sound.h has no PlayLong.
  * - data_ov017_02111c80 / 02111c88 / 02111a60 / 02111a94 KCL / BMD / BTA / CLPS
@@ -63,8 +63,8 @@ struct KsWaterClsnFileHandle : SharedFilePtr {
 };
 
 extern "C" {
-void _ZN18TextureTransformer7SetFileER8BTA_Filei5Fix12IiEj(
-    TextureTransformer *self, BTA_File *file, int flags, int speed, u32 startFrame);
+void _ZN15dExtAnmTexSRT_c7SetFileER8BTA_Filei5Fix12IiEj(dExtAnmTexSRT_c *self, BTA_File *file,
+                                                        int flags, int speed, u32 startFrame);
 void _ZN10dBgW_KcMbg7SetFileEP8KCL_FileRK9Matrix4x35Fix12IiEsR10CLPS_Block(
     dBgW_KcMbg *self, KCL_File *file, const Matrix4x3 *mat, int scale, s16 angY,
     CLPS_Block *clps);
@@ -84,7 +84,7 @@ extern CLPS_Block    data_ov017_02111a94;
  * Every instruction the cartridge has here falls out of the one `new`.
  * 0x02111484 loads 0x340 -- the class's own size -- into the header's leaf
  * operator new; 0x02111494 calls dBgActor_c's C2, the store at 0x021114a0
- * lays down this class's vptr, and TextureTransformer C1 runs on the member
+ * lays down this class's vptr, and dExtAnmTexSRT_c C1 runs on the member
  * at 0x320. The null check is the one `new` itself emits. The implicit
  * constructor is what keeps the intervening construction inlined; declaring
  * a constructor of our own would emit a `bl` the factory does not have. */
@@ -99,10 +99,10 @@ extern "C" daObjKsWater_c *daObjKsWater_c_classInit()
 int daObjKsWater_c::InitResources()
 {
     mModel.SetFile((BMD_File *)dExtSimpleModel_c::LoadFile(data_ov017_02111c88), 1, -1);
-    TextureTransformer::Prepare(*(BMD_File *)data_ov017_02111c88.filePtr, data_ov017_02111a60);
+    dExtAnmTexSRT_c::Prepare(*(BMD_File *)data_ov017_02111c88.filePtr, data_ov017_02111a60);
     /* 6az: header SetFile takes Fix12<int> by value. */
-    _ZN18TextureTransformer7SetFileER8BTA_Filei5Fix12IiEj(
-        &mTextureTransformer, &data_ov017_02111a60, 0, 0x1000, 0);
+    _ZN15dExtAnmTexSRT_c7SetFileER8BTA_Filei5Fix12IiEj(&mTextureTransformer, &data_ov017_02111a60,
+                                                       0, 0x1000, 0);
     UpdateModelPosAndRotY();
     UpdateClsnPosAndRot();
     /* 6az: header SetFile takes Fix12<int> by value. */

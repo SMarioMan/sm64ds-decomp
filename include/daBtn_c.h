@@ -14,13 +14,13 @@
  *
  *     0x110 dBgCh_Actr               0x1bc   -> 0x2cc
  *     0x2cc dExtAnmModel_c                  0x64    -> 0x330
- *     0x330 TextureSequence            0x14    -> 0x344
+ *     0x330 dExtAnmTexPat_c            0x14    -> 0x344
  *     0x344 dExtShadowModel_c                0x28    -> 0x36c
  *     0x418 dBgW_KcMbg         0x1c8   -> 0x5e0
  *
  * Typing them absorbed markers that were their insides:
- *   - unk_338 = TextureSequence.currFrame
- *   - unk_33c = TextureSequence.speed
+ *   - unk_338 = dExtAnmTexPat_c.currFrame
+ *   - unk_33c = dExtAnmTexPat_c.speed
  *
  * Field provenance: notes/enemy-leaf-provenance.md.
  *
@@ -38,13 +38,13 @@
 #include "dExtAnmModel_c.h"
 #include "dBgW_KcMbg.h"
 #include "dExtShadowModel_c.h"
-#include "TextureSequence.h"
+#include "dExtAnmTexPat_c.h"
 #include "dBgCh_Actr.h"
 
 struct daBtn_c : dEnemyBase_c {
     dBgCh_Actr                 mWithMeshClsn;         /* 0x110 */
     dExtAnmModel_c mModelAnim;                        /* 0x2cc */
-    TextureSequence              mTextureSequence;      /* 0x330 */
+    dExtAnmTexPat_c mTextureSequence;                 /* 0x330 */
     dExtShadowModel_c                  mShadowModel;          /* 0x344 */
     /* The drop shadow's matrix: func_ov079_02124188 builds it every frame
        and hands it to dActor_c::DropShadowScaleXYZ. */

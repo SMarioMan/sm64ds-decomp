@@ -13,13 +13,13 @@
  *
  *     dActor_c            0x000 + 0x0d0 = 0x0d0   -> pad_0d0
  *     dExtAnmModel_c           0x0d4 + 0x064 = 0x138   -> mTextureSequence1
- *     TextureSequence     0x138 + 0x014 = 0x14c   -> mMaterialChanger1
- *     MaterialChanger     0x14c + 0x014 = 0x160   -> mTextureTransformer1
- *     TextureTransformer  0x160 + 0x014 = 0x174   -> mModelAnim2
+ *     dExtAnmTexPat_c     0x138 + 0x014 = 0x14c   -> mMaterialChanger1
+ *     dExtAnmMaterial_c     0x14c + 0x014 = 0x160   -> mTextureTransformer1
+ *     dExtAnmTexSRT_c  0x160 + 0x014 = 0x174   -> mModelAnim2
  *     dExtAnmModel_c           0x174 + 0x064 = 0x1d8   -> mTextureSequence2
- *     TextureSequence     0x1d8 + 0x014 = 0x1ec   -> mMaterialChanger2
- *     MaterialChanger     0x1ec + 0x014 = 0x200   -> mTextureTransformer2
- *     TextureTransformer  0x200 + 0x014 = 0x214   -> mFrame
+ *     dExtAnmTexPat_c     0x1d8 + 0x014 = 0x1ec   -> mMaterialChanger2
+ *     dExtAnmMaterial_c     0x1ec + 0x014 = 0x200   -> mTextureTransformer2
+ *     dExtAnmTexSRT_c  0x200 + 0x014 = 0x214   -> mFrame
  *
  * Each member is named by the class's own destructor, which calls that type's
  * D1 (not D2, so a member and not an inlined base) at its literal offset --
@@ -41,9 +41,9 @@
 #define DAFRING_C_H
 #include "types.h"
 #include "dExtAnmModel_c.h"
-#include "TextureSequence.h"
-#include "MaterialChanger.h"
-#include "TextureTransformer.h"
+#include "dExtAnmTexPat_c.h"
+#include "dExtAnmMaterial_c.h"
+#include "dExtAnmTexSRT_c.h"
 
 #ifdef __cplusplus
 
@@ -52,13 +52,13 @@
 struct daFRing_c : dActor_c {
     u8 pad_0d0[0x4];
     dExtAnmModel_c mModelAnim1;                /* 0x0d4 */
-    TextureSequence mTextureSequence1;         /* 0x138 */
-    MaterialChanger mMaterialChanger1;         /* 0x14c */
-    TextureTransformer mTextureTransformer1;   /* 0x160 */
+    dExtAnmTexPat_c mTextureSequence1;         /* 0x138 */
+    dExtAnmMaterial_c mMaterialChanger1;       /* 0x14c */
+    dExtAnmTexSRT_c mTextureTransformer1;      /* 0x160 */
     dExtAnmModel_c mModelAnim2;                /* 0x174 */
-    TextureSequence mTextureSequence2;         /* 0x1d8 */
-    MaterialChanger mMaterialChanger2;         /* 0x1ec */
-    TextureTransformer mTextureTransformer2;   /* 0x200 */
+    dExtAnmTexPat_c mTextureSequence2;         /* 0x1d8 */
+    dExtAnmMaterial_c mMaterialChanger2;       /* 0x1ec */
+    dExtAnmTexSRT_c mTextureTransformer2;      /* 0x200 */
     u16 mFrame;                                /* 0x214 */
     u8 pad_216[0x2];
 
@@ -89,13 +89,13 @@ struct daFRing_c {
     s32 mPosZ;                                 /* 0x064 */
     u8 pad_068[0x6c];
     dExtAnmModel_c mModelAnim1;                /* 0x0d4 */
-    TextureSequence mTextureSequence1;         /* 0x138 */
-    MaterialChanger mMaterialChanger1;         /* 0x14c */
-    TextureTransformer mTextureTransformer1;   /* 0x160 */
+    dExtAnmTexPat_c mTextureSequence1;         /* 0x138 */
+    dExtAnmMaterial_c mMaterialChanger1;       /* 0x14c */
+    dExtAnmTexSRT_c mTextureTransformer1;      /* 0x160 */
     dExtAnmModel_c mModelAnim2;                /* 0x174 */
-    TextureSequence mTextureSequence2;         /* 0x1d8 */
-    MaterialChanger mMaterialChanger2;         /* 0x1ec */
-    TextureTransformer mTextureTransformer2;   /* 0x200 */
+    dExtAnmTexPat_c mTextureSequence2;         /* 0x1d8 */
+    dExtAnmMaterial_c mMaterialChanger2;       /* 0x1ec */
+    dExtAnmTexSRT_c mTextureTransformer2;      /* 0x200 */
     u16 mFrame;                                /* 0x214 */
     u8 pad_216[0x2];
 };

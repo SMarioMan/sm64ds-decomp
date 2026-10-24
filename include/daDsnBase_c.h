@@ -27,7 +27,7 @@
  * ov091 and daDkk_c_classInit in ov025 both store 0x021351fc.
  *
  * AND IT IS THE ONLY ONE OF THE ELEVEN WITH SUB-OBJECTS OF ITS OWN. The other ten
- * add scalars or nothing; this one adds a TextureSequence and a dExtShadowModel_c, both
+ * add scalars or nothing; this one adds a dExtAnmTexPat_c and a dExtShadowModel_c, both
  * with destructors, which is why every leaf's destructor is 0x60 rather than 0x50
  * and why the empty body has to reproduce five calls rather than three.
  *
@@ -55,8 +55,8 @@
  *          from here and releases entries [0], [1] and, when it is non-null, [3];
  *          its own Render reads entry [3] to decide whether to run the texture
  *          animation. Both are slot words of THIS class.
- *   0x324  TextureSequence. Thwomp_Spawn and daDkk_c_classInit both call
- *          _ZN15TextureSequenceC1Ev at +0x324 while the vptr is this class's, and
+ *   0x324  dExtAnmTexPat_c. Thwomp_Spawn and daDkk_c_classInit both call
+ *          _ZN15dExtAnmTexPat_cC1Ev at +0x324 while the vptr is this class's, and
  *          both destructors call its D1 there. sizeof is 0x14, so it closes on
  *          0x338.
  *   0x338  dExtShadowModel_c, same two-sided evidence, _ZN17dExtShadowModel_cC1Ev at +0x338.
@@ -76,13 +76,13 @@
 #ifdef __cplusplus
 
 #include "dBgActor_c.h"
-#include "TextureSequence.h"
+#include "dExtAnmTexPat_c.h"
 #include "dExtShadowModel_c.h"
 
 struct daDsnBase_c : dBgActor_c {
     /* Field NAMES are placeholders. Offsets, widths and types are observed. */
     s32 mFileTable;                     /* 0x320 - a void** in practice */
-    TextureSequence mTextureSequence;   /* 0x324 */
+    dExtAnmTexPat_c mTextureSequence;   /* 0x324 */
     dExtShadowModel_c mShadowModel;           /* 0x338 */
 
     /* --- vtable --- */
@@ -93,7 +93,7 @@ struct daDsnBase_c : dBgActor_c {
        make each descendant emit a `bl` the ROM does not have.
 
        EMPTY, BUT NOT INERT. The two members above have destructors, so this body
-       emits _ZN17dExtShadowModel_cD1Ev at +0x338 and _ZN15TextureSequenceD1Ev at +0x324
+       emits _ZN17dExtShadowModel_cD1Ev at +0x338 and _ZN15dExtAnmTexPat_cD1Ev at +0x324
        in reverse declaration order -- which is the order the ROM uses. */
     virtual ~daDsnBase_c() {}
 

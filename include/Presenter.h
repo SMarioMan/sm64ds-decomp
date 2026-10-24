@@ -36,7 +36,7 @@ struct Presenter {
        dExtFrameCtrl_c base and ResetPose rewinds its currFrame. */
     dExtBlendAnmModel_c mFace; /* 0x008 */
     dExtSimpleModel_c mBack;   /* 0x078 -- 0x50 bytes; Load sets its mat4x3 */
-    /* A TextureSequence and a TextureTransformer: each starts with its
+    /* A dExtAnmTexPat_c and a dExtAnmTexSRT_c: each starts with its
        dExtFrameCtrl_c ([2] is the current frame ResetPose rewinds). */
     s32 mTexSeq[5];           /* 0x0c8 */
     s32 mTexAnim[5];          /* 0x0dc */

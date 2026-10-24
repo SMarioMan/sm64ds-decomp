@@ -680,7 +680,7 @@ The two Marios share their first five fields with the line code's jumper view (`
   - `StateSurprisedThenSmile` and `StateSurprisedThenIdle` (were `StateAnim7` / `StateAnim7Loop`), after `PlayCheer` / `PlayCheerLoop`;
   - the texture animations `sPresenterLoseLoopTexAnim` and `sPresenterSmileTexAnim`.
 
-  `include/Presenter.h` holds the 0x1ac-byte layout, which the helpers read through `PRESENTER()` (36 sites). The embedded dExtBlendAnmModel_c, dExtSimpleModel_c, TextureSequence and TextureTransformer stay byte regions. `mTracking` and `mQuiet` are medium: only the constructor writes them.
+  `include/Presenter.h` holds the 0x1ac-byte layout, which the helpers read through `PRESENTER()` (36 sites). The embedded dExtBlendAnmModel_c, dExtSimpleModel_c, dExtAnmTexPat_c and dExtAnmTexSRT_c stay byte regions. `mTracking` and `mQuiet` are medium: only the constructor writes them.
 - **The dealer is Luigi.** `Dealer_Construct` builds `MG/luigi_d.bmd`, and its thirteen animation slots resolve to `luigi_d_wait`, `shuffle_start`, `shuffle`, `deal_start`, `deal`, `deal_end`, `deal_end2`, `deal_wait`, `throw`, `win_start`, `win`, `win_end` and `lose.bca`. Two of the earlier names had the shuffle and the deal the wrong way round, so they are corrected:
   - `Dealer_StartShuffle` / `StateShuffle` (were `StartDeal` / `StateDeal`) play shuffle_start, then loop shuffle;
   - `Dealer_StartDeal` / `StateDeal` (were `StartCollect` / `StateCollect`) play deal_start, then loop deal, counting each card dealt (sound 0x142), and end with deal_end or deal_end2;

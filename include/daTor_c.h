@@ -32,7 +32,7 @@
 #include "dExtAnmModel_c.h"
 #include "dCcAc_c.h"
 #include "dBgCh_Actr.h"
-#include "TextureTransformer.h"
+#include "dExtAnmTexSRT_c.h"
 
 /* BASE: dActor_c, direct. _ZTI7daTor_c at ov096 0x02137a60 reads
  * [__si_class_type_info, _ZTS7daTor_c (0x02137a54), _ZTI8dActor_c], and the
@@ -57,10 +57,10 @@ struct daTor_c : dActor_c {
        stopped short of the object, so the member also takes over mAnimation (+0x50 = the
        dExtFrameCtrl_c base), which the header declared separately inside it. */
     dExtAnmModel_c mModelAnim; /* 0x2c4 */
-    /* TextureTransformer member, named by the class's own destructor calling
-       TextureTransformer's D1 at +0x328 -- a relocation the ROM build
+    /* dExtAnmTexSRT_c member, named by the class's own destructor calling
+       dExtAnmTexSRT_c's D1 at +0x328 -- a relocation the ROM build
        checks. Was a u8 marker. */
-    TextureTransformer mTextureTransformer;            /* 0x328 */
+    dExtAnmTexSRT_c mTextureTransformer; /* 0x328 */
     /* The actor that hit this tornado. Set from mdCcAc_c.otherOwner once
        func_ov002_020de33c approves it; daTor_c::State2 clears it as
        the tornado winds down. */

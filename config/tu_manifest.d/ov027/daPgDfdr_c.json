@@ -206,7 +206,7 @@
       "address": "0x02113c94",
       "size": "0x8",
       "binding": "STB_GLOBAL",
-      "evidence": "texture-sequence file handle constructed with file ID 0x407; InitResources loads and prepares it with TextureSequence::LoadFile/Prepare and CleanupResources releases it"
+      "evidence": "texture-sequence file handle constructed with file ID 0x407; InitResources loads and prepares it with dExtAnmTexPat_c::LoadFile/Prepare and CleanupResources releases it"
     },
     {
       "symbol": "@741",

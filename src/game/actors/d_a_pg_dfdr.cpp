@@ -18,7 +18,7 @@
  * - dExtAnmModel_c::SetAnim as a method homes Fix12<int> (str, add, ldm; +12
  *   bytes per call). func_ov027_02111ca8 0x54 -> 0x60. func_ov027_02111b2c
  *   0x11c -> 0x134 (+24, two calls). The scalar extern "C" stays.
- * - TextureSequence::SetFile and dBgW_KcMbg::SetFile home one Fix12<int>
+ * - dExtAnmTexPat_c::SetFile and dBgW_KcMbg::SetFile home one Fix12<int>
  *   each (+12), and dCcAc_c::Init homes two (+24). Together InitResources
  *   0x1c8 -> 0x1f8.
  * - dBgActor_c::IsClsnInRangeOnScreen(Fix12, Fix12) homes both zeros.
@@ -47,7 +47,7 @@ enum daPgDfdr_c_AssetId {
 #include "Player.h"
 #include "decl_common.h"
 #include "SharedFilePtr.h"
-#include "TextureSequence.h"
+#include "dExtAnmTexPat_c.h"
 #include "dBgCh_Gnd.h"
 #include "nitro/fx/fx.h"
 
@@ -76,7 +76,9 @@ int DecIfAbove0_Byte(void *p);
 void func_0201267c(int id, char *pos);
 /* Stores dBgW::beforeClsnCallback (p[6]). dBgW.h has no setter. */
 void func_020393d4(int *collider, int callback);
-void _ZN15TextureSequence7SetFileER8BTP_Filei5Fix12IiEj(void *self, void *file, int flags, int speed, unsigned startFrame);
+/* local extern: the matched free-function spelling of SetFile; a member call is pending. */
+void _ZN15dExtAnmTexPat_c7SetFileER8BTP_Fileiit(void *self, void *file, int flags, int speed,
+                                                unsigned startFrame);
 void _ZN10dBgW_KcMbg7SetFileEP8KCL_FileRK9Matrix4x35Fix12IiEsR10CLPS_Block(void *self, void *kcl, void *mat, int scale, short angY, void *clps);
 void _ZN7dCcAc_c4InitEP8dActor_c5Fix12IiES3_jj(void *self, void *actor, int radius, int height,
                                                unsigned flags, unsigned vuln);
@@ -160,11 +162,11 @@ s32 daPgDfdr_c::InitResources()
     for (i = 0; i < 3; i++)
         dExtFrameCtrl_c::LoadFile(*(SharedFilePtr *)data_ov027_02112ca4[i]);
 
-    TextureSequence::LoadFile(*(SharedFilePtr *)&data_ov027_02113c94);
-    TextureSequence::Prepare(*(BMD_File *)data_ov027_02113c7c.filePtr,
+    dExtAnmTexPat_c::LoadFile(*(SharedFilePtr *)&data_ov027_02113c94);
+    dExtAnmTexPat_c::Prepare(*(BMD_File *)data_ov027_02113c7c.filePtr,
                              *(BTP_File *)data_ov027_02113c94.filePtr);
-    _ZN15TextureSequence7SetFileER8BTP_Filei5Fix12IiEj(&mTextureSequence,
-                                                       data_ov027_02113c94.filePtr, 0, 0x1000, 0);
+    _ZN15dExtAnmTexPat_c7SetFileER8BTP_Fileiit(&mTextureSequence, data_ov027_02113c94.filePtr, 0,
+                                               0x1000, 0);
 
     mAngleY = (short)0xdd30;
     mPrevAngleY = mAngleY;
@@ -387,7 +389,7 @@ extern "C" void func_ov027_02111994(daPgDfdr_c *self)
 /* The destructor is defined INLINE in include/daPgDfdr_c.h; see change (1) in */
 /* this file's header for why. One vtable store and three member teardowns     */
 /* come out of that one empty body: its own vptr, then -- in reverse           */
-/* declaration order -- dCcAc_c at +0x398, TextureSequence at +0x384 and       */
+/* declaration order -- dCcAc_c at +0x398, dExtAnmTexPat_c at +0x384 and       */
 /* dExtAnmModel_c at +0x320, then dBgActor_c's own teardown inlined (its destructor */
 /* is defined in its class body too), which is dBgW_KcMbg at +0x124 and dExtSimpleModel_c  */
 /* at +0x0d4, then dActor_c. D0 is that plus the inherited inline `operator    */

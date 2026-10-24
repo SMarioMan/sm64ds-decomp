@@ -52,7 +52,7 @@ extern "C" dExtFrameCtrl_c *_ZN15dExtFrameCtrl_cD0Ev(dExtFrameCtrl_c *thiz) {
 /* The vptr store is synthesized, then the body zeroes currFrame (+0x8) and
  * sets speed (+0xc) to 0x1000 = 1.0, in that order. C1 and C2 are the same
  * code (root class, nothing to chain); every ROM caller of C2 is a derived
- * base step -- MaterialChanger, TextureTransformer, TextureSequence and
+ * base step -- dExtAnmMaterial_c, dExtAnmTexSRT_c, dExtAnmTexPat_c and
  * dExtAnmModel_c construct their dExtFrameCtrl_c at its base offset. */
 dExtFrameCtrl_c::dExtFrameCtrl_c() {
     currFrame = 0;

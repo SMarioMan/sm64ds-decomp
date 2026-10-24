@@ -1,11 +1,11 @@
-#ifndef TEXTURESEQUENCE_H
-#define TEXTURESEQUENCE_H
+#ifndef DEXTANMTEXPAT_C_H
+#define DEXTANMTEXPAT_C_H
 
 #include "types.h"
 #include "dExtFrameCtrl_c.h"
 #include "math/Fix12.h"
 
-/* dExtFrameCtrl_c child that drives BTP-file playback, vtable _ZTV15TextureSequence at 0x0208e7d4:
+/* dExtFrameCtrl_c child that drives BTP-file playback, vtable _ZTV15dExtAnmTexPat_c at 0x0208e7d4:
  * two slots, the destructor pair, nothing else. Update is a plain method;
  * Prepare is static, for the reason set out below.
  *
@@ -29,10 +29,13 @@
  * never constrained this; the callee and the callers do, and they agree.
  *
  * A static member mangles identically, so the symbol is unchanged. This is the
- * same correction already applied to the sibling TextureTransformer, whose
- * header names this veneer and MaterialChanger's as called the same way.
- * SetFile's definition stays a mangled free function (wall 6az,
- * Fix12<int> in the signature); the declaration below is the real one.
+ * same correction already applied to the sibling dExtAnmTexSRT_c, whose
+ * header names this veneer and dExtAnmMaterial_c's as called the same way.
+ * SetFile is a real member under its scalar mangling: speed is a Fix12i
+ * (Fix12<int> by value cannot be passed through a member call without a
+ * diff, wall 6az) and startFrame a u16, the width the definition and
+ * daDemo_c's member calls reproduce. Callers that still spell it as a free
+ * function carry a local extern.
  */
 
 #ifdef __cplusplus
@@ -60,20 +63,19 @@ struct BTP_File {
     u16 pad_1e;
     char *seqRecords;          /* 0x20 */
 };
-struct TextureSequence : dExtFrameCtrl_c {
+struct dExtAnmTexPat_c : dExtFrameCtrl_c {
     BTP_File *file;           /* 0x10 */
 
     /* --- vtable: the destructor pair only. --- */
-    virtual ~TextureSequence();                       /* slots 0 (D1), 1 (D0) */
+    virtual ~dExtAnmTexPat_c(); /* slots 0 (D1), 1 (D0) */
 
-    /* DECLARED, never defined as a method here -- src/engine/model/TextureSequence.cpp
+    /* DECLARED, never defined as a method here -- src/engine/model/d_ext_anm_tex_pat.cpp
        owns C1 (notes/ctor-migration.md section 2). */
-    TextureSequence();
+    dExtAnmTexPat_c();
 
     /* --- non-virtual --- */
     void Update(ModelComponents &model);
-    void SetFile(BTP_File &animFile, int flags, Fix12<int> speed,
-                 u32 startFrame);        /* free function, wall 6az */
+    void SetFile(BTP_File &animFile, int flags, Fix12i speed, u16 startFrame);
 
     /* --- static --- */
     static void Prepare(BMD_File &model, BTP_File &animFile);
@@ -83,7 +85,7 @@ struct TextureSequence : dExtFrameCtrl_c {
 
 #ifndef SM64DS_PLATFORM_PC
 /* ROM layout under mwccarm; host ABI divergence is tracked separately. */
-typedef char TextureSequence_size_must_be_0x14[sizeof(TextureSequence) == 0x14 ? 1 : -1];
+typedef char dExtAnmTexPat_c_size_must_be_0x14[sizeof(dExtAnmTexPat_c) == 0x14 ? 1 : -1];
 #endif
 
 #endif /* __cplusplus */

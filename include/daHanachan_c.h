@@ -9,8 +9,8 @@
  *
  *     dEnemyBase_c                        ends 0x110
  *     dExtAnmModel_c[5]                 0x110 + 5*0x64 = 0x304
- *     MaterialChanger[5]           0x304 + 5*0x14 = 0x368
- *     TextureSequence[5]           0x368 + 5*0x14 = 0x3cc
+ *     dExtAnmMaterial_c[5]           0x304 + 5*0x14 = 0x368
+ *     dExtAnmTexPat_c[5]           0x368 + 5*0x14 = 0x3cc
  *     Vector3[5]                   0x3cc + 5*0x0c = 0x408
  *     Vector3[5]                   0x408 + 5*0x0c = 0x444
  *     Vector3s[5]                  0x444 + 5*0x06 = 0x462  (2 bytes pad)
@@ -34,8 +34,8 @@
 
 #include "dEnemyBase_c.h"
 #include "dExtAnmModel_c.h"
-#include "MaterialChanger.h"
-#include "TextureSequence.h"
+#include "dExtAnmMaterial_c.h"
+#include "dExtAnmTexPat_c.h"
 #include "dBgCh_Actr.h"
 #include "dCcAcPos_c.h"
 
@@ -48,8 +48,8 @@ struct daHanachan_c : dEnemyBase_c {
     };
 
     dExtAnmModel_c mModelAnims[5];                   /* 0x110 */
-    MaterialChanger mMaterialChangers[5];            /* 0x304 */
-    TextureSequence mTextureSequences[5];            /* 0x368 */
+    dExtAnmMaterial_c mMaterialChangers[5];          /* 0x304 */
+    dExtAnmTexPat_c mTextureSequences[5];            /* 0x368 */
     /* One entry per body segment, head first; these segment names are coined. */
     Vector3 mSegmentPos[5];                          /* 0x3cc -- [0] follows mPos */
     Vector3 mSegmentScale[5];                        /* 0x408 -- Render's per-segment scale */

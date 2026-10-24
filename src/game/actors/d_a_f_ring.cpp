@@ -7,15 +7,15 @@
  * under defer_codegen off. daFRing_c_classInit is last. Was BowserShockwaves.
  */
 /* leftovers:
- * - dExtAnmModel_c::SetAnim, TextureSequence::SetFile, MaterialChanger::SetFile
- *   and TextureTransformer::SetFile stay mangled. Each takes Fix12<int> by
+ * - dExtAnmModel_c::SetAnim, dExtAnmTexPat_c::SetFile, dExtAnmMaterial_c::SetFile
+ *   and dExtAnmTexSRT_c::SetFile stay mangled. Each takes Fix12<int> by
  *   value; the member spelling spills the 0x1000 and InitResources stops
  *   matching.
  * - data_ov060_0211b208 / 0211b1f8 / 0211b200 are the model, animation and
  *   texture-sequence handles. LoadFile takes the handle and SetAnim /
  *   Prepare read its filePtr.
  * - data_ov048_021115e4 / 021115f4 are the BMA and BTA this TU's
- *   MaterialChanger::Prepare and TextureTransformer::Prepare load. They sit
+ *   dExtAnmMaterial_c::Prepare and dExtAnmTexSRT_c::Prepare load. They sit
  *   in the level overlay; only ov048 has an animation record at both words.
  * - func_02016b24 is the unnamed model-mask call in InitResources.
  */
@@ -65,9 +65,13 @@ Fix12i Vec3_HorzDist(const Vector3 *a, const Vector3 *b);
 void Matrix4x3_FromTranslation(void *m, int x, int y, int z);
 /* Leftover: these four take Fix12<int> by value, so they stay mangled; the
  * member spelling spills the 0x1000 and InitResources stops matching. */
-void _ZN15TextureSequence7SetFileER8BTP_Filei5Fix12IiEj(TextureSequence *self, BTP_File *file, int flags, int speed, unsigned int start);
-void _ZN15MaterialChanger7SetFileER8BMA_Filei5Fix12IiEj(MaterialChanger *self, BMA_File *file, int flags, int speed, unsigned int start);
-void _ZN18TextureTransformer7SetFileER8BTA_Filei5Fix12IiEj(TextureTransformer *self, BTA_File *file, int flags, int speed, unsigned int start);
+/* local extern: the matched free-function spelling of SetFile; a member call is pending. */
+void _ZN15dExtAnmTexPat_c7SetFileER8BTP_Fileiit(dExtAnmTexPat_c *self, BTP_File *file, int flags,
+                                                int speed, unsigned int start);
+void _ZN17dExtAnmMaterial_c7SetFileER8BMA_Filei5Fix12IiEj(dExtAnmMaterial_c *self, BMA_File *file,
+                                                          int flags, int speed, unsigned int start);
+void _ZN15dExtAnmTexSRT_c7SetFileER8BTA_Filei5Fix12IiEj(dExtAnmTexSRT_c *self, BTA_File *file,
+                                                        int flags, int speed, unsigned int start);
 }
 
 // @symbol _ZN9daFRing_cD1Ev
@@ -142,7 +146,7 @@ s32 daFRing_c::InitResources()
     mModelAnim2.SetFile((BMD_File *)data_ov060_0211b208.filePtr, 1, 0x13);
 
     dExtFrameCtrl_c::LoadFile(*(SharedFilePtr *)&data_ov060_0211b1f8);
-    TextureSequence::LoadFile(*(SharedFilePtr *)&data_ov060_0211b200);
+    dExtAnmTexPat_c::LoadFile(*(SharedFilePtr *)&data_ov060_0211b200);
 
     func_02016b24(&mModelAnim1, 0x4000);
     func_02016b24(&mModelAnim2, 0x4000);
@@ -150,24 +154,28 @@ s32 daFRing_c::InitResources()
     mModelAnim1.SetAnim((BCA_File *)data_ov060_0211b1f8.filePtr, 0x40000000, 0x1000, 0);
     mModelAnim2.SetAnim((BCA_File *)data_ov060_0211b1f8.filePtr, 0x40000000, 0x1000, 0);
 
-    TextureSequence::Prepare(*(BMD_File *)data_ov060_0211b208.filePtr,
+    dExtAnmTexPat_c::Prepare(*(BMD_File *)data_ov060_0211b208.filePtr,
                              *(BTP_File *)data_ov060_0211b200.filePtr);
-    TextureSequence::Prepare(*(BMD_File *)data_ov060_0211b208.filePtr,
+    dExtAnmTexPat_c::Prepare(*(BMD_File *)data_ov060_0211b208.filePtr,
                              *(BTP_File *)data_ov060_0211b200.filePtr);
-    _ZN15TextureSequence7SetFileER8BTP_Filei5Fix12IiEj(
+    _ZN15dExtAnmTexPat_c7SetFileER8BTP_Fileiit(
         &mTextureSequence1, (BTP_File *)data_ov060_0211b200.filePtr, 0x40000000, 0x1000, 0);
-    _ZN15TextureSequence7SetFileER8BTP_Filei5Fix12IiEj(
+    _ZN15dExtAnmTexPat_c7SetFileER8BTP_Fileiit(
         &mTextureSequence2, (BTP_File *)data_ov060_0211b200.filePtr, 0x40000000, 0x1000, 0);
 
-    MaterialChanger::Prepare(*(BMD_File *)data_ov060_0211b208.filePtr, data_ov048_021115e4);
-    MaterialChanger::Prepare(*(BMD_File *)data_ov060_0211b208.filePtr, data_ov048_021115e4);
-    _ZN15MaterialChanger7SetFileER8BMA_Filei5Fix12IiEj(&mMaterialChanger1, &data_ov048_021115e4, 0x40000000, 0x1000, 0);
-    _ZN15MaterialChanger7SetFileER8BMA_Filei5Fix12IiEj(&mMaterialChanger2, &data_ov048_021115e4, 0x40000000, 0x1000, 0);
+    dExtAnmMaterial_c::Prepare(*(BMD_File *)data_ov060_0211b208.filePtr, data_ov048_021115e4);
+    dExtAnmMaterial_c::Prepare(*(BMD_File *)data_ov060_0211b208.filePtr, data_ov048_021115e4);
+    _ZN17dExtAnmMaterial_c7SetFileER8BMA_Filei5Fix12IiEj(&mMaterialChanger1, &data_ov048_021115e4,
+                                                         0x40000000, 0x1000, 0);
+    _ZN17dExtAnmMaterial_c7SetFileER8BMA_Filei5Fix12IiEj(&mMaterialChanger2, &data_ov048_021115e4,
+                                                         0x40000000, 0x1000, 0);
 
-    TextureTransformer::Prepare(*(BMD_File *)data_ov060_0211b208.filePtr, data_ov048_021115f4);
-    TextureTransformer::Prepare(*(BMD_File *)data_ov060_0211b208.filePtr, data_ov048_021115f4);
-    _ZN18TextureTransformer7SetFileER8BTA_Filei5Fix12IiEj(&mTextureTransformer1, &data_ov048_021115f4, 0x40000000, 0x1000, 0);
-    _ZN18TextureTransformer7SetFileER8BTA_Filei5Fix12IiEj(&mTextureTransformer2, &data_ov048_021115f4, 0x40000000, 0x1000, 0);
+    dExtAnmTexSRT_c::Prepare(*(BMD_File *)data_ov060_0211b208.filePtr, data_ov048_021115f4);
+    dExtAnmTexSRT_c::Prepare(*(BMD_File *)data_ov060_0211b208.filePtr, data_ov048_021115f4);
+    _ZN15dExtAnmTexSRT_c7SetFileER8BTA_Filei5Fix12IiEj(&mTextureTransformer1, &data_ov048_021115f4,
+                                                       0x40000000, 0x1000, 0);
+    _ZN15dExtAnmTexSRT_c7SetFileER8BTA_Filei5Fix12IiEj(&mTextureTransformer2, &data_ov048_021115f4,
+                                                       0x40000000, 0x1000, 0);
 
     mFrame = 0;
     return 1;

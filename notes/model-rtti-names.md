@@ -8,8 +8,8 @@ edges between them.
 Every row below is derived by following pointers, never by reading a string that happens to sit
 next to a vtable. **Adjacency is not ownership**: the name strings live in their own pool at
 0x0208e7ac-0x0208e8ff, physically interleaved with the vtables, so a string immediately after a
-vtable usually belongs to some *other* class. `_ZTV15MaterialChanger` is followed by
-`"14dExtAnmModel_c"`, which is **dExtAnmModel_c's** name, not MaterialChanger's.
+vtable usually belongs to some *other* class. `_ZTV17dExtAnmMaterial_c` is followed by
+`"14dExtAnmModel_c"`, which is **dExtAnmModel_c's** name, not dExtAnmMaterial_c's.
 
 ## How to read a record
 
@@ -35,19 +35,20 @@ Three `type_info` vtables appear, and the one a record points at tells you its s
 | `dExtShadowModel_c` | `_ZTV17dExtShadowModel_c` @0x0208e868 | `0x0208e770` | `dExtShadowModel_c` |
 | `dExtCommonModel_c` | `_ZTV17dExtCommonModel_c` @0x0208e8a4 | `0x0208e7a0` | `dExtCommonModel_c` |
 | `dExtFrameCtrl_c` | `_ZTV15dExtFrameCtrl_c` @0x0208e7e4 | `0x0208e744` | `dExtFrameCtrl_c` |
-| `TextureTransformer` | `_ZTV18TextureTransformer` @0x0208e7c4 | `0x0208e74c` | `dExtAnmTexSRT_c` |
-| `TextureSequence` | `_ZTV15TextureSequence` @0x0208e7d4 | `0x0208e758` | `dExtAnmTexPat_c` |
-| `MaterialChanger` | `_ZTV15MaterialChanger` @0x0208e7f4 | `0x0208e764` | `dExtAnmMaterial_c` |
+| `dExtAnmTexSRT_c` | `_ZTV15dExtAnmTexSRT_c` @0x0208e7c4 | `0x0208e74c` | `dExtAnmTexSRT_c` |
+| `dExtAnmTexPat_c` | `_ZTV15dExtAnmTexPat_c` @0x0208e7d4 | `0x0208e758` | `dExtAnmTexPat_c` |
+| `dExtAnmMaterial_c` | `_ZTV17dExtAnmMaterial_c` @0x0208e7f4 | `0x0208e764` | `dExtAnmMaterial_c` |
 | `dExtAnmModel_c` | `_ZTV14dExtAnmModel_c` @0x0208e980 | `0x0208e924` | `dExtAnmModel_c` |
 | `dExtAnm2Model_c` | `_ZTV15dExtAnm2Model_c` @0x0208e9b4 | `0x0208e788` | `dExtAnm2Model_c` |
 | `dExtBlendAnmModel_c` | `_ZTV19dExtBlendAnmModel_c` @0x0208e94c | `0x0208e77c` | `dExtBlendAnmModel_c` |
 
-Every model class and the frame controller now carry their cartridge names. The tree's earlier
+Every class in the table now carries its cartridge name. The tree's earlier
 coined spellings were `ModelBase` (`dExtModel_c`), `Model` (`dExtSimpleModel_c`), `ModelAnim`
 (`dExtAnmModel_c`), `ModelAnim2` (`dExtAnm2Model_c`), `BlendModelAnim` (`dExtBlendAnmModel_c`),
-`ShadowModel`, `CommonModel` and `Animation` (`dExtFrameCtrl_c`). The three texture/material
-controllers still use their coined names. Each vtable's typeinfo word (V-4) points at the record
-in the same row; every offset-to-top word is 0.
+`ShadowModel`, `CommonModel`, `Animation` (`dExtFrameCtrl_c`), `TextureTransformer`
+(`dExtAnmTexSRT_c`), `TextureSequence` (`dExtAnmTexPat_c`) and `MaterialChanger`
+(`dExtAnmMaterial_c`). Each vtable's typeinfo word (V-4) points at the record in the same row;
+every offset-to-top word is 0.
 
 ## The hierarchy, as the ROM states it
 
@@ -57,9 +58,9 @@ in the same row; every offset-to-top word is 0.
     `-- dExtCommonModel_c
 
     dExtFrameCtrl_c                                (root, __class_type_info)
-    |-- dExtAnmTexSRT_c        TextureTransformer
-    |-- dExtAnmTexPat_c        TextureSequence
-    `-- dExtAnmMaterial_c      MaterialChanger
+    |-- dExtAnmTexSRT_c                            (__si_class_type_info)
+    |-- dExtAnmTexPat_c                            (__si_class_type_info)
+    `-- dExtAnmMaterial_c                          (__si_class_type_info)
 
     dExtAnmModel_c                                 (__vmi_class_type_info, 2 bases)
     |   base[0] dExtSimpleModel_c  offset 0x00
@@ -82,9 +83,9 @@ Two things fall out of this that the source already relies on:
 structural rather than a judgement call:
 
     _ZTV15dExtFrameCtrl_c @0x0208e7e4  [~dExtFrameCtrl_c D1, ~dExtFrameCtrl_c D0]
-                          @0x0208e7ec  0x00000000  <- MaterialChanger's offset-to-top
-                          @0x0208e7f0  0x0208e764  <- MaterialChanger's typeinfo
-    _ZTV15MaterialChanger @0x0208e7f4  [D1, D0]
+                          @0x0208e7ec  0x00000000  <- dExtAnmMaterial_c's offset-to-top
+                          @0x0208e7f0  0x0208e764  <- dExtAnmMaterial_c's typeinfo
+    _ZTV17dExtAnmMaterial_c @0x0208e7f4  [D1, D0]
 
 The zero after dExtFrameCtrl_c's destructor pair is not an empty slot; it is the `offset-to-top` word of
 the vtable that follows. Reading it as a pure-virtual slot is the mistake this layout invites.

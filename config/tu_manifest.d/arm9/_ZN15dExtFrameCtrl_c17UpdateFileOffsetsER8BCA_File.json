@@ -3,7 +3,7 @@
   "boundary_confidence": "high",
   "boundary_evidence": [
     "One function is the whole TU: dExtFrameCtrl_c::UpdateFileOffsets at 0x020469ac..0x020469e0 rebases the four file-relative offsets of a BCA_File into pointers. The fold map (mangled-fold-decisions.md: LoadFile and UpdateFileOffsets are other runs, each one its own file; the 0x020469AC entry reads [this,#8/#0xC/#0x10/#0x14]) keeps it out of the class-body file, whose constructors stay there and whose LoadFile is the earlier file at 0x0201794C.",
-    "The previous function, TextureSequence::UpdateFileOffsets ending at 0x020469ac, is the sibling class's own method in its own TU; the next function, func_020469e0 (PURE-C, LDR r0,[r0,#0x38]; BX lr), is not this method. Neither neighbour is absorbed.",
+    "The previous function, dExtAnmTexPat_c::UpdateFileOffsets ending at 0x020469ac, is the sibling class's own method in its own TU; the next function, func_020469e0 (PURE-C, LDR r0,[r0,#0x38]; BX lr), is not this method. Neither neighbour is absorbed.",
     "The class TU manifest arm9/dExtFrameCtrl_c records this explicitly: LoadFile (0x0201794c) and UpdateFileOffsets (0x020469ac) are dExtFrameCtrl_c members that link in other neighbourhoods and keep their own shards; they are not part of that run."
   ],
   "compiler_only_output": [],

@@ -14,7 +14,7 @@
  * D2 body.
  *
  * deslop leftovers:
- * - TextureTransformer::SetFile / dBgW_KcMbg::SetFile 6az: InitResources
+ * - dExtAnmTexSRT_c::SetFile / dBgW_KcMbg::SetFile 6az: InitResources
  *   passes Fix12<int> by value; the header method form size-DIFFs.
  * - Sound::PlayLong / Sound::PlaySecretSound come from Sound.h, which now
  *   declares both. The ROM mangle is RK7Vector3 (const Vector3 &); a pointer
@@ -56,8 +56,8 @@ struct C0WaterCollisionFilePtr : SharedFilePtr {
 };
 
 extern "C" {
-void _ZN18TextureTransformer7SetFileER8BTA_Filei5Fix12IiEj(
-    TextureTransformer *self, BTA_File *file, int flags, int speed, u32 startFrame);
+void _ZN15dExtAnmTexSRT_c7SetFileER8BTA_Filei5Fix12IiEj(dExtAnmTexSRT_c *self, BTA_File *file,
+                                                        int flags, int speed, u32 startFrame);
 void _ZN10dBgW_KcMbg7SetFileEP8KCL_FileRK9Matrix4x35Fix12IiEsR10CLPS_Block(
     dBgW_KcMbg *self, KCL_File *file, const Matrix4x3 *mat, int scale, s16 angY,
     CLPS_Block *clps);
@@ -78,7 +78,7 @@ extern int           data_0209f32c;
  * Every instruction the cartridge has here falls out of the one `new`.
  * 832 = 0x340 is the class's own size, loaded into fBase_c's size_t
  * operator new; dBgActor_c's C2, this class's vptr store, and
- * TextureTransformer C1 on the member at 0x320 are the implicit
+ * dExtAnmTexSRT_c C1 on the member at 0x320 are the implicit
  * constructor. The null check is the one `new` itself emits. Declaring a
  * constructor of our own would emit a `bl` the factory does not have. */
 extern "C" daObjC0Water_c *daObjC0Water_c_classInit()
@@ -92,10 +92,10 @@ int daObjC0Water_c::InitResources()
     dExtSimpleModel_c::LoadFile(data_ov012_021124d0);
     dBgW_Kc::LoadFile(data_ov012_021124c8);
     mModel.SetFile((BMD_File *)data_ov012_021124d0.filePtr, 1, 0x14);
-    TextureTransformer::Prepare(*(BMD_File *)data_ov012_021124d0.filePtr, data_ov012_02111c24);
+    dExtAnmTexSRT_c::Prepare(*(BMD_File *)data_ov012_021124d0.filePtr, data_ov012_02111c24);
     /* 6az: header SetFile takes Fix12<int> by value. */
-    _ZN18TextureTransformer7SetFileER8BTA_Filei5Fix12IiEj(
-        &mTextureTransformer, &data_ov012_02111c24, 0, 0x1000, 0);
+    _ZN15dExtAnmTexSRT_c7SetFileER8BTA_Filei5Fix12IiEj(&mTextureTransformer, &data_ov012_02111c24,
+                                                       0, 0x1000, 0);
     UpdateModelPosAndRotY();
     UpdateClsnPosAndRot();
     /* 6az: header SetFile takes Fix12<int> by value. */

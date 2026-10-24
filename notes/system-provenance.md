@@ -305,7 +305,7 @@ level's texture-animation table (`data_0209f340`):
 
 | Offset | Name | Evidence |
 | --- | --- | --- |
-| 0x00 | `mTransformer` | `dScStage_c::LoadTextureTransformers` news a 0x14-byte `TextureTransformer`, constructs it, stores it here and calls `SetFile` on it; `dScStage_c::RenderModel` passes it to `TextureTransformer::Update`; `dScStage_c::CleanupResources` destroys it through its vtable. |
+| 0x00 | `mTransformer` | `dScStage_c::LoadTextureTransformers` news a 0x14-byte `dExtAnmTexSRT_c`, constructs it, stores it here and calls `SetFile` on it; `dScStage_c::RenderModel` passes it to `dExtAnmTexSRT_c::Update`; `dScStage_c::CleanupResources` destroys it through its vtable. |
 | 0x04 | `mActive` | Gates the slot in three places: `dScStage_c::Render` only advances the animation when it is set, and `dScStage_c::RenderModel` and `dScStage_c::RenderModelTransparent` both use it to decide whether that part's materials get the transparent bit or lose it. |
 | 0x08 | `mBlockList` | `dScStage_c::CleanupResources` walks it as a singly linked list, freeing each block and following the next pointer at the block's `+0x0c` — which is inside the *block*, not the slot; the slot's own stride is 0xc. |
 

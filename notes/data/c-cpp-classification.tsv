@@ -746,15 +746,15 @@ src/_ZN9dEntObj_cD0Ev.c	DTOR-ONLY	ov075	dEntObj_c	dEntObj_c/dEntObj_c	_ZN9dEntOb
 src/_ZN15dFdBrightness_cD2Ev.c	DTOR-ONLY	arm9		dFdBrightness_c	_ZN15dFdBrightness_cD2Ev	1		True		-
 src/_ZN16daObjKm2_Agaru_cD0Ev.c	DTOR-ONLY	ov045	daObjKm2_Agaru_c	daObjKm2_Agaru_c/daObjKm2_Agaru_c	_ZN16daObjKm2_Agaru_cD0Ev	1		True	_ZTV10dBgActor_c/_ZTV16daObjKm2_Agaru_c	-
 src/_ZN15IceSlideManagerD0Ev.c	DTOR-ONLY	ov019	daSldMng_c	IceSlideManager/daSldMng_c	_ZN15IceSlideManagerD0Ev	1		True	_ZTV15IceSlideManager	-
-src/_ZN15MaterialChanger7SetFileER8BMA_Filei5Fix12IiEj.c	P3-mangled-method-only	arm9		MaterialChanger	_ZN15MaterialChanger7SetFileER8BMA_Filei5Fix12IiEj	1		True		by-value-class-param
-src/_ZN15MaterialChangerC1Ev.c	P3-mangled-method-only	arm9		MaterialChanger	_ZN15MaterialChangerC1Ev	1		True	_ZTV15MaterialChanger	-
+src/_ZN17dExtAnmMaterial_c7SetFileER8BMA_Filei5Fix12IiEj.c	P3-mangled-method-only	arm9		dExtAnmMaterial_c	_ZN17dExtAnmMaterial_c7SetFileER8BMA_Filei5Fix12IiEj	1		True		by-value-class-param
+src/_ZN17dExtAnmMaterial_cC1Ev.c	P3-mangled-method-only	arm9		dExtAnmMaterial_c	_ZN17dExtAnmMaterial_cC1Ev	1		True	_ZTV17dExtAnmMaterial_c	-
 src/_ZN15ModelComponents21UpdateVertsUsingBonesEv.c	P3-mangled-method-only	arm9		ModelComponents	_ZN15ModelComponents21UpdateVertsUsingBonesEv	1	active	False		no-header:ModelComponents
 src/_ZN8daSCre_cD0Ev.c	DTOR-ONLY	ov018	daSCre_c	PowerStarCreate/daSCre_c	_ZN8daSCre_cD0Ev	1		True	_ZTV8daSCre_c	-
 src/_ZN13daObjCloset_c13InitResourcesEv.c	P1-vtable+mangled	ov058	daObjCloset_c	daObjCloset_c/daObjCloset_c	vtable daObjCloset_c slot 0 @0x211161c | _ZN13daObjCloset_c13InitResourcesEv	1		False		no-header:daObjCloset_c/daObjCloset_c
 src/_ZN13daObjCloset_c16CleanupResourcesEv.c	P1-vtable+mangled	ov058	daObjCloset_c	daObjCloset_c/daObjCloset_c	vtable daObjCloset_c slot 3 @0x2111234 | _ZN13daObjCloset_c16CleanupResourcesEv	1		False		no-header:daObjCloset_c/daObjCloset_c
 src/_ZN15RotatingFirebarD0Ev.c	DTOR-ONLY	ov064	daObjFl_KomaU_c	RotatingFirebar/daObjFl_KomaU_c	_ZN15RotatingFirebarD0Ev	1		True	_ZTV10dBgActor_c/_ZTV15RotatingFirebar	-
-src/_ZN15TextureSequence7SetFileER8BTP_Filei5Fix12IiEj.c	P3-mangled-method-only	arm9		TextureSequence	_ZN15TextureSequence7SetFileER8BTP_Filei5Fix12IiEj	1		True		by-value-class-param
-src/_ZN15TextureSequenceC1Ev.c	P3-mangled-method-only	arm9		TextureSequence	_ZN15TextureSequenceC1Ev	1		True	_ZTV15TextureSequence	-
+src/_ZN15dExtAnmTexPat_c7SetFileER8BTP_Filei5Fix12IiEj.c	P3-mangled-method-only	arm9		dExtAnmTexPat_c	_ZN15dExtAnmTexPat_c7SetFileER8BTP_Filei5Fix12IiEj	1		True		by-value-class-param
+src/_ZN15dExtAnmTexPat_cC1Ev.c	P3-mangled-method-only	arm9		dExtAnmTexPat_c	_ZN15dExtAnmTexPat_cC1Ev	1		True	_ZTV15dExtAnmTexPat_c	-
 src/_ZN15TtcRotatingCubeD0Ev.c	DTOR-ONLY	ov065	daObjCtRotateBlock_c	TtcRotatingCube/daObjCtRotateBlock_c	_ZN15TtcRotatingCubeD0Ev	1		True	_ZTV10dBgActor_c	-
 src/_ZN15TtcRotatingCubeD1Ev.c	DTOR-ONLY	ov065	daObjCtRotateBlock_c	TtcRotatingCube/daObjCtRotateBlock_c	_ZN15TtcRotatingCubeD1Ev	1		True	_ZTV10dBgActor_c	-
 src/_ZN16daObjCtMecha08_c8BehaviorEv.c	P1-vtable+mangled	ov065	daObjCtMecha08_c	daObjCtMecha08_c/daObjCtMecha08_c	vtable daObjCtMecha08_c slot 6 @0x211b8f8 | _ZN16daObjCtMecha08_c8BehaviorEv	1		True		-
@@ -801,8 +801,8 @@ src/_ZN17daObjKm3_Dorifu_cD0Ev.c	DTOR-ONLY	ov047	daObjKm3_Dorifu_c	daObjKm3_Dori
 src/_ZN18RotatingPlatformRrD0Ev.c	DTOR-ONLY	ov036	daObjRc_Kaitendai_c	RotatingPlatformRr/daObjRc_Kaitendai_c	_ZN18RotatingPlatformRrD0Ev	1		True	_ZTV10dBgActor_c/_ZTV16daObjKaitendai_c/_ZTV18RotatingPlatformRr	-
 src/_ZN17daObjBk_Ukisima_cD0Ev.c	DTOR-ONLY	ov015	daObjBk_Ukisima_c	daObjBk_Ukisima_c/daObjBk_Ukisima_c	_ZN17daObjBk_Ukisima_cD0Ev	1		True	_ZTV10dBgActor_c/_ZTV16daObjKaitendai_c/_ZTV17daObjBk_Ukisima_c	-
 src/_ZN18SolidHeapAllocatorC1EPvj.c	P3-mangled-method-only	arm9		SolidHeapAllocator	_ZN18SolidHeapAllocatorC1EPvj	1		True		-
-src/_ZN18TextureTransformer7SetFileER8BTA_Filei5Fix12IiEj.c	P3-mangled-method-only	arm9		TextureTransformer	_ZN18TextureTransformer7SetFileER8BTA_Filei5Fix12IiEj	1		True		by-value-class-param
-src/_ZN18TextureTransformerC1Ev.c	P3-mangled-method-only	arm9		TextureTransformer	_ZN18TextureTransformerC1Ev	1		True	_ZTV18TextureTransformer	-
+src/_ZN15dExtAnmTexSRT_c7SetFileER8BTA_Filei5Fix12IiEj.c	P3-mangled-method-only	arm9		dExtAnmTexSRT_c	_ZN15dExtAnmTexSRT_c7SetFileER8BTA_Filei5Fix12IiEj	1		True		by-value-class-param
+src/_ZN15dExtAnmTexSRT_cC1Ev.c	P3-mangled-method-only	arm9		dExtAnmTexSRT_c	_ZN15dExtAnmTexSRT_cC1Ev	1		True	_ZTV15dExtAnmTexSRT_c	-
 src/_ZN18TiltingPlatformBfs13InitResourcesEv.c	P1-vtable+mangled	ov045	daObjKm2_Gura_c	TiltingPlatformBfs/daObjKm2_Gura_c	vtable daObjKm2_Gura_c slot 0 @0x2111cf8 | _ZN18TiltingPlatformBfs13InitResourcesEv	1		True		-
 src/_ZN18TiltingPlatformBfs16CleanupResourcesEv.c	P1-vtable+mangled	ov045	daObjKm2_Gura_c	TiltingPlatformBfs/daObjKm2_Gura_c	vtable daObjKm2_Gura_c slot 3 @0x2111ce4 | _ZN18TiltingPlatformBfs16CleanupResourcesEv	1		True		-
 src/_ZN18TiltingPlatformBfsD0Ev.c	DTOR-ONLY	ov045	daObjKm2_Gura_c	TiltingPlatformBfs/daObjKm2_Gura_c	_ZN18TiltingPlatformBfsD0Ev	1		True	_ZTV10dBgActor_c/_ZTV15daObjGuragura_c/_ZTV18TiltingPlatformBfs	-

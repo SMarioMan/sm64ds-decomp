@@ -33,7 +33,7 @@ struct TrmpItem {
     u8 pad_09d[0x3];      /* 0x09d */
     u8 mModels[3][0x50];  /* 0x0a0 -- three Models: rings A, B and C */
     void *mModel;         /* 0x190 -- the variant drawn */
-    u8 mTexAnim[0x14];    /* 0x194 -- a TextureTransformer */
+    u8 mTexAnim[0x14];    /* 0x194 -- a dExtAnmTexSRT_c */
     u8 pad_1a8[0x28];     /* 0x1a8 */
 };
 

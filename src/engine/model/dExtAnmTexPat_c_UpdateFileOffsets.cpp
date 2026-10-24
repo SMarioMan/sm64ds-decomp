@@ -1,6 +1,6 @@
 //cpp
-// @symbol _ZN15TextureSequence17UpdateFileOffsetsER8BTP_File
-/* TextureSequence::UpdateFileOffsets -- the BTP load-time fixup, arm9
+// @symbol _ZN15dExtAnmTexPat_c17UpdateFileOffsetsER8BTP_File
+/* dExtAnmTexPat_c::UpdateFileOffsets -- the BTP load-time fixup, arm9
  * 0x020468a0..0x020469ac. Every record table is stored file-relative; this
  * walks the header in order, rebasing each table pointer and the name word
  * inside each record (the same words func_02046d50 later reads through
@@ -13,7 +13,7 @@
  * unk_10/unk_14/unk_18 stay placeholders: UpdateFileOffsets rebases them
  * but neither it nor func_02046d50 reads what they point at.
  */
-#include "TextureSequence.h"
+#include "dExtAnmTexPat_c.h"
 
 #define REBASE(p) ((char *)(p) + base)
 
@@ -38,7 +38,7 @@ struct BTPSeqRecord {
 typedef char BTPNameRecord_size_must_be_8[sizeof(BTPNameRecord) == 8 ? 1 : -1];
 typedef char BTPSeqRecord_size_must_be_0xc[sizeof(BTPSeqRecord) == 0xc ? 1 : -1];
 
-void TextureSequence::UpdateFileOffsets(BTP_File &file) {
+void dExtAnmTexPat_c::UpdateFileOffsets(BTP_File &file) {
     int base = (int)&file;
     int i = 0;
     if (file.texRecords)

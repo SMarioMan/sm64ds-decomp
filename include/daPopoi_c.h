@@ -40,7 +40,7 @@
 #include "dCcAc_c.h"
 #include "dCcAcPos_c.h"
 #include "dExtShadowModel_c.h"
-#include "TextureTransformer.h"
+#include "dExtAnmTexSRT_c.h"
 #include "dBgCh_Actr.h"
 
 /* Actor IDs this class compares against (symbols/actor_debug_names.tsv). */

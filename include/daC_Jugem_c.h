@@ -10,7 +10,7 @@
  *
  *     0x110 dExtAnmModel_c                  0x64    -> 0x174
  *     0x174 dExtAnmModel_c                  0x64    -> 0x1d8
- *     0x1d8 TextureSequence            0x14    -> 0x1ec
+ *     0x1d8 dExtAnmTexPat_c            0x14    -> 0x1ec
  *     0x1ec state-record pointer        0x4    -> 0x1f0
  *     0x1f0 dExtShadowModel_c          0x28    -> 0x218
  *     0x218 dExtShadowModel_c          0x28    -> 0x240
@@ -27,7 +27,7 @@
 #include "dEnemyBase_c.h"
 #include "dExtAnmModel_c.h"
 #include "dExtShadowModel_c.h"
-#include "TextureSequence.h"
+#include "dExtAnmTexPat_c.h"
 
 struct daC_Jugem_c : dEnemyBase_c {
     /* Not Matrix4x3: this TU sees math/Matrix.h first, and that spelling's
@@ -41,7 +41,7 @@ struct daC_Jugem_c : dEnemyBase_c {
 
     dExtAnmModel_c mModelAnim1;                         /* 0x110 */
     dExtAnmModel_c mModelAnim2;                         /* 0x174 */
-    TextureSequence              mTextureSequence;      /* 0x1d8 */
+    dExtAnmTexPat_c mTextureSequence;                   /* 0x1d8 */
     StateFn                     *mState;                /* 0x1ec */
     dExtShadowModel_c            mShadowModel1;         /* 0x1f0 */
     dExtShadowModel_c            mShadowModel2;         /* 0x218 */

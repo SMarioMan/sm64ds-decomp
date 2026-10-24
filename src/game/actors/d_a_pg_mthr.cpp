@@ -32,7 +32,7 @@ enum d_a_pg_mthr_AssetId {
 #include "nitro/fx/fx.h"
 #include "decl_common.h"
 #include "SharedFilePtr.h"
-#include "TextureSequence.h"
+#include "dExtAnmTexPat_c.h"
 #include "dBgCh_Gnd.h"
 #include "dExtFrameCtrl_c.h"
 #include "SurfaceInfo.h"
@@ -111,7 +111,9 @@ extern void Matrix4x3_FromRotationY(void *m, int angle);
 extern void Matrix4x3_ApplyInPlaceToRotationY(Matrix4x3 *mf, short angY);
 extern void Matrix4x3_ApplyInPlaceToRotationX(Matrix4x3 *mf, short angX);
 extern Matrix4x3 data_020a0e68;
-extern void _ZN15TextureSequence7SetFileER8BTP_Filei5Fix12IiEj(void *, BTP_File &f, int a, int b, unsigned int c);
+/* local extern: the matched free-function spelling of SetFile; a member call is pending. */
+extern void _ZN15dExtAnmTexPat_c7SetFileER8BTP_Fileiit(void *, BTP_File &f, int a, int b,
+                                                       unsigned int c);
 extern PgMthrAnimFileResHandle gPenguinWalkAnimationFile;
 extern PgMthrTexSeqFileHandle gPenguinAngryTextureSequenceFile;
 extern void Matrix4x3_FromTranslation(void *m, int x, int y, int z);
@@ -145,8 +147,8 @@ int daPgMthr_c::InitResources()
         dExtFrameCtrl_c::LoadFile(*(SharedFilePtr *)data_ov018_02112c0c[i]);
     for (int i = 0; i < 2; i++) {
         SharedFilePtr *t = data_ov018_02112c04[i];
-        TextureSequence::LoadFile(*t);
-        TextureSequence::Prepare(*(BMD_File *)data_ov018_02113c00.filePtr, *(BTP_File *)t->filePtr);
+        dExtAnmTexPat_c::LoadFile(*t);
+        dExtAnmTexPat_c::Prepare(*(BMD_File *)data_ov018_02113c00.filePtr, *(BTP_File *)t->filePtr);
     }
     if (mShadowModel.InitCylinder() == 0)
         return 0;
@@ -242,7 +244,7 @@ int daPgMthr_c::func_ov018_021122ec()
 {
     mModelAnim.SetAnim((BCA_File *)gPenguinWait1AnimationFile.filePtr, 0, 0x1000, 0);
     mModelAnim.speed = 0x1000;
-    _ZN15TextureSequence7SetFileER8BTP_Filei5Fix12IiEj(
+    _ZN15dExtAnmTexPat_c7SetFileER8BTP_Fileiit(
         &mTextureSequence, *(BTP_File *)gPenguinWait1TextureSequenceFile.filePtr, 0, 0x1000, 0);
     mHorzSpeed = 0;
     mPlayer = 0;
@@ -363,7 +365,7 @@ int daPgMthr_c::func_ov018_02111f1c()
     mHorzSpeed = 0x5000;
     mModelAnim.SetAnim((BCA_File *)gPenguinWalkAnimationFile.filePtr, 0, 0x1000, 0);
     mModelAnim.speed = 0x1000;
-    _ZN15TextureSequence7SetFileER8BTP_Filei5Fix12IiEj(
+    _ZN15dExtAnmTexPat_c7SetFileER8BTP_Fileiit(
         &mTextureSequence, *(BTP_File *)gPenguinAngryTextureSequenceFile.filePtr, 0, 0x1000, 0);
     unk_37c = 2;
     return 1;

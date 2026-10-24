@@ -9,7 +9,7 @@
 #include "dExtAnmModel_c.h"
 #include "dExtShadowModel_c.h"
 #include "dCcAcPos_c.h"
-#include "TextureSequence.h"
+#include "dExtAnmTexPat_c.h"
 
 /* The ROM's RTTI name for this class is daEykn_c: _ZTS8daEykn_c at ov071
  * 0x02122cd8, and _ZTI8daEykn_c at 0x02122ce4 is an __si_class_type_info whose
@@ -25,10 +25,10 @@ struct daEykn_c : dActor_c {
     /* dExtAnmModel_c member, named by _ZN14dExtAnmModel_cD1Ev at +0xd4 -- a relocation the ROM build
        checks. D1 and not D2, so it is this type and not an inlined base. */
     dExtAnmModel_c mModelAnim; /* 0x0d4 */
-    /* TextureSequence member. The cartridge's own ~daEykn_c calls _ZN15TextureSequenceD1Ev
+    /* dExtAnmTexPat_c member. The cartridge's own ~daEykn_c calls _ZN15dExtAnmTexPat_cD1Ev
        at +0x138 (D0/D1), a relocation the ROM build checks; recovered by
        tools/dtor_members.py. D1 and not D2, so it is this type and not an inlined base. */
-    TextureSequence mTextureSequence;            /* 0x138 */
+    dExtAnmTexPat_c mTextureSequence; /* 0x138 */
     /* dExtShadowModel_c member. The cartridge's own ~daEykn_c calls _ZN17dExtShadowModel_cD1Ev at +0x14c
        (D0/D1), a relocation the ROM build checks; recovered by tools/dtor_members.py.
        D1 and not D2, so it is this type and not an inlined base. */

@@ -18,7 +18,7 @@
 #define DAPGMTHR_C_H
 #include "types.h"
 #include "dExtAnmModel_c.h"
-#include "TextureSequence.h"
+#include "dExtAnmTexPat_c.h"
 #include "dExtShadowModel_c.h"
 #include "dCcAc_c.h"
 #include "dBgCh_Actr.h"
@@ -30,7 +30,7 @@
 struct daPgMthr_c : dActor_c {
     u8  pad_0d0[0x4];
     dExtAnmModel_c mModelAnim;        /* 0x0d4 */
-    TextureSequence mTextureSequence; /* 0x138 */
+    dExtAnmTexPat_c mTextureSequence; /* 0x138 */
     dExtShadowModel_c mShadowModel;        /* 0x14c */
     dCcAc_c mdCcAc_c;                /* 0x174 */
     dBgCh_Actr mWithMeshClsn;        /* 0x1a8 */
@@ -110,10 +110,10 @@ struct daPgMthr_c {
        mAnimation (+0x50 = the dExtFrameCtrl_c base), which the header declared separately inside
        it. */
     dExtAnmModel_c mModelAnim; /* 0x0d4 */
-    /* TextureSequence member, named by the class's own destructor calling
-       TextureSequence's D1 at +0x138 -- a relocation the ROM build
+    /* dExtAnmTexPat_c member, named by the class's own destructor calling
+       dExtAnmTexPat_c's D1 at +0x138 -- a relocation the ROM build
        checks. Was a u8 marker. [_ZN10daPgMthr_cD0Ev, now in src/game/actors/d_a_pg_mthr.cpp] */
-    TextureSequence mTextureSequence;            /* 0x138 */
+    dExtAnmTexPat_c mTextureSequence; /* 0x138 */
     /* dExtShadowModel_c member, named by the class's own destructor calling
        dExtShadowModel_c's D1 at +0x14c -- a relocation the ROM build
        checks. Was a u8 marker. [_ZN10daPgMthr_cD0Ev, now in src/game/actors/d_a_pg_mthr.cpp] */

@@ -20,8 +20,8 @@ struct CupModelParts {
     u8 pmf[8];                   /* +0x00 -- Presenter_Update calls this */
     u8 blendModelAnim[0x70];     /* +0x08 -- dExtBlendAnmModel_c */
     u8 model[0x50];              /* +0x78 -- dExtSimpleModel_c */
-    u8 textureSequence[0x14];    /* +0xc8 -- TextureSequence */
-    u8 textureTransformer[0x14]; /* +0xdc -- TextureTransformer */
+    u8 textureSequence[0x14];    /* +0xc8 -- dExtAnmTexPat_c */
+    u8 textureTransformer[0x14]; /* +0xdc -- dExtAnmTexSRT_c */
     u8 filePtr[0x90];            /* +0xf0 -- 18 SharedFilePtr, through +0x178 */
     s32 pos[3];  /* +0x180 -- Presenter_UpdateMatrix's translation; Presenter_Load zeroes it */
     s32 lean[4]; /* +0x18c -- Presenter_TrackStylus eases these toward the touch;

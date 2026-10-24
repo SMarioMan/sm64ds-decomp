@@ -118,6 +118,18 @@
    "ref": "config/converted-baseline.json"
   },
   {
+   "file": "notes/agents/handoffs/fold-arm9-texture-1018.md",
+   "ref": "config/tu_manifest.d/arm9/TextureTransformer.json"
+  },
+  {
+   "file": "notes/agents/handoffs/fold-arm9-texture-1018.md",
+   "ref": "include/TextureTransformer.h"
+  },
+  {
+   "file": "notes/agents/handoffs/fold-arm9-texture-1018.md",
+   "ref": "src/engine/model/TextureTransformer.cpp"
+  },
+  {
    "file": "notes/agents/handoffs/fold-ov006-curling2-1005.md",
    "ref": "config/tu_manifest.d/ov006/dScMgCurling2_c_upper.json"
   },
@@ -520,6 +532,10 @@
   {
    "file": "notes/agents/handoffs/readable-ov034-hanachan-0925.md",
    "ref": "src/engine/model/Model.cpp"
+  },
+  {
+   "file": "notes/agents/handoffs/readable-ov034-hanachan-0925.md",
+   "ref": "src/engine/model/TextureSequence.cpp"
   },
   {
    "file": "notes/agents/handoffs/readable-ov034-hanachan-0925.md",

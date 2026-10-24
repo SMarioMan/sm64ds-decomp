@@ -9,7 +9,7 @@
  * factory constructs the four owned member regions in declaration order and
  * D1/D0 destroy them in reverse order, independently proving the layout below:
  * dExtAnmModel_c @ 0x0d4, dExtSimpleModel_c @ 0x138, dExtShadowModel_c @ 0x188, and two
- * TextureSequence objects @ 0x1b0. The remaining tail is a state descriptor
+ * dExtAnmTexPat_c objects @ 0x1b0. The remaining tail is a state descriptor
  * pointer followed by the shadow matrix used by Behavior.
  *
  * The ROM vtable has exactly dActor_c's 31 slots. Slots 0, 3, 6, 9, 12, 16
@@ -29,7 +29,7 @@
 #include "dExtAnmModel_c.h"
 #include "dExtSimpleModel_c.h"
 #include "dExtShadowModel_c.h"
-#include "TextureSequence.h"
+#include "dExtAnmTexPat_c.h"
 #include "math/Matrix.h"
 
 struct Player;
@@ -40,7 +40,7 @@ struct daLuigi_c : dActor_c {
     dExtAnmModel_c mModelAnim;                      /* 0x0d4 */
     dExtSimpleModel_c mModel;                       /* 0x138 */
     dExtShadowModel_c mShadowModel;                 /* 0x188 */
-    TextureSequence mTextureSequences[2];     /* 0x1b0 */
+    dExtAnmTexPat_c mTextureSequences[2];           /* 0x1b0 */
     daLuigiState *mState;                     /* 0x1d8 */
     Matrix4x3 mShadowMatrix;                  /* 0x1dc */
 

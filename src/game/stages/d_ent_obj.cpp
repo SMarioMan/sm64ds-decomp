@@ -25,7 +25,7 @@ struct System {
  *
  * leftovers:
  *  - The Fix12-by-value member calls (dExtBlendAnmModel_c::SetAnim,
- *    dExtAnmModel_c::SetAnim, TextureSequence::SetFile,
+ *    dExtAnmModel_c::SetAnim, dExtAnmTexPat_c::SetFile,
  *    dExtShadowModel_c::InitModel, Particle::System::New,
  *    G3i::PerspectiveW_) keep measured scalar-extern spellings: spelled as
  *    the real member types, mwccarm homes the register arguments and the
@@ -98,8 +98,9 @@ struct EntObjTextureSequenceFileHandle : SharedFilePtr {
  * class type, mwccarm homes the register arguments and the callers grow, so
  * the measured scalar views stay. */
 extern "C" {
-void _ZN15TextureSequence7SetFileER8BTP_Filei5Fix12IiEj(void *seq, void *file, int flags, int speed,
-                                                        unsigned short startFrame);
+/* local extern: the matched free-function spelling of SetFile; a member call is pending. */
+void _ZN15dExtAnmTexPat_c7SetFileER8BTP_Fileiit(void *seq, void *file, int flags, int speed,
+                                                unsigned short startFrame);
 void _ZN17dExtShadowModel_c9InitModelEP9Matrix4x35Fix12IiES3_S3_j(void *shadow, Matrix4x3 *mat,
                                                                   int radius, int height, int depth,
                                                                   unsigned char flags);
@@ -365,9 +366,8 @@ void UnknownVsPlayer::func_ov075_021143e4() {
         mMoveState = MOVE_POSE_PARTICLES;
         data_ov075_0211d380 >>= 2;
     }
-    TextureSequence::Prepare(*(BMD_File *)data_ov075_0211d3c4.filePtr, *(BTP_File *)textureFile);
-    _ZN15TextureSequence7SetFileER8BTP_Filei5Fix12IiEj(&mTextureSequence, textureFile, 0, 0x1000,
-                                                       0);
+    dExtAnmTexPat_c::Prepare(*(BMD_File *)data_ov075_0211d3c4.filePtr, *(BTP_File *)textureFile);
+    _ZN15dExtAnmTexPat_c7SetFileER8BTP_Fileiit(&mTextureSequence, textureFile, 0, 0x1000, 0);
     {
         unsigned int randomValue = (unsigned int)RandomIntInternal(&data_0209e650);
         int frameCount = mModel.GetFrameCount();
@@ -696,9 +696,8 @@ int UnknownVsPlayer::func_ov075_02114ddc(unsigned char kind, unsigned char playe
         mMoveState = MOVE_CHOOSE_POSE;
     }
 
-    TextureSequence::Prepare(*(BMD_File *)data_ov075_0211d3c4.filePtr, *(BTP_File *)textureFile);
-    _ZN15TextureSequence7SetFileER8BTP_Filei5Fix12IiEj(&mTextureSequence, textureFile, 0, 0x1000,
-                                                       0);
+    dExtAnmTexPat_c::Prepare(*(BMD_File *)data_ov075_0211d3c4.filePtr, *(BTP_File *)textureFile);
+    _ZN15dExtAnmTexPat_c7SetFileER8BTP_Fileiit(&mTextureSequence, textureFile, 0, 0x1000, 0);
 
     {
         unsigned randomValue = (unsigned)RandomIntInternal(&data_0209e650);
@@ -1009,10 +1008,10 @@ int dEntObj_c::InitResources() {
         dExtFrameCtrl_c::LoadFile(data_ov075_0211d3b4);
         dExtFrameCtrl_c::LoadFile(data_ov075_0211d3f4);
         dExtFrameCtrl_c::LoadFile(data_ov075_0211d38c);
-        TextureSequence::LoadFile(data_ov075_0211d3dc);
+        dExtAnmTexPat_c::LoadFile(data_ov075_0211d3dc);
     }
 
-    TextureSequence::LoadFile(data_ov075_0211d40c);
+    dExtAnmTexPat_c::LoadFile(data_ov075_0211d40c);
 
     _ZN3G3X6SetFogEbiii(0, 0, 2, 0x1000);
     dExtShadowModel_c::CleanAll();

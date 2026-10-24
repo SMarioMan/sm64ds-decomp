@@ -17,7 +17,7 @@
  *
  *     dActor_c                      0x000 + 0x0d0 = 0x0d0   -> pad_0d0
  *     dExtAnmModel_c                  0x0d4 + 0x064 = 0x138   -> mTextureSequence
- *     TextureSequence            0x138 + 0x014 = 0x14c   -> mWithMeshClsn
+ *     dExtAnmTexPat_c            0x138 + 0x014 = 0x14c   -> mWithMeshClsn
  *     dBgCh_Actr               0x14c + 0x1bc = 0x308   -> mShadowModel
  *     dExtShadowModel_c                0x308 + 0x028 = 0x330   -> padding
  *     dCcAcPos_c  0x360 + 0x040 = 0x3a0   -> mTargetPlayer
@@ -37,7 +37,7 @@
 #define DAKPA_C_H
 #include "types.h"
 #include "dExtAnmModel_c.h"
-#include "TextureSequence.h"
+#include "dExtAnmTexPat_c.h"
 #include "dBgCh_Actr.h"
 #include "dExtShadowModel_c.h"
 #include "dCcAcPos_c.h"
@@ -49,7 +49,7 @@
 struct daKpa_c : dActor_c {
     u8  pad_0d0[0x4];
     dExtAnmModel_c mModelAnim;                              /* 0x0d4 */
-    TextureSequence mTextureSequence;                       /* 0x138 */
+    dExtAnmTexPat_c mTextureSequence;                       /* 0x138 */
     dBgCh_Actr mWithMeshClsn;                             /* 0x14c */
     dExtShadowModel_c mShadowModel;                               /* 0x308 */
     /* The shadow's world matrix: a Matrix4x3 written from the scratch matrix at
@@ -258,7 +258,7 @@ struct daKpa_c {
     s8  mAreaId;            /* 0x0cc */
     u8  pad_0cd[0x7];
     dExtAnmModel_c mModelAnim;                              /* 0x0d4 */
-    TextureSequence mTextureSequence;                       /* 0x138 */
+    dExtAnmTexPat_c mTextureSequence;                       /* 0x138 */
     dBgCh_Actr mWithMeshClsn;                             /* 0x14c */
     dExtShadowModel_c mShadowModel;                               /* 0x308 */
     /* The shadow's world matrix: a Matrix4x3 written from the scratch matrix at

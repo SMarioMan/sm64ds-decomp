@@ -25,10 +25,10 @@ struct Ov007Model {
     BCA_File **boneAnims;      /* 0x14: UpdateBones */
     Ov007AnimPlayer *boneAnim; /* 0x18 */
     char pad_1c[4];
-    void **texSrtAnims;          /* 0x20: BTA_File table (func_020469e8, TextureTransformer) */
+    void **texSrtAnims;          /* 0x20: BTA_File table (func_020469e8, dExtAnmTexSRT_c) */
     Ov007AnimPlayer *texSrtAnim; /* 0x24 */
     char pad_28[4];
-    void **texSeqAnims;          /* 0x2c: BTP_File table (func_02046bbc, TextureSequence) */
+    void **texSeqAnims;          /* 0x2c: BTP_File table (func_02046bbc, dExtAnmTexPat_c) */
     Ov007AnimPlayer *texSeqAnim; /* 0x30 */
 };
 

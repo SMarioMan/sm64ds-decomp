@@ -5,7 +5,7 @@
 #include "dExtAnmModel_c.h"
 #include "dExtSimpleModel_c.h"
 #include "dExtShadowModel_c.h"
-#include "TextureSequence.h"
+#include "dExtAnmTexPat_c.h"
 #include "dCcAcPos_c.h"
 #include "dBgCh_Actr.h"
 
@@ -53,7 +53,7 @@ struct daJgm_c : dActor_c {
     dExtAnmModel_c mModelAnim;                      /* 0x0d4 */
     dExtSimpleModel_c mModel;                       /* 0x138 */
     dExtShadowModel_c               mShadowModel;          /* 0x188 */
-    TextureSequence           mTextureSequence;      /* 0x1b0 */
+    dExtAnmTexPat_c mTextureSequence;                      /* 0x1b0 */
     dCcAcPos_c                mdCcAcPos_c;           /* 0x1c4 */
     dBgCh_Actr                mWithMeshClsn;         /* 0x204 */
     /* InitResources assigns IDENTITY_MATRIX4X3 straight into this slot, so

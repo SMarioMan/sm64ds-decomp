@@ -109,7 +109,7 @@ void func_02012694(unsigned int id, const Vector3 *pos);
  *
  * The whole body falls out of the one `new`: operator new(932 == 0x3a4),
  * dBgActor_c::C2, the mid-construction daDsnBase_c vptr,
- * TextureSequence@0x324, dExtShadowModel_c@0x338 and this class's vptr are the
+ * dExtAnmTexPat_c@0x324, dExtShadowModel_c@0x338 and this class's vptr are the
  * implicit constructor, inlined. */
 extern "C" daDsn_c *daDsn_c_classInit()
 {

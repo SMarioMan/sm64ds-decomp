@@ -24,7 +24,7 @@
 
 // leftovers:
 // - OAM::Render, OAM::RenderSub, Sound::PlaySub, cstd::atan2, Fog::Init and
-//   TextureTransformer::SetFile stay mangled (Fix12 by value); the OAM
+//   dExtAnmTexSRT_c::SetFile stay mangled (Fix12 by value); the OAM
 //   sprite records (COIN, TIMES, VS_NEW_STAR_APPEARED, ...) keep their
 //   mangled data names because OAM.h declares no static data. RenderNumber
 //   keeps a local extern spelled over the member's mask-emitting parameter
@@ -71,7 +71,7 @@ enum dScStage_c_AssetId { ASSET_D_2D_UPR_COURSE_CLEAR_MESSAGE_NCL_BIN = 0x025a }
 #include "dFdWipe_c.h"
 #include "SaveData.h"
 #include "G3X.h"
-#include "TextureTransformer.h"
+#include "dExtAnmTexSRT_c.h"
 #include "dExtFrameCtrl_c.h"
 #include "dExtShadowModel_c.h"
 #include "dCc_c.h"
@@ -3819,7 +3819,7 @@ void dScStage_c::RenderModel() {
                 }
             }
             if (slot->mTransformer != 0)
-                ((TextureTransformer *)slot->mTransformer)->Update(mModel.data);
+                ((dExtAnmTexSRT_c *)slot->mTransformer)->Update(mModel.data);
         } else {
             u16 materialIndex;
             for (materialIndex = 0; materialIndex < bone->numMaterials; materialIndex++) {
@@ -3912,9 +3912,9 @@ extern "C" int CopyTexPalFromLevelModel(void *p) {
 
 // @symbol _ZN10dScStage_c23LoadTextureTransformersEv
 extern "C" {
-extern void *_ZN18TextureTransformerC1Ev(void *);
-extern void _ZN18TextureTransformer7SetFileER8BTA_Filei5Fix12IiEj(void *self, void *bta, int a,
-                                                                  int b, u32 c);
+extern void *_ZN15dExtAnmTexSRT_cC1Ev(void *);
+extern void _ZN15dExtAnmTexSRT_c7SetFileER8BTA_Filei5Fix12IiEj(void *self, void *bta, int a, int b,
+                                                               u32 c);
 }
 
 void dScStage_c::LoadTextureTransformers() {
@@ -3924,13 +3924,13 @@ void dScStage_c::LoadTextureTransformers() {
     int slotIndex;
     for (slotIndex = 0; slotIndex < (int)((LevelInfo *)data_0209f340)->count; slotIndex++) {
         if (entry->bta) {
-            TextureTransformer::Prepare(*modelFile, *(BTA_File *)entry->bta);
+            dExtAnmTexSRT_c::Prepare(*modelFile, *(BTA_File *)entry->bta);
             void *transformer = ::operator new(0x14);
             if (transformer)
-                transformer = _ZN18TextureTransformerC1Ev(transformer);
+                transformer = _ZN15dExtAnmTexSRT_cC1Ev(transformer);
             slot->mTransformer = transformer;
-            _ZN18TextureTransformer7SetFileER8BTA_Filei5Fix12IiEj(slot->mTransformer, entry->bta, 0,
-                                                                  0x1000, 0);
+            _ZN15dExtAnmTexSRT_c7SetFileER8BTA_Filei5Fix12IiEj(slot->mTransformer, entry->bta, 0,
+                                                               0x1000, 0);
         }
         entry++;
         slot++;
@@ -4580,7 +4580,7 @@ int dScStage_c::CleanupResources() {
         StageTexAnimSlot *slot = mTexAnimSlots;
         int slotIndex;
         for (slotIndex = 0; slotIndex < ((LevelInfo *)data_0209f340)->count; slotIndex++, slot++) {
-            TextureTransformer *transformer = (TextureTransformer *)slot->mTransformer;
+            dExtAnmTexSRT_c *transformer = (dExtAnmTexSRT_c *)slot->mTransformer;
             if (transformer)
                 delete transformer;
             {

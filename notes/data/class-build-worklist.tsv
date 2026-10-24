@@ -45,9 +45,9 @@ dExtSimpleModel_c	DONE	include\dExtSimpleModel_c.h  [alias: header uses pre-rena
 dExtCommonModel_c	DONE	include\CommonModel.h  [alias: header uses pre-rename name]	dExtModel_c	0	arm9	7
 dExtShadowModel_c	DONE	include\ShadowModel.h  [alias: header uses pre-rename name]	dExtModel_c	0	arm9	9
 dExtAnmModel_c	DONE	include\dExtAnmModel_c.h  [alias: header uses pre-rename name]	dExtSimpleModel_c	3	arm9	11
-dExtAnmMaterial_c	DONE	include\MaterialChanger.h  [alias: header uses pre-rename name]	dExtFrameCtrl_c	0	arm9	6
-dExtAnmTexPat_c	DONE	include\TextureSequence.h  [alias: header uses pre-rename name]	dExtFrameCtrl_c	0	arm9	8
-dExtAnmTexSRT_c	DONE	include\TextureTransformer.h  [alias: header uses pre-rename name]	dExtFrameCtrl_c	0	arm9	6
+dExtAnmMaterial_c	DONE	include\dExtAnmMaterial_c.h  [alias: header uses pre-rename name]	dExtFrameCtrl_c	0	arm9	6
+dExtAnmTexPat_c	DONE	include\dExtAnmTexPat_c.h  [alias: header uses pre-rename name]	dExtFrameCtrl_c	0	arm9	8
+dExtAnmTexSRT_c	DONE	include\dExtAnmTexSRT_c.h  [alias: header uses pre-rename name]	dExtFrameCtrl_c	0	arm9	6
 dFdBrightness_c	DONE	include\dFdBrightness_c.h  [alias: header uses pre-rename name]	dFader_c	1	arm9	11
 dScDSMT_c::graphCallback_c	MISSING	include\dScDSMT_c.h  [alias: header uses pre-rename name]	dGraph_c::callback_c	0	ov007	0
 dScEntry_c::graphCallback_c	MISSING	include\dScEntry_c.h  [alias: header uses pre-rename name]	dGraph_c::callback_c	0	ov075	0

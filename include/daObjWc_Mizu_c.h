@@ -17,7 +17,7 @@
 #ifdef __cplusplus
 
 #include "dBgActor_c.h"
-#include "TextureTransformer.h"
+#include "dExtAnmTexSRT_c.h"
 
 extern "C" void *_ZN7fBase_cnwEj(unsigned size);
 
@@ -31,7 +31,7 @@ extern "C" void *_ZN7fBase_cnwEj(unsigned size);
 
 struct daObjWc_Mizu_c : dBgActor_c {
     u8  pad_31e[0x2];
-    TextureTransformer mTextureTransformer; /* 0x320 */
+    dExtAnmTexSRT_c mTextureTransformer; /* 0x320 */
     s32 mTargetPosY;                  /* 0x334 */
     u8 mUseSpawnPosY;                 /* 0x338 -- param1 & 1; when clear InitResources overrides mPosY from the WDW water-level table data_ov029_02112b2c[setting] */
     u8  pad_339[0x3];

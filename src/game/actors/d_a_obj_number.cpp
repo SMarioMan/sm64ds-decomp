@@ -11,7 +11,7 @@
  * InitResources is the key function and this TU owns the RTTI/vtable.
  *
  * deslop leftovers:
- * - TextureSequence::SetFile 6az: InitResources passes Fix12<int> by
+ * - dExtAnmTexPat_c::SetFile 6az: InitResources passes Fix12<int> by
  *   value (notes/mwccarm-codegen.md 6az).
  * - Particle::System::NewSimple 6az: Behavior's particle 0xd2; the
  *   header has no NewSimple and the mangled name carries Fix12<int>.
@@ -54,8 +54,9 @@ extern SharedFilePtr data_ov002_0210d9a8;
 extern "C" {
 extern int data_0209b454;
 extern void Matrix4x3_FromTranslation(void *m, int x, int y, int z);
-void _ZN15TextureSequence7SetFileER8BTP_Filei5Fix12IiEj(
-    void *self, void *btp, int a, int b, unsigned int c);
+/* local extern: the matched free-function spelling of SetFile; a member call is pending. */
+void _ZN15dExtAnmTexPat_c7SetFileER8BTP_Fileiit(void *self, void *btp, int a, int b,
+                                                unsigned int c);
 namespace Particle {
 struct System {
     static void NewSimple(unsigned int id, int x, int y, int z);
@@ -77,7 +78,7 @@ extern int _ZTV13daObjNumber_c[];
  * Every instruction the cartridge has here falls out of the one `new`.
  * 0x020f0d94 loads 336 = 0x150 -- the class's own size -- into
  * fBase_c::operator new; dActor_c's C2, this class's vptr, dExtSimpleModel_c C1 at
- * +0xd4 and TextureSequence C1 at +0x124 are the implicit constructor. */
+ * +0xd4 and dExtAnmTexPat_c C1 at +0x124 are the implicit constructor. */
 extern "C" daObjNumber_c *daObjNumber_c_classInit(void)
 {
     return new daObjNumber_c();
@@ -89,25 +90,25 @@ extern "C" daObjNumber_c *daObjNumber_c_classInit(void)
 s32 daObjNumber_c::InitResources()
 {
     if (param1 & 0x10) {
-        TextureSequence::LoadFile(data_ov002_0210da08);
+        dExtAnmTexPat_c::LoadFile(data_ov002_0210da08);
         void *m = dExtSimpleModel_c::LoadFile(data_ov002_0210da28);
         if (mModel.SetFile((BMD_File *)m, 1, 1) == 0)
             return 0;
-        TextureSequence::Prepare(*(BMD_File *)data_ov002_0210da28.filePtr,
+        dExtAnmTexPat_c::Prepare(*(BMD_File *)data_ov002_0210da28.filePtr,
                                  *(BTP_File *)data_ov002_0210da08.filePtr);
-        _ZN15TextureSequence7SetFileER8BTP_Filei5Fix12IiEj(
-            &mTextureSequence, data_ov002_0210da08.filePtr, 0x40000000, 0, 0);
+        _ZN15dExtAnmTexPat_c7SetFileER8BTP_Fileiit(&mTextureSequence, data_ov002_0210da08.filePtr,
+                                                   0x40000000, 0, 0);
         mTextureSequence.currFrame =
             (int)((((unsigned int)(param1 & 0xf) % 10) << 16) >> 4);
     } else {
-        TextureSequence::LoadFile(data_ov002_0210d9e8);
+        dExtAnmTexPat_c::LoadFile(data_ov002_0210d9e8);
         void *m = dExtSimpleModel_c::LoadFile(data_ov002_0210d9a8);
         if (mModel.SetFile((BMD_File *)m, 1, 1) == 0)
             return 0;
-        TextureSequence::Prepare(*(BMD_File *)data_ov002_0210d9a8.filePtr,
+        dExtAnmTexPat_c::Prepare(*(BMD_File *)data_ov002_0210d9a8.filePtr,
                                  *(BTP_File *)data_ov002_0210d9e8.filePtr);
-        _ZN15TextureSequence7SetFileER8BTP_Filei5Fix12IiEj(
-            &mTextureSequence, data_ov002_0210d9e8.filePtr, 0x40000000, 0, 0);
+        _ZN15dExtAnmTexPat_c7SetFileER8BTP_Fileiit(&mTextureSequence, data_ov002_0210d9e8.filePtr,
+                                                   0x40000000, 0, 0);
         mTextureSequence.currFrame =
             (int)((((unsigned int)(param1 & 0xf) % 10) << 16) >> 4);
     }

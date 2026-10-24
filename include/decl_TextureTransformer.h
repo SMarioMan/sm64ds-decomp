@@ -20,9 +20,8 @@
 extern "C" {
 #endif
 
-extern void *_ZN18TextureTransformerC1Ev(void*);
-extern void _ZN18TextureTransformerD1Ev(void*);
-
+extern void *_ZN15dExtAnmTexSRT_cC1Ev(void *);
+extern void _ZN15dExtAnmTexSRT_cD1Ev(void *);
 
 #ifdef __cplusplus
 }

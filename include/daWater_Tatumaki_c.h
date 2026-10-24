@@ -11,7 +11,7 @@
  * The members close exactly on one another:
  *
  *     0x114 dExtAnmModel_c                  0x64   -> 0x178
- *     0x178 TextureTransformer         0x14   -> 0x18c
+ *     0x178 dExtAnmTexSRT_c         0x14   -> 0x18c
  *
  * Typing them absorbed these markers, which were a member's insides:
  *   - 0x184 unk_184      = mTextureTransformer.speed (dExtFrameCtrl_c +0x0c)
@@ -34,7 +34,7 @@
 #include "dCcAc_c.h"
 #include "dCcAcPos_c.h"
 #include "dExtShadowModel_c.h"
-#include "TextureTransformer.h"
+#include "dExtAnmTexSRT_c.h"
 #include "dBgCh_Actr.h"
 
 struct daWater_Tatumaki_c : dEnemyBase_c {
@@ -51,7 +51,7 @@ struct daWater_Tatumaki_c : dEnemyBase_c {
 
     const State                 *mState;                /* 0x110 */
     dExtAnmModel_c mModelAnim;                          /* 0x114 */
-    TextureTransformer           mTextureTransformer;   /* 0x178 */
+    dExtAnmTexSRT_c mTextureTransformer;                /* 0x178 */
     /* Set once the player has been dragged under the whirlpool's centre and
        KillPlayer has run, so it runs once. */
     s32                          mPlayerKilled;         /* 0x18c */

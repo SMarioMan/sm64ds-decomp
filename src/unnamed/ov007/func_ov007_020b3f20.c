@@ -8,7 +8,7 @@ extern void DecompressLZ16(void *src, void *dst);
 extern void _ZN4CP1514FlushDataCacheEjj(u32 a, u32 b);
 extern void _ZN17dExtSimpleModel_c17UpdateFileOffsetsER8BMD_File(void *f);
 extern void _ZN15dExtFrameCtrl_c17UpdateFileOffsetsER8BCA_File(void *f);
-extern void _ZN15TextureSequence17UpdateFileOffsetsER8BTP_File(void *f);
+extern void _ZN15dExtAnmTexPat_c17UpdateFileOffsetsER8BTP_File(void *f);
 void *func_ov007_020b3f20(int idx)
 {
   void *new_var;
@@ -101,8 +101,8 @@ void *func_ov007_020b3f20(int idx)
       case 0x14:
 
       case 0x15:
-        _ZN15TextureSequence17UpdateFileOffsetsER8BTP_File(obj);
-        break;
+          _ZN15dExtAnmTexPat_c17UpdateFileOffsetsER8BTP_File(obj);
+          break;
 
       default:
         break;

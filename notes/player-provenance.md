@@ -104,7 +104,7 @@ Four runs, and each one's length is pinned by two independent witnesses -- the
 
 The element type of the two model runs is `dExtAnmModel_c`, and the matched bodies pin
 every part of that claim rather than just the size: they reach `+0x08` (dExtSimpleModel_c's
-`ModelComponents`, handed to `TextureSequence::Update`), `+0x14` (`dExtSimpleModel_c::mat4x3`),
+`ModelComponents`, handed to `dExtAnmTexPat_c::Update`), `+0x14` (`dExtSimpleModel_c::mat4x3`),
 `+0x50` (the `Animation` base, handed to `Animation::Advance`) and `+0x58` (that
 base's `currFrame`); they call `dExtSimpleModel_c::SetPolygonMode` and `dExtSimpleModel_c::Render` on the
 same pointer; and they call vtable slots `+0x14` and `+0x18`, which in

@@ -1977,75 +1977,75 @@ matched: yes</title></rect><rect x="126.49" y="162.45" width="5.74" height="8.88
 module: arm9
 addr: 0x02015730
 size: 76 bytes
-matched: yes</title></rect><rect x="132.23" y="162.45" width="0.91" height="8.88" fill="#3fa75a" stroke="#2c7a41" stroke-width="0.4"><title>_ZN15MaterialChanger7PrepareER8BMD_FileR8BMA_File
+matched: yes</title></rect><rect x="132.23" y="162.45" width="0.91" height="8.88" fill="#3fa75a" stroke="#2c7a41" stroke-width="0.4"><title>_ZN17dExtAnmMaterial_c7PrepareER8BMD_FileR8BMA_File
 module: arm9
 addr: 0x0201577c
 size: 12 bytes
-matched: yes</title></rect><rect x="133.14" y="162.45" width="2.72" height="8.88" fill="#3fa75a" stroke="#2c7a41" stroke-width="0.4"><title>_ZN15MaterialChanger6UpdateER15ModelComponents
+matched: yes</title></rect><rect x="133.14" y="162.45" width="2.72" height="8.88" fill="#3fa75a" stroke="#2c7a41" stroke-width="0.4"><title>_ZN17dExtAnmMaterial_c6UpdateER15ModelComponents
 module: arm9
 addr: 0x02015788
 size: 36 bytes
-matched: yes</title></rect><rect x="135.86" y="162.45" width="6.35" height="8.88" fill="#3fa75a" stroke="#2c7a41" stroke-width="0.4"><title>_ZN15MaterialChanger7SetFileER8BMA_Filei5Fix12IiEj
+matched: yes</title></rect><rect x="135.86" y="162.45" width="6.35" height="8.88" fill="#3fa75a" stroke="#2c7a41" stroke-width="0.4"><title>_ZN17dExtAnmMaterial_c7SetFileER8BMA_Filei5Fix12IiEj
 module: arm9
 addr: 0x020157ac
 size: 84 bytes
-matched: yes</title></rect><rect x="142.21" y="162.45" width="3.32" height="8.88" fill="#3fa75a" stroke="#2c7a41" stroke-width="0.4"><title>_ZN15MaterialChangerD0Ev
+matched: yes</title></rect><rect x="142.21" y="162.45" width="3.32" height="8.88" fill="#3fa75a" stroke="#2c7a41" stroke-width="0.4"><title>_ZN17dExtAnmMaterial_cD0Ev
 module: arm9
 addr: 0x02015800
 size: 44 bytes
-matched: yes</title></rect><rect x="145.53" y="162.45" width="2.72" height="8.88" fill="#3fa75a" stroke="#2c7a41" stroke-width="0.4"><title>_ZN15MaterialChangerD1Ev
+matched: yes</title></rect><rect x="145.53" y="162.45" width="2.72" height="8.88" fill="#3fa75a" stroke="#2c7a41" stroke-width="0.4"><title>_ZN17dExtAnmMaterial_cD1Ev
 module: arm9
 addr: 0x0201582c
 size: 36 bytes
-matched: yes</title></rect><rect x="148.25" y="162.45" width="3.32" height="8.88" fill="#3fa75a" stroke="#2c7a41" stroke-width="0.4"><title>_ZN15MaterialChangerC1Ev
+matched: yes</title></rect><rect x="148.25" y="162.45" width="3.32" height="8.88" fill="#3fa75a" stroke="#2c7a41" stroke-width="0.4"><title>_ZN17dExtAnmMaterial_cC1Ev
 module: arm9
 addr: 0x02015850
 size: 44 bytes
-matched: yes</title></rect><rect x="151.58" y="162.45" width="0.91" height="8.88" fill="#3fa75a" stroke="#2c7a41" stroke-width="0.4"><title>_ZN18TextureTransformer7PrepareER8BMD_FileR8BTA_File
+matched: yes</title></rect><rect x="151.58" y="162.45" width="0.91" height="8.88" fill="#3fa75a" stroke="#2c7a41" stroke-width="0.4"><title>_ZN15dExtAnmTexSRT_c7PrepareER8BMD_FileR8BTA_File
 module: arm9
 addr: 0x0201587c
 size: 12 bytes
-matched: yes</title></rect><rect x="152.48" y="162.45" width="2.72" height="8.88" fill="#3fa75a" stroke="#2c7a41" stroke-width="0.4"><title>_ZN18TextureTransformer6UpdateER15ModelComponents
+matched: yes</title></rect><rect x="152.48" y="162.45" width="2.72" height="8.88" fill="#3fa75a" stroke="#2c7a41" stroke-width="0.4"><title>_ZN15dExtAnmTexSRT_c6UpdateER15ModelComponents
 module: arm9
 addr: 0x02015888
 size: 36 bytes
-matched: yes</title></rect><rect x="155.20" y="162.45" width="6.35" height="8.88" fill="#3fa75a" stroke="#2c7a41" stroke-width="0.4"><title>_ZN18TextureTransformer7SetFileER8BTA_Filei5Fix12IiEj
+matched: yes</title></rect><rect x="155.20" y="162.45" width="6.35" height="8.88" fill="#3fa75a" stroke="#2c7a41" stroke-width="0.4"><title>_ZN15dExtAnmTexSRT_c7SetFileER8BTA_Filei5Fix12IiEj
 module: arm9
 addr: 0x020158ac
 size: 84 bytes
-matched: yes</title></rect><rect x="161.55" y="162.45" width="3.32" height="8.88" fill="#3fa75a" stroke="#2c7a41" stroke-width="0.4"><title>_ZN18TextureTransformerD0Ev
+matched: yes</title></rect><rect x="161.55" y="162.45" width="3.32" height="8.88" fill="#3fa75a" stroke="#2c7a41" stroke-width="0.4"><title>_ZN15dExtAnmTexSRT_cD0Ev
 module: arm9
 addr: 0x02015900
 size: 44 bytes
-matched: yes</title></rect><rect x="164.87" y="162.45" width="2.72" height="8.88" fill="#3fa75a" stroke="#2c7a41" stroke-width="0.4"><title>_ZN18TextureTransformerD1Ev
+matched: yes</title></rect><rect x="164.87" y="162.45" width="2.72" height="8.88" fill="#3fa75a" stroke="#2c7a41" stroke-width="0.4"><title>_ZN15dExtAnmTexSRT_cD1Ev
 module: arm9
 addr: 0x0201592c
 size: 36 bytes
-matched: yes</title></rect><rect x="167.59" y="162.45" width="3.32" height="8.88" fill="#3fa75a" stroke="#2c7a41" stroke-width="0.4"><title>_ZN18TextureTransformerC1Ev
+matched: yes</title></rect><rect x="167.59" y="162.45" width="3.32" height="8.88" fill="#3fa75a" stroke="#2c7a41" stroke-width="0.4"><title>_ZN15dExtAnmTexSRT_cC1Ev
 module: arm9
 addr: 0x02015950
 size: 44 bytes
-matched: yes</title></rect><rect x="170.92" y="162.45" width="0.91" height="8.88" fill="#3fa75a" stroke="#2c7a41" stroke-width="0.4"><title>_ZN15TextureSequence7PrepareER8BMD_FileR8BTP_File
+matched: yes</title></rect><rect x="170.92" y="162.45" width="0.91" height="8.88" fill="#3fa75a" stroke="#2c7a41" stroke-width="0.4"><title>_ZN15dExtAnmTexPat_c7PrepareER8BMD_FileR8BTP_File
 module: arm9
 addr: 0x0201597c
 size: 12 bytes
-matched: yes</title></rect><rect x="171.83" y="162.45" width="2.72" height="8.88" fill="#3fa75a" stroke="#2c7a41" stroke-width="0.4"><title>_ZN15TextureSequence6UpdateER15ModelComponents
+matched: yes</title></rect><rect x="171.83" y="162.45" width="2.72" height="8.88" fill="#3fa75a" stroke="#2c7a41" stroke-width="0.4"><title>_ZN15dExtAnmTexPat_c6UpdateER15ModelComponents
 module: arm9
 addr: 0x02015988
 size: 36 bytes
-matched: yes</title></rect><rect x="174.55" y="162.45" width="6.35" height="8.88" fill="#3fa75a" stroke="#2c7a41" stroke-width="0.4"><title>_ZN15TextureSequence7SetFileER8BTP_Filei5Fix12IiEj
+matched: yes</title></rect><rect x="174.55" y="162.45" width="6.35" height="8.88" fill="#3fa75a" stroke="#2c7a41" stroke-width="0.4"><title>_ZN15dExtAnmTexPat_c7SetFileER8BTP_Fileiit
 module: arm9
 addr: 0x020159ac
 size: 84 bytes
-matched: yes</title></rect><rect x="180.89" y="162.45" width="3.32" height="8.88" fill="#3fa75a" stroke="#2c7a41" stroke-width="0.4"><title>_ZN15TextureSequenceD0Ev
+matched: yes</title></rect><rect x="180.89" y="162.45" width="3.32" height="8.88" fill="#3fa75a" stroke="#2c7a41" stroke-width="0.4"><title>_ZN15dExtAnmTexPat_cD0Ev
 module: arm9
 addr: 0x02015a00
 size: 44 bytes
-matched: yes</title></rect><rect x="184.22" y="162.45" width="2.72" height="8.88" fill="#3fa75a" stroke="#2c7a41" stroke-width="0.4"><title>_ZN15TextureSequenceD1Ev
+matched: yes</title></rect><rect x="184.22" y="162.45" width="2.72" height="8.88" fill="#3fa75a" stroke="#2c7a41" stroke-width="0.4"><title>_ZN15dExtAnmTexPat_cD1Ev
 module: arm9
 addr: 0x02015a2c
 size: 36 bytes
-matched: yes</title></rect><rect x="186.94" y="162.45" width="3.32" height="8.88" fill="#3fa75a" stroke="#2c7a41" stroke-width="0.4"><title>_ZN15TextureSequenceC1Ev
+matched: yes</title></rect><rect x="186.94" y="162.45" width="3.32" height="8.88" fill="#3fa75a" stroke="#2c7a41" stroke-width="0.4"><title>_ZN15dExtAnmTexPat_cC1Ev
 module: arm9
 addr: 0x02015a50
 size: 44 bytes
@@ -2569,7 +2569,7 @@ matched: yes</title></rect><rect x="150.25" y="180.87" width="2.29" height="7.04
 module: arm9
 addr: 0x020178cc
 size: 24 bytes
-matched: yes</title></rect><rect x="152.54" y="180.87" width="5.34" height="7.04" fill="#3fa75a" stroke="#2c7a41" stroke-width="0.4"><title>_ZN15TextureSequence8LoadFileER13SharedFilePtr
+matched: yes</title></rect><rect x="152.54" y="180.87" width="5.34" height="7.04" fill="#3fa75a" stroke="#2c7a41" stroke-width="0.4"><title>_ZN15dExtAnmTexPat_c8LoadFileER13SharedFilePtr
 module: arm9
 addr: 0x020178e4
 size: 56 bytes
@@ -7521,7 +7521,7 @@ matched: yes</title></rect><rect x="76.21" y="588.97" width="59.29" height="7.65
 module: arm9
 addr: 0x020465fc
 size: 676 bytes
-matched: yes</title></rect><rect x="135.50" y="588.97" width="23.50" height="7.65" fill="#3fa75a" stroke="#2c7a41" stroke-width="0.4"><title>_ZN15TextureSequence17UpdateFileOffsetsER8BTP_File
+matched: yes</title></rect><rect x="135.50" y="588.97" width="23.50" height="7.65" fill="#3fa75a" stroke="#2c7a41" stroke-width="0.4"><title>_ZN15dExtAnmTexPat_c17UpdateFileOffsetsER8BTP_File
 module: arm9
 addr: 0x020468a0
 size: 268 bytes
@@ -18113,7 +18113,7 @@ matched: yes</title></rect><rect x="568.82" y="778.63" width="5.38" height="9.90
 module: ov002
 addr: 0x020f6a00
 size: 80 bytes
-matched: yes</title></rect><rect x="574.20" y="778.63" width="5.11" height="9.90" fill="#3fa75a" stroke="#2c7a41" stroke-width="0.4"><title>_ZN8daDemo_c7param_c19func_ov002_020f6a50Ev
+matched: yes</title></rect><rect x="574.20" y="778.63" width="5.11" height="9.90" fill="#3fa75a" stroke="#2c7a41" stroke-width="0.4"><title>_ZN8daDemo_c7param_cC2Ev
 module: ov002
 addr: 0x020f6a50
 size: 76 bytes

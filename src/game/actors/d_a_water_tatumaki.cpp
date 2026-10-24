@@ -36,7 +36,7 @@ struct System {
  * - func_ov026_02111f30: mModelAnim.mat4x3 = data_020a0e68 is 0x90 against
  *   ROM 0x74. This TU sees Matrix4x3 as {Matrix3x3 r; Vector3 t}. The ROM
  *   copies twelve words with one three-pass ldm/stm.
- * - InitResources: TextureTransformer::SetFile with a Fix12<int> temporary
+ * - InitResources: dExtAnmTexSRT_c::SetFile with a Fix12<int> temporary
  *   is 0xd8 against ROM 0xd0 and adds a 4-byte .rodata word.
  *   dExtAnmModel_c::SetAnim the same way is 0xdc against ROM 0xd0, also with
  *   a 4-byte .rodata word. The int spellings of the mangled symbols match.
@@ -64,7 +64,7 @@ enum daWater_Tatumaki_c_AssetId {
 #include "common.h"
 #include "Player.h"
 #include "SharedFilePtr.h"
-#include "TextureTransformer.h"
+#include "dExtAnmTexSRT_c.h"
 #include "private/mtx43.h"
 
 /* 20.12 distances and s16 angles used by the funnel. Same numeric value can
@@ -130,14 +130,14 @@ extern Matrix4x3 data_020a0e68;
 extern int d_a_water_tatumakiNewHold(unsigned int uniqueID, unsigned int effectID, int x, int y,
                                      int z, void *dir, void *callback);
 extern int _Z14ApproachLinearR7Vector3RKS_5Fix12IiE(Vector3 &value, const Vector3 &target, int step);
-extern void _ZN18TextureTransformer7SetFileER8BTA_Filei5Fix12IiEj(TextureTransformer *self,
-                                                                  BTA_File &file, int flags,
-                                                                  int speed, u32 startFrame);
+extern void _ZN15dExtAnmTexSRT_c7SetFileER8BTA_Filei5Fix12IiEj(dExtAnmTexSRT_c *self,
+                                                               BTA_File &file, int flags, int speed,
+                                                               u32 startFrame);
 }
 
 #define Particle_System_New Particle::System::New
 #define ApproachLinearVec _Z14ApproachLinearR7Vector3RKS_5Fix12IiE
-#define TextureTransformer_SetFile _ZN18TextureTransformer7SetFileER8BTA_Filei5Fix12IiEj
+#define dExtAnmTexSRT_c_SetFile _ZN15dExtAnmTexSRT_c7SetFileER8BTA_Filei5Fix12IiEj
 
 void ApproachLinear2(s16 &value, s16 target, s16 step);
 void ApproachLinear(int &value, int target, int step);
@@ -386,8 +386,8 @@ int daWater_Tatumaki_c::InitResources()
 
     dExtFrameCtrl_c::LoadFile(gWaterTatumakiAnimationFile);
 
-    TextureTransformer::Prepare(*(BMD_File *)gWaterTatumakiModelFile.filePtr, WHIRLPOOL_BTA);
-    TextureTransformer_SetFile(&mTextureTransformer, WHIRLPOOL_BTA, 0, kAnimSpeed, 0);
+    dExtAnmTexSRT_c::Prepare(*(BMD_File *)gWaterTatumakiModelFile.filePtr, WHIRLPOOL_BTA);
+    dExtAnmTexSRT_c_SetFile(&mTextureTransformer, WHIRLPOOL_BTA, 0, kAnimSpeed, 0);
 
     mTextureTransformer.speed = kAnimSpeed;
     mModelAnim.speed = kAnimSpeed;

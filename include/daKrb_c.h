@@ -7,7 +7,7 @@
 #include "dBgCh_Actr.h"
 #include "dExtAnmModel_c.h"
 #include "dExtShadowModel_c.h"
-#include "MaterialChanger.h"
+#include "dExtAnmMaterial_c.h"
 
 struct KrbAnimationFileHandle : SharedFilePtr {
     KrbAnimationFileHandle(u32 fileID);
@@ -43,7 +43,7 @@ struct daKrb_c : dCapEnemy_c {
     dBgCh_Actr mWithMeshClsn; /* 0x1b4 */
     dExtAnmModel_c mModelAnim;      /* 0x370 */
     dExtShadowModel_c mShadowModel; /* 0x3d4 */
-    MaterialChanger mMaterialChanger; /* 0x3fc */
+    dExtAnmMaterial_c mMaterialChanger; /* 0x3fc */
     /* Last position that IsGoingOffCliff did not reject; Behavior snaps back to
        it when the next step would carry the Goomba off a ledge. */
     Vector3 mSafePos;       /* 0x410 */

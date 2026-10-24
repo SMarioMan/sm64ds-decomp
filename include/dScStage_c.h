@@ -17,14 +17,14 @@ struct LVL_Overlay;
 /* One per level texture animation, eight slots' worth at dScStage_c+0x8bc.
  * dScStage_c::LoadTextureTransformers fills them: for each entry of the level's
  * animation table (data_0209f340) that carries a BTA file it news a 0x14-byte
- * TextureTransformer, constructs it, and stores it in the slot, striding 0xc.
+ * dExtAnmTexSRT_c, constructs it, and stores it in the slot, striding 0xc.
  * dScStage_c::Render advances the transformer when the flag at +0x04 is set;
  * dScStage_c::RenderModelTransparent reads the same flag to decide whether that
  * part's materials get the transparent bit; dScStage_c::CleanupResources destroys
  * the transformer through its vtable and then walks the list at +0x08, whose
  * next pointer is at +0x0c, freeing every block. */
 struct StageTexAnimSlot {
-    void *mTransformer; /* 0x00 - TextureTransformer, 0x14 bytes, heap */
+    void *mTransformer; /* 0x00 - dExtAnmTexSRT_c, 0x14 bytes, heap */
     u8 mActive;         /* 0x04 */
     u8 pad_05[0x3];
     void *mBlockList; /* 0x08 - singly linked, next pointer at +0x0c */

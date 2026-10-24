@@ -58,7 +58,7 @@ struct dExtFrameCtrl_c {
     /* DECLARED, never defined here -- src/engine/animation/d_ext_frame_ctrl.cpp
        defines it out of line and emits both C1 and the base-subobject C2
        (notes/ctor-migration.md section 2). Declaring it is what makes
-       MaterialChanger/TextureTransformer/TextureSequence (and dExtAnmModel_c's
+       dExtAnmMaterial_c/dExtAnmTexSRT_c/dExtAnmTexPat_c (and dExtAnmModel_c's
        base step) emit `bl _ZN15dExtFrameCtrl_cC2Ev' instead of synthesising inline. */
     dExtFrameCtrl_c();
 

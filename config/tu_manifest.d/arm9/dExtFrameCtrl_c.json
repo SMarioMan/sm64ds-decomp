@@ -11,7 +11,7 @@
     "HISTORY (closed by the STRUCTOR FOLD below): the ABI tail used to stay sharded because a TU that defines ~dExtFrameCtrl_c() emits _ZTV/_ZTI/_ZTS, and under the coined '9Animation' spelling those names had no cartridge home. The class rename to the ROM's dExtFrameCtrl_c closed that.",
     "STRUCTOR FOLD: D2 0x02015cb4, D0 0x02015cc4, D1 0x02015ce8, C1 0x02015cf8 and C2 0x02015d18 moved in from their per-function shards. One ~dExtFrameCtrl_c() and one dExtFrameCtrl_c() at the top of the file emit all five variants last, in ROM order. The key function now emits _ZTV15dExtFrameCtrl_c/_ZTI15dExtFrameCtrl_c/_ZTS15dExtFrameCtrl_c. Each has a cartridge home in arm9 .data among the model family's records (0x0208e7e4/0x0208e744/0x0208e84c), outside this text-only TU, so they are deadstrip-data rows checked by romdata_check.",
     "LoadFile (0x0201794c) and UpdateFileOffsets (0x020469ac) are dExtFrameCtrl_c members too, but they link in other neighbourhoods and keep their own shards; they are not part of this run.",
-    "The neighbour before the run, _ZN15TextureSequenceC1Ev ending at 0x02015a7c, is a TextureSequence constructor; _ZN11ShadowModel9RenderAllEv begins at 0x02015d38. Neither is a dExtFrameCtrl_c method licensed here.",
+    "The neighbour before the run, _ZN15dExtAnmTexPat_cC1Ev ending at 0x02015a7c, is a dExtAnmTexPat_c constructor; _ZN11ShadowModel9RenderAllEv begins at 0x02015d38. Neither is a dExtFrameCtrl_c method licensed here.",
     "module sinit corroboration: arm9 is one under-segmented unit, so sinit attribution does not narrow this TU."
   ],
   "sections": [

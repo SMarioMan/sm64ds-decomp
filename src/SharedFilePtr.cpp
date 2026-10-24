@@ -5,7 +5,7 @@
  * A SharedFilePtr is an eight-byte handle to one file that several actors
  * share: the first LoadFile reads the file in, later ones only count
  * references, and the last Release frees it. Each format's LoadFile
- * (dExtSimpleModel_c, TextureSequence, dExtFrameCtrl_c, dBgW_Kc) loads through the handle
+ * (dExtSimpleModel_c, dExtAnmTexPat_c, dExtFrameCtrl_c, dBgW_Kc) loads through the handle
  * and rebases the file's internal offsets the first time it arrives. Those
  * four are members of other classes, but the cartridge emits them in this
  * run, so they live here.
@@ -40,7 +40,7 @@
 #include "types.h"
 #include "SharedFilePtr.h"
 #include "dExtSimpleModel_c.h"
-#include "TextureSequence.h"
+#include "dExtAnmTexPat_c.h"
 #include "dBgW_Kc.h"
 
 namespace Memory {
@@ -370,8 +370,8 @@ extern "C" int SharedFilePtr_Destruct_TexSeq(int self) {
 }
 
 /* Loads a BTP texture animation; the first holder rebases its offsets. */
-// @symbol _ZN15TextureSequence8LoadFileER13SharedFilePtr
-void *TextureSequence::LoadFile(SharedFilePtr &ptr) {
+// @symbol _ZN15dExtAnmTexPat_c8LoadFileER13SharedFilePtr
+void *dExtAnmTexPat_c::LoadFile(SharedFilePtr &ptr) {
     void *filePtr;
     ptr.LoadFile();
     filePtr = ptr.filePtr;

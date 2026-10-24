@@ -5826,7 +5826,7 @@
         "return:void"
       ]
     },
-    "_ZN15MaterialChanger7PrepareER8BMD_FileR8BMA_File": {
+    "_ZN17dExtAnmMaterial_c7PrepareER8BMD_FileR8BMA_File": {
       "include/decl_MaterialChanger.h": [
         "param:#1 void *",
         "param:#2 void *"
@@ -5836,7 +5836,7 @@
         "param:#2 void *"
       ]
     },
-    "_ZN15MaterialChanger7SetFileER8BMA_Filei5Fix12IiEj": {
+    "_ZN17dExtAnmMaterial_c7SetFileER8BMA_Filei5Fix12IiEj": {
       "include/decl_MaterialChanger.h": [
         "param:#5 unsigned int"
       ],
@@ -5854,7 +5854,7 @@
         "param:#5 unsigned int"
       ]
     },
-    "_ZN15MaterialChangerD1Ev": {
+    "_ZN17dExtAnmMaterial_cD1Ev": {
       "src/_ZN6PlayerC1Ev.cpp": [
         "return:void"
       ],
@@ -5862,12 +5862,12 @@
         "return:void"
       ]
     },
-    "_ZN15TextureSequence17UpdateFileOffsetsER8BTP_File": {
+    "_ZN15dExtAnmTexPat_c17UpdateFileOffsetsER8BTP_File": {
       "src/unnamed/ov007/func_ov007_020b3f20.c": [
         "param:#1 void *"
       ]
     },
-    "_ZN15TextureSequence6UpdateER15ModelComponents": {
+    "_ZN15dExtAnmTexPat_c6UpdateER15ModelComponents": {
       "src/_ZN6Player6RenderEv.cpp": [
         "param:#2 void *"
       ],
@@ -5881,7 +5881,7 @@
         "param:#2 void *"
       ]
     },
-    "_ZN15TextureSequence7PrepareER8BMD_FileR8BTP_File": {
+    "_ZN15dExtAnmTexPat_c7PrepareER8BMD_FileR8BTP_File": {
       "src/minigames/unit020bfec0.cpp": [
         "param:#1 void *",
         "param:#2 void *"
@@ -5891,76 +5891,92 @@
         "param:#2 void *"
       ]
     },
-    "_ZN15TextureSequence7SetFileER8BTP_Filei5Fix12IiEj": {
+    "_ZN15dExtAnmTexPat_c7SetFileER8BTP_Fileiit": {
       "src/game/actors/d_a_bg_snm_hed.cpp": [
+        "param:#2 void *",
         "param:#5 unsigned int"
       ],
       "src/game/actors/d_a_bg_snwmn.cpp": [
+        "param:#2 void *",
         "param:#5 unsigned int"
       ],
       "src/game/actors/d_a_brq.cpp": [
-        "param:#2 BTP_File &",
         "param:#5 unsigned int",
         "return:unsigned int"
       ],
       "src/game/actors/d_a_btn.cpp": [
+        "param:#2 void *",
         "param:#5 unsigned int"
       ],
       "src/game/actors/d_a_c_jugem.cpp": [
-        "param:#2 BTP_File &",
-        "param:#5 unsigned int"
-      ],
-      "src/game/actors/d_a_demo.cpp": [
         "param:#5 unsigned int"
       ],
       "src/game/actors/d_a_dsn_base.cpp": [
+        "param:#2 BTP_File *",
         "param:#5 unsigned int"
       ],
       "src/game/actors/d_a_eykn.cpp": [
+        "param:#2 void *",
         "param:#5 unsigned int"
       ],
       "src/game/actors/d_a_f_ring.cpp": [
+        "param:#2 BTP_File *",
         "param:#5 unsigned int"
       ],
       "src/game/actors/d_a_hanachan.cpp": [
+        "param:#2 void *",
         "param:#5 unsigned int"
       ],
       "src/game/actors/d_a_iwante.cpp": [
+        "param:#2 void *",
         "param:#5 unsigned int"
       ],
       "src/game/actors/d_a_jgm.cpp": [
+        "param:#2 void *",
         "param:#5 unsigned int"
       ],
       "src/game/actors/d_a_kpa.cpp": [
+        "param:#2 void *",
         "param:#5 unsigned int"
       ],
       "src/game/actors/d_a_kuri_king.cpp": [
+        "param:#2 void *",
         "param:#5 unsigned int"
       ],
+      "src/game/actors/d_a_luigi.cpp": [
+        "param:#2 BTP_File *"
+      ],
       "src/game/actors/d_a_obj1up_logo.cpp": [
+        "param:#2 void *",
         "param:#5 unsigned int"
       ],
       "src/game/actors/d_a_obj_number.cpp": [
+        "param:#2 void *",
         "param:#5 unsigned int"
       ],
       "src/game/actors/d_a_pg_dfdr.cpp": [
+        "param:#2 void *",
         "param:#5 unsigned int"
       ],
       "src/game/actors/d_a_pg_mthr.cpp": [
-        "param:#2 BTP_File &",
         "param:#5 unsigned int"
       ],
       "src/game/actors/d_a_pg_rcer.cpp": [
+        "param:#2 void *",
         "param:#5 unsigned int"
+      ],
+      "src/game/stages/d_ent_obj.cpp": [
+        "param:#2 void *"
+      ],
+      "src/minigames/d_mg3d_esp_anim_set.cpp": [
+        "param:#2 void *"
       ],
       "src/minigames/unit020bfec0.cpp": [
-        "param:#5 unsigned int"
-      ],
-      "src/unnamed/ov002/func_ov002_020e5948.c": [
+        "param:#2 void *",
         "param:#5 unsigned int"
       ]
     },
-    "_ZN15TextureSequence8LoadFileER13SharedFilePtr": {
+    "_ZN15dExtAnmTexPat_c8LoadFileER13SharedFilePtr": {
       "src/game/actors/d_a_btn.cpp": [
         "param:#1 void *"
       ],
@@ -5981,7 +5997,7 @@
         "return:void"
       ]
     },
-    "_ZN15TextureSequenceD1Ev": {
+    "_ZN15dExtAnmTexPat_cD1Ev": {
       "src/_ZN6PlayerC1Ev.cpp": [
         "return:void"
       ],
@@ -6143,7 +6159,7 @@
         "return:unsigned int"
       ]
     },
-    "_ZN18TextureTransformer6UpdateER15ModelComponents": {
+    "_ZN15dExtAnmTexSRT_c6UpdateER15ModelComponents": {
       "src/minigames/unit020bfec0.cpp": [
         "param:#2 void *"
       ],
@@ -6151,13 +6167,13 @@
         "param:#2 void *"
       ]
     },
-    "_ZN18TextureTransformer7PrepareER8BMD_FileR8BTA_File": {
+    "_ZN15dExtAnmTexSRT_c7PrepareER8BMD_FileR8BTA_File": {
       "src/minigames/unit020bfec0.cpp": [
         "param:#1 void *",
         "param:#2 void *"
       ]
     },
-    "_ZN18TextureTransformer7SetFileER8BTA_Filei5Fix12IiEj": {
+    "_ZN15dExtAnmTexSRT_c7SetFileER8BTA_Filei5Fix12IiEj": {
       "src/game/stages/d_s_stage_methods.cpp": [
         "param:#5 unsigned int"
       ],
@@ -6210,7 +6226,7 @@
         "param:#5 unsigned int"
       ]
     },
-    "_ZN18TextureTransformerD1Ev": {
+    "_ZN15dExtAnmTexSRT_cD1Ev": {
       "include/decl_TextureTransformer.h": [
         "return:void"
       ],
@@ -23328,13 +23344,13 @@
       ]
     },
     "func_020469e8": {
-      "src/engine/model/TextureTransformer.cpp": [
+      "src/engine/model/d_ext_anm_tex_srt.cpp": [
         "param:#1 ModelComponents *",
         "param:#2 BTA_File *"
       ]
     },
     "func_02046b64": {
-      "src/engine/model/TextureTransformer.cpp": [
+      "src/engine/model/d_ext_anm_tex_srt.cpp": [
         "param:#1 BMD_File *",
         "param:#2 BTA_File *"
       ],
@@ -23344,7 +23360,7 @@
       ]
     },
     "func_02046bbc": {
-      "src/engine/model/TextureSequence.cpp": [
+      "src/engine/model/d_ext_anm_tex_pat.cpp": [
         "param:#1 ModelComponents *",
         "param:#2 BTP_File *",
         "param:#3 int"
@@ -23354,7 +23370,7 @@
       ]
     },
     "func_02046d50": {
-      "src/engine/model/TextureSequence.cpp": [
+      "src/engine/model/d_ext_anm_tex_pat.cpp": [
         "param:#2 BTP_File *"
       ],
       "src/unnamed/ov007/func_ov007_020bc5fc.c": [
@@ -23362,14 +23378,14 @@
       ]
     },
     "func_02046e28": {
-      "src/engine/model/MaterialChanger.cpp": [
+      "src/engine/model/d_ext_anm_material.cpp": [
         "param:#1 ModelComponents *",
         "param:#2 BMA_File *",
         "param:#3 int"
       ]
     },
     "func_020470e8": {
-      "src/engine/model/MaterialChanger.cpp": [
+      "src/engine/model/d_ext_anm_material.cpp": [
         "param:#1 BMD_File *",
         "param:#2 BMA_File *"
       ]

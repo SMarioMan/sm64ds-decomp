@@ -17,11 +17,11 @@
 #ifdef __cplusplus
 
 #include "dBgActor_c.h"
-#include "TextureTransformer.h"
+#include "dExtAnmTexSRT_c.h"
 
 struct daObjTtWater_c : dBgActor_c {
     u8  pad_31e[0x2];
-    TextureTransformer mTextureTransformer;/* 0x320 */
+    dExtAnmTexSRT_c mTextureTransformer; /* 0x320 */
     s32 mMinPosY;                      /* 0x334 */
     /* Named out of the padding by this class's own Behavior, which stores
        Sound::PlayLong's handle here and passes it back as that call's first
@@ -66,10 +66,10 @@ struct daObjTtWater_c {
        tools/dtor_members.py. D1 and not D2, so it is this type and not an inlined base. */
     dBgW_KcMbg mMeshCollider;            /* 0x124 */
     u8  pad_2ec[0x34];
-    /* TextureTransformer member, named by the class's own destructor calling
-       TextureTransformer's D1 at +0x320 -- a relocation the ROM build
+    /* dExtAnmTexSRT_c member, named by the class's own destructor calling
+       dExtAnmTexSRT_c's D1 at +0x320 -- a relocation the ROM build
        checks. Was a u8 marker. [_ZN14daObjTtWater_cD1Ev, now in src/game/actors/d_a_obj_tt_water.cpp] */
-    TextureTransformer mTextureTransformer;            /* 0x320 */
+    dExtAnmTexSRT_c mTextureTransformer; /* 0x320 */
     s32 mMinPosY;            /* 0x334 */
     s32 mSoundID;            /* 0x338 */
     u16 mSoundTimer;              /* 0x33c */

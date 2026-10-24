@@ -290,7 +290,7 @@
       "address": "0x0213073c",
       "size": "0x8",
       "binding": "STB_GLOBAL",
-      "evidence": "texture-sequence file handle constructed with file ID 0x2d9; InitResources loads it with TextureSequence::LoadFile and CleanupResources releases it"
+      "evidence": "texture-sequence file handle constructed with file ID 0x2d9; InitResources loads it with dExtAnmTexPat_c::LoadFile and CleanupResources releases it"
     },
     {
       "symbol": "data_ov085_02130744",

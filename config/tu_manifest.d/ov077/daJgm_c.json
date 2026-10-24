@@ -283,7 +283,7 @@
       "address": "0x02127b20",
       "size": "0x8",
       "binding": "STB_GLOBAL",
-      "evidence": "texture-sequence file handle constructed with file ID 0x350; InitResources loads it with TextureSequence::LoadFile"
+      "evidence": "texture-sequence file handle constructed with file ID 0x350; InitResources loads it with dExtAnmTexPat_c::LoadFile"
     },
     {
       "symbol": "data_ov077_02127b28",
@@ -297,7 +297,7 @@
       "address": "0x02127b30",
       "size": "0x8",
       "binding": "STB_GLOBAL",
-      "evidence": "texture-sequence file handle constructed with file ID 0x34e; InitResources loads it with TextureSequence::LoadFile"
+      "evidence": "texture-sequence file handle constructed with file ID 0x34e; InitResources loads it with dExtAnmTexPat_c::LoadFile"
     },
     {
       "symbol": "data_ov077_02127b38",

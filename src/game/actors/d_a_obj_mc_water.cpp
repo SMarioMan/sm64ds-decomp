@@ -15,7 +15,7 @@
  * the retail D1/D0 pair first and emits no D2 body.
  *
  * deslop leftovers:
- * - TextureTransformer::SetFile / dBgW_KcMbg::SetFile 6az: InitResources
+ * - dExtAnmTexSRT_c::SetFile / dBgW_KcMbg::SetFile 6az: InitResources
  *   passes Fix12<int> by value; the header method form size-DIFFs.
  * - data_ov009_02113c68 / 02113c70 / 02112bc4 / 02112c38 model/KCL/BTA/CLPS
  *   handles and data_ov009_02113d8c / 02113de0 / 02113e34 spawn tables;
@@ -49,8 +49,8 @@ struct CLPS_Block;
 
 extern "C" {
 void func_ov009_02111b1c(daObjMcWater_c *self);
-void _ZN18TextureTransformer7SetFileER8BTA_Filei5Fix12IiEj(
-    void *self, void *bta, int a, int fix, unsigned b);
+void _ZN15dExtAnmTexSRT_c7SetFileER8BTA_Filei5Fix12IiEj(void *self, void *bta, int a, int fix,
+                                                        unsigned b);
 void _ZN10dBgW_KcMbg7SetFileEP8KCL_FileRK9Matrix4x35Fix12IiEsR10CLPS_Block(
     void *self, void *kcl, void *mtx, int fix, short s, void *clps);
 
@@ -91,10 +91,10 @@ int daObjMcWater_c::InitResources()
         BMD_File *bmd = (BMD_File *)dExtSimpleModel_c::LoadFile(data_ov009_02113c68);
         mModel.SetFile(bmd, 1, 0x14);
     }
-    TextureTransformer::Prepare(*(BMD_File *)data_ov009_02113c68.filePtr, data_ov009_02112bc4);
+    dExtAnmTexSRT_c::Prepare(*(BMD_File *)data_ov009_02113c68.filePtr, data_ov009_02112bc4);
     /* 6az: header SetFile takes Fix12<int> by value. */
-    _ZN18TextureTransformer7SetFileER8BTA_Filei5Fix12IiEj(
-        &mTexTransformer, &data_ov009_02112bc4, 0, 0x1000, 0);
+    _ZN15dExtAnmTexSRT_c7SetFileER8BTA_Filei5Fix12IiEj(&mTexTransformer, &data_ov009_02112bc4, 0,
+                                                       0x1000, 0);
     UpdateModelPosAndRotY();
     UpdateClsnPosAndRot();
     {
