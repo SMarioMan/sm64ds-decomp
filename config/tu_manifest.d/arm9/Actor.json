@@ -30,7 +30,7 @@
       "ordinal": 0
     },
     {
-      "symbol": "_ZN8dActor_c22IsTooFarAwayFromPlayerE5Fix12IiE",
+      "symbol": "_ZN8dActor_c22IsTooFarAwayFromPlayerEi",
       "address": "0x0200f70c",
       "size": "0x00000054",
       "legacy_source": "src/_ZN8dActor_c22IsTooFarAwayFromPlayerE5Fix12IiE.cpp",
@@ -408,7 +408,7 @@
       "ordinal": 54
     },
     {
-      "symbol": "_ZN8dActor_c15IsPlayerInRangeE5Fix12IiES1_S1_i",
+      "symbol": "_ZN8dActor_c15IsPlayerInRangeEiiii",
       "address": "0x02010498",
       "size": "0x00000044",
       "legacy_source": "src/_ZN8dActor_c15IsPlayerInRangeE5Fix12IiES1_S1_i.cpp",
@@ -562,7 +562,7 @@
       "ordinal": 76
     },
     {
-      "symbol": "_ZN8dActor_c9SetRangesE5Fix12IiES1_S1_S1_",
+      "symbol": "_ZN8dActor_c9SetRangesEiiii",
       "address": "0x02010e08",
       "size": "0x00000024",
       "legacy_source": "src/_ZN8dActor_c9SetRangesE5Fix12IiES1_S1_S1_.cpp",

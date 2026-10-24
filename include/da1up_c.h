@@ -33,7 +33,7 @@
  *
  *     0x110 dCcAc_c         0x34    -> 0x144
  *     0x144 dBgCh_Actr               0x1bc   -> 0x300
- *     0x300 Model                      0x50    -> 0x350
+ *     0x300 dExtSimpleModel_c                      0x50    -> 0x350
  *     0x350 dExtShadowModel_c                0x28    -> 0x378
  *
  * SIZE IS THE ROM'S OWN: `da1up_c_classInit_ONEUPKINOKO` calls `fBase_c::operator new(920)`
@@ -42,7 +42,7 @@
  */
 
 #include "dEnemyBase_c.h"
-#include "Model.h"
+#include "dExtSimpleModel_c.h"
 #include "dCcAc_c.h"
 #include "dExtShadowModel_c.h"
 #include "dBgCh_Actr.h"
@@ -82,7 +82,7 @@ enum da1up_MushroomType {
 struct da1up_c : dEnemyBase_c {
     dCcAc_c           mdCcAc_c;   /* 0x110 */
     dBgCh_Actr                 mWithMeshClsn;         /* 0x144 */
-    Model                        mModel;                /* 0x300 */
+    dExtSimpleModel_c mModel;                         /* 0x300 */
     dExtShadowModel_c                  mShadowModel;          /* 0x350 */
     /* mPos as InitResources found it (the three words are copied from
        mPosX/Y/Z). Type 10 rises to 100 units above mSpawnPosY; type 9 spawns

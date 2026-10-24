@@ -31,7 +31,7 @@ src/engine/collision/d_bg_w_kc_mbg.cpp
 # Enable/Disable/IsEnabled, the slot-registry helpers and the func_020393*
 # accessors this slice used to name separately all live in it.
 src/engine/collision/d_bg_w.cpp
-# ModelBase::SetFile lives in src/engine/model/Model.cpp, which slice 4b
+# dExtModel_c::SetFile lives in src/engine/model/d_ext_simple_model.cpp, which slice 4b
 # already compiles; smoke_actor links that slice, so listing it again
 # would define the class twice.
 src/InvMat4x3.c

@@ -16,12 +16,12 @@
  * destructor destroys mSprays, mArray2, mArray1, then mModel. Nothing is
  * left over either way.
  *
- * mModel IS A REAL, TYPED Model, and two independent witnesses fix it:
- * the constructor calls `_ZN5ModelC1Ev(t + 0xaba4)` and the destructor
- * calls `_ZN5ModelD1Ev(c + 0xaba4)`, and `sizeof(Model)` is 0x50, which
+ * mModel IS A REAL, TYPED dExtSimpleModel_c, and two independent witnesses fix it:
+ * the constructor calls `_ZN17dExtSimpleModel_cC1Ev(t + 0xaba4)` and the destructor
+ * calls `_ZN17dExtSimpleModel_cD1Ev(c + 0xaba4)`, and `sizeof(dExtSimpleModel_c)` is 0x50, which
  * closes exactly on 0xabf4 -- the very next word the constructor writes
  * (`*(int*)(t + 0xabf4) = 0`). That is the "two witnesses that close on
- * each other with nothing left over" bar. The Model destruction is
+ * each other with nothing left over" bar. The dExtSimpleModel_c destruction is
  * therefore left COMPILER-GENERATED here rather than written out: mModel
  * is declared before the three arrays, so reverse-declaration order puts
  * its destructor call last, which is exactly where the ROM has it.
@@ -70,7 +70,7 @@
 #ifndef DSCMGSNOWBALL_C_H
 #define DSCMGSNOWBALL_C_H
 #include "dScMgSingle3DBase_c.h"
-#include "Model.h"
+#include "dExtSimpleModel_c.h"
 
 extern "C" void __cxa_vec_cleanup(void *base, int count, int stride, void *dtor);
 extern "C" void SnowSpray_ElemDtor(void);
@@ -242,7 +242,7 @@ struct dScMgSnowball_c : dScMgSingle3DBase_c {
     s32 mBallSize;          /* 0xaba0 -- grows with downhill (-Y) travel (see
                                 mUphillDebt), capped 0x37000, shrinks by
                                 0x1000 a tick while melting */
-    Model mModel;           /* 0xaba4 -- 0x50, see file banner */
+    dExtSimpleModel_c mModel; /* 0xaba4 -- 0x50, see file banner */
     BMD_File *mBallBmd;     /* 0xabf4 -- the snowball BMD; InitResources loads it,
                                 slot 3 frees it */
     u8    mProbeHit[0x20];  /* 0xabf8 -- one flag per 32-step angle probe: set when that probe hit solid or breakable */

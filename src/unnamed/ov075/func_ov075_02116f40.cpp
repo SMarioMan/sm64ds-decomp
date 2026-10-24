@@ -4,6 +4,7 @@
 struct OamAttr;
 struct OAM {
     static void RenderSub(OamAttr*, int, int);
+    static void Render(bool, OamAttr *, int, int, int, int, int, int, int, int);
 };
 
 /* Render's 7th AND 8th parameters are Fix12<int> -- the S3_ in
@@ -12,8 +13,6 @@ struct OAM {
    handed (OamAttr*)0x1000, which is the right WORD for the wrong reason. Declared by
    final name because Fix12<int> is an aggregate with no converting constructor from
    int, and both arguments here are int literals. */
-extern "C" int _ZN3OAM6RenderEbP7OamAttriiii5Fix12IiES3_ii(
-    bool, OamAttr*, int, int, int, int, int, int, int, int);
 extern "C" int func_0200f0bc(void);
 extern short data_ov075_0211b5d4[];
 extern "C" char data_ov075_0211c790[];
@@ -37,10 +36,10 @@ extern "C" void func_ov075_02116f40(char* c)
     /* mStepWork[1] counts frames; its bit 3 bobs the three arrows. */
     scene->mStepWork[1] += 1;
     int arrowY = (scene->mStepWork[1] & 8) ? 0xac : 0xae;
-    _ZN3OAM6RenderEbP7OamAttriiii5Fix12IiES3_ii(false, (OamAttr *)_ZN3OAM14BOUNCING_ARROWE, 0x40,
-                                                arrowY, -1, -1, 0x1000, 0x1000, 0, -1);
-    _ZN3OAM6RenderEbP7OamAttriiii5Fix12IiES3_ii(false, (OamAttr *)_ZN3OAM14BOUNCING_ARROWE, 0x80,
-                                                arrowY, -1, -1, 0x1000, 0x1000, 0, -1);
-    _ZN3OAM6RenderEbP7OamAttriiii5Fix12IiES3_ii(false, (OamAttr *)_ZN3OAM14BOUNCING_ARROWE, 0xc0,
-                                                arrowY, -1, -1, 0x1000, 0x1000, 0, -1);
+    OAM::Render(false, (OamAttr *)_ZN3OAM14BOUNCING_ARROWE, 0x40, arrowY, -1, -1, 0x1000, 0x1000, 0,
+                -1);
+    OAM::Render(false, (OamAttr *)_ZN3OAM14BOUNCING_ARROWE, 0x80, arrowY, -1, -1, 0x1000, 0x1000, 0,
+                -1);
+    OAM::Render(false, (OamAttr *)_ZN3OAM14BOUNCING_ARROWE, 0xc0, arrowY, -1, -1, 0x1000, 0x1000, 0,
+                -1);
 }

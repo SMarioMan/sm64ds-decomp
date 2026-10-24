@@ -7,7 +7,8 @@ struct Matrix2x2;
 }
 typedef int Fix12i;
 
-extern "C" int _ZN3OAM6RenderEbP7OamAttriiii5Fix12IiES3_ii(int show, void* attr, int a, int b, int c, int d, Fix12i e, Fix12i f, int g, int h);
+extern "C" int OamRender10_func_0202048c(int show, void *attr, int a, int b, int c, int d, Fix12i e,
+                                         Fix12i f, int g, int h);
 
 extern short data_02082214[];
 
@@ -29,9 +30,8 @@ extern "C" void func_0202048c(char* a0, int a1, int a2)
     if (f08 == 0x1000 && anim->scaleY == 0x1000 && (u16)anim->rotation == 0) {
         int mode = anim->screen;
         if (mode == 2) {
-            _ZN3OAM6RenderEbP7OamAttriiii5Fix12IiES3_ii(0, (OamAttr *)anim->tile, a1, a2 + 0xc0,
-                                                        anim->palette, anim->priority, 0x1000,
-                                                        0x1000, 0, -1);
+            OAM::Render(0, (OamAttr *)anim->tile, a1, a2 + 0xc0, anim->palette, anim->priority,
+                        0x1000, 0x1000, 0, -1);
             OAM::RenderSub((OamAttr *)anim->tile, a1, a2, anim->palette, anim->priority);
             return;
         }
@@ -39,8 +39,8 @@ extern "C" void func_0202048c(char* a0, int a1, int a2)
             OAM::RenderSub((OamAttr *)anim->tile, a1, a2, anim->palette, anim->priority);
             return;
         }
-        _ZN3OAM6RenderEbP7OamAttriiii5Fix12IiES3_ii(0, (OamAttr *)anim->tile, a1, a2, anim->palette,
-                                                    anim->priority, 0x1000, 0x1000, 0, -1);
+        OAM::Render(0, (OamAttr *)anim->tile, a1, a2, anim->palette, anim->priority, 0x1000, 0x1000,
+                    0, -1);
         return;
     }
 

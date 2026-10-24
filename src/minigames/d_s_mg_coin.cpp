@@ -56,6 +56,16 @@ enum dScMgCoin_c_AssetId {
 #include "PlayerInput.h"
 #include "nitro/fx/fx.h"
 
+namespace GX {
+void LoadBGPltt(const void *p, u32 a, u32 b);
+void LoadOBJPltt(const void *p, u32 a, u32 b);
+}
+
+namespace GXS {
+void LoadBGPltt(const void *p, u32 a, u32 b);
+void LoadOBJPltt(const void *p, u32 a, u32 b);
+}
+
 #pragma defer_codegen off /* ROM-ascending emission; dropping this inverts it */
 
 /* Indexed from the object base. A pointer to the element misses. */
@@ -158,10 +168,7 @@ extern void Mg_PlayJingle(void *c);
 extern int Mg_GetTopRecord(void);
 extern int LoadFile(int handle);
 extern void DecompressLZ16(int src, void *dst);
-extern void _ZN2GX10LoadBGPlttEPKvjj(const void *p, u32 a, u32 b);
-extern void _ZN2GX11LoadOBJPlttEPKvjj(const void *p, u32 a, u32 b);
-extern void _ZN3GXS10LoadBGPlttEPKvjj(const void *p, u32 a, u32 b);
-extern void _ZN3GXS11LoadOBJPlttEPKvjj(const void *p, u32 a, u32 b);
+
 extern u8 data_0209d45c;
 extern u8 data_0209d454;
 extern int data_0208ee44;
@@ -1629,7 +1636,7 @@ int dScMgCoin_c::InitResources() {
     Deallocate((void *)a);
 
     a = LoadFile(ASSET_D_2D_MG_BG_WRECKING_CREW_NCL_BIN);
-    _ZN2GX10LoadBGPlttEPKvjj((const void *)a, 0x1e0, 0x20);
+    GX::LoadBGPltt((const void *)a, 0x1e0, 0x20);
     Deallocate((void *)a);
 
     a = LoadFile(ASSET_D_2D_MG_BG_WRECKING_CREW_UP_NSC_BIN);
@@ -1639,7 +1646,7 @@ int dScMgCoin_c::InitResources() {
     b = LoadFile(ASSET_D_2D_MG_WRECKING_CREW_NCG_BIN);
     a = LoadFile(ASSET_D_2D_MG_WRECKING_CREW_NCL_BIN);
     DecompressLZ16(b, (void *)0x6400000);
-    _ZN2GX11LoadOBJPlttEPKvjj((const void *)a, 0, 0x100);
+    GX::LoadOBJPltt((const void *)a, 0, 0x100);
 
     data_0209d454 |= 8;
     *(volatile u16 *)0x400100e = (*(volatile u16 *)0x400100e & ~3) | 3;
@@ -1650,7 +1657,7 @@ int dScMgCoin_c::InitResources() {
     Deallocate((void *)d);
 
     d = LoadFile(ASSET_D_2D_MG_BG_WRECKING_CREW_NCL_BIN);
-    _ZN3GXS10LoadBGPlttEPKvjj((const void *)d, 0x1e0, 0x20);
+    GXS::LoadBGPltt((const void *)d, 0x1e0, 0x20);
     Deallocate((void *)d);
 
     d = LoadFile(ASSET_D_2D_MG_BG_WRECKING_CREW_DOWN_NSC_BIN);
@@ -1658,7 +1665,7 @@ int dScMgCoin_c::InitResources() {
     Deallocate((void *)d);
 
     DecompressLZ16(b, (void *)0x6600000);
-    _ZN3GXS11LoadOBJPlttEPKvjj((const void *)a, 0, 0x100);
+    GXS::LoadOBJPltt((const void *)a, 0, 0x100);
     Deallocate((void *)b);
     Deallocate((void *)a);
 

@@ -135,7 +135,6 @@ extern void _ZN9dBgCh_Gnd12SetObjAndPosERK7Vector3P8dActor_c(void *self, const v
 extern int _ZN9dCamera_c11ChangeStateEPNS_5StateE(void *thiz, void *state);
 
 extern void *_ZN7fBase_cC2Ev(void *self);
-extern void *_Znwj(u32 sz);
 /* _ZTV7dBase_c/_ZTV7dView_c/_ZTV9dCamera_c come from decl_common.h (int[]/u32
    spellings); the stores below take their addresses explicitly. */
 
@@ -224,7 +223,6 @@ struct G3i {
     static void LookAt_(const Vector3 *, const Vector3 *, const Vector3 *, bool, Matrix4x3 *);
 };
 extern "C" {
-void _ZN3OAM6RenderEbP7OamAttriiii5Fix12IiES3_ii(bool, OamAttr *, int, int, int, int, int, int, int, int);
 void _ZN3G3i13PerspectiveW_E5Fix12IiES1_S1_S1_S1_S1_bP9Matrix4x3(int, int, int, int, int, int, bool, Matrix4x3 *);
 }
 
@@ -257,7 +255,7 @@ int dCamera_c::InitResources()
         if (v->type == 7) {
             s32 *p;
             s16 x, y, z;
-            thiz->mFixedViewPos = _Znwj(0xc);
+            thiz->mFixedViewPos = ::operator new(0xc);
             x = v->x; z = v->z; y = v->y;
             p = (s32 *)thiz->mFixedViewPos;
             p[0] = x << 0xc;
@@ -438,14 +436,17 @@ int dCamera_c::Render()
         s32 f = self->mFlags;
         if (!(f & 8)) {
             if ((u8 *)self->mMode == &data_0208738c) {
-                _ZN3OAM6RenderEbP7OamAttriiii5Fix12IiES3_ii(0, (OamAttr *)&data_ov002_0210c3b0, 0x80, 0x60, -1, -1, 0x1000, 0x1000, 0, -1);
+                OAM::Render(0, (OamAttr *)&data_ov002_0210c3b0, 0x80, 0x60, -1, -1, 0x1000, 0x1000,
+                            0, -1);
                 G2x::SetBlendAlpha((volatile unsigned short *)0x04000050, 0x10, 0x2f, 0xc, 6);
             } else {
                 if (f & 0x20) {
-                    _ZN3OAM6RenderEbP7OamAttriiii5Fix12IiES3_ii(0, (OamAttr *)data_ov002_0210c3e0[0], 0x14, 0x60, -1, -1, 0x1000, 0x1000, 0, -1);
+                    OAM::Render(0, (OamAttr *)data_ov002_0210c3e0[0], 0x14, 0x60, -1, -1, 0x1000,
+                                0x1000, 0, -1);
                 }
                 if (self->mFlags & 0x40) {
-                    _ZN3OAM6RenderEbP7OamAttriiii5Fix12IiES3_ii(0, (OamAttr *)data_ov002_0210c3e0[1], 0xec, 0x60, -1, -1, 0x1000, 0x1000, 0, -1);
+                    OAM::Render(0, (OamAttr *)data_ov002_0210c3e0[1], 0xec, 0x60, -1, -1, 0x1000,
+                                0x1000, 0, -1);
                 }
             }
             s32 t = self->mFovBlend;

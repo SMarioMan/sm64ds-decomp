@@ -88,7 +88,7 @@ int daObjMcWater_c::InitResources()
         }
     }
     {
-        BMD_File *bmd = (BMD_File *)Model::LoadFile(data_ov009_02113c68);
+        BMD_File *bmd = (BMD_File *)dExtSimpleModel_c::LoadFile(data_ov009_02113c68);
         mModel.SetFile(bmd, 1, 0x14);
     }
     TextureTransformer::Prepare(*(BMD_File *)data_ov009_02113c68.filePtr, data_ov009_02112bc4);

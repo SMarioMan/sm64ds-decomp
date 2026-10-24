@@ -1,4 +1,11 @@
 //cpp
+struct Vector3_16f;
+namespace Particle {
+struct Callback;
+struct System {
+    static int New(unsigned, unsigned, int, int, int, const ::Vector3_16f *, Callback *);
+};
+}
 /* daBbl_c -- Lava Bubble (Podoboo), BUBBLE, ov064 0x021185c0..0x02118b50.
  * The spawn parameter's low bit picks a fixed flame or the jumping bubble.
  * Both use the same two-entry state table. Source order is the reverse of
@@ -31,13 +38,10 @@ u16 DecIfAbove0_Short(u16 *timer);
  * because its real declaration passes three Fix12<int> by value; the trailing
  * two parameters are spelt as its definition spells them. */
 struct Vec3;
-int _ZN8Particle6System3NewEjj5Fix12IiES2_S2_PK11Vector3_16fPNS_8CallbackE(
-    u32 handle, u32 effectID, int x, int y, int z, const Vec3 *rot,
-    void *callback);
+int d_a_bblNewHold(u32 handle, u32 effectID, int x, int y, int z, const Vec3 *rot, void *callback);
 
 /* True while the player is further than `dist` away. Fix12<int> by value
  * again. */
-int _ZN8dActor_c22IsTooFarAwayFromPlayerE5Fix12IiE(dActor_c *self, int dist);
 
 /* The actor-collision cylinder's own initialiser; two more Fix12<int> by
  * value, so it stays at its C ABI spelling too. */
@@ -147,7 +151,7 @@ int daBbl_c::Behavior()
             return 1;
     }
 
-    if (_ZN8dActor_c22IsTooFarAwayFromPlayerE5Fix12IiE(this, 0x5dc000)) {
+    if (IsTooFarAwayFromPlayer(0x5dc000)) {
         if (mJumps != 0)
             MarkForDestruction();
         return 1;
@@ -285,10 +289,9 @@ int daBbl_c::func_ov064_02118644()
             mVertSpeed = mVertSpeed * -7 / 10;
         }
     }
-    mFireParticle = _ZN8Particle6System3NewEjj5Fix12IiES2_S2_PK11Vector3_16fPNS_8CallbackE(
-        mFireParticle, 0x4d, mPosX, mPosY + 0x37000, mPosZ, 0, 0);
-    mSmokeParticle = _ZN8Particle6System3NewEjj5Fix12IiES2_S2_PK11Vector3_16fPNS_8CallbackE(
-        mSmokeParticle, 0x4e, mPosX, mPosY + 0x37000, mPosZ, 0, 0);
+    mFireParticle = Particle::System::New(mFireParticle, 0x4d, mPosX, mPosY + 0x37000, mPosZ, 0, 0);
+    mSmokeParticle =
+        Particle::System::New(mSmokeParticle, 0x4e, mPosX, mPosY + 0x37000, mPosZ, 0, 0);
     if ((u16)mStateTimer == 0)
         MarkForDestruction();
     return 1;

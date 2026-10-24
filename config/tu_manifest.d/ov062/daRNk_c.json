@@ -785,74 +785,74 @@
   ],
   "defined_symbol_renames": [
     {
-      "from": "@915",
+      "from": "@930",
       "to": "@118",
-      "evidence": "mwcc emits this compiler temp as @901; batch renumber to unused same-length name, batch-2 ov065 folds on main already promote these names globally"
+      "evidence": "mwcc emits this compiler temp as @901; batch renumber to unused same-length name, batch-2 ov065 folds on main already promote these names globally 2026-10-22: #include \"Sound.h\" shifted file-local numbering; from-names re-pointed by symbol-index order (indices identical pre/post); re-verify linkcheck."
     },
     {
-      "from": "@917",
+      "from": "@932",
       "to": "@920",
-      "evidence": "mwcc numbers this PMF record @903 per TU and ov094 already defines a global @903, so the scratch link would multiply-define it"
+      "evidence": "mwcc numbers this PMF record @903 per TU and ov094 already defines a global @903, so the scratch link would multiply-define it 2026-10-22: #include \"Sound.h\" shifted file-local numbering; from-names re-pointed by symbol-index order (indices identical pre/post); re-verify linkcheck."
     },
     {
-      "from": "@921",
+      "from": "@936",
       "to": "@119",
-      "evidence": "mwcc emits this compiler temp as @907; batch renumber to unused same-length name, batch-2 ov065 folds on main already promote these names globally"
+      "evidence": "mwcc emits this compiler temp as @907; batch renumber to unused same-length name, batch-2 ov065 folds on main already promote these names globally 2026-10-22: #include \"Sound.h\" shifted file-local numbering; from-names re-pointed by symbol-index order (indices identical pre/post); re-verify linkcheck."
     },
     {
-      "from": "@922",
+      "from": "@937",
       "to": "@120",
-      "evidence": "mwcc emits this compiler temp as @908; batch renumber to unused same-length name, batch-2 ov065 folds on main already promote these names globally"
+      "evidence": "mwcc emits this compiler temp as @908; batch renumber to unused same-length name, batch-2 ov065 folds on main already promote these names globally 2026-10-22: #include \"Sound.h\" shifted file-local numbering; from-names re-pointed by symbol-index order (indices identical pre/post); re-verify linkcheck."
     },
     {
-      "from": "@923",
+      "from": "@938",
       "to": "@121",
-      "evidence": "mwcc emits this compiler temp as @909; batch renumber to unused same-length name, batch-2 ov065 folds on main already promote these names globally"
+      "evidence": "mwcc emits this compiler temp as @909; batch renumber to unused same-length name, batch-2 ov065 folds on main already promote these names globally 2026-10-22: #include \"Sound.h\" shifted file-local numbering; from-names re-pointed by symbol-index order (indices identical pre/post); re-verify linkcheck."
     },
     {
-      "from": "@925",
+      "from": "@940",
       "to": "@122",
-      "evidence": "mwcc emits this compiler temp as @911; batch renumber to unused same-length name, batch-2 ov065 folds on main already promote these names globally"
+      "evidence": "mwcc emits this compiler temp as @911; batch renumber to unused same-length name, batch-2 ov065 folds on main already promote these names globally 2026-10-22: #include \"Sound.h\" shifted file-local numbering; from-names re-pointed by symbol-index order (indices identical pre/post); re-verify linkcheck."
     },
     {
-      "from": "@927",
+      "from": "@942",
       "to": "@123",
-      "evidence": "mwcc emits this compiler temp as @913; batch renumber to unused same-length name, batch-2 ov065 folds on main already promote these names globally"
+      "evidence": "mwcc emits this compiler temp as @913; batch renumber to unused same-length name, batch-2 ov065 folds on main already promote these names globally 2026-10-22: #include \"Sound.h\" shifted file-local numbering; from-names re-pointed by symbol-index order (indices identical pre/post); re-verify linkcheck."
     },
     {
-      "from": "@929",
+      "from": "@944",
       "to": "@124",
-      "evidence": "mwcc emits this compiler temp as @915; batch renumber to unused same-length name, batch-2 ov065 folds on main already promote these names globally"
-    },
-    {
-      "from": "@913",
-      "to": "@899",
-      "evidence": "compiler temp; the types.h Vector3 ctors and main's sinit folds shift this TU's per-TU @NNN uniquifier, so mwcc emits it as @913 now; licensed under the existing pin @899"
-    },
-    {
-      "from": "@919",
-      "to": "@905",
-      "evidence": "compiler temp; the types.h Vector3 ctors and main's sinit folds shift this TU's per-TU @NNN uniquifier, so mwcc emits it as @919 now; licensed under the existing pin @905"
-    },
-    {
-      "from": "@911",
-      "to": "@897",
-      "evidence": "compiler temp; the types.h Vector3 ctors and main's sinit folds shift this TU's per-TU @NNN uniquifier, so mwcc emits it as @911 now; licensed under the existing pin @897"
+      "evidence": "mwcc emits this compiler temp as @915; batch renumber to unused same-length name, batch-2 ov065 folds on main already promote these names globally 2026-10-22: #include \"Sound.h\" shifted file-local numbering; from-names re-pointed by symbol-index order (indices identical pre/post); re-verify linkcheck."
     },
     {
       "from": "@928",
-      "to": "@914",
-      "evidence": "compiler temp; the types.h Vector3 ctors and main's sinit folds shift this TU's per-TU @NNN uniquifier, so mwcc emits it as @928 now; licensed under the existing pin @914"
+      "to": "@899",
+      "evidence": "compiler temp; the types.h Vector3 ctors and main's sinit folds shift this TU's per-TU @NNN uniquifier, so mwcc emits it as @913 now; licensed under the existing pin @899 2026-10-22: #include \"Sound.h\" shifted file-local numbering; from-names re-pointed by symbol-index order (indices identical pre/post); re-verify linkcheck."
     },
     {
-      "from": "@924",
-      "to": "@910",
-      "evidence": "compiler temp; the types.h Vector3 ctors and main's sinit folds shift this TU's per-TU @NNN uniquifier, so mwcc emits it as @924 now; licensed under the existing pin @910"
+      "from": "@934",
+      "to": "@905",
+      "evidence": "compiler temp; the types.h Vector3 ctors and main's sinit folds shift this TU's per-TU @NNN uniquifier, so mwcc emits it as @919 now; licensed under the existing pin @905 2026-10-22: #include \"Sound.h\" shifted file-local numbering; from-names re-pointed by symbol-index order (indices identical pre/post); re-verify linkcheck."
     },
     {
       "from": "@926",
+      "to": "@897",
+      "evidence": "compiler temp; the types.h Vector3 ctors and main's sinit folds shift this TU's per-TU @NNN uniquifier, so mwcc emits it as @911 now; licensed under the existing pin @897 2026-10-22: #include \"Sound.h\" shifted file-local numbering; from-names re-pointed by symbol-index order (indices identical pre/post); re-verify linkcheck."
+    },
+    {
+      "from": "@943",
+      "to": "@914",
+      "evidence": "compiler temp; the types.h Vector3 ctors and main's sinit folds shift this TU's per-TU @NNN uniquifier, so mwcc emits it as @928 now; licensed under the existing pin @914 2026-10-22: #include \"Sound.h\" shifted file-local numbering; from-names re-pointed by symbol-index order (indices identical pre/post); re-verify linkcheck."
+    },
+    {
+      "from": "@939",
+      "to": "@910",
+      "evidence": "compiler temp; the types.h Vector3 ctors and main's sinit folds shift this TU's per-TU @NNN uniquifier, so mwcc emits it as @924 now; licensed under the existing pin @910 2026-10-22: #include \"Sound.h\" shifted file-local numbering; from-names re-pointed by symbol-index order (indices identical pre/post); re-verify linkcheck."
+    },
+    {
+      "from": "@941",
       "to": "@912",
-      "evidence": "compiler temp; the types.h Vector3 ctors and main's sinit folds shift this TU's per-TU @NNN uniquifier, so mwcc emits it as @926 now; licensed under the existing pin @912"
+      "evidence": "compiler temp; the types.h Vector3 ctors and main's sinit folds shift this TU's per-TU @NNN uniquifier, so mwcc emits it as @926 now; licensed under the existing pin @912 2026-10-22: #include \"Sound.h\" shifted file-local numbering; from-names re-pointed by symbol-index order (indices identical pre/post); re-verify linkcheck."
     }
   ],
   "undefined_symbol_aliases": [

@@ -1,11 +1,18 @@
 //cpp
+struct Vector3_16f;
+namespace Particle {
+struct Callback;
+struct System {
+    static int New(unsigned, unsigned, int, int, int, const ::Vector3_16f *, Callback *);
+};
+}
 /* daMip_c -- MIPS the rabbit (MIP). ov085.
  *
  * defer_codegen off lays .text down in source order. The destructor
  * is the key function: the cartridge has D1 below D0 and no D2.
  *
  * leftovers:
- * - ModelAnim::SetAnim, dCcAc_c::Init, dBgCh_Actr::Init,
+ * - dExtAnmModel_c::SetAnim, dCcAc_c::Init, dBgCh_Actr::Init,
  *   DropShadowRadHeight, Sound::PlaySub and Particle::System::New
  *   stay mangled. They take Fix12 by value. dBgCh_Actr::Init's
  *   header spells Fix12i, which mangles as int.
@@ -78,11 +85,9 @@ void  _ZN8dActor_c19DropShadowRadHeightER17dExtShadowModel_cR9Matrix4x35Fix12IiE
 bool  _ZN5Sound7PlaySubEjjj5Fix12IiEb(u32, u32, u32, s32, int);
 
 /* model / animation / shadow */
-void  _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(void *, void *, int, s32, u32);
 
 /* path, particle, construction */
 void *_ZN7PathPtrC1Ev(void *);
-int   _ZN8Particle6System3NewEjj5Fix12IiES2_S2_PK11Vector3_16fPNS_8CallbackE(u32, u32, s32, s32, s32, void *, void *);
 
 /* maths and the still-unnamed helpers */
 s16   Vec3_HorzAngle(const void *, const void *);
@@ -368,8 +373,7 @@ int daMip_c::StateSaveTalkInit()
 
     mActionStep = 0;
     func_02013944();
-    _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(&mModelAnim, data_ov085_021305c0.filePtr, 0, 0x1000,
-                                                0);
+    mModelAnim.SetAnim((BCA_File *)data_ov085_021305c0.filePtr, 0, 0x1000, 0);
     return 1;
 }
 
@@ -507,8 +511,7 @@ int daMip_c::StateReleasedInit()
     mdCcAc_c.flags |= 0x4000000;
     mdCcAc_c.radius = 0x78000;
     mdCcAc_c.vulnFlags &= ~0x8000;
-    _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(&mModelAnim, data_ov085_021305c0.filePtr, 0, 0x1000,
-                                                0);
+    mModelAnim.SetAnim((BCA_File *)data_ov085_021305c0.filePtr, 0, 0x1000, 0);
     return 1;
 }
 
@@ -740,8 +743,7 @@ int daMip_c::StateCaughtInit()
     mActionStep = 0;
     mHorzSpeed = 0;
     mdCcAc_c.radius = 0x28000;
-    _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(&mModelAnim, data_ov085_021305b8.filePtr, 0, 0x1000,
-                                                0);
+    mModelAnim.SetAnim((BCA_File *)data_ov085_021305b8.filePtr, 0, 0x1000, 0);
     return 1;
 }
 
@@ -761,8 +763,7 @@ int daMip_c::StateRestInit()
 {
     extern DaMipAnimationFilePtr data_ov085_021305b0;
 
-    _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(&mModelAnim, data_ov085_021305b0.filePtr,
-                                                0x40000000, 0x1000, 0);
+    mModelAnim.SetAnim((BCA_File *)data_ov085_021305b0.filePtr, 0x40000000, 0x1000, 0);
     return 1;
 }
 
@@ -931,8 +932,7 @@ int daMip_c::StateFleeInit()
       mPathDir = -1;
   }
 
-  _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(&mModelAnim, gMipRunAnimationFile.filePtr, 0, 0x1000,
-                                              0);
+  mModelAnim.SetAnim((BCA_File *)gMipRunAnimationFile.filePtr, 0, 0x1000, 0);
   return 1;
 }
 
@@ -951,8 +951,7 @@ int daMip_c::StateStartleInit()
 {
     extern DaMipAnimationFilePtr data_ov085_021305c8;
 
-    _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(&mModelAnim, data_ov085_021305c8.filePtr,
-                                                0x40000000, 0x1000, 0);
+    mModelAnim.SetAnim((BCA_File *)data_ov085_021305c8.filePtr, 0x40000000, 0x1000, 0);
     return 1;
 }
 
@@ -1027,20 +1026,17 @@ int daMip_c::StateIdleMain()
         switch (mActionStep) {
         case 1:
             mHorzSpeed = 0x4000;
-            _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(&mModelAnim, gMipRunAnimationFile.filePtr,
-                                                        0x40000000, 0x1000, 0);
+            mModelAnim.SetAnim((BCA_File *)gMipRunAnimationFile.filePtr, 0x40000000, 0x1000, 0);
             (mActionStep)++;
             break;
         case 2:
-            _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(&mModelAnim, data_ov085_021305b0.filePtr,
-                                                        0x40000000, 0x1000, 0);
+            mModelAnim.SetAnim((BCA_File *)data_ov085_021305b0.filePtr, 0x40000000, 0x1000, 0);
             mHorzSpeed = 0;
             (mActionStep)++;
             break;
         case 3:
             mStateTimer = (s16)((r & 0x1f) + 0x1e);
-            _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(&mModelAnim, data_ov085_021305c0.filePtr, 0,
-                                                        0x1000, 0);
+            mModelAnim.SetAnim((BCA_File *)data_ov085_021305c0.filePtr, 0, 0x1000, 0);
             mActionStep = 0;
             break;
         }
@@ -1052,8 +1048,7 @@ int daMip_c::StateIdleMain()
             s16 *ang = &mTargetAngY;
             *ang = *ang + (0x1800 - ((r & 3) << 12));
         }
-        _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(&mModelAnim, data_ov085_021305c8.filePtr,
-                                                    0x40000000, 0x1000, 0);
+        mModelAnim.SetAnim((BCA_File *)data_ov085_021305c8.filePtr, 0x40000000, 0x1000, 0);
         mActionStep = 1;
     }
 
@@ -1066,7 +1061,7 @@ int daMip_c::StateIdleInit()
 {
   extern DaMipAnimationFilePtr data_ov085_021305c0;
 
-  _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(&mModelAnim, *(void**)((char*)&data_ov085_021305c0+4), 0, 0x1000, 0);
+  mModelAnim.SetAnim((BCA_File *)(*(void **)((char *)&data_ov085_021305c0 + 4)), 0, 0x1000, 0);
   mIdlePosX = mPosX;
   mIdlePosY = mPosY;
   mIdlePosZ = mPosZ;
@@ -1270,7 +1265,7 @@ void daMip_c::RenderMirrorImage()
     MulMat3x3Mat3x3(&mModelAnim.mat4x3, &data_020a0e68, &mModelAnim.mat4x3);
     func_02016acc(&mModelAnim, 0x80);
     func_02016b24(&mModelAnim, 0x40);
-    mModelAnim.ModelAnim::Render(&mScale);
+    mModelAnim.dExtAnmModel_c::Render(&mScale);
     mModelAnim.ApplyOpacity(0xff, 0);
     func_02016b24(&mModelAnim, 0x80);
     func_02016acc(&mModelAnim, 0x40);
@@ -1352,8 +1347,8 @@ int daMip_c::Behavior()
         pv.y = mPosY;
         pv.z = mPosZ;
         pv.y = mPosY + 0x3c000;
-        mGlowParticle = _ZN8Particle6System3NewEjj5Fix12IiES2_S2_PK11Vector3_16fPNS_8CallbackE(
-            *(volatile u32*)&mGlowParticle, 0x10d, pv.x, pv.y, mPosZ, 0, 0);
+        mGlowParticle =
+            Particle::System::New(*(volatile u32 *)&mGlowParticle, 0x10d, pv.x, pv.y, mPosZ, 0, 0);
     }
 
     {
@@ -1423,7 +1418,8 @@ int daMip_c::Behavior()
         UpdateMatrixAndShadow();
         mCatchState = 2;
         SetState(&data_ov085_021306ac);
-        _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(&mModelAnim, *(void**)((char*)&data_ov085_021305c0 + 4), 0, 0x1000, 0);
+        mModelAnim.SetAnim((BCA_File *)(*(void **)((char *)&data_ov085_021305c0 + 4)), 0, 0x1000,
+                           0);
         if (*(void**)&mTalkingPlayer == 0)
             *(void**)&mTalkingPlayer = ClosestPlayer();
         return 1;
@@ -1434,7 +1430,8 @@ int daMip_c::Behavior()
         if (p != (void*)&data_ov085_021306ac && p != (void*)&data_ov085_0213068c &&
             p != (void*)&data_ov085_021306bc && p != (void*)&data_ov085_021306dc) {
             SetState(&data_ov085_021306ac);
-            _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(&mModelAnim, *(void**)((char*)&data_ov085_021305c0 + 4), 0, 0x1000, 0);
+            mModelAnim.SetAnim((BCA_File *)(*(void **)((char *)&data_ov085_021305c0 + 4)), 0,
+                               0x1000, 0);
         }
         mHorzSpeed = 0;
     }
@@ -1510,8 +1507,9 @@ int daMip_c::InitResources()
     dExtFrameCtrl_c::LoadFile(*(SharedFilePtr *)&data_ov085_021305b0);
     dExtFrameCtrl_c::LoadFile(*(SharedFilePtr *)&data_ov085_021305c8);
     dExtFrameCtrl_c::LoadFile(*(SharedFilePtr *)&data_ov085_021305c0);
-    Model::LoadFile(*(SharedFilePtr *)&data_ov085_021305d8);
-    mModelAnim.SetFile((BMD_File *)Model::LoadFile(*(SharedFilePtr *)&data_ov085_021305e0), 1, -1);
+    dExtSimpleModel_c::LoadFile(*(SharedFilePtr *)&data_ov085_021305d8);
+    mModelAnim.SetFile(
+        (BMD_File *)dExtSimpleModel_c::LoadFile(*(SharedFilePtr *)&data_ov085_021305e0), 1, -1);
     mShadowModel1.InitCylinder();
     mShadowModel2.InitCylinder();
 

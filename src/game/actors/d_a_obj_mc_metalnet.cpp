@@ -15,7 +15,7 @@
  */
 
 /* daObjMc_Metalnet_c.h FIRST: it pulls in dBgActor_c.h, which must reach
-   common.h ahead of Model.h or the wrong Matrix4x3 spelling wins. */
+   common.h ahead of dExtSimpleModel_c.h or the wrong Matrix4x3 spelling wins. */
 /* Runtime asset handles resolved through the overlay 0 file table. */
 enum d_a_obj_mc_metalnet_AssetId {
     ASSET_MC_METALNET_BMD = 0x0691,
@@ -52,7 +52,6 @@ unsigned char NumStars(void);
 /* dBgActor_c::IsClsnInRange(Fix12<int>, Fix12<int>) -- reached through the
    mangled name because the two by-value Fix12<int> parameters are wall 6az
    on ov009/daObjMc_Metalnet_c::Behavior. */
-int _ZN10dBgActor_c13IsClsnInRangeE5Fix12IiES1_(void *self, int a, int b);
 
 /* dBgW_KcMbg::SetFile -- same wall on ov009/daObjMc_Metalnet_c::InitResources:
    its by-value Fix12<int> scale makes a member call cost stack the ROM does
@@ -94,7 +93,7 @@ extern "C" daObjMc_Metalnet_c *daObjMc_Metalnet_c_classInit(void)
  * Either way, mode 1 short-circuits both and the net always stays. */
 s32 daObjMc_Metalnet_c::InitResources()
 {
-    mModel.SetFile((BMD_File *)Model::LoadFile(data_ov009_02113e90), 1, -1);
+    mModel.SetFile((BMD_File *)dExtSimpleModel_c::LoadFile(data_ov009_02113e90), 1, -1);
     UpdateModelPosAndRotY();
     UpdateClsnPosAndRot();
 
@@ -135,7 +134,7 @@ s32 daObjMc_Metalnet_c::Behavior()
     } else {
         /* MEASURED on ov009/daObjMc_Metalnet_c::Behavior: the two by-value
            Fix12<int> parameters are wall 6az. */
-        _ZN10dBgActor_c13IsClsnInRangeE5Fix12IiES1_(this, 0, 0);
+        IsClsnInRange(0, 0);
     }
     return 1;
 }
@@ -176,7 +175,7 @@ s32 daObjMc_Metalnet_c::CleanupResources()
    Their bodies are two vptr stores and the member destructions, every one a
    consequence of `daObjMc_Metalnet_c : dBgActor_c`: this class's vptr, then
    dBgActor_c's -- inlined, because that destructor is defined in its class
-   body -- then dBgActor_c's Model and dBgW_KcMbg, then dActor_c. This class
+   body -- then dBgActor_c's dExtSimpleModel_c and dBgW_KcMbg, then dActor_c. This class
    adds no member with a destructor of its own. */
 
 McMetalnetModelFilePtr data_ov009_02113e90(ASSET_MC_METALNET_BMD);

@@ -1,4 +1,12 @@
 //cpp
+struct Vector3_16f;
+namespace Particle {
+struct Callback;
+struct System {
+    static int New(unsigned, unsigned, int, int, int, const ::Vector3_16f *, Callback *);
+    static void NewSimple(unsigned int, int, int, int);
+};
+}
 /**
  * Shared base for enemies and other actors that use the enemy collision,
  * death and Yoshi-eat handling.
@@ -450,8 +458,8 @@ extern "C" int func_ov002_020ae5c8(dEnemyBase_c *c, int x) {
 
 struct Vector3_16f;
 extern "C" {
-extern void* _ZN8Particle6System3NewEjj5Fix12IiES2_S2_PK11Vector3_16fPNS_8CallbackE(
-  unsigned int a, unsigned int b, int c, int d, int e, const void* f, void* g);
+extern void *d_enemy_baseNewHold(unsigned int a, unsigned int b, int c, int d, int e, const void *f,
+                                 void *g);
 extern u32 _ZN8Particle6System17NewUnkCallback818Ejj5Fix12IiES2_S2_PK11Vector3_16f(
   u32 uniqueID, u32 effectID, Fix12i x, Fix12i y, Fix12i z, const Vector3_16f* dir);
 }
@@ -481,9 +489,9 @@ int EnemyDeathC::func_ov002_020ae4cc(dBgCh_Actr &clsn) {
         mDeathState = 0;
         return 1;
     }
-    mDeathParticleID0 = (u32)_ZN8Particle6System3NewEjj5Fix12IiES2_S2_PK11Vector3_16fPNS_8CallbackE(
-        mDeathParticleID0, 0x13a, *(int *)((char *)v + 0), *(int *)((char *)v + 4),
-        *(int *)((char *)v + 8), 0, 0);
+    mDeathParticleID0 =
+        (u32)Particle::System::New(mDeathParticleID0, 0x13a, *(int *)((char *)v + 0),
+                                   *(int *)((char *)v + 4), *(int *)((char *)v + 8), 0, 0);
     mDeathParticleID1 = _ZN8Particle6System17NewUnkCallback818Ejj5Fix12IiES2_S2_PK11Vector3_16f(
         mDeathParticleID1, 0x13b, *(int *)((char *)v + 0), *(int *)((char *)v + 4),
         *(int *)((char *)v + 8), 0);
@@ -789,14 +797,10 @@ void dEnemyBase_c::SpawnMegaCharParticles(dActor_c &other, char *p) {
         dst.y += 0x46000;
     }
 
-    _ZN8Particle6System3NewEjj5Fix12IiES2_S2_PK11Vector3_16fPNS_8CallbackE(
-        0, 0x43, dst.x, dst.y, dst.z, 0, 0);
-    _ZN8Particle6System3NewEjj5Fix12IiES2_S2_PK11Vector3_16fPNS_8CallbackE(
-        0, 0x44, dst.x, dst.y, dst.z, 0, 0);
-    _ZN8Particle6System3NewEjj5Fix12IiES2_S2_PK11Vector3_16fPNS_8CallbackE(
-        0, 0xbf, dst.x, dst.y, dst.z, dirvec, 0);
-    _ZN8Particle6System3NewEjj5Fix12IiES2_S2_PK11Vector3_16fPNS_8CallbackE(
-        0, 0xc0, dst.x, dst.y, dst.z, 0, 0);
+    Particle::System::New(0, 0x43, dst.x, dst.y, dst.z, 0, 0);
+    Particle::System::New(0, 0x44, dst.x, dst.y, dst.z, 0, 0);
+    Particle::System::New(0, 0xbf, dst.x, dst.y, dst.z, (const Vector3_16f *)(dirvec), 0);
+    Particle::System::New(0, 0xc0, dst.x, dst.y, dst.z, 0, 0);
 }
 
 /* What happens when a mega/invincible Mario runs an enemy over. The enemy is
@@ -810,7 +814,11 @@ void dEnemyBase_c::SpawnMegaCharParticles(dActor_c &other, char *p) {
    func_ov002_020ada40 because the mangled name was sitting on ov004's unrelated
    function at the same address. */
 extern "C" {
-extern void _ZN8Particle6System9NewSimpleEj5Fix12IiES2_S2_(unsigned int a, int x, int y, int z);
+namespace Particle {
+struct SystemHold {
+    static void NewSimple(unsigned int a, int x, int y, int z);
+};
+}
 }
 
 // @symbol _ZN12dEnemyBase_c20KillByInvincibleCharERK10Vector3_16R6Player5Fix12IiE
@@ -836,8 +844,8 @@ void dEnemyBase_c::KillByInvincibleChar(const Vector3_16 &spin, Player &player, 
     int vx = v[0];
     vy = vy + ret;
     v[1] = vy;
-    _ZN8Particle6System9NewSimpleEj5Fix12IiES2_S2_(0x43, vx, vy, v[2]);
-    _ZN8Particle6System9NewSimpleEj5Fix12IiES2_S2_(0x44, v[0], v[1], v[2]);
+    Particle::System::NewSimple(0x43, vx, vy, v[2]);
+    Particle::System::NewSimple(0x44, v[0], v[1], v[2]);
     player.IncMegaKillCount();
 }
 
@@ -856,8 +864,8 @@ extern void Matrix4x3_ApplyInPlaceToRotationZXYExt(void *m, int x, int y, int z)
 extern char data_020a0e68;
 }
 
-// @symbol _ZN12dEnemyBase_c26UpdateKillByInvincibleCharER10dBgCh_ActrR9ModelAnimj
-int dEnemyBase_c::UpdateKillByInvincibleChar(dBgCh_Actr &clsn, ModelAnim &anim,
+// @symbol _ZN12dEnemyBase_c26UpdateKillByInvincibleCharER10dBgCh_ActrR14dExtAnmModel_cj
+int dEnemyBase_c::UpdateKillByInvincibleChar(dBgCh_Actr &clsn, dExtAnmModel_c &anim,
                                              unsigned int flags) {
     int v[3];
 
@@ -901,7 +909,7 @@ int dEnemyBase_c::UpdateKillByInvincibleChar(dBgCh_Actr &clsn, ModelAnim &anim,
 
 /* The death-state-8 sibling of UpdateKillByInvincibleChar above: the same
    vtable-slot-29 spin over data_020a0e68, but reached as a free helper taking
-   the enemy, its collision and its Model as raw pointers plus the
+   the enemy, its collision and its dExtSimpleModel_c as raw pointers plus the
    coin/death-table flags, and running the wall-reflect variant of the
    collision update. Lowest address in the TU, so it is defined last: this
    file runs highest ROM address first. */
@@ -913,7 +921,7 @@ int dEnemyBase_c::UpdateKillByInvincibleChar(dBgCh_Actr &clsn, ModelAnim &anim,
 extern "C" int func_ov002_020ad660(void *enemy, void *clsnArg, void *modelArg, int flags) {
     dEnemyBase_c *c = (dEnemyBase_c *)enemy;
     dBgCh_Actr *clsn = (dBgCh_Actr *)clsnArg;
-    Model *model = (Model *)modelArg;
+    dExtSimpleModel_c *model = (dExtSimpleModel_c *)modelArg;
     int v[3];
 
     if (c->mDeathState != 8)

@@ -5,7 +5,7 @@
  *
  * No fields of its own. InitResources / CleanupResources hand this
  * overlay's five-plank file table to daObjDorifu_c's shared
- * overloads. InitResources loads each slot 0 with Model::LoadFile,
+ * overloads. InitResources loads each slot 0 with dExtSimpleModel_c::LoadFile,
  * slot 1 with dBgW_Kc::LoadFile, slot 2 as CLPS into SetFile.
  * ov036 sinit constructs those SharedFilePtrs as file IDs
  * 1690 / 1691, 1692 / 1693, 1694 / 1695, 1696 / 1697, 1698 / 1699.

@@ -20,7 +20,7 @@
 #ifdef __cplusplus
 
 #include "dEnemyBase_c.h"
-#include "BlendModelAnim.h"
+#include "dExtBlendAnmModel_c.h"
 #include "dExtCommonModel_c.h"
 #include "dCcAcPos_c.h"
 #include "dExtShadowModel_c.h"
@@ -41,7 +41,7 @@ struct daBombking_c : dEnemyBase_c {
     virtual ~daBombking_c();
 
     dBgCh_Actr mWithMeshClsn;       /* 0x110 */
-    BlendModelAnim mBlendModelAnim;   /* 0x2cc */
+    dExtBlendAnmModel_c mBlendModelAnim; /* 0x2cc */
     dCcAcPos_c mdCcAcPos_c;/* 0x33c */
     dCcAcPos_c mdCcAcPos_c2;/* 0x37c */
     dExtCommonModel_c mCommonModel;         /* 0x3bc */

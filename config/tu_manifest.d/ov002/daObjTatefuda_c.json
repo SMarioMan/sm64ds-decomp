@@ -1230,62 +1230,62 @@
   ],
   "defined_symbol_renames": [
     {
-      "from": "@1120",
+      "from": "@1117",
       "to": "@1128",
       "evidence": "Compiler-local identity retained by section, offset, size, binding, bytes and relocation edges; native C++ helper calls shift the per-TU temporary names. Ordinary production preparation yields the same complete ELF as the prior source under 2004/b56."
     },
     {
-      "from": "@1121",
+      "from": "@1118",
       "to": "@1129",
       "evidence": "Compiler-local identity retained by section, offset, size, binding, bytes and relocation edges; native C++ helper calls shift the per-TU temporary names. Ordinary production preparation yields the same complete ELF as the prior source under 2004/b56."
     },
     {
-      "from": "@1123",
+      "from": "@1120",
       "to": "@1131",
       "evidence": "Compiler-local identity retained by section, offset, size, binding, bytes and relocation edges; native C++ helper calls shift the per-TU temporary names. Ordinary production preparation yields the same complete ELF as the prior source under 2004/b56."
     },
     {
-      "from": "@1125",
+      "from": "@1122",
       "to": "@1133",
       "evidence": "Compiler-local identity retained by section, offset, size, binding, bytes and relocation edges; native C++ helper calls shift the per-TU temporary names. Ordinary production preparation yields the same complete ELF as the prior source under 2004/b56."
     },
     {
-      "from": "@1127",
+      "from": "@1124",
       "to": "@2760",
       "evidence": "Compiler-local identity retained by section, offset, size, binding, bytes and relocation edges; native C++ helper calls shift the per-TU temporary names. Ordinary production preparation yields the same complete ELF as the prior source under 2004/b56."
     },
     {
-      "from": "@1129",
+      "from": "@1126",
       "to": "@2156",
       "evidence": "Compiler-local identity retained by section, offset, size, binding, bytes and relocation edges; native C++ helper calls shift the per-TU temporary names. Ordinary production preparation yields the same complete ELF as the prior source under 2004/b56."
     },
     {
-      "from": "@1131",
+      "from": "@1128",
       "to": "@2155",
       "evidence": "Compiler-local identity retained by section, offset, size, binding, bytes and relocation edges; native C++ helper calls shift the per-TU temporary names. Ordinary production preparation yields the same complete ELF as the prior source under 2004/b56."
     },
     {
-      "from": "@1133",
+      "from": "@1130",
       "to": "@2161",
       "evidence": "Compiler-local identity retained by section, offset, size, binding, bytes and relocation edges; native C++ helper calls shift the per-TU temporary names. Ordinary production preparation yields the same complete ELF as the prior source under 2004/b56."
     },
     {
-      "from": "@1135",
+      "from": "@1132",
       "to": "@2158",
       "evidence": "Compiler-local identity retained by section, offset, size, binding, bytes and relocation edges; native C++ helper calls shift the per-TU temporary names. Ordinary production preparation yields the same complete ELF as the prior source under 2004/b56."
     },
     {
-      "from": "@1137",
+      "from": "@1134",
       "to": "@2159",
       "evidence": "Compiler-local identity retained by section, offset, size, binding, bytes and relocation edges; native C++ helper calls shift the per-TU temporary names. Ordinary production preparation yields the same complete ELF as the prior source under 2004/b56."
     },
     {
-      "from": "@1139",
+      "from": "@1136",
       "to": "@2160",
       "evidence": "Compiler-local identity retained by section, offset, size, binding, bytes and relocation edges; native C++ helper calls shift the per-TU temporary names. Ordinary production preparation yields the same complete ELF as the prior source under 2004/b56."
     },
     {
-      "from": "@1141",
+      "from": "@1138",
       "to": "@2157",
       "evidence": "Compiler-local identity retained by section, offset, size, binding, bytes and relocation edges; native C++ helper calls shift the per-TU temporary names. Ordinary production preparation yields the same complete ELF as the prior source under 2004/b56."
     }

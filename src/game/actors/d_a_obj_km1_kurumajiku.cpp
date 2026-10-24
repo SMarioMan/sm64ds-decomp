@@ -4,7 +4,7 @@
  *
  * No fields of its own. InitResources / CleanupResources hand this
  * overlay's model and collision files to daObjKurumajiku_c's shared
- * ov002 helpers. func_ov002_020b6c54 loads slot 0 with Model::LoadFile,
+ * ov002 helpers. func_ov002_020b6c54 loads slot 0 with dExtSimpleModel_c::LoadFile,
  * slot 1 with dBgW_Kc::LoadFile, slot 2 as CLPS into SetFile, then
  * Spawns four carts (actor id KM1_KURUMA) and stores their uniqueIDs
  * in mMountedActorIds. ov043 sinit constructs those SharedFilePtrs as

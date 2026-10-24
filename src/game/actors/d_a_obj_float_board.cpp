@@ -60,7 +60,6 @@ int  Vec3_HorzDist(const void *a, const void *b);
 unsigned short DecIfAbove0_Short(unsigned short *p);
 
 short _ZN4cstd5atan2E5Fix12IiES1_(int y, int x);
-int   _ZN10dBgActor_c21IsClsnInRangeOnScreenE5Fix12IiES1_(dBgActor_c *self, int x, int z);
 
 /* Same Fix12<int>-by-value wall as the two above: spelled as the real
  * mMeshCollider.SetFile member it DIFFs (measured at daObjFl_London_c),
@@ -248,7 +247,7 @@ int daObjFloatBoard_c::Behavior()
     }
 
     func_ov002_020b5b98();
-    if (_ZN10dBgActor_c21IsClsnInRangeOnScreenE5Fix12IiES1_(this, 0, 0) != 0)
+    if (IsClsnInRangeOnScreen(0, 0) != 0)
         UpdateClsnPosAndRot();
 
     if (DecIfAbove0_Short(&mRiderTimeout) == 0)
@@ -270,7 +269,7 @@ int daObjFloatBoard_c::func_ov002_020b5e58(daObjFloatBoard_c_Resources *fp)
     KCL_File *kcl;
     int vy, vz, vx;
 
-    bmd = (BMD_File *)Model::LoadFile(*fp->model);
+    bmd = (BMD_File *)dExtSimpleModel_c::LoadFile(*fp->model);
     mModel.SetFile(bmd, 1, -1);
     mFileTable = fp;
     func_ov002_020b5b98();

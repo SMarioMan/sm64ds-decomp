@@ -65,7 +65,6 @@ extern s16           data_02082214[];   /* shared sin/cos table, sin at [i*2] */
 
 void func_020393d4(dBgW *bgw, void *fn);
 
-int _ZN10dBgActor_c13IsClsnInRangeE5Fix12IiES1_(dBgActor_c *self, int a, int b);
 void _ZN10dBgW_KcMbg7SetFileEP8KCL_FileRK9Matrix4x35Fix12IiEsR10CLPS_Block(
     dBgW_KcMbg *self, KCL_File *kcl, const Matrix4x3 *mtx, int scale,
     s16 angleY, CLPS_Block *clps);
@@ -86,7 +85,7 @@ extern "C" daObjFl_UkiKi_c *daObjFl_UkiKi_c_classInit()
  * so that one call deliberately keeps the measured register-level spelling. */
 s32 daObjFl_UkiKi_c::InitResources()
 {
-    mModel.SetFile((BMD_File *)Model::LoadFile(FloatingFloorLllBig_ModelFile), 1, -1);
+    mModel.SetFile((BMD_File *)dExtSimpleModel_c::LoadFile(FloatingFloorLllBig_ModelFile), 1, -1);
     UpdateModelPosAndRotY();
     UpdateClsnPosAndRot();
 
@@ -116,7 +115,7 @@ s32 daObjFl_UkiKi_c::Behavior()
     mPhaseAngle += 0x400;
 
     UpdateModelPosAndRotY();
-    if (_ZN10dBgActor_c13IsClsnInRangeE5Fix12IiES1_(this, 0, 0))
+    if (IsClsnInRange(0, 0))
         UpdateClsnPosAndRot();
 
     return 1;

@@ -264,7 +264,7 @@ s32 dScMgJump_c::InitResources()
     } else {
         sJumpBackFile = &gJumpBack01ModelFile;
     }
-    modelFile = Model::LoadFile(*(SharedFilePtr *)sJumpBackFile);
+    modelFile = dExtSimpleModel_c::LoadFile(*(SharedFilePtr *)sJumpBackFile);
     r = mModel.SetFile((BMD_File *)modelFile, 1, -1);
     if (r == 0) {
         Matrix4x3_FromTranslation(&data_020a0e68, 0, 0, 0);
@@ -502,7 +502,7 @@ s32 dScMgJump_c::Render()
         *(int *)((char *)p + 0x18) = mAccum;
 
         {
-            Model *model = &mModel;
+            dExtSimpleModel_c *model = &mModel;
             model->Render((Vector3 *)&t);
         }
     }

@@ -10,7 +10,7 @@
  * math/Matrix.h spelling scalarizes a twelve-word copy.
  *
  * Known limits, measured in this TU:
- * - dCcAc_c::Init, dBgCh_Actr::Init, ModelAnim::SetAnim,
+ * - dCcAc_c::Init, dBgCh_Actr::Init, dExtAnmModel_c::SetAnim,
  *   dActor_c::DropShadowRadHeight, dActor_c::SpawnCoins and
  *   dEnemyBase_c::KillByInvincibleChar stay mangled. Each carries
  *   Fix12<int> by value (notes/mwccarm-codegen.md, wall 6az).
@@ -62,7 +62,6 @@ extern void _ZN7dCcAc_c4InitEP8dActor_c5Fix12IiES3_jj(void* self, dActor_c* a, i
 /* local extern: Fix12<int> by value, wall 6az. Header method homes the arg. */
 extern void _ZN10dBgCh_Actr4InitEP8dActor_c5Fix12IiES3_P10Vector3_16S5_(void* self, dActor_c* a, int r, int h, Vector3_16* p, Vector3_16* q);
 /* local extern: Fix12<int> by value, wall 6az. Header method homes the arg. */
-extern int _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(void *m, void *f, int a, int b, unsigned int e);
 /* local extern: Fix12<int> by value, wall 6az. Header method homes the arg. */
 extern void _ZN8dActor_c19DropShadowRadHeightER17dExtShadowModel_cR9Matrix4x35Fix12IiES5_j(void *, dExtShadowModel_c &sm, Matrix4x3 &mtx, int a, int b, unsigned int c);
 /* local extern: Fix12<int> by value, wall 6az. Header method homes the arg. */
@@ -153,7 +152,8 @@ s32 daHolhei_c::OnAimedAtWithEgg() {
    home and previous positions, then the starting state. */
 int daHolhei_c::InitResources()
 {
-    mModel.SetFile((BMD_File *)Model::LoadFile(*(SharedFilePtr *)data_ov062_0211ddf0), 1, -1);
+    mModel.SetFile((BMD_File *)dExtSimpleModel_c::LoadFile(*(SharedFilePtr *)data_ov062_0211ddf0),
+                   1, -1);
     mShadowModel.InitCylinder();
     dExtFrameCtrl_c::LoadFile(*(SharedFilePtr *)data_ov062_0211dde8);
     dExtFrameCtrl_c::LoadFile(*(SharedFilePtr *)&gHoruheiLiftLoopAnimationFile);
@@ -260,8 +260,8 @@ int daHolhei_c::Render()
     dActor_c *held = mHeld;
     if (held != 0 && IsFlagSet(this, 0x4000) && held->mCarryMatrix != 0)
         func_ov062_02116edc(this);
-    /* ModelAnim overrides Render; the ROM calls Model::Render on this member. */
-    mModel.Model::Render((const Vector3 *)0);
+    /* dExtAnmModel_c overrides Render; the ROM calls dExtSimpleModel_c::Render on this member. */
+    mModel.dExtSimpleModel_c::Render((const Vector3 *)0);
     return 1;
 }
 
@@ -360,8 +360,8 @@ int daHolhei_c::func_ov062_02116c78() {
     mTurnWait = 0x3c;
     mChargeStep = 0;
     mModel.speed = 0x1000;
-    _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(
-        &mModel, ((SharedFilePtr *)&gHoruheiWalkAnimationFile)->filePtr, 0, 0x1000, 0);
+    mModel.SetAnim((BCA_File *)(((SharedFilePtr *)&gHoruheiWalkAnimationFile)->filePtr), 0, 0x1000,
+                   0);
     mTargetAngY = Vec3_HorzAngle(&mPosX, &mHomePosX);
     return 1;
 }
@@ -384,8 +384,8 @@ extern "C" int func_ov062_02116b80(daHolhei_c *self) {
     self->mTargetAngY = (short)((RandomIntInternal(data_0209e650) >> 8) << 0xc);
     self->mStateTimer = (short)(((RandomIntInternal(data_0209e650) >> 8) & 0x3f) + 0x64);
     self->mModel.speed = 0x1000;
-    _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(
-        &self->mModel, ((SharedFilePtr *)&gHoruheiWalkAnimationFile)->filePtr, 0, 0x1000, 0);
+    self->mModel.SetAnim((BCA_File *)(((SharedFilePtr *)&gHoruheiWalkAnimationFile)->filePtr), 0,
+                         0x1000, 0);
     return 1;
 }
 
@@ -506,8 +506,8 @@ int daHolhei_c::func_ov062_021167c0() {
 // @symbol func_ov062_02116784
 extern "C" int func_ov062_02116784(daHolhei_c *self) {
     self->mChargeStep = 0;
-    _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(
-        &self->mModel, ((SharedFilePtr *)&gHoruheiWalkAnimationFile)->filePtr, 0, 0x1000, 0);
+    self->mModel.SetAnim((BCA_File *)(((SharedFilePtr *)&gHoruheiWalkAnimationFile)->filePtr), 0,
+                         0x1000, 0);
     return 1;
 }
 
@@ -580,8 +580,7 @@ extern "C" int func_ov062_021165e0(void)
 int daHolhei_c::func_ov062_021164e8()
 {
     if (mGrabAnim == 0 && IsFlagSet(this, 0x4000)) {
-        _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(
-            &mModel, ((SharedFilePtr *)data_ov062_0211de00)->filePtr, 0, 0x1000, 0);
+        mModel.SetAnim((BCA_File *)(((SharedFilePtr *)data_ov062_0211de00)->filePtr), 0, 0x1000, 0);
         mGrabAnim = 1;
     }
     if (IsFlagSet(this, 0x400) || IsFlagSet(this, 0x2000) || !IsFlagSet(this, 0x100)) {
@@ -639,8 +638,8 @@ extern "C" int func_ov062_021163b0(daHolhei_c *self)
 
 // @symbol func_ov062_02116368
 extern "C" int func_ov062_02116368(daHolhei_c *self) {
-    _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(
-        &self->mModel, ((SharedFilePtr *)data_ov062_0211dde8)->filePtr, 0x40000000, 0x1000, 0);
+    self->mModel.SetAnim((BCA_File *)(((SharedFilePtr *)data_ov062_0211dde8)->filePtr), 0x40000000,
+                         0x1000, 0);
     self->mChargeStep = 0;
     return 1;
 }
@@ -658,8 +657,8 @@ extern "C" int func_ov062_0211632c(daHolhei_c *self) {
 /* Start an animation, then wait a random few frames facing a random way. */
 // @symbol func_ov062_021162b8
 extern "C" int func_ov062_021162b8(daHolhei_c *self) {
-    _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(
-        &self->mModel, ((SharedFilePtr *)&gHoruheiLiftLoopAnimationFile)->filePtr, 0, 0x1000, 0);
+    self->mModel.SetAnim((BCA_File *)(((SharedFilePtr *)&gHoruheiLiftLoopAnimationFile)->filePtr),
+                         0, 0x1000, 0);
     self->mStateTimer = (short)(((RandomIntInternal(data_0209e650) >> 8) & 0x1f) + 0x14);
     self->mTargetAngY = (short)((RandomIntInternal(data_0209e650) >> 8) << 0xc);
     return 1;
@@ -677,8 +676,8 @@ extern "C" int func_ov062_02116274(daHolhei_c *self)
 
 // @symbol func_ov062_02116238
 extern "C" int func_ov062_02116238(daHolhei_c *self) {
-    _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(
-        &self->mModel, ((SharedFilePtr *)data_ov062_0211de08)->filePtr, 0x40000000, 0x1000, 0);
+    self->mModel.SetAnim((BCA_File *)(((SharedFilePtr *)data_ov062_0211de08)->filePtr), 0x40000000,
+                         0x1000, 0);
     return 1;
 }
 

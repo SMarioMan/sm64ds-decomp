@@ -20,7 +20,7 @@
  *   daObjSm_Lift_c_classInit (historically SkiLift_Spawn): fBase_c::operator
  *     new(852 = 0x354), dBgActor_c::dBgActor_c(), stores _ZTV14daObjSm_Lift_c;
  *   ~daObjSm_Lift_c: stores its own vptr, then dBgActor_c's (inlined), destroys
- *     dBgActor_c's dBgW_KcMbg at 0x124 and Model at 0xd4, then ~dActor_c. This
+ *     dBgActor_c's dBgW_KcMbg at 0x124 and dExtSimpleModel_c at 0xd4, then ~dActor_c. This
  *     class adds no member with a destructor of its own.
  *
  * SIZE 0x354 is the factory's own literal, and the last field closes on it.

@@ -185,7 +185,7 @@ declaration only lets `dScStage_c`'s implicit destructor find it by name. Not vi
 `_ZTV`, so it is not polymorphic and must not gain a vtable pointer.
 
 **`mSkyboxModel` at 0x9bc** is typed, not guessed, and evidenced from both ends:
-`LoadSkybox` `new`s 0x50 bytes, runs `Model::Model` on them and stores the result here;
+`LoadSkybox` `new`s 0x50 bytes, runs `dExtSimpleModel_c::dExtSimpleModel_c` on them and stores the result here;
 `CleanupResources` loads it back and destroys it through its vtable. The generated
 header called it `u8 unk_9bc`, so both files that use it had to cast a pointer out of a
 byte.

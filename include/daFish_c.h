@@ -3,7 +3,7 @@
 
 #include "types.h"
 #include "dActor_c.h"
-#include "ModelAnim.h"
+#include "dExtAnmModel_c.h"
 
 /* A school of fish (profile FISH). ROM RTTI daFish_c; direct base dActor_c.
  *
@@ -14,7 +14,7 @@
  * Each spawned fish is visible and follows its spawner by uniqueID; it
  * removes itself as soon as the spawner is gone or back in its idle wait.
  *
- * _ZTI8daFish_c names dActor_c as the direct base. D1/D0 call ModelAnim's
+ * _ZTI8daFish_c names dActor_c as the direct base. D1/D0 call dExtAnmModel_c's
  * complete destructor at +0xd4 and dActor_c's base destructor. The factory
  * allocates 0x160, and mVariant's padding closes exactly on it.
  *
@@ -24,7 +24,7 @@
  */
 struct daFish_c : dActor_c {
     u8 pad_0d0[0x4];        /* 0x0d0 */
-    ModelAnim mModelAnim;   /* 0x0d4 -- its dExtFrameCtrl_c base sits at 0x124 */
+    dExtAnmModel_c mModelAnim; /* 0x0d4 -- its dExtFrameCtrl_c base sits at 0x124 */
     s32 mSeed;              /* 0x138 -- set to 1 at construction, never read here */
     u32 mSpawnerID;         /* 0x13c -- a fish's spawner; the spawner's own ID */
     s32 mSurfaceY;          /* 0x140 -- spawner only: fish spawn below this */

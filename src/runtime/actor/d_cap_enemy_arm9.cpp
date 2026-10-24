@@ -15,7 +15,7 @@
  * Source order is reverse ROM order. The constructor is written before D1.
  *
  * leftovers:
- *  - ModelBase::SetFile has no header member, so AddCap keeps the mangled
+ *  - dExtModel_c::SetFile has no header member, so AddCap keeps the mangled
  *    extern for it; SharedFilePtr::Release's return value feeds AddCap's
  *    failure path, so that call keeps the int-returning mangled spelling
  *    too (the member returns void).
@@ -97,7 +97,7 @@ int dCapEnemy_c::AddCap(unsigned int param)
         mCapBank = 0;
     }
 
-    void *file = Model::LoadFile(*data_ov002_020ff028[mCapId]);
+    void *file = dExtSimpleModel_c::LoadFile(*data_ov002_020ff028[mCapId]);
     int ok = mModel.SetFile((BMD_File *)file, 1, -1);
     if (ok == 0) {
         mCapId = 6;

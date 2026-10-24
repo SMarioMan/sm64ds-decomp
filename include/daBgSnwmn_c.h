@@ -1,7 +1,7 @@
 #ifndef DABGSNWMN_C_H
 #define DABGSNWMN_C_H
 #include "dActor_c.h"
-#include "Model.h"
+#include "dExtSimpleModel_c.h"
 #include "TextureSequence.h"
 #include "dExtShadowModel_c.h"
 #include "dCcAcPos_c.h"
@@ -24,8 +24,8 @@ extern "C" void *_ZN7fBase_cnwEj(unsigned size);
  * SIZE 0x1f0 (496 bytes) is the literal daBgSnwmn_c_classInit passes to
  * fBase_c::operator new. The factory constructs five typed sub-objects
  * after the dActor_c base:
- *     Model           0x0d4  sizeof 0x50
- *     Model           0x124  sizeof 0x50
+ *     dExtSimpleModel_c           0x0d4  sizeof 0x50
+ *     dExtSimpleModel_c           0x124  sizeof 0x50
  *     TextureSequence 0x174  sizeof 0x14
  *     dExtShadowModel_c     0x188  sizeof 0x28
  *     dCcAcPos_c      0x1b0  sizeof 0x40
@@ -43,8 +43,8 @@ extern "C" void *_ZN7fBase_cnwEj(unsigned size);
  */
 struct daBgSnwmn_c : dActor_c {
     u8  unk_0d0[0x4];              /* 0x0d0 -- opaque; see the note above */
-    Model mModel1;                 /* 0x0d4 */
-    Model mModel2;                 /* 0x124 */
+    dExtSimpleModel_c mModel1;     /* 0x0d4 */
+    dExtSimpleModel_c mModel2;     /* 0x124 */
     TextureSequence mTexSeq;       /* 0x174 */
     dExtShadowModel_c mShadow;           /* 0x188 */
     dCcAcPos_c mCylClsn;           /* 0x1b0 */

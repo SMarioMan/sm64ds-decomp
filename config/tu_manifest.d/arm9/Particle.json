@@ -159,7 +159,7 @@
       "ordinal": 19
     },
     {
-      "symbol": "_ZN8Particle6System3NewEjj5Fix12IiES2_S2_PK11Vector3_16fPNS_8CallbackE",
+      "symbol": "_ZN8Particle6System3NewEjjiiiPK11Vector3_16fPNS_8CallbackE",
       "address": "0x02022d80",
       "size": "0x000000e8",
       "legacy_source": "src/_ZN8Particle6System3NewEjj5Fix12IiES2_S2_PK11Vector3_16fPNS_8CallbackE.c",
@@ -173,7 +173,7 @@
       "ordinal": 21
     },
     {
-      "symbol": "_ZN8Particle6System9NewSimpleEj5Fix12IiES2_S2_",
+      "symbol": "_ZN8Particle6System9NewSimpleEjiii",
       "address": "0x02022e98",
       "size": "0x00000048",
       "legacy_source": "src/_ZN8Particle6System9NewSimpleEj5Fix12IiES2_S2_.c",

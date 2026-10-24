@@ -1,4 +1,8 @@
 //cpp
+namespace Particle {
+struct Callback;
+}
+struct Vector3_16f;
 /* daStar_c / daStarBase_c -- the Power Star, the silver star, and the marker
  * that spawns one.
  *
@@ -68,10 +72,11 @@ enum daStar_c_AssetId {
 #include "Message.h"
 #include "SaveData.h"
 #include "SharedFilePtr.h"
+#include "dExtFrameCtrl_c.h"
 #include "dCamera_c.h"
 #include "fBase_c.h"
 #include "daSoundObj_c.h"
-#include "Model.h"
+#include "dExtSimpleModel_c.h"
 
 /* Plain-data stand-ins. Vector3 and Matrix4x3 carry declared destructors, so
  * a local or a struct copy of either one adds cleanup code the cartridge does
@@ -85,7 +90,7 @@ typedef struct Mtx { int m[12]; } Mtx; /* IDENTITY_MATRIX4X3 */
    daStar_c::State. */
 typedef void (daStar_c::*StateHandler)();
 
-/* Model handles construct through func_02017acc and destroy through
+/* dExtSimpleModel_c handles construct through func_02017acc and destroy through
    func_02017ab4. Animation handles construct through SharedFilePtr::Construct
    and destroy through SharedFilePtr_Destruct_Anim. The manifest aliases those
    undefined members onto the ROM symbols. */
@@ -155,8 +160,7 @@ enum {
 enum { CUTSCENE_FLAG = 0x4000000 };
 
 extern "C" {
-/* ModelAnim::SetAnim, called with a scalar speed. */
-void _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(void *self, void *f, int a, int b, unsigned short d);
+/* dExtAnmModel_c::SetAnim, called with a scalar speed. */
 extern char data_02082714[];
 extern int func_0203d024(struct Vector3*, struct Vector3*);
 extern void DeathTable_ClearBit(int);
@@ -180,7 +184,13 @@ extern unsigned char IsAreaShowing(int idx);
 extern short Vec3_HorzAngle(const Vector3* a, const Vector3* b);
 extern short data_02082214[];
 extern void func_02012694(int a, void* p);
-extern void _ZN8Particle6System9NewSimpleEj5Fix12IiES2_S2_(unsigned int id, int a, int b, int d);
+namespace Particle {
+struct System {
+    static void NewSimple(unsigned int id, int a, int b, int d);
+
+    static int New(unsigned, unsigned, int, int, int, const ::Vector3_16f *, Callback *);
+};
+}
 /* local extern: the call passes an untyped this, so it cannot use the header method. */
 extern int _ZN15dExtFrameCtrl_c8FinishedEv(void* anim);
 extern void func_ov002_020e8244(void *out, daStar_c *b);
@@ -255,8 +265,6 @@ extern s32 data_02092138;
 extern StarModelFilePtr data_ov002_0211094c;
 extern StarModelFilePtr data_ov002_02110954;
 extern StarModelFilePtr data_ov002_0211095c;
-/* local extern: the call passes an untyped this, so it cannot use the header method. */
-extern void _ZN15dExtFrameCtrl_c8LoadFileER13SharedFilePtr(void *f);
 extern void LoadSilverStarAndNumber(void);
 extern void _ZN10dBgCh_Actr4InitEP8dActor_c5Fix12IiES3_P10Vector3_16S5_(
 void *self, void *actor, s32 a, s32 b, void *p1, void *p2);
@@ -268,7 +276,7 @@ extern s32 IsStarCollected(s32 level, s32 idx);
 /* TUBUILD CONFLICT -- alternate declaration of _ZN9dCamera_c6SetPosERK7Vector3, from the legacy file for func_ov002_020e7934, NOT applied: extern void _ZN9dCamera_c6SetPosERK7Vector3(void* cam, const Vector3* v); */
 /* TUBUILD CONFLICT -- alternate declaration of Vec3_Dist, from the legacy file for func_ov002_020e7934, NOT applied: extern int Vec3_Dist(const Vector3* a, const Vector3* b); */
 /* TUBUILD CONFLICT -- alternate declaration of _ZN8Particle6System3NewEjj5Fix12IiES2_S2_PK11Vector3_16fPNS_8CallbackE, from the legacy file for func_ov002_020e7fcc, NOT applied: extern u32 _ZN8Particle6System3NewEjj5Fix12IiES2_S2_PK11Vector3_16fPNS_8CallbackE( u32 slot, u32 effect, Fix12i x, Fix12i y, Fix12i z, const void* rot, struct Callback* cb); */
-/* TUBUILD CONFLICT -- alternate declaration of _ZN8Particle6System9NewSimpleEj5Fix12IiES2_S2_, from the legacy file for func_ov002_020e7fcc, NOT applied: extern void _ZN8Particle6System9NewSimpleEj5Fix12IiES2_S2_(u32 effect, Fix12i x, Fix12i y, Fix12i z); */
+/* TUBUILD CONFLICT -- alternate declaration of Particle::System::NewSimple, from the legacy file for func_ov002_020e7fcc, NOT applied: extern void Particle::System::NewSimple(u32 effect, Fix12i x, Fix12i y, Fix12i z); */
 /* TUBUILD CONFLICT -- alternate declaration of _ZN15dExtFrameCtrl_c8FinishedEv, from the legacy file for func_ov002_020e8098, NOT applied: extern "C" int _ZN15dExtFrameCtrl_c8FinishedEv(void* anim); */
 /* TUBUILD CONFLICT -- alternate declaration of func_ov002_020e8244, from the legacy file for func_ov002_020e8098, NOT applied: extern "C" void func_ov002_020e8244(Vector3* out, char* self); */
 /* TUBUILD CONFLICT -- alternate declaration of _ZN8Particle6System3NewEjj5Fix12IiES2_S2_PK11Vector3_16fPNS_8CallbackE, from the legacy file for func_ov002_020e8098, NOT applied: extern "C" void* _ZN8Particle6System3NewEjj5Fix12IiES2_S2_PK11Vector3_16fPNS_8CallbackE( unsigned int a, unsigned int b, int c, int d, int e, const void* f, void* g); */
@@ -366,7 +374,7 @@ extern s32 IsStarCollected(s32 level, s32 idx);
 /* TUBUILD CONFLICT -- alternate declaration of data_0209b454, from the legacy file for _ZN8daStar_c8BehaviorEv, NOT applied: extern int data_0209b454; */
 /* TUBUILD CONFLICT -- alternate declaration of _ZN10dCcAcPos_c4InitEP8dActor_cRK7Vector35Fix12IiES6_jj, from the legacy file for _ZN12daStarBase_c13InitResourcesEv, NOT applied: extern void _ZN10dCcAcPos_c4InitEP8dActor_cRK7Vector35Fix12IiES6_jj(void *self, void *actor, const void *v, int d, int e, u32 f, u32 g); */
 /* TUBUILD CONFLICT -- alternate declaration of _ZN8dActor_c5SpawnEjjRK7Vector3PK10Vector3_16as, from the legacy file for _ZN12daStarBase_c13InitResourcesEv, NOT applied: extern void *_ZN8dActor_c5SpawnEjjRK7Vector3PK10Vector3_16as(u32 a, u32 b, const void *v, const void *v16, int e, int f); */
-/* TUBUILD CONFLICT -- alternate declaration of _ZN5Model8LoadFileER13SharedFilePtr, from the legacy file for _ZN12daStarBase_c13InitResourcesEv, NOT applied: extern void *_ZN5Model8LoadFileER13SharedFilePtr(void *fp); */
+/* TUBUILD CONFLICT -- alternate declaration of _ZN17dExtSimpleModel_c8LoadFileER13SharedFilePtr, from the legacy file for _ZN12daStarBase_c13InitResourcesEv, NOT applied: extern void *_ZN17dExtSimpleModel_c8LoadFileER13SharedFilePtr(void *fp); */
 /* TUBUILD CONFLICT -- alternate declaration of IsStarCollectedInCurLevel, from the legacy file for _ZN12daStarBase_c13InitResourcesEv, NOT applied: extern int IsStarCollectedInCurLevel(u8 x); */
 /* TUBUILD CONFLICT -- alternate declaration of _ZN7fBase_c18MarkForDestructionEv, from the legacy file for _ZN12daStarBase_c13InitResourcesEv, NOT applied: extern void _ZN7fBase_c18MarkForDestructionEv(void *self); */
 /* TUBUILD CONFLICT -- alternate declaration of data_ov002_0210d9a8, from the legacy file for _ZN12daStarBase_c13InitResourcesEv, NOT applied: extern char data_ov002_0210d9a8; */
@@ -380,9 +388,8 @@ extern s32 IsStarCollected(s32 level, s32 idx);
 /* TUBUILD CONFLICT -- alternate declaration of data_ov002_02110934, from the legacy file for _ZN8daStar_c13InitResourcesEv, NOT applied: extern struct SharedFilePtr data_ov002_02110934; */
 /* TUBUILD CONFLICT -- alternate declaration of data_ov002_02110944, from the legacy file for _ZN8daStar_c13InitResourcesEv, NOT applied: extern struct SharedFilePtr data_ov002_02110944; */
 /* TUBUILD CONFLICT -- alternate declaration of data_ov002_02110964, from the legacy file for _ZN8daStar_c13InitResourcesEv, NOT applied: extern struct SharedFilePtr data_ov002_02110964; */
-/* TUBUILD CONFLICT -- alternate declaration of _ZN9ModelBase7SetFileEP8BMD_Fileii, from the legacy file for _ZN8daStar_c13InitResourcesEv, NOT applied: extern s32 _ZN9ModelBase7SetFileEP8BMD_Fileii(void *self, void *f, s32 a, s32 b); */
+/* TUBUILD CONFLICT -- alternate declaration of _ZN11dExtModel_c7SetFileEP8BMD_Fileii, from the legacy file for _ZN8daStar_c13InitResourcesEv, NOT applied: extern s32 _ZN11dExtModel_c7SetFileEP8BMD_Fileii(void *self, void *f, s32 a, s32 b); */
 /* TUBUILD CONFLICT -- alternate declaration of SublevelToLevel, from the legacy file for _ZN8daStar_c13InitResourcesEv, NOT applied: extern s32 SublevelToLevel(s32 sub); */
-/* TUBUILD CONFLICT -- alternate declaration of _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj, from the legacy file for _ZN8daStar_c13InitResourcesEv, NOT applied: extern void _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(void *self, void *f, s32 a, s32 spd, u32 g); */
 /* TUBUILD CONFLICT -- alternate declaration of _ZN17dExtShadowModel_c12InitCylinderEv, from the legacy file for _ZN8daStar_c13InitResourcesEv, NOT applied: extern s32 _ZN17dExtShadowModel_c12InitCylinderEv(void *self); */
 /* TUBUILD CONFLICT -- alternate declaration of _ZN10dCcAcPos_c4InitEP8dActor_cRK7Vector35Fix12IiES6_jj, from the legacy file for _ZN8daStar_c13InitResourcesEv, NOT applied: extern void _ZN10dCcAcPos_c4InitEP8dActor_cRK7Vector35Fix12IiES6_jj( */
 /* TUBUILD CONFLICT -- alternate declaration of _ZN8dActor_c5SpawnEjjRK7Vector3PK10Vector3_16as, from the legacy file for _ZN8daStar_c13InitResourcesEv, NOT applied: extern char *_ZN8dActor_c5SpawnEjjRK7Vector3PK10Vector3_16as( */
@@ -408,16 +415,13 @@ extern s32 IsStarCollected(s32 level, s32 idx);
  * ends the object. (d_a_kpa.cpp precedent.) */
 #pragma defer_codegen off
 
-/* -------------------------------------------------------------------------- */
-/* ROM ordinals 0-1 -- _ZN8daStar_cD1Ev, 0x020e6c40 / _ZN8daStar_cD0Ev, 0x020e6c90 */
-/* -------------------------------------------------------------------------- */
 // @symbol _ZN8daStar_cD1Ev
 // @symbol _ZN8daStar_cD0Ev
 /* recovered: real C++ destructor -- the compiler emits the whole body
  *
  * One vtable store and 6 destructor calls, every one a consequence of
  * `struct daStar_c : dEnemyBase_c` and the members that declaration now types:
- * its own vptr, then dExtShadowModel_c (0x3d4), ModelAnim (0x370), ModelAnim (0x30c),
+ * its own vptr, then dExtShadowModel_c (0x3d4), dExtAnmModel_c (0x370), dExtAnmModel_c (0x30c),
  * dBgCh_Actr (0x150),
  * dCcAcPos_c (0x110)
  * in reverse declaration order, then dEnemyBase_c::~dEnemyBase_c.
@@ -456,9 +460,6 @@ daStar_c::~daStar_c()
 
 #pragma defer_codegen on
 
-/* -------------------------------------------------------------------------- */
-/* ROM ordinal 76 -- _ZN8daStar_c13InitResourcesEv, 0x020eb63c, size 0x820 */
-/* -------------------------------------------------------------------------- */
 // @symbol _ZN8daStar_c13InitResourcesEv
 /* Spawn-time set-up for the Power Star (actor 0xb2) and the silver star
  * (0xb3). Loads the shared animation files and the star models, then picks the
@@ -505,10 +506,10 @@ s32 daStar_c::InitResources()
     mInitPosY = mPosY;
     mInitPosZ = mPosZ;
     mMusicTimer = 0;
-    _ZN15dExtFrameCtrl_c8LoadFileER13SharedFilePtr(&data_ov002_02110944);
-    _ZN15dExtFrameCtrl_c8LoadFileER13SharedFilePtr(&data_ov002_02110924);
-    _ZN15dExtFrameCtrl_c8LoadFileER13SharedFilePtr(&data_ov002_02110964);
-    _ZN15dExtFrameCtrl_c8LoadFileER13SharedFilePtr(&data_ov002_02110934);
+    dExtFrameCtrl_c::LoadFile(data_ov002_02110944);
+    dExtFrameCtrl_c::LoadFile(data_ov002_02110924);
+    dExtFrameCtrl_c::LoadFile(data_ov002_02110964);
+    dExtFrameCtrl_c::LoadFile(data_ov002_02110934);
 
     b = (s32)(actorID == ACTOR_STAR);
     if (b != 0) {
@@ -548,10 +549,8 @@ s32 daStar_c::InitResources()
         mMarkerType = 1;
     }
 
-    _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(&mModelAnim1, data_ov002_02110964.filePtr,
-                                                0x40000000, 0x1000, 0);
-    _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(&mModelAnim2, data_ov002_02110964.filePtr,
-                                                0x40000000, 0x1000, 0);
+    mModelAnim1.SetAnim((BCA_File *)data_ov002_02110964.filePtr, 0x40000000, 0x1000, 0);
+    mModelAnim2.SetAnim((BCA_File *)data_ov002_02110964.filePtr, 0x40000000, 0x1000, 0);
     if (mShadowModel.InitCylinder() == 0)
         return 0;
 
@@ -680,9 +679,6 @@ s32 daStar_c::InitResources()
     return ret;
 }
 
-/* -------------------------------------------------------------------------- */
-/* ROM ordinal 75 -- _ZN12daStarBase_c13InitResourcesEv, 0x020eb204, size 0x438 */
-/* -------------------------------------------------------------------------- */
 // @symbol _ZN12daStarBase_c13InitResourcesEv
 /* Spawn-time set-up for the marker that shows where a star will appear. param1
  * bits 4..7 pick the flavour: kind 6 only spawns the switch star (actor 0xb2,
@@ -734,7 +730,7 @@ int daStarBase_c::InitResources()
         if (sp != 0) {
             ((daStar_c *)sp)->mBits.switchStar = 1;
         }
-        mModel.SetFile((BMD_File *)Model::LoadFile(data_ov002_0211093c), 1, 0x18);
+        mModel.SetFile((BMD_File *)dExtSimpleModel_c::LoadFile(data_ov002_0211093c), 1, 0x18);
         return 0;
     }
 
@@ -763,12 +759,14 @@ int daStarBase_c::InitResources()
     }
 
     if (mState != 0) {
-        Model::LoadFile(data_ov002_0210d9a8);
-        if (mModel.SetFile((BMD_File *)Model::LoadFile(data_ov002_0211092c), 1, 0x19) == 0) {
+        dExtSimpleModel_c::LoadFile(data_ov002_0210d9a8);
+        if (mModel.SetFile((BMD_File *)dExtSimpleModel_c::LoadFile(data_ov002_0211092c), 1, 0x19) ==
+            0) {
             return 0;
         }
     } else {
-        if (mModel.SetFile((BMD_File *)Model::LoadFile(data_ov002_0211093c), 1, 0x18) == 0) {
+        if (mModel.SetFile((BMD_File *)dExtSimpleModel_c::LoadFile(data_ov002_0211093c), 1, 0x18) ==
+            0) {
             return 0;
         }
     }
@@ -801,9 +799,6 @@ int daStarBase_c::InitResources()
     return 1;
 }
 
-/* -------------------------------------------------------------------------- */
-/* ROM ordinal 74 -- _ZN8daStar_c8BehaviorEv, 0x020eb05c, size 0x1a8 */
-/* -------------------------------------------------------------------------- */
 // @symbol _ZN8daStar_c8BehaviorEv
 /* Per-frame update. Looks once for an ice block, clears the cached centre, and
  * while a Yoshi has the star in its mouth only rebuilds the matrices.
@@ -859,9 +854,6 @@ int daStar_c::Behavior()
     return 1;
 }
 
-/* -------------------------------------------------------------------------- */
-/* ROM ordinal 73 -- _ZN12daStarBase_c8BehaviorEv, 0x020ead90, size 0x2cc */
-/* -------------------------------------------------------------------------- */
 // @symbol _ZN12daStarBase_c8BehaviorEv
 /* Per-frame update of the marker. mAppearTimer counts down while this marker's
  * star id is the next one in data_0209f344[data_0209f208], and the marker
@@ -942,9 +934,6 @@ int daStarBase_c::Behavior()
     return 1;
 }
 
-/* -------------------------------------------------------------------------- */
-/* ROM ordinal 72 -- _ZN8daStar_c6RenderEv, 0x020eacf4, size 0x9c */
-/* -------------------------------------------------------------------------- */
 // @symbol _ZN8daStar_c6RenderEv
 /* Draws mModelAnim2 (collected, translucent) or mModelAnim1, unless the star
  * is scaled to nothing, hidden by mFlags & 0x40000, or not visible. */
@@ -965,9 +954,6 @@ callit:
     return 1;
 }
 
-/* -------------------------------------------------------------------------- */
-/* ROM ordinal 71 -- _ZN12daStarBase_c6RenderEv, 0x020eacb8, size 0x3c */
-/* -------------------------------------------------------------------------- */
 // @symbol _ZN12daStarBase_c6RenderEv
 /* Draws the marker's model while it is visible. */
 int daStarBase_c::Render()
@@ -977,9 +963,6 @@ int daStarBase_c::Render()
     return 1;
 }
 
-/* -------------------------------------------------------------------------- */
-/* ROM ordinal 70 -- _ZN8daStar_c16CleanupResourcesEv, 0x020eac18, size 0xa0 */
-/* -------------------------------------------------------------------------- */
 // @symbol _ZN8daStar_c16CleanupResourcesEv
 /* Gives up the map marker slot (kind 8 never had one), unloads the silver star
  * and number models when InitResources loaded them (silver star, or kind 6),
@@ -1005,9 +988,6 @@ int daStar_c::CleanupResources()
     return 1;
 }
 
-/* -------------------------------------------------------------------------- */
-/* ROM ordinal 69 -- _ZN12daStarBase_c16CleanupResourcesEv, 0x020eabcc, size 0x4c */
-/* -------------------------------------------------------------------------- */
 // @symbol _ZN12daStarBase_c16CleanupResourcesEv
 /* Releases the model files that InitResources loaded for this marker's
  * flavour. */
@@ -1022,9 +1002,6 @@ int daStarBase_c::CleanupResources()
     return 1;
 }
 
-/* -------------------------------------------------------------------------- */
-/* ROM ordinal 68 -- _ZN12daStarBase_c16OnPendingDestroyEv, 0x020eab8c, size 0x40 */
-/* -------------------------------------------------------------------------- */
 // @symbol _ZN12daStarBase_c16OnPendingDestroyEv
 /* If the linked star exists but has no death-table slot of its own
  * (mDeathTableID < 0), clears the death-table bit this marker remembered for
@@ -1441,11 +1418,9 @@ void daStar_c::func_ov002_020ea100() {
         func_ov002_020e9464();
 
         if (common->mIsUnderwater != 0) {
-            _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(&mModelAnim1, data_ov002_02110924.filePtr,
-                                                        0x40000000, 0x1000, 0);
+            mModelAnim1.SetAnim((BCA_File *)data_ov002_02110924.filePtr, 0x40000000, 0x1000, 0);
         } else {
-            _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(&mModelAnim1, data_ov002_02110944.filePtr,
-                                                        0x40000000, 0x1000, 0);
+            mModelAnim1.SetAnim((BCA_File *)data_ov002_02110944.filePtr, 0x40000000, 0x1000, 0);
         }
 
         {
@@ -2140,17 +2115,11 @@ ret0:
     return 0;
 }
 
-/* -------------------------------------------------------------------------- */
-/* ROM ordinal 45 -- _ZN8daStar_c13OnYoshiTryEatEv, 0x020e8ee8, size 0x8 */
-/* -------------------------------------------------------------------------- */
 // @symbol _ZN8daStar_c13OnYoshiTryEatEv
 s32 daStar_c::OnYoshiTryEat() {
     return 4;
 }
 
-/* -------------------------------------------------------------------------- */
-/* ROM ordinal 44 -- _ZN8daStar_c13OnTurnIntoEggER6Player, 0x020e8edc, size 0xc */
-/* -------------------------------------------------------------------------- */
 // @symbol _ZN8daStar_c13OnTurnIntoEggER6Player
 /* daStar_c::OnTurnIntoEgg -- vtable slot 19, verified against ov002 relocs.txt:
  * _ZTV8daStar_c (0x0210ab3c) + 0x4c -> 0x020e8edc, exactly this placeholder's
@@ -2214,9 +2183,6 @@ int daStar_c::func_ov002_020e8dd8() {
     AddStarMarker();
 }
 
-/* -------------------------------------------------------------------------- */
-/* ROM ordinal 41 -- _ZN8daStar_c13AddStarMarkerEv, 0x020e8ca0, size 0x138 */
-/* -------------------------------------------------------------------------- */
 // @symbol _ZN8daStar_c13AddStarMarkerEv
 /* Claims a free slot of the map-marker table (data_0209f40c, 12 entries) for
  * this star. The marker type is 1 for the silver star, 2 for the Power Star
@@ -2646,15 +2612,17 @@ void func_ov002_020e8244(void *out, daStar_c *b)
 /* -------------------------------------------------------------------------- */
 // @symbol _ZN8daStar_c19func_ov002_020e81e0Ev
 /* Keeps trail effect 0x113 (mParticle[0]) 13.0 above the star. */
-extern "C" void *_ZN8Particle6System3NewEjj5Fix12IiES2_S2_PK11Vector3_16fPNS_8CallbackE(
-    int a0, unsigned int a1, int a2, int a3, int a4, void *a5, void *a6);
+extern "C" void *d_a_starNewHold(int a0, unsigned int a1, int a2, int a3, int a4, void *a5,
+                                 void *a6);
 void daStar_c::func_ov002_020e81e0() {
     Vector3 v;
     v.x = mPosX;
     v.y = mPosY;
     v.z = mPosZ;
     v.y += 0xd000;
-    *(void **)&mParticle[0] = _ZN8Particle6System3NewEjj5Fix12IiES2_S2_PK11Vector3_16fPNS_8CallbackE(*(volatile unsigned int *)&mParticle[0], 0x113, *(volatile int *)&v.x, *(volatile int *)&v.y, v.z, 0, 0);
+    *(void **)&mParticle[0] =
+        (void *)Particle::System::New(*(volatile unsigned int *)&mParticle[0], 0x113,
+                                      *(volatile int *)&v.x, *(volatile int *)&v.y, v.z, 0, 0);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -2680,10 +2648,10 @@ void daStar_c::func_ov002_020e8098() {
     vc.y = FX_MUL(vc.y, mScaleY);
     vc.z = FX_MUL(vc.z, mScaleZ);
     AddVec3(&vc, &mPos, &vc);
-    *(void**)&mParticle[0] = _ZN8Particle6System3NewEjj5Fix12IiES2_S2_PK11Vector3_16fPNS_8CallbackE(
-        mParticle[0], 0x115, vc.x, vc.y, vc.z, 0, 0);
-    *(void**)&mParticle[1] = _ZN8Particle6System3NewEjj5Fix12IiES2_S2_PK11Vector3_16fPNS_8CallbackE(
-        mParticle[1], 0x116, vc.x, vc.y, vc.z, 0, 0);
+    *(void **)&mParticle[0] =
+        (void *)Particle::System::New(mParticle[0], 0x115, vc.x, vc.y, vc.z, 0, 0);
+    *(void **)&mParticle[1] =
+        (void *)Particle::System::New(mParticle[1], 0x116, vc.x, vc.y, vc.z, 0, 0);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -2704,14 +2672,13 @@ void daStar_c::func_ov002_020e7fcc() {
         && (u32)((*(u32*)&mModelAnim1.currFrame << 4) >> 0x10) >= 2
         && *(int*)((char*)obj + 0xc) != 0) {
         func_ov002_020e8244(&v1, this);
-        mParticle[0] = (u32)_ZN8Particle6System3NewEjj5Fix12IiES2_S2_PK11Vector3_16fPNS_8CallbackE(
-            mParticle[0], 0x2f, v1.x, v1.y, v1.z, 0, 0);
+        mParticle[0] = (u32)Particle::System::New(mParticle[0], 0x2f, v1.x, v1.y, v1.z, 0, 0);
         return;
     }
 
     if (!mModelAnim1.WillHitFrame(0x75)) return;
     func_ov002_020e8244(&v2, this);
-    _ZN8Particle6System9NewSimpleEj5Fix12IiES2_S2_(0x30, v2.x, v2.y, v2.z);
+    Particle::System::NewSimple(0x30, v2.x, v2.y, v2.z);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -2739,8 +2706,7 @@ void daStar_c::func_ov002_020e7f2c() {
         zvar = zraw;
         y = yadj;
     }
-    mParticle[2] = (u32)_ZN8Particle6System3NewEjj5Fix12IiES2_S2_PK11Vector3_16fPNS_8CallbackE(
-        *(volatile u32 *)&mParticle[2], 0x114, x, y, z, 0, 0);
+    mParticle[2] = (u32)Particle::System::New(*(volatile u32 *)&mParticle[2], 0x114, x, y, z, 0, 0);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -2753,8 +2719,7 @@ void daStar_c::func_ov002_020e7eb8() {
     int b = (actorID == ACTOR_SILVER_STAR);
     if (b == 0) return;
     func_ov002_020e8244(&v, this);
-    mParticle[3] = (int)_ZN8Particle6System3NewEjj5Fix12IiES2_S2_PK11Vector3_16fPNS_8CallbackE(
-        mParticle[3], 0x10e, v.x, v.y, v.z, 0, 0);
+    mParticle[3] = (int)Particle::System::New(mParticle[3], 0x10e, v.x, v.y, v.z, 0, 0);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -2807,9 +2772,6 @@ int daStar_c::func_ov002_020e7e14() {
     return 1;
 }
 
-/* -------------------------------------------------------------------------- */
-/* ROM ordinal 23 -- _ZN12daStarBase_c7CollectEv, 0x020e7d84, size 0x90 */
-/* -------------------------------------------------------------------------- */
 // @symbol _ZN12daStarBase_c7CollectEv
 /* The marker was touched: plays sound 3/0x53, puts the marker on hold and
  * hides it, clears its touch volume and bursts effects 0x12c, 0x12d and 0x12e. */
@@ -2821,9 +2783,9 @@ void daStarBase_c::Collect()
         mBits.visible = 0;
     }
     mdCcAcPos_c.Clear();
-    _ZN8Particle6System9NewSimpleEj5Fix12IiES2_S2_(0x12c, mPosX, mPosY, mPosZ);
-    _ZN8Particle6System9NewSimpleEj5Fix12IiES2_S2_(0x12d, mPosX, mPosY, mPosZ);
-    _ZN8Particle6System9NewSimpleEj5Fix12IiES2_S2_(0x12e, mPosX, mPosY, mPosZ);
+    Particle::System::NewSimple(0x12c, mPosX, mPosY, mPosZ);
+    Particle::System::NewSimple(0x12d, mPosX, mPosY, mPosZ);
+    Particle::System::NewSimple(0x12e, mPosX, mPosY, mPosZ);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -3148,9 +3110,6 @@ ret0:
     return 0;
 }
 
-/* -------------------------------------------------------------------------- */
-/* ROM ordinal 15 -- _ZN12daStarBase_c27SpawnRedCoinStarIfNecessaryEv, 0x020e72d8, size 0xd4 */
-/* -------------------------------------------------------------------------- */
 // @symbol _ZN12daStarBase_c27SpawnRedCoinStarIfNecessaryEv
 /* Once the eighth red coin is in (NumRedCoins() == 8) spawns this marker's
  * Power Star 120.0 above it. The star takes the map marker, remembers this
@@ -3231,8 +3190,8 @@ void daStarBase_c::LinkSilverStarAndStarMarker(char* b) {
 extern "C" {  /* C linkage: the ROM symbol is a bare name, not a mangled member */
 void LoadSilverStarAndNumber(void)
 {
-    Model::LoadFile(*(SharedFilePtr *)data_ov002_0210da28);
-    Model::LoadFile(data_ov002_02110954);
+    dExtSimpleModel_c::LoadFile(*(SharedFilePtr *)data_ov002_0210da28);
+    dExtSimpleModel_c::LoadFile(data_ov002_02110954);
 }
 }
 
@@ -3332,10 +3291,8 @@ void daStar_c::func_ov002_020e6fbc(int arg) {
 void daStar_c::func_ov002_020e6edc() {
     struct Vector3 v;
     mKind = KIND_8;
-    _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(
-        &mModelAnim1, (struct BCA_File *)data_ov002_02110934.filePtr, 0x40000000, 0x1000, 0);
-    _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(
-        &mModelAnim2, (struct BCA_File *)data_ov002_02110934.filePtr, 0x40000000, 0x1000, 0);
+    mModelAnim1.SetAnim((struct BCA_File *)data_ov002_02110934.filePtr, 0x40000000, 0x1000, 0);
+    mModelAnim2.SetAnim((struct BCA_File *)data_ov002_02110934.filePtr, 0x40000000, 0x1000, 0);
     v.x = data_ov002_0210aa0c[0];
     v.y = data_ov002_0210aa0c[1];
     v.z = data_ov002_0210aa0c[2];
@@ -3353,10 +3310,8 @@ void daStar_c::func_ov002_020e6edc() {
  * in STATE_COLLECT_HOLD. */
 void daStar_c::func_ov002_020e6df8() {
   mKind = KIND_9;
-  _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(&mModelAnim1, data_ov002_02110944.filePtr, 0x40000000,
-                                              0x1000, 0);
-  _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(&mModelAnim2, data_ov002_02110944.filePtr, 0x40000000,
-                                              0x1000, 0);
+  mModelAnim1.SetAnim((BCA_File *)data_ov002_02110944.filePtr, 0x40000000, 0x1000, 0);
+  mModelAnim2.SetAnim((BCA_File *)data_ov002_02110944.filePtr, 0x40000000, 0x1000, 0);
   {
     Vector3 v;
     v.x = data_ov002_0210aa0c[0];

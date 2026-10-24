@@ -24,7 +24,7 @@
 #include "SharedFilePtr.h"
 #include "dActor_c.h"
 #include "daObjBlockL_c.h"
-#include "Model.h"
+#include "dExtSimpleModel_c.h"
 #include "daShl_c.h"
 #include "daStar_c.h"
 #include "daStarBase_c.h"
@@ -177,15 +177,15 @@ int daObjBlockItemTag_c::InitResources()
     switch (actorID) {
     case 0x141:
         mActionIndex = 0;
-        Model::LoadFile(data_ov002_0210d9d8);
+        dExtSimpleModel_c::LoadFile(data_ov002_0210d9d8);
         break;
     case 0x142:
         mActionIndex = 1;
-        Model::LoadFile(data_ov002_0210da30);
+        dExtSimpleModel_c::LoadFile(data_ov002_0210da30);
         break;
     case 0x143:
         mActionIndex = 2;
-        Model::LoadFile(data_ov002_0210da18);
+        dExtSimpleModel_c::LoadFile(data_ov002_0210da18);
         break;
     case 0x144:
         mActionIndex = 3;

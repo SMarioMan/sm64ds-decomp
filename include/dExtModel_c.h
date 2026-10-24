@@ -1,26 +1,26 @@
-#ifndef MODELBASE_H
-#define MODELBASE_H
+#ifndef DEXTMODEL_C_H
+#define DEXTMODEL_C_H
 
 #include "types.h"
 #include "BMD_File.h"
 #include "math/Matrix.h"
 
-/* The root of the model hierarchy, vtable at 0x0208e87c (_ZTV9ModelBase).
+/* The root of the model hierarchy, vtable at 0x0208e87c (_ZTV11dExtModel_c).
  *
- * The chain is ModelBase -> Model -> (the ModelAnim family), with dExtCommonModel_c
- * and dExtShadowModel_c as further ModelBase-derived siblings. Model derives from
- * ModelBase DIRECTLY: Model::C2 calls ModelBase::C2 and then stores its own
+ * The chain is dExtModel_c -> dExtSimpleModel_c -> (the dExtAnmModel_c family), with dExtCommonModel_c
+ * and dExtShadowModel_c as further dExtModel_c-derived siblings. dExtSimpleModel_c derives from
+ * dExtModel_c DIRECTLY: dExtSimpleModel_c::C2 calls dExtModel_c::C2 and then stores its own
  * vptr, one intermediate store, no more.
  *
  * VTABLE is read out of the ROM at 0x0208e87c:
  *
- *   slot 0  0x02017120  ~ModelBase (D1)
- *   slot 1  0x020170e8  ~ModelBase (D0)
+ *   slot 0  0x02017120  ~dExtModel_c (D1)
+ *   slot 1  0x020170e8  ~dExtModel_c (D0)
  *   slot 2  0x00000000  DoSetFile -- null, so it is pure virtual here
  *
- * Slot 2 being real is pinned by ModelBase::SetFile (0x02016fd4), which
- * dispatches vtable+0x8 on a ModelBase*; every derived vtable (dExtCommonModel_c,
- * Model) carries its DoSetFile override in that slot.
+ * Slot 2 being real is pinned by dExtModel_c::SetFile (0x02016fd4), which
+ * dispatches vtable+0x8 on a dExtModel_c*; every derived vtable (dExtCommonModel_c,
+ * dExtSimpleModel_c) carries its DoSetFile override in that slot.
  *
  * THE KEY-FUNCTION RULE, AND WHY IT NO LONGER FORBIDS A REAL D1. The
  * destructor is declared first, which makes it the key function, and CW 1.2
@@ -41,17 +41,17 @@
  * So every destructor variant may now be retained from a real `~Class()`
  * definition wherever the layout is known. D2 and D0 are compiler-generated,
  * not separately writable methods; the one-function intake format repeats the
- * real definition and objisolate keeps the enrolled ABI variant. ModelBase's
+ * real definition and objisolate keeps the enrolled ABI variant. dExtModel_c's
  * own D2/D0/D1 are now retained this way too: one destructor body owns the
  * model-file release, while the compiler supplies the vptr and delete paths.
  *
  * What has NOT changed is the declaration order. The destructor stays first,
  * because for a root class vtable slot order IS declaration order.
  *
- * LAYOUT evidence: ModelBase::C2 stores the vptr at +0x0 and zeroes +0x4;
- * the destructors Deallocate +0x4 when set; Model::LoadAndSetFile stores the
+ * LAYOUT evidence: dExtModel_c::C2 stores the vptr at +0x0 and zeroes +0x4;
+ * the destructors Deallocate +0x4 when set; dExtSimpleModel_c::LoadAndSetFile stores the
  * loaded file at +0x4. The base ENDS at 0x8. Each derived class puts its
- * view of the components at +0x8 -- Model EMBEDS a ModelComponents there,
+ * view of the components at +0x8 -- dExtSimpleModel_c EMBEDS a ModelComponents there,
  * while dExtCommonModel_c and dExtShadowModel_c store a ModelComponents POINTER (their
  * constructors then place their own fields from +0xc, inside what an
  * embedded struct would occupy, which is what rules the embed out of the
@@ -63,7 +63,7 @@
 
 struct BCA_File;
 
-/* 0x14 bytes, at +0x8 of a Model (embedded) or behind +0x8 of a dExtCommonModel_c
+/* 0x14 bytes, at +0x8 of a dExtSimpleModel_c (embedded) or behind +0x8 of a dExtCommonModel_c
    or dExtShadowModel_c (pointer to a pool entry from func_02016e70). The runtime
    view of a loaded model: built from the BMD file by func_020462d0,
    rendered by 0x020443c8. */
@@ -81,31 +81,31 @@ struct ModelComponents {
 
 extern "C" void _ZN6Memory16operator_delete2EPv(void *);
 
-struct ModelBase {
+struct dExtModel_c {
     /* 0x00 is the vptr, placed implicitly by the first virtual declaration. */
     BMD_File *modelFile;    /* 0x04 - owned; the destructors Deallocate it */
 
     /* DECLARED, NEVER DEFINED HERE, and that is the point -- same key-function
-       reasoning as Model (include/Model.h). Left undeclared, the compiler
+       reasoning as dExtSimpleModel_c (include/dExtSimpleModel_c.h). Left undeclared, the compiler
        synthesises this constructor and INLINES it into every derived
        constructor, emitting the vptr store + zero of modelFile straight into
-       the caller. The ROM calls _ZN9ModelBaseC2Ev (0x02017150) out of line
+       the caller. The ROM calls _ZN11dExtModel_cC2Ev (0x02017150) out of line
        instead, so the declaration is what makes a derived constructor
        reproduce. */
-    ModelBase();
+    dExtModel_c();
 
     /* --- vtable, in ROM order at 0x0208e87c. Do not reorder. --- */
     /* THE DESTRUCTOR PAIR, SPELLED AS TWO PLAIN VIRTUALS ON THE HOST. mwccarm
-       gives `virtual ~ModelBase()` TWO vtable entries -- the Itanium D1
+       gives `virtual ~dExtModel_c()` TWO vtable entries -- the Itanium D1
        complete / D0 deleting pair this header's own map reads out of the ROM
        at slots 0 and 1 -- and MSVC folds them into ONE. Spelt as a destructor
        the declaration indexes correctly on the ARM and ONE SLOT EARLY on the
        host, for every virtual declared after it and all the way down the
-       hierarchy: ModelBase -> Model -> ModelAnim -> {ModelAnim2,
-       BlendModelAnim}, plus the dExtCommonModel_c and dExtShadowModel_c siblings.
+       hierarchy: dExtModel_c -> dExtSimpleModel_c -> dExtAnmModel_c -> {dExtAnm2Model_c,
+       dExtBlendAnmModel_c}, plus the dExtCommonModel_c and dExtShadowModel_c siblings.
 
-       MEASURED, not reasoned: the ROM's _ZTV9ModelAnim at 0x0208e980 reads
-       [0] D1, [1] D0, [2] Model::DoSetFile, [3] UpdateVerts, [4] Virtual10,
+       MEASURED, not reasoned: the ROM's _ZTV14dExtAnmModel_c at 0x0208e980 reads
+       [0] D1, [1] D0, [2] dExtSimpleModel_c::DoSetFile, [3] UpdateVerts, [4] Virtual10,
        [5] Render, [6] Virtual18, while MSVC's own
        /d1reportSingleClassLayoutModelAnim dropped D0 and read [1] DoSetFile
        ... [4] Render, [5] Virtual18 -- one slot early from index 1 on, and the
@@ -118,7 +118,7 @@ struct ModelBase {
        the destructor and no ROM byte moves. Neither name is ever called; they
        hold the two slots the ROM's table holds.
 
-       The NON-VIRTUAL `~ModelBase()` beside them is what lets the thirteen
+       The NON-VIRTUAL `~dExtModel_c()` beside them is what lets the thirteen
        destructor translation units in src/ keep defining `X::~X()` out of
        class: without a declaration MSVC refuses the definition outright
        (C2600) and no host option reaches it. Being non-virtual it takes no
@@ -128,9 +128,9 @@ struct ModelBase {
 #ifdef _MSC_VER
     virtual void Destructor1();                      /* slot 0 (D1) */
     virtual void Destructor0();                      /* slot 1 (D0) */
-    ~ModelBase();                                    /* no slot: see above */
+    ~dExtModel_c();                                  /* no slot: see above */
 #else
-    virtual ~ModelBase();                            /* slots 0 (D1), 1 (D0) */
+    virtual ~dExtModel_c(); /* slots 0 (D1), 1 (D0) */
 #endif
     virtual int DoSetFile(char *file, int a, int b) = 0;  /* slot 2, null here */
 
@@ -161,13 +161,12 @@ struct ModelBase {
        in the class or one level up, as include/dActor_c.h records. No layout
        effect: a non-virtual inline member adds no field and no vtable slot. */
     void operator delete(void *ptr) { _ZN6Memory16operator_delete2EPv(ptr); }
-
 };
 
 #ifndef SM64DS_PLATFORM_PC
 /* ROM layout under mwccarm; host ABI divergence is tracked separately. */
 typedef char ModelComponents_size_must_be_0x14[sizeof(ModelComponents) == 0x14 ? 1 : -1];
-typedef char ModelBase_size_must_be_0x8[sizeof(ModelBase) == 0x8 ? 1 : -1];
+typedef char dExtModel_c_size_must_be_0x8[sizeof(dExtModel_c) == 0x8 ? 1 : -1];
 #endif
 
 #else
@@ -181,11 +180,11 @@ struct ModelComponents {
     void *unk_10;                      /* 0x10 */
 };
 
-struct ModelBase {
+struct dExtModel_c {
     void **vtable;                     /* 0x00 */
     struct BMD_File *modelFile;        /* 0x04 */
 };
 
 #endif /* __cplusplus */
 
-#endif /* MODELBASE_H */
+#endif /* DEXTMODEL_C_H */

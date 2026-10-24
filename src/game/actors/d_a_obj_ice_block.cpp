@@ -86,13 +86,9 @@ u8 DecIfAbove0_Byte(u8 *counter);
 void func_02012694(u32 soundID, const Vector3 *pos);
 int _ZN4cstd4fdivEii(int num, int den);
 
-void *_ZN8Particle6System9NewSimpleEj5Fix12IiES2_S2_(
-    u32 effectID, int x, int y, int z);
-int _ZN8Particle6System3NewEjj5Fix12IiES2_S2_PK11Vector3_16fPNS_8CallbackE(
-    u32 handle, u32 effectID, int x, int y, int z, const Vector3_16f *dir,
-    void *callback);
-int _ZN10dBgActor_c21IsClsnInRangeOnScreenE5Fix12IiES1_(
-    dBgActor_c *self, int a, int b);
+void *d_a_obj_ice_blockNewSimpleHold(u32 effectID, int x, int y, int z);
+int d_a_obj_ice_blockNewHold(u32 handle, u32 effectID, int x, int y, int z, const Vector3_16f *dir,
+                             void *callback);
 void _ZN7dCcAc_c4InitEP8dActor_c5Fix12IiES3_jj(
     dCcAc_c *self, dActor_c *owner, int radius, int height, u32 flags,
     u32 vulnFlags);
@@ -119,7 +115,7 @@ extern "C" daObjIceBlock_c *daObjIceBlock_c_classInit()
 // @symbol _ZN15daObjIceBlock_c13InitResourcesEv
 s32 daObjIceBlock_c::InitResources()
 {
-    mModel.SetFile((BMD_File *)Model::LoadFile(data_ov081_02128fd8), 1, 0x17);
+    mModel.SetFile((BMD_File *)dExtSimpleModel_c::LoadFile(data_ov081_02128fd8), 1, 0x17);
     _ZN7dCcAc_c4InitEP8dActor_c5Fix12IiES3_jj(
         &mCollider, this, 0xc8000, 0x12c000, 0x800002, 0x44000);
     UpdateModelPosAndRotY();
@@ -136,7 +132,7 @@ s32 daObjIceBlock_c::InitResources()
 // @symbol _ZN15daObjIceBlock_c8BehaviorEv
 s32 daObjIceBlock_c::Behavior()
 {
-    _ZN10dBgActor_c21IsClsnInRangeOnScreenE5Fix12IiES1_(this, 0, 0);
+    IsClsnInRangeOnScreen(0, 0);
 
     if (mMeltTimer != 0) {
         mScale = _ZN4cstd4fdivEii(mMeltTimer << 12, kMeltFrames << 12);
@@ -153,10 +149,10 @@ s32 daObjIceBlock_c::Behavior()
             pos.z = mPosZ;
             pos.y += FX_MUL(mScale, kShardHeight);
 
-            mParticleHandle1 = _ZN8Particle6System3NewEjj5Fix12IiES2_S2_PK11Vector3_16fPNS_8CallbackE(
-                mParticleHandle1, 0x77, pos.x, pos.y, pos.z, 0, 0);
-            mParticleHandle2 = _ZN8Particle6System3NewEjj5Fix12IiES2_S2_PK11Vector3_16fPNS_8CallbackE(
-                mParticleHandle2, 0x78, pos.x, pos.y, pos.z, 0, 0);
+            mParticleHandle1 =
+                Particle::System::New(mParticleHandle1, 0x77, pos.x, pos.y, pos.z, 0, 0);
+            mParticleHandle2 =
+                Particle::System::New(mParticleHandle2, 0x78, pos.x, pos.y, pos.z, 0, 0);
 
             u32 handle = mParticleHandle1;
             if (handle != 0) {
@@ -229,9 +225,9 @@ void daObjIceBlock_c::Kill()
     pos.x = x;
     pos.y = y;
     pos.z = z;
-    _ZN8Particle6System9NewSimpleEj5Fix12IiES2_S2_(0x74, pos.x, pos.y, pos.z);
-    _ZN8Particle6System9NewSimpleEj5Fix12IiES2_S2_(0x75, pos.x, pos.y, pos.z);
-    _ZN8Particle6System9NewSimpleEj5Fix12IiES2_S2_(0x76, pos.x, pos.y, pos.z);
+    Particle::System::NewSimple(0x74, pos.x, pos.y, pos.z);
+    Particle::System::NewSimple(0x75, pos.x, pos.y, pos.z);
+    Particle::System::NewSimple(0x76, pos.x, pos.y, pos.z);
     dustPos.x = pos.x;
     dustPos.y = pos.y;
     dustPos.z = pos.z;

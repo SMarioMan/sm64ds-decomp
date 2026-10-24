@@ -198,12 +198,12 @@
   ],
   "defined_symbol_renames": [
     {
-      "from": "@400",
+      "from": "@397",
       "to": "@48",
       "evidence": "mwcc numbers this model registration node @386 per TU and the in-flight ov036 buranko fold already claims @386, so the batch link would multiply-define it"
     },
     {
-      "from": "@401",
+      "from": "@398",
       "to": "@49",
       "evidence": "mwcc numbers this collision registration node @387 per TU and the in-flight ov036 buranko fold already claims @387, so the batch link would multiply-define it"
     }

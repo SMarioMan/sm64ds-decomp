@@ -29,7 +29,7 @@
 #define DATOR_C_H
 #include "types.h"
 #include "dActor_c.h"
-#include "ModelAnim.h"
+#include "dExtAnmModel_c.h"
 #include "dCcAc_c.h"
 #include "dBgCh_Actr.h"
 #include "TextureTransformer.h"
@@ -52,11 +52,11 @@ struct daTor_c : dActor_c {
        dBgCh_Actr's D1 at +0x108 -- a relocation the ROM build
        checks. Was a u8 marker. */
     dBgCh_Actr mWithMeshClsn;            /* 0x108 */
-    /* ModelAnim member, named by _ZN9ModelAnimD1Ev at +0x2c4 -- a relocation the ROM build
+    /* dExtAnmModel_c member, named by _ZN14dExtAnmModel_cD1Ev at +0x2c4 -- a relocation the ROM build
        checks. D1 and not D2, so it is this type and not an inlined base. The marker's pad
        stopped short of the object, so the member also takes over mAnimation (+0x50 = the
        dExtFrameCtrl_c base), which the header declared separately inside it. */
-    ModelAnim mModelAnim;            /* 0x2c4 */
+    dExtAnmModel_c mModelAnim; /* 0x2c4 */
     /* TextureTransformer member, named by the class's own destructor calling
        TextureTransformer's D1 at +0x328 -- a relocation the ROM build
        checks. Was a u8 marker. */

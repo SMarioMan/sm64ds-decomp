@@ -3,7 +3,7 @@
 
 #include "types.h"
 #include "dActor_c.h"
-#include "Model.h"
+#include "dExtSimpleModel_c.h"
 #include "TextureSequence.h"
 
 /* Floating score popup -- ov002/daObjNumber_c, profile NUMBER (330).
@@ -16,7 +16,7 @@
 
 struct daObjNumber_c : dActor_c {
     u8  pad_0d0[0x4];
-    Model mModel;                    /* 0x0d4 */
+    dExtSimpleModel_c mModel;         /* 0x0d4 */
     TextureSequence mTextureSequence; /* 0x124 */
     /* Follow target. Behavior looks this uniqueID up with FindWithID;
        0 means the popup is not following anyone. SpawnNumber's owner. */

@@ -4,17 +4,17 @@
 #define DAPIANO_C_H
 #include "types.h"
 #include "dBgActor_c.h"
-#include "ModelAnim.h"
+#include "dExtAnmModel_c.h"
 #include "dExtShadowModel_c.h"
 #include "dCcAcPos_c.h"
 #include "dBgCh_Actr.h"
 
-/* dBgActor_c owns the Model at 0xd4, dBgW_KcMbg at 0x124, and collision
+/* dBgActor_c owns the dExtSimpleModel_c at 0xd4, dBgW_KcMbg at 0x124, and collision
  * matrix through 0x31d. The class's own first member therefore starts at
  * 0x320, exactly where the factory constructs it. */
 struct daPiano_c : dBgActor_c {
-    /* Named by _ZN9ModelAnimD1Ev at +0x320, a relocation the ROM build checks. */
-    ModelAnim mModelAnim;            /* 0x320 */
+    /* Named by _ZN14dExtAnmModel_cD1Ev at +0x320, a relocation the ROM build checks. */
+    dExtAnmModel_c mModelAnim; /* 0x320 */
     /* Named by _ZN17dExtShadowModel_cD1Ev at +0x384 (D0/D1), a ROM-checked relocation. */
     dExtShadowModel_c mShadowModel1;            /* 0x384 */
     /* Named by _ZN17dExtShadowModel_cD1Ev at +0x3ac (D0/D1), a ROM-checked relocation. */

@@ -16,8 +16,6 @@
 #include "SpawnInfo.h"
 
 extern "C" {
-extern void _ZN8dActor_c9SetRangesE5Fix12IiES1_S1_S1_(
-    dActor_c *self, int offsetY, int radius, int clipDistance, int farDistance);
 extern void _ZN7dCcAc_c4InitEP8dActor_c5Fix12IiES3_jj(
     dCcAc_c *self, dActor_c *actor, int radius, int height, u32 flags, u32 vulnFlags);
 }
@@ -60,8 +58,7 @@ s32 daBar_c::InitResources()
         height = kMinHeightFix12;
     s32 halfHeight = height >> 1;
 
-    _ZN8dActor_c9SetRangesE5Fix12IiES1_S1_S1_(
-        this, halfHeight, halfHeight, halfHeight + kClipPadFix12, 0);
+    SetRanges(halfHeight, halfHeight, halfHeight + kClipPadFix12, 0);
     _ZN7dCcAc_c4InitEP8dActor_c5Fix12IiES3_jj(
         &mClsn, this, kCylinderRadiusFix12, height,
         (param1 & kParamHurtBit) ? kClsnFlagsHurt : kClsnFlags, 0);

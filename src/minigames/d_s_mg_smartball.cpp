@@ -72,6 +72,33 @@ enum dScMgSmartball_c_AssetId { ASSET_D_2D_MG_BG_OPTION_NSC_BIN = 0x005b };
 #include "Memory.h"
 #include "nitro/fx/fx.h"
 
+namespace G2 {
+void *GetBG2CharPtr(void);
+u16 *GetBG2ScrPtr(void);
+void *GetBG3ScrPtr(void);
+}
+
+namespace G2S {
+void *GetBG0CharPtr(void);
+void *GetBG0ScrPtr(void);
+unsigned int GetBG1CharPtr(void);
+void *GetBG1ScrPtr(void);
+void *GetBG2CharPtr(void);
+u16 *GetBG2ScrPtr(void);
+char *GetBG3CharPtr(void);
+char *GetBG3ScrPtr(void);
+}
+
+namespace GX {
+void LoadBGPltt(const void *p, u32 a, u32 b);
+void LoadOBJPltt(const void *p, u32 a, u32 b);
+}
+
+namespace GXS {
+void LoadBGPltt(const void *p, u32 a, u32 b);
+void LoadOBJPltt(const void *p, u32 a, u32 b);
+}
+
 /* Local value types carried over from the legacy files. None of these is a
  * view of a class any more: the object-side views (Obj, Obj2, SBoard, Owl,
  * C2, V2ab, A, S28, S24) were each a cast of `this` or of a table entry, and
@@ -155,6 +182,10 @@ void PlayBank2_2D(u32 id);
 }
 
 extern "C" {
+/* S4 WALL (wave-2): kept: this void extern and the namespace Sound shadow
+   above disagree with Sound.h u32 return (definition returns unsigned int);
+   including Sound.h would illegally overload the shadow, so both stay.
+   Params match; all callers ignore r0. */
 extern void _ZN5Sound12PlayBank2_2DEj(unsigned int);
 extern void func_0203d388(V2 *p, int angle);
 extern long long func_0203d5bc(int *p);
@@ -164,10 +195,12 @@ extern long long func_0203d5bc(int *p);
    their table entry the same way the other eighty do. */
 extern "C" void Mg_RenderSpriteBoth(void *a0, int a1, int a2, int a3, int a4);
 extern "C" struct OamAttr *sSmartballWingSprites[];
-extern "C" void _ZN3OAM6RenderEbP7OamAttriiii5Fix12IiES3_ii(int sub, struct OamAttr *data, s32 x,
-                                                            s32 y, s32 palette, s32 priority,
-                                                            Fix12i scaleX, Fix12i scaleY,
-                                                            s32 rotation, s32 mode);
+struct OAM {
+    static void Render(bool, OamAttr *, int, int, int, int, int, int, int, int);
+};
+extern "C" void OamRender10_d_s_mg_smartball(int sub, struct OamAttr *data, s32 x, s32 y,
+                                             s32 palette, s32 priority, Fix12i scaleX,
+                                             Fix12i scaleY, s32 rotation, s32 mode);
 extern int Vec2_Len(Vec2 *v);
 /* Five of this helper's six recorded views spell the first and last arguments
    pointers and one spells them ints; the pointer view is kept. */
@@ -183,7 +216,7 @@ extern OamAttr *sSmartballCellSprites[];
 extern "C" s16 data_02082214[];
 extern "C" s32 sSmartballCellOrder[];
 extern OamAttr *sSmartballCellRowSprites[];
-extern char *_ZN3G2S12GetBG3ScrPtrEv(void);
+
 /* The two legacy views of this helper disagreed on the destination pointer
    (char * against void *). void * is the reconciliation that accepts every
    call site in this file unchanged: the byte-stepping callers convert to it
@@ -223,11 +256,8 @@ extern void func_02057d00(void *dst, void *src, int flag);
 extern void *Ov004_LoadFileByPath(void *p);
 extern void DecompressLZ16(void *src, void *dst);
 extern void Ov004_Deallocate(void *p);
-extern u16 *_ZN2G212GetBG2ScrPtrEv(void);
-extern u16 *_ZN3G2S12GetBG2ScrPtrEv(void);
-extern void *_ZN2G212GetBG3ScrPtrEv(void);
+
 extern void __cxa_vec_ctor(void *p, int a, int b, void *cb1, void *cb2);
-extern void *_Znwj(u32 size);
 extern void SetSubBg0Offset(int x, int y);
 extern void func_0203d738(void);
 extern int sSmartballPathBuf[];
@@ -266,21 +296,14 @@ extern OamAttr *sSmartballSideSprites[];
 extern OamAttr *sSmartballSideSpritesAlt[];
 void FreeGfxSlotsById(int a);
 unsigned int func_02012790(unsigned int a);
-extern unsigned int _ZN3G2S13GetBG1CharPtrEv(void);
+
 extern unsigned int LoadCompressedFileAt(int fileID, void *target);
-extern void *_ZN3G2S12GetBG1ScrPtrEv(void);
+
 extern unsigned char data_0209d454[];
 extern u8 data_0209d45c;
 extern s32 data_0208ee44;
 void _ZN4CP1527FlushAndInvalidateDataCacheEjj(void *p, u32 n);
-void _ZN2GX10LoadBGPlttEPKvjj(const void *p, u32 a, u32 b);
-void _ZN2GX11LoadOBJPlttEPKvjj(const void *p, u32 a, u32 b);
-void _ZN3GXS10LoadBGPlttEPKvjj(const void *p, u32 a, u32 b);
-void _ZN3GXS11LoadOBJPlttEPKvjj(const void *p, u32 a, u32 b);
-void *_ZN3G2S12GetBG0ScrPtrEv(void);
-void *_ZN3G2S13GetBG0CharPtrEv(void);
-void *_ZN2G213GetBG2CharPtrEv(void);
-void *_ZN3G2S13GetBG2CharPtrEv(void);
+
 void _ZN3G2x13SetBlendAlphaEPVttttj(volatile void *p, u16 a, u16 b, u16 c, u16 d);
 extern void *sSmartballResultBgNcgPath;
 extern void *sSmartballResultBgNscPath;
@@ -351,7 +374,7 @@ void *cMgSmartball_slot_c_Construct(char *c, int a1, int a2, int *src);
    Mangled names are declared with C linkage so the C++ front end does not
    mangle them a second time. */
 extern "C" {
-extern char *_ZN3G2S13GetBG3CharPtrEv(void);
+
 extern int sMgResultsBannerY;
 extern int sMgResultsBannerX;
 extern int sSmartballOptionNcgByLanguage[];
@@ -377,7 +400,6 @@ void cMgSmartball_object_c_Construct(char *c, int a1, int a2, int *a3);
 #define FIX_MUL_US(a, b) \
     ((int)(((s64)((a) * (u64)(s64)(b)) + 0x800) >> 12))
 
-extern "C" {}
 
 // @symbol _ZN16dScMgSmartball_cD1Ev
 // @symbol _ZN16dScMgSmartball_cD0Ev
@@ -550,18 +572,14 @@ void cMgSmartball_wing_c::Update() {
         Mg_RenderSpriteBoth(sSmartballWingBodySprites[1], mCurrent0 >> 12, (mCurrent1 >> 12) + 5,
                             -1, 2);
     }
-    _ZN3OAM6RenderEbP7OamAttriiii5Fix12IiES3_ii(
-        0, sSmartballWingSprites[0], (mCurrent0 >> 12) - 0x10, (mCurrent1 >> 12) + 0x118, -1, 1,
-        0x1000, 0x1000, (unsigned short)(short)(-0x4000 - GetAngle()), -1);
-    _ZN3OAM6RenderEbP7OamAttriiii5Fix12IiES3_ii(
-        0, sSmartballWingSprites[0], (mCurrent0 >> 12) + 0x10, (mCurrent1 >> 12) + 0x118, -1, 1,
-        0x1000, 0x1000, (unsigned short)(short)(GetAngle() - 0x4000), -1);
-    _ZN3OAM6RenderEbP7OamAttriiii5Fix12IiES3_ii(
-        0, sSmartballWingSprites[1], (mCurrent0 >> 12) - 0x10, (mCurrent1 >> 12) + 0x11d, -1, 2,
-        0x1000, 0x1000, (unsigned short)(short)(-0x4000 - GetAngle()), -1);
-    _ZN3OAM6RenderEbP7OamAttriiii5Fix12IiES3_ii(
-        0, sSmartballWingSprites[1], (mCurrent0 >> 12) + 0x10, (mCurrent1 >> 12) + 0x11d, -1, 2,
-        0x1000, 0x1000, (unsigned short)(short)(GetAngle() - 0x4000), -1);
+    OAM::Render(0, sSmartballWingSprites[0], (mCurrent0 >> 12) - 0x10, (mCurrent1 >> 12) + 0x118,
+                -1, 1, 0x1000, 0x1000, (unsigned short)(short)(-0x4000 - GetAngle()), -1);
+    OAM::Render(0, sSmartballWingSprites[0], (mCurrent0 >> 12) + 0x10, (mCurrent1 >> 12) + 0x118,
+                -1, 1, 0x1000, 0x1000, (unsigned short)(short)(GetAngle() - 0x4000), -1);
+    OAM::Render(0, sSmartballWingSprites[1], (mCurrent0 >> 12) - 0x10, (mCurrent1 >> 12) + 0x11d,
+                -1, 2, 0x1000, 0x1000, (unsigned short)(short)(-0x4000 - GetAngle()), -1);
+    OAM::Render(0, sSmartballWingSprites[1], (mCurrent0 >> 12) + 0x10, (mCurrent1 >> 12) + 0x11d,
+                -1, 2, 0x1000, 0x1000, (unsigned short)(short)(GetAngle() - 0x4000), -1);
 }
 
 // @symbol _ZN19cMgSmartball_wing_c12SaveSnapshotEv
@@ -937,7 +955,7 @@ void cMgSmartball_board_c::PaintCell(int idx, int *pos) {
             } else {
                 tile = (u16)(jj + b1);
             }
-            p = _ZN3G2S12GetBG3ScrPtrEv();
+            p = G2S::GetBG3ScrPtr();
             t1 = tile | 0xf000;
             MultiStore16(t1, p + row + cx * 2 + kk, layer);
             kk += 2;
@@ -958,7 +976,7 @@ void cMgSmartball_board_c::PaintCell(int idx, int *pos) {
         int i2;
         int bas2 = base;
         for (i2 = -1; i2 <= 1; i2++) {
-            p = _ZN3G2S12GetBG3ScrPtrEv() + ((cy + i2) << 6);
+            p = G2S::GetBG3ScrPtr() + ((cy + i2) << 6);
             t2 = (bas2 + 0x20 * i2) | 0xf000;
             MultiStore16(t2, p + cx * 2 - 4, lay2);
         }
@@ -969,7 +987,7 @@ void cMgSmartball_board_c::PaintCell(int idx, int *pos) {
         int i3;
         int bas3 = 0x336;
         for (i3 = -1; i3 <= 0; i3++) {
-            p = _ZN3G2S12GetBG3ScrPtrEv() + ((cy + i3) << 6);
+            p = G2S::GetBG3ScrPtr() + ((cy + i3) << 6);
             t3 = (bas3 + 0x20 * i3) | 0xf000;
             MultiStore16(t3, p + cx * 2 + 2, lay3);
         }
@@ -981,7 +999,7 @@ void cMgSmartball_board_c::PaintCell(int idx, int *pos) {
         int i4;
         int bas4 = 0x33f;
         for (i4 = -1; i4 <= 1; i4++) {
-            p = _ZN3G2S12GetBG3ScrPtrEv() + ((cy + i4) << 6);
+            p = G2S::GetBG3ScrPtr() + ((cy + i4) << 6);
             t4 = (bas4 + 0x20 * i4) | 0xf000;
             MultiStore16(t4, p + cx * 2 + 2, lay4);
         }
@@ -993,7 +1011,7 @@ void cMgSmartball_board_c::PaintCell(int idx, int *pos) {
         int i5;
         int bas5 = 0x33e;
         for (i5 = -1; i5 <= 1; i5++) {
-            p = _ZN3G2S12GetBG3ScrPtrEv() + ((cy + i5) << 6);
+            p = G2S::GetBG3ScrPtr() + ((cy + i5) << 6);
             t5 = (bas5 + 0x20 * i5) | 0xf000;
             MultiStore16(t5, p + cx * 2 + 2, lay5);
         }
@@ -4666,7 +4684,7 @@ void dScMgSmartball_c::CollideBalls() {
  * (func_02057d00 + DecompressLZ16 to VRAM/tilemaps), per-tile-type scan
  * loops over the two 0x300-entry tilemaps mBg1Map/mBg2Map collecting
  * spawn positions ((i%32)<<15, mapA: ((i/32)*8-0xf0)<<12 /
- * mapB: (i/32)<<15), spawn loops (_Znwj + per-type init, V2 passed via
+ * mapB: (i/32)<<15), spawn loops (operator new + per-type init, V2 passed via
  * pointer to a caller-local copy), a virtual-init pass (vtbl[2](this) on
  * every spawned object), bulk zeroing.
  *
@@ -4677,7 +4695,7 @@ void dScMgSmartball_c::CollideBalls() {
  *  - Spawn callees take V2* + explicit caller-local copy (V2 tmp = pos[j];
  *    f(p,c,j,&tmp)). By-value V2 in C mode splits across r3/[sp] with
  *    dynamic sp adjustment, which pins a frame pointer the ROM lacks.
- *    _Znwj result flows through p into the slot store (no separate r var).
+ *    operator new result flows through p into the slot store (no separate r var).
  *  - u64-mask laundering on the two mpKinokos spawn slot stores -> pooled
  *    0x46bc + str r0,[r1,rK]! writeback (also the 9th live value that pulls
  *    fp into the push set; frame 0x124 with 9 saved regs).
@@ -4867,29 +4885,29 @@ void dScMgSmartball_c::SpawnObjects() {
     }
     if (((int)self->param1 & 0xff) == 0) {
         void *d = Ov004_LoadFileByPath(sSmartballLay0Bg1FrameNscPath);
-        DecompressLZ16(d, _ZN2G212GetBG2ScrPtrEv());
+        DecompressLZ16(d, G2::GetBG2ScrPtr());
         Ov004_Deallocate(d);
         d = Ov004_LoadFileByPath(sSmartballLay0Bg2FrameNscPath);
-        DecompressLZ16(d, _ZN3G2S12GetBG2ScrPtrEv());
+        DecompressLZ16(d, G2S::GetBG2ScrPtr());
         Ov004_Deallocate(d);
         d = Ov004_LoadFileByPath(sSmartballLay0Bg1NscPath);
-        DecompressLZ16(d, _ZN2G212GetBG3ScrPtrEv());
+        DecompressLZ16(d, G2::GetBG3ScrPtr());
         Ov004_Deallocate(d);
         d = Ov004_LoadFileByPath(sSmartballLay0Bg2NscPath);
-        DecompressLZ16(d, _ZN3G2S12GetBG3ScrPtrEv());
+        DecompressLZ16(d, G2S::GetBG3ScrPtr());
         Ov004_Deallocate(d);
     } else {
         void *d = Ov004_LoadFileByPath(sSmartballLay1Bg1FrameNscPath);
-        DecompressLZ16(d, _ZN2G212GetBG2ScrPtrEv());
+        DecompressLZ16(d, G2::GetBG2ScrPtr());
         Ov004_Deallocate(d);
         d = Ov004_LoadFileByPath(sSmartballLay1Bg2FrameNscPath);
-        DecompressLZ16(d, _ZN3G2S12GetBG2ScrPtrEv());
+        DecompressLZ16(d, G2S::GetBG2ScrPtr());
         Ov004_Deallocate(d);
         d = Ov004_LoadFileByPath(sSmartballLay1Bg1NscPath);
-        DecompressLZ16(d, _ZN2G212GetBG3ScrPtrEv());
+        DecompressLZ16(d, G2::GetBG3ScrPtr());
         Ov004_Deallocate(d);
         d = Ov004_LoadFileByPath(sSmartballLay1Bg2NscPath);
-        DecompressLZ16(d, _ZN3G2S12GetBG3ScrPtrEv());
+        DecompressLZ16(d, G2S::GetBG3ScrPtr());
         Ov004_Deallocate(d);
     }
 
@@ -4934,7 +4952,7 @@ void dScMgSmartball_c::SpawnObjects() {
         int n = mKinokoCount;
         int j;
         for (j = 0; j < n; j++) {
-            void *p = _Znwj(0x40);
+            void *p = ::operator new(0x40);
             if (p != 0) {
                 V2 tmp = pos[j];
                 p = cMgSmartball_kinoko_c_Construct((char *)p, (int)c, (int)j, (int *)&tmp);
@@ -4975,7 +4993,7 @@ void dScMgSmartball_c::SpawnObjects() {
             }
         }
         for (; n < mKinokoCount; n++) {
-            void *p = _Znwj(0x40);
+            void *p = ::operator new(0x40);
             if (p != 0) {
                 V2 tmp;
                 int ty = pos[n].y;
@@ -5025,7 +5043,7 @@ void dScMgSmartball_c::SpawnObjects() {
             int n = mAnaCount;
             int j;
             for (j = 0; j < n; j++) {
-                void *p = _Znwj(0x38);
+                void *p = ::operator new(0x38);
                 if (p != 0) {
                     V2 tmp = pos[j];
                     p = (void *)cMgSmartball_ana_c_Construct((char *)p, (int)c, j, (int *)&tmp);
@@ -5047,7 +5065,7 @@ void dScMgSmartball_c::SpawnObjects() {
             void *p;
             pos[j].x = ((1 - j) << 0x10) + 0xc0000;
             pos[j].y = _ZN4cstd4fdivEii(FX_MUL(pos[j].x, 0xa000), 0xd8000) + 0x90000;
-            p = _Znwj(0x12c);
+            p = ::operator new(0x12c);
             if (p != 0) {
                 V2 tmp = pos[j];
                 p = (void *)cMgSmartball_ball_c_Construct((char *)p, (int)c, j, (int *)&tmp);
@@ -5092,7 +5110,7 @@ void dScMgSmartball_c::SpawnObjects() {
             int n = mDokanCount;
             int j;
             for (j = 0; j < n; j++) {
-                void *p = _Znwj(0x34);
+                void *p = ::operator new(0x34);
                 if (p != 0) {
                     V2 tmp = pos[j];
                     p = (void *)cMgSmartball_dokan_c_Construct((char *)p, (int)c, j, (int *)&tmp);
@@ -5134,7 +5152,7 @@ void dScMgSmartball_c::SpawnObjects() {
             int n = mPakkunCount;
             int j;
             for (j = 0; j < n; j++) {
-                void *p = _Znwj(0x3c);
+                void *p = ::operator new(0x3c);
                 if (p != 0) {
                     V2 tmp = pos[j];
                     p = (void *)cMgSmartball_pakkun_c_Construct((char *)p, (int)c, j, (int *)&tmp);
@@ -5175,7 +5193,7 @@ void dScMgSmartball_c::SpawnObjects() {
             int n = mPropellerCount;
             int j;
             for (j = 0; j < n; j++) {
-                void *p = _Znwj(0x78);
+                void *p = ::operator new(0x78);
                 if (p != 0) {
                     V2 tmp = pos[j];
                     p = (void *)cMgSmartball_propeller_c_Construct((char *)p, (int)c, j,
@@ -5217,7 +5235,7 @@ void dScMgSmartball_c::SpawnObjects() {
             }
         }
         if (k >= 1) {
-            void *p = _Znwj(0x88);
+            void *p = ::operator new(0x88);
             if (p != 0) {
                 V2 tmp = pos[0];
                 p = cMgSmartball_slot_c_Construct((char *)p, (int)c, (int)0, (int *)&tmp);
@@ -5256,7 +5274,7 @@ void dScMgSmartball_c::SpawnObjects() {
             }
         }
         if (k >= 9) {
-            void *p = _Znwj(0x9c);
+            void *p = ::operator new(0x9c);
             if (p != 0) {
                 V2 tmp = pos[4];
                 p = (void *)cMgSmartball_board_c_Construct((char *)p, (int)c, 0, (int *)&tmp);
@@ -5295,7 +5313,7 @@ void dScMgSmartball_c::SpawnObjects() {
             int n = mPushSwitchCount;
             int j;
             for (j = 0; j < n; j++) {
-                void *p = _Znwj(0x38);
+                void *p = ::operator new(0x38);
                 if (p != 0) {
                     V2 tmp = pos[j];
                     p = (void *)cMgSmartball_pushswitch_c_Construct((char *)p, (int)c, j,
@@ -5337,7 +5355,7 @@ void dScMgSmartball_c::SpawnObjects() {
             }
         }
         if (k >= 1) {
-            void *p = _Znwj(0x88);
+            void *p = ::operator new(0x88);
             if (p != 0) {
                 V2 tmp = pos[0];
                 p = cMgSmartball_wing_c_Construct((char *)p, (int)c, (int)0, (int *)&tmp);
@@ -6037,8 +6055,8 @@ int dScMgSmartball_c::InitSubScreenBg() {
     SetSubBg1Offset(0, 0);
     data_0209d454[0] &= ~2;
     f = GetGameLanguage();
-    LoadCompressedFileAt(sSmartballOptionNcgByLanguage[f], (void *)_ZN3G2S13GetBG1CharPtrEv());
-    LoadCompressedFileAt(ASSET_D_2D_MG_BG_OPTION_NSC_BIN, _ZN3G2S12GetBG1ScrPtrEv());
+    LoadCompressedFileAt(sSmartballOptionNcgByLanguage[f], (void *)G2S::GetBG1CharPtr());
+    LoadCompressedFileAt(ASSET_D_2D_MG_BG_OPTION_NSC_BIN, G2S::GetBG1ScrPtr());
 }
 
 // @symbol _ZN16dScMgSmartball_c13InitResourcesEv
@@ -6097,18 +6115,18 @@ s32 dScMgSmartball_c::InitResources() {
     *((volatile s32 *)0x4001010) = 0x100;
     *((volatile u16 *)0x4001008) &= ~3;
     f = Ov004_LoadFileByPath(&sSmartballResultBgNcgPath);
-    DecompressLZ16(f, _ZN3G2S13GetBG0CharPtrEv());
+    DecompressLZ16(f, G2S::GetBG0CharPtr());
     Ov004_Deallocate(f);
     {
         volatile u16 v;
-        MultiStore16((u16)(v = 0), _ZN3G2S12GetBG0ScrPtrEv(), 0x1000);
+        MultiStore16((u16)(v = 0), G2S::GetBG0ScrPtr(), 0x1000);
     }
     f = Ov004_LoadFileByPath(&sSmartballResultBgNscPath);
-    DecompressLZ16(f, _ZN3G2S12GetBG0ScrPtrEv());
+    DecompressLZ16(f, G2S::GetBG0ScrPtr());
     Ov004_Deallocate(f);
     f = Ov004_LoadFileByPath(&sSmartballResultNclPath);
     _ZN4CP1527FlushAndInvalidateDataCacheEjj(f, 0x20);
-    _ZN3GXS10LoadBGPlttEPKvjj(((char *)f) + 2, 2, 0x1e);
+    GXS::LoadBGPltt(((char *)f) + 2, 2, 0x1e);
     Ov004_Deallocate(f);
     *((volatile u16 *)0x400000c) = (((*((volatile u16 *)0x400000c)) & 0xFFFF) & 0x43) | 0x1410;
     *((volatile u16 *)0x400000c) &= ~0x40;
@@ -6128,48 +6146,48 @@ s32 dScMgSmartball_c::InitResources() {
     *((volatile u16 *)0x400100e) = ((*((volatile u16 *)0x400100e)) & (~3)) | 2;
     if (((u8)(*((s32 *)(c + 8)))) == 0) {
         f = Ov004_LoadFileByPath(&sSmartballLay0Bg1FrameNcgPath);
-        DecompressLZ16(f, _ZN2G213GetBG2CharPtrEv());
+        DecompressLZ16(f, G2::GetBG2CharPtr());
         Ov004_Deallocate(f);
         f = Ov004_LoadFileByPath(&sSmartballLay0Bg2FrameNcgPath);
-        DecompressLZ16(f, _ZN3G2S13GetBG2CharPtrEv());
+        DecompressLZ16(f, G2S::GetBG2CharPtr());
         Ov004_Deallocate(f);
         f = Ov004_LoadFileByPath(&sSmartballLay0Bg1NcgPath);
         DecompressLZ16(f, (void *)func_02054d88());
         Ov004_Deallocate(f);
         f = Ov004_LoadFileByPath(&sSmartballLay0Bg2NcgPath);
-        DecompressLZ16(f, _ZN3G2S13GetBG3CharPtrEv());
+        DecompressLZ16(f, G2S::GetBG3CharPtr());
         Ov004_Deallocate(f);
     } else {
         f = Ov004_LoadFileByPath(&sSmartballLay1Bg1FrameNcgPath);
-        DecompressLZ16(f, _ZN2G213GetBG2CharPtrEv());
+        DecompressLZ16(f, G2::GetBG2CharPtr());
         Ov004_Deallocate(f);
         f = Ov004_LoadFileByPath(&sSmartballLay1Bg2FrameNcgPath);
-        DecompressLZ16(f, _ZN3G2S13GetBG2CharPtrEv());
+        DecompressLZ16(f, G2S::GetBG2CharPtr());
         Ov004_Deallocate(f);
         f = Ov004_LoadFileByPath(&sSmartballLay1Bg1NcgPath);
         DecompressLZ16(f, (void *)func_02054d88());
         Ov004_Deallocate(f);
         f = Ov004_LoadFileByPath(&sSmartballLay1Bg2NcgPath);
-        DecompressLZ16(f, _ZN3G2S13GetBG3CharPtrEv());
+        DecompressLZ16(f, G2S::GetBG3CharPtr());
         Ov004_Deallocate(f);
     }
     if (((u8)(*((s32 *)(c + 8)))) == 0) {
         f = Ov004_LoadFileByPath(&sSmartballLay0Bg1NclPath);
         _ZN4CP1527FlushAndInvalidateDataCacheEjj(f, 0x1a0);
-        _ZN2GX10LoadBGPlttEPKvjj(f, 0x60, 0x1a0);
+        GX::LoadBGPltt(f, 0x60, 0x1a0);
         Ov004_Deallocate(f);
         f = Ov004_LoadFileByPath(&sSmartballLay0Bg2NclPath);
         _ZN4CP1527FlushAndInvalidateDataCacheEjj(f, 0x1a0);
-        _ZN3GXS10LoadBGPlttEPKvjj(f, 0x60, 0x1a0);
+        GXS::LoadBGPltt(f, 0x60, 0x1a0);
         Ov004_Deallocate(f);
     } else {
         f = Ov004_LoadFileByPath(&sSmartballLay1Bg1NclPath);
         _ZN4CP1527FlushAndInvalidateDataCacheEjj(f, 0x1a0);
-        _ZN2GX10LoadBGPlttEPKvjj(f, 0x60, 0x1a0);
+        GX::LoadBGPltt(f, 0x60, 0x1a0);
         Ov004_Deallocate(f);
         f = Ov004_LoadFileByPath(&sSmartballLay1Bg2NclPath);
         _ZN4CP1527FlushAndInvalidateDataCacheEjj(f, 0x1a0);
-        _ZN3GXS10LoadBGPlttEPKvjj(f, 0x60, 0x1a0);
+        GXS::LoadBGPltt(f, 0x60, 0x1a0);
         Ov004_Deallocate(f);
     }
     data_0209d45c &= ~1;
@@ -6177,8 +6195,8 @@ s32 dScMgSmartball_c::InitResources() {
     data_0209d454[0] |= 0xd;
     f = Ov004_LoadFileByPath(&sSmartballNclPath);
     _ZN4CP1527FlushAndInvalidateDataCacheEjj(f, 0x100);
-    _ZN2GX11LoadOBJPlttEPKvjj(f, 0, 0x100);
-    _ZN3GXS11LoadOBJPlttEPKvjj(f, 0, 0x100);
+    GX::LoadOBJPltt(f, 0, 0x100);
+    GXS::LoadOBJPltt(f, 0, 0x100);
     Ov004_Deallocate(f);
     i = 0;
     do {
@@ -6220,7 +6238,7 @@ s32 dScMgSmartball_c::InitResources() {
         void *o;
         r1.v0 = 0xec000;
         r1.v1 = 0xa0000;
-        o = _Znwj(0x48);
+        o = ::operator new(0x48);
         if (o != 0) {
             cMgSmartballPair r2 = r1;
             o = (void *)cMgSmartball_spring_c_Construct((char *)o, (int)c, 0, &r2.v0);

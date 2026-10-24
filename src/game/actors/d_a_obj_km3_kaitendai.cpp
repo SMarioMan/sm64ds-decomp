@@ -7,7 +7,7 @@
  * helpers. The default rotation increment is 312 angle units per frame,
  * or 624 when param1's low byte is 1. The shared setup stores the
  * increment and Behavior adds it each frame; it is not a start angle.
- * func_ov002_020b676c loads slot 0 with Model::LoadFile, slot 1 with
+ * func_ov002_020b676c loads slot 0 with dExtSimpleModel_c::LoadFile, slot 1 with
  * dBgW_Kc::LoadFile, slot 2 as CLPS into SetFile. This TU's static
  * initializer constructs those SharedFilePtrs as file IDs 1661 / 1662.
  *

@@ -81,7 +81,6 @@ struct PileCollisionFilePtr : SharedFilePtr {
 
 extern "C" {
 extern unsigned char DecIfAbove0_Byte(unsigned char *p);
-extern int _ZN10dBgActor_c21IsClsnInRangeOnScreenE5Fix12IiES1_(void *c, int a, int b);
 extern void _ZN8dActor_c10SpawnCoinsERK7Vector3j5Fix12IiEs(void *c, V3 v, unsigned int n, int f, short s);
 extern void _ZN10dBgW_KcMbg7SetFileEP8KCL_FileRK9Matrix4x35Fix12IiEsR10CLPS_Block(
     void *self, void *kcl, void *mtx, int fix, short s, void *clps);
@@ -257,14 +256,14 @@ s32 daObjPile_c::Behavior()
         mPrevAngle = angle;
     }
     DecIfAbove0_Byte((unsigned char *)&mAttackCooldown);
-    _ZN10dBgActor_c21IsClsnInRangeOnScreenE5Fix12IiES1_(this, 0, 0);
+    IsClsnInRangeOnScreen(0, 0);
     return 1;
 }
 
 // @symbol _ZN11daObjPile_c13InitResourcesEv
 s32 daObjPile_c::InitResources()
 {
-    void *m = Model::LoadFile(gPileModelFile);
+    void *m = dExtSimpleModel_c::LoadFile(gPileModelFile);
     mModel.SetFile((BMD_File *)m, 1, -1);
     UpdateModelPosAndRotY();
     UpdateClsnPosAndRot();

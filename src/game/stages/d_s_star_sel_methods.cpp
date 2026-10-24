@@ -21,7 +21,7 @@
  *   func_ov003_020ae358 seventeen words.
  * - OAM::Render and the G3i/G2/GX calls stay mangled. They take
  *   class arguments by value.
- * - The bytes after the Model pair stay offset macros. The header
+ * - The bytes after the dExtSimpleModel_c pair stay offset macros. The header
  *   still holds that tail as opaque storage.
  *
  * dScStarSel_c, the star-select screen. ov003 .text
@@ -79,7 +79,7 @@ void EndLoadOBJExtPltt();
 #define FU(p, o) (*(u16 *)((u8 *)(p) + (o)))
 #define COS(a) data_02082214[((u16)(a) >> 4) * 2 + 1]
 
-/* Named views onto the storage between the Model pair and the end of the
+/* Named views onto the storage between the dExtSimpleModel_c pair and the end of the
  * object. Fixed-point values are 20.12 (0x1000 = 1.0), as the OAM::Render
  * scale arguments and the 0x1000 steps below show. */
 #define SCALE_X(p)        FW(p, 0x50)   /* scale of the panel sprite at (0x80, PANEL_Y) */
@@ -147,8 +147,7 @@ extern int data_0208ee44;
 extern unsigned short data_020a0e5a[][2];
 extern u16 data_020a0e58[];
 int IsStarCollectedInLevel(s8 levelID, s32 starID);
-void _ZN3OAM6RenderEbP7OamAttriiii5Fix12IiES3_ii(int, void *, int, int, int, int, int, int, int,
-                                                 int);
+void OamRender10_d_s_star_sel_methods(int, void *, int, int, int, int, int, int, int, int);
 void _ZN3G3i13PerspectiveW_E5Fix12IiES1_S1_S1_S1_S1_bP9Matrix4x3(int, int, int, int, int, int, int,
                                                                  void *);
 void _Z13CopyToViewMatPK9Matrix4x3(const Matrix4x3 *);
@@ -190,7 +189,7 @@ extern u8 data_ov001_020abbf4;
 // @symbol _ZN12dScStarSel_cD1Ev
 // ROM 0x020addfc, size 0x58; vtable slot 16. Written first so D1 and D0 are
 // emitted first, as in the cartridge. The body is empty: tearing down the
-// Model pair (__cxa_vec_cleanup) and the base destructors is all
+// dExtSimpleModel_c pair (__cxa_vec_cleanup) and the base destructors is all
 // compiler-generated.
 dScStarSel_c::~dScStarSel_c() {}
 
@@ -337,8 +336,8 @@ void dScStarSel_c::func_ov003_020ae238() {
         x = 0x10;
         y = 0xac;
     }
-    _ZN3OAM6RenderEbP7OamAttriiii5Fix12IiES3_ii(0, _ZN3OAM10LIFE_ICONSE[LIFE_ICON(this)], x, y + 8,
-                                                -1, -1, 0x1000, 0x1000, 0, -1);
+    OAM::Render(0, (OamAttr *)_ZN3OAM10LIFE_ICONSE[LIFE_ICON(this)], x, y + 8, -1, -1, 0x1000,
+                0x1000, 0, -1);
     OAM::Render(0, (OamAttr *)&_ZN3OAM5TIMESE, x + 0x10, y + 8, -1, -1, 0);
     func_ov003_020ae1a4((unsigned short)data_0209f2f4[0]);
     {
@@ -498,7 +497,7 @@ s32 dScStarSel_c::Render() {
     s32 x;
     s32 i;
     s32 idx;
-    Model *plate;
+    dExtSimpleModel_c *plate;
     s32 pressY;
     Matrix4x3 mtx;
 
@@ -616,24 +615,20 @@ s32 dScStarSel_c::Render() {
 
         switch (data_0209caa0[0x41]) {
         case 0:
-            _ZN3OAM6RenderEbP7OamAttriiii5Fix12IiES3_ii(1, &data_ov001_020abb34, 0x80,
-                                                        PANEL_Y(this), -1, -1, SCALE_X(this),
-                                                        SCALE_Y(this), (u16)SPIN_ANGLE(this), -1);
+            OAM::Render(1, (OamAttr *)&data_ov001_020abb34, 0x80, PANEL_Y(this), -1, -1,
+                        SCALE_X(this), SCALE_Y(this), (u16)SPIN_ANGLE(this), -1);
             break;
         case 1:
-            _ZN3OAM6RenderEbP7OamAttriiii5Fix12IiES3_ii(1, &data_ov001_020abb54, 0x80,
-                                                        PANEL_Y(this), -1, -1, SCALE_X(this),
-                                                        SCALE_Y(this), (u16)SPIN_ANGLE(this), -1);
+            OAM::Render(1, (OamAttr *)&data_ov001_020abb54, 0x80, PANEL_Y(this), -1, -1,
+                        SCALE_X(this), SCALE_Y(this), (u16)SPIN_ANGLE(this), -1);
             break;
         case 2:
-            _ZN3OAM6RenderEbP7OamAttriiii5Fix12IiES3_ii(1, &data_ov001_020abb74, 0x80,
-                                                        PANEL_Y(this), -1, -1, SCALE_X(this),
-                                                        SCALE_Y(this), (u16)SPIN_ANGLE(this), -1);
+            OAM::Render(1, (OamAttr *)&data_ov001_020abb74, 0x80, PANEL_Y(this), -1, -1,
+                        SCALE_X(this), SCALE_Y(this), (u16)SPIN_ANGLE(this), -1);
             break;
         case 3:
-            _ZN3OAM6RenderEbP7OamAttriiii5Fix12IiES3_ii(1, &data_ov001_020abb94, 0x80,
-                                                        PANEL_Y(this), -1, -1, SCALE_X(this),
-                                                        SCALE_Y(this), (u16)SPIN_ANGLE(this), -1);
+            OAM::Render(1, (OamAttr *)&data_ov001_020abb94, 0x80, PANEL_Y(this), -1, -1,
+                        SCALE_X(this), SCALE_Y(this), (u16)SPIN_ANGLE(this), -1);
             for (i = 0; i < 3; i++) {
                 pressY = 0;
                 if (PICKED_CHAR(this) == i && PICK_PRESS_TIMER(this) != 0) {
@@ -643,28 +638,26 @@ s32 dScStarSel_c::Render() {
                     if (ANIM_MODE(this) == 2) {
                         if (i == func_ov003_020adf50()) {
                             if (ANIM_FLIP(this) == 0) {
-                                _ZN3OAM6RenderEbP7OamAttriiii5Fix12IiES3_ii(
-                                    1, data_ov001_020abcb4[i + 3], CHAR_X(this, i), CHAR_Y(this, i),
-                                    -1, -1, ICON_SCALE_X(this), ICON_SCALE_Y(this), 0, -1);
-                                _ZN3OAM6RenderEbP7OamAttriiii5Fix12IiES3_ii(
-                                    1, data_ov001_020abcb4[CHAR_SPRITE(this, i)], CHAR_X(this, i),
-                                    CHAR_Y(this, i), -1, -1, ICON_SCALE_X(this), ICON_SCALE_Y(this),
-                                    0, -1);
+                                OAM::Render(1, (OamAttr *)data_ov001_020abcb4[i + 3],
+                                            CHAR_X(this, i), CHAR_Y(this, i), -1, -1,
+                                            ICON_SCALE_X(this), ICON_SCALE_Y(this), 0, -1);
+                                OAM::Render(1, (OamAttr *)data_ov001_020abcb4[CHAR_SPRITE(this, i)],
+                                            CHAR_X(this, i), CHAR_Y(this, i), -1, -1,
+                                            ICON_SCALE_X(this), ICON_SCALE_Y(this), 0, -1);
                             } else {
-                                _ZN3OAM6RenderEbP7OamAttriiii5Fix12IiES3_ii(
-                                    1,
-                                    data_ov001_020abcb4[CHAR_SPRITE(this, i ^ ((i != 0) ? 3 : 0))],
-                                    CHAR_X(this, i), CHAR_Y(this, i), -1, -1, ICON_SCALE_X(this),
-                                    ICON_SCALE_Y(this), 0, -1);
+                                OAM::Render(1,
+                                            (OamAttr *)data_ov001_020abcb4[CHAR_SPRITE(
+                                                this, i ^ ((i != 0) ? 3 : 0))],
+                                            CHAR_X(this, i), CHAR_Y(this, i), -1, -1,
+                                            ICON_SCALE_X(this), ICON_SCALE_Y(this), 0, -1);
                             }
                         } else if (IDLE_ICON_SCALE(this) != 0) {
-                            _ZN3OAM6RenderEbP7OamAttriiii5Fix12IiES3_ii(
-                                1, data_ov001_020abcb4[i + 3], CHAR_X(this, i), CHAR_Y(this, i), -1,
-                                -1, IDLE_ICON_SCALE(this), IDLE_ICON_SCALE(this), 0, -1);
-                            _ZN3OAM6RenderEbP7OamAttriiii5Fix12IiES3_ii(
-                                1, data_ov001_020abcb4[CHAR_SPRITE(this, i)], CHAR_X(this, i),
-                                CHAR_Y(this, i), -1, -1, IDLE_ICON_SCALE(this),
-                                IDLE_ICON_SCALE(this), 0, -1);
+                            OAM::Render(1, (OamAttr *)data_ov001_020abcb4[i + 3], CHAR_X(this, i),
+                                        CHAR_Y(this, i), -1, -1, IDLE_ICON_SCALE(this),
+                                        IDLE_ICON_SCALE(this), 0, -1);
+                            OAM::Render(1, (OamAttr *)data_ov001_020abcb4[CHAR_SPRITE(this, i)],
+                                        CHAR_X(this, i), CHAR_Y(this, i), -1, -1,
+                                        IDLE_ICON_SCALE(this), IDLE_ICON_SCALE(this), 0, -1);
                         }
                     } else {
                         OAM::RenderSub((OamAttr *)data_ov001_020abcb4[i + 3], CHAR_X(this, i),
@@ -992,7 +985,7 @@ enum ZN12dScStarSel_c13InitResourcesEv_AssetId {
 // @symbol _ZN12dScStarSel_c13InitResourcesEv
 /* recovered: real C++ method over include/dScStarSel_c.h -- vtable slot 0.
  *
- * Loads the star-select screen: sound group, VRAM banks, the two Model members
+ * Loads the star-select screen: sound group, VRAM banks, the two dExtSimpleModel_c members
  * (models[0]/models[1]), the per-language BG/OBJ graphics, the per-character
  * palette set, then derives the star row (PLATE_MASK, SELECTED_PLATE,
  * PLATE_COUNT, PLATE_X) and the character row (CHAR_X/CHAR_Y/CHAR_SPRITE,
@@ -1379,8 +1372,9 @@ s32 dScStarSel_c::InitResources() {
 // @symbol dScStarSel_c_classInit
 extern "C" {
 extern void *_ZN7fBase_cC2Ev(void *);
-extern void _ZN5ModelD1Ev(void *);
-extern void *_ZN5ModelC1Ev(void *);
+/* local extern: __cxa_vec_ctor needs D1 by address; only two scene headers declare it */
+extern void _ZN17dExtSimpleModel_cD1Ev(void *);
+extern void *_ZN17dExtSimpleModel_cC1Ev(void *);
 /* The array runtime discards the constructor's receiver result. */
 extern void __cxa_vec_ctor(void *arr, int count, int size, void (*ctor)(void *),
                            void (*dtor)(void *));
@@ -1400,8 +1394,8 @@ dScStarSel_c *dScStarSel_c_classInit(void) {
         *fl |= 1;
         *fl |= 4;
         *(void ***)p = (void **)data_ov003_020b1704;
-        __cxa_vec_ctor(((dScStarSel_c *)p)->models, 2, sizeof(Model),
-                       (void (*)(void *))_ZN5ModelC1Ev, _ZN5ModelD1Ev);
+        __cxa_vec_ctor(((dScStarSel_c *)p)->models, 2, sizeof(dExtSimpleModel_c),
+                       (void (*)(void *))_ZN17dExtSimpleModel_cC1Ev, _ZN17dExtSimpleModel_cD1Ev);
     }
     return (dScStarSel_c *)p;
 }

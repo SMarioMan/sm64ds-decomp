@@ -58,9 +58,7 @@ unsigned char DecIfAbove0_Byte(unsigned char *p);
 
 /* Scalar ABI. The real members take Fix12<int> by value. */
 void _ZN10dBgW_KcMbg7SetFileEP8KCL_FileRK9Matrix4x35Fix12IiEsR10CLPS_Block(
-    dBgW_KcMbg *self, char *kcl, const Matrix4x3 *mtx, int scale, s16 angleY,
-    char *clps);
-int _ZN10dBgActor_c13IsClsnInRangeE5Fix12IiES1_(dBgActor_c *self, int radius, int yOffset);
+    dBgW_KcMbg *self, char *kcl, const Matrix4x3 *mtx, int scale, s16 angleY, char *clps);
 
 /* Stores at dBgW+0x0c and +0x1c. Spellings match the C definitions. */
 void func_020393a4(int *mesh, int range);
@@ -120,7 +118,7 @@ s32 daObjFl_Seesaw_c::Behavior()
         }
     }
     func_ov022_02111d48();
-    if (_ZN10dBgActor_c13IsClsnInRangeE5Fix12IiES1_(this, 0, 0) != 0) {
+    if (IsClsnInRange(0, 0) != 0) {
         UpdateClsnPosAndRot();
     }
     return 1;
@@ -130,7 +128,7 @@ s32 daObjFl_Seesaw_c::Behavior()
 // @symbol _ZN16daObjFl_Seesaw_c13InitResourcesEv
 s32 daObjFl_Seesaw_c::InitResources()
 {
-    mModel.SetFile((BMD_File *)Model::LoadFile(data_ov022_021145a8), 1, -1);
+    mModel.SetFile((BMD_File *)dExtSimpleModel_c::LoadFile(data_ov022_021145a8), 1, -1);
     func_ov022_02111d48();
     UpdateClsnPosAndRot();
     char *kcl = dBgW_Kc::LoadFile(data_ov022_021145a0);

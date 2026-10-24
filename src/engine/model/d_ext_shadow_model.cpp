@@ -1,6 +1,6 @@
 //cpp
 /* Drop-shadow models (arm9 .text 0x02015d38..0x0201609c): dExtShadowModel_c, the
- * ModelBase sibling that draws an actor's ground shadow from a shared
+ * dExtModel_c sibling that draws an actor's ground shadow from a shared
  * cylinder or cuboid BMD_File. Every live instance sits on a global
  * intrusive doubly-linked list (head data_0209cef4, freeze flag
  * data_0209ceec): InitModel links in, the destructor unlinks, RenderAll
@@ -44,7 +44,7 @@ extern "C" {
 extern dExtShadowModel_c *data_0209cef4;
 extern u8 data_0209ceec;
 extern Matrix4x3 data_020a0e68;      /* shared render matrix scratch */
-extern Matrix4x3 data_0209b3ec;      /* the camera-space matrix Model::Render uses */
+extern Matrix4x3 data_0209b3ec;      /* the camera-space matrix dExtSimpleModel_c::Render uses */
 /* The two model files live in the shared overlay-0/1 region: arm9's own
  * symbols.txt rows for 0x020ad524/0x020ad560 sit past .bss and name nothing
  * the link defines, so the ov000 spelling is the resolvable one. */
@@ -61,21 +61,21 @@ void func_02046088(ModelComponents *data, u32 opacity, int f);
 /* An empty body; the three null stores after the vptr are exactly the member
  * init list -- mat at +0xc and the live-list links prev/next at +0x20/+0x24,
  * the same links ~dExtShadowModel_c unlinks. The base call and vptr store are what
- * `dExtShadowModel_c : ModelBase` with a declared-not-defined base constructor
+ * `dExtShadowModel_c : dExtModel_c` with a declared-not-defined base constructor
  * already means. */
 dExtShadowModel_c::dExtShadowModel_c() : mat(0), prev(0), next(0) {}
 
 // @symbol _ZN17dExtShadowModel_cD1Ev
 /* Only the unlink is written by hand: the vtable store at the top and the
- * ModelBase subobject call at the bottom are what `struct dExtShadowModel_c :
- * ModelBase` and `virtual ~dExtShadowModel_c()` already mean, and the compiler
+ * dExtModel_c subobject call at the bottom are what `struct dExtShadowModel_c :
+ * dExtModel_c` and `virtual ~dExtShadowModel_c()` already mean, and the compiler
  * emits them around the body. The list is singly-headed, so removing the
  * first node is the case that needs the head compared against `this`; every
  * other node is reached through its predecessor. The unlink is also the
  * layout evidence for the two pointers: it is what pins prev at 0x20 and
  * next at 0x24. D0 is generated from the same body plus the class
  * operator delete -- the model family deallocates through
- * Memory::operator_delete2, which is why ModelBase carries that member. */
+ * Memory::operator_delete2, which is why dExtModel_c carries that member. */
 dExtShadowModel_c::~dExtShadowModel_c()
 {
     if (prev)

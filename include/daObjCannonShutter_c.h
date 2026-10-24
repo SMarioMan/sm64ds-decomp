@@ -18,14 +18,12 @@
  * pad_31e reuses that tail padding so mHomePosX lands at 0x320. pad_31e is
  * not live -- it is alignment, not unk_31e.
  *
- * dBgActor_c.h FIRST so common.h beats Model.h on Matrix4x3.
+ * dBgActor_c.h FIRST so common.h beats dExtSimpleModel_c.h on Matrix4x3.
  */
 
 #ifdef __cplusplus
 
 #include "dBgActor_c.h"
-
-extern "C" void *_ZN7fBase_cnwEj(unsigned size);
 
 struct daObjCannonShutter_c : dBgActor_c {
     u8  pad_31e[0x2];
@@ -47,13 +45,6 @@ struct daObjCannonShutter_c : dBgActor_c {
     int InitResources();
     int Render();
     void func_ov002_020bc990();
-
-    /* Leaf operator new until #2570 puts the same allocator on fBase_c.
-       Parameter is size_t (unsigned long on this compiler). `return new`
-       relocates to `_Znwm` without this. */
-    static void *operator new(size_t size) {
-        return _ZN7fBase_cnwEj((unsigned)size);
-    }
 };
 
 #ifndef SM64DS_PLATFORM_PC

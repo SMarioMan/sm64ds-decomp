@@ -61,7 +61,11 @@ extern void func_02012694(int a, void *b);
    Player::Hurt take Fix12<int> by value and none of them is declared in
    include/; the sibling promoted TUs (daDkk_c, daDgr_c) keep the same
    mangled spelling for the same reason. */
-extern void _ZN8Particle6System9NewSimpleEj5Fix12IiES2_S2_(unsigned int id, int x, int y, int z);
+namespace Particle {
+struct System {
+    static void NewSimple(unsigned int id, int x, int y, int z);
+};
+}
 extern void _ZN8dActor_c10EarthquakeERK7Vector35Fix12IiE(void *self, Vector3 *v, int f);
 extern void _ZN6Player4HurtERK7Vector3j5Fix12IiEjjj(void *self, Vector3 *v, unsigned int b, int c, unsigned int d, unsigned int e, unsigned int f);
 /* local extern: dCcAcPos_c::Init also takes its radius and height as
@@ -140,11 +144,11 @@ void daKirai_c::func_ov060_021185c4()
 {
     Vector3 v;
     mStateIndex = 1;
-    _ZN8Particle6System9NewSimpleEj5Fix12IiES2_S2_(0xa8, mPosX, mPosY, mPosZ);
-    _ZN8Particle6System9NewSimpleEj5Fix12IiES2_S2_(0xa9, mPosX, mPosY, mPosZ);
-    _ZN8Particle6System9NewSimpleEj5Fix12IiES2_S2_(0xaa, mPosX, mPosY, mPosZ);
-    _ZN8Particle6System9NewSimpleEj5Fix12IiES2_S2_(0xab, mPosX, mPosY, mPosZ);
-    _ZN8Particle6System9NewSimpleEj5Fix12IiES2_S2_(0xac, mPosX, mPosY, mPosZ);
+    Particle::System::NewSimple(0xa8, mPosX, mPosY, mPosZ);
+    Particle::System::NewSimple(0xa9, mPosX, mPosY, mPosZ);
+    Particle::System::NewSimple(0xaa, mPosX, mPosY, mPosZ);
+    Particle::System::NewSimple(0xab, mPosX, mPosY, mPosZ);
+    Particle::System::NewSimple(0xac, mPosX, mPosY, mPosZ);
     func_02012694(0x2f, &mCamSpacePosX);
     v.x = mPosX;
     v.y = mPosY;
@@ -272,11 +276,11 @@ void daKirai_c::func_ov060_02118970()
     if (a == 0) return;
     if (!IsPlayerActor(a))
         return;
-    _ZN8Particle6System9NewSimpleEj5Fix12IiES2_S2_(0xa8, mPosX, mPosY, mPosZ);
-    _ZN8Particle6System9NewSimpleEj5Fix12IiES2_S2_(0xa9, mPosX, mPosY, mPosZ);
-    _ZN8Particle6System9NewSimpleEj5Fix12IiES2_S2_(0xaa, mPosX, mPosY, mPosZ);
-    _ZN8Particle6System9NewSimpleEj5Fix12IiES2_S2_(0xab, mPosX, mPosY, mPosZ);
-    _ZN8Particle6System9NewSimpleEj5Fix12IiES2_S2_(0xac, mPosX, mPosY, mPosZ);
+    Particle::System::NewSimple(0xa8, mPosX, mPosY, mPosZ);
+    Particle::System::NewSimple(0xa9, mPosX, mPosY, mPosZ);
+    Particle::System::NewSimple(0xaa, mPosX, mPosY, mPosZ);
+    Particle::System::NewSimple(0xab, mPosX, mPosY, mPosZ);
+    Particle::System::NewSimple(0xac, mPosX, mPosY, mPosZ);
     func_02012694(0x2f, &mCamSpacePosX);
     quakePos.x = mPosX;
     quakePos.y = mPosY;
@@ -326,7 +330,7 @@ int daKirai_c::InitResources()
     Vector3 v;
     Vector3 z;
 
-    mModel.SetFile((BMD_File *)Model::LoadFile(data_ov060_0211b1c4), 1, -1);
+    mModel.SetFile((BMD_File *)dExtSimpleModel_c::LoadFile(data_ov060_0211b1c4), 1, -1);
     v.x = 0;
     v.y = -0x96000;
     v.z = 0;
@@ -365,7 +369,7 @@ KiraiState data_ov060_0211b1d8[4] = {
 
 /* `new daKirai_c` is the whole sequence the loose factory spelled by hand:
  * fBase_c::operator new(0x1b0), dActor_c's base constructor, the vptr store,
- * then the Model and dCcAcPos_c member constructors. */
+ * then the dExtSimpleModel_c and dCcAcPos_c member constructors. */
 // @symbol daKirai_c_classInit
 extern "C" daKirai_c *daKirai_c_classInit(void)
 {

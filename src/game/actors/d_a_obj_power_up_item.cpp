@@ -1,4 +1,7 @@
 //cpp
+namespace Particle {
+struct Callback;
+}
 /* daObjPowerUpItem_c -- the power flower: a pickup that gives the player who
  * touches it a character-specific power-up (see CheckPickup).
  *
@@ -99,10 +102,16 @@ namespace cstd { int fdiv(int, int); }
 
 extern "C" {
 extern u8 DecIfAbove0_Byte(u8* p);
-extern void* _ZN8Particle6System3NewEjj5Fix12IiES2_S2_PK11Vector3_16fPNS_8CallbackE(
-    u32 id, u32 a, int x, int y, int z, const struct Vector3_16f* rot, struct Callback* cb);
+extern void *d_a_obj_power_up_itemNewHold(u32 id, u32 a, int x, int y, int z,
+                                          const struct Vector3_16f *rot, struct Callback *cb);
 extern signed short data_02082214[];
-extern void _ZN8Particle6System9NewSimpleEj5Fix12IiES2_S2_(unsigned int, int, int, int);
+namespace Particle {
+struct System {
+    static void NewSimple(unsigned int, int, int, int);
+
+    static int New(unsigned, unsigned, int, int, int, const ::Vector3_16f *, Callback *);
+};
+}
 extern void func_02012694(unsigned int id, const Vector3 *v);
 extern void *data_0209f318;
 extern void func_0203568c(int *p, int v);
@@ -153,10 +162,8 @@ void daObjPowerUpItem_c::StateResting()
         ((int*)&pos)[0] = x;
         ((int*)&pos)[1] = y;
         ((int*)&pos)[2] = z;
-        mEffectHandle = (u32)_ZN8Particle6System3NewEjj5Fix12IiES2_S2_PK11Vector3_16fPNS_8CallbackE(
-            mEffectHandle, 0x104,
-            ((int*)&pos)[0], ((int*)&pos)[1], ((int*)&pos)[2],
-            0, 0);
+        mEffectHandle = (u32)Particle::System::New(mEffectHandle, 0x104, ((int *)&pos)[0],
+                                                   ((int *)&pos)[1], ((int *)&pos)[2], 0, 0);
     }
 }
 
@@ -216,8 +223,7 @@ void daObjPowerUpItem_c::BeginOpening()
     ((int *)&pos)[0] = x;
     ((int *)&pos)[1] = y;
     ((int *)&pos)[2] = z;
-    _ZN8Particle6System9NewSimpleEj5Fix12IiES2_S2_(
-        0x102, ((int *)&pos)[0], ((int *)&pos)[1], ((int *)&pos)[2]);
+    Particle::System::NewSimple(0x102, ((int *)&pos)[0], ((int *)&pos)[1], ((int *)&pos)[2]);
     func_02012694(0x7d, &mCamSpacePos);
     mEffectHandle = 0;
     mAngleY = *(short *)((char *)data_0209f318 + 0x17c);
@@ -242,8 +248,7 @@ void daObjPowerUpItem_c::StateLaunched()
     int gy;
     int diff;
 
-    mEffectHandle = (u32)_ZN8Particle6System3NewEjj5Fix12IiES2_S2_PK11Vector3_16fPNS_8CallbackE(
-        mEffectHandle, 0x103, mPosX, mPosY, mPosZ, 0, 0);
+    mEffectHandle = (u32)Particle::System::New(mEffectHandle, 0x103, mPosX, mPosY, mPosZ, 0, 0);
 
     a = mVertSpeed;
     mag = (a < 0) ? -a : a;
@@ -415,7 +420,7 @@ int daObjPowerUpItem_c::DropShadow()
     return _ZN8dActor_c19DropShadowRadHeightER17dExtShadowModel_cR9Matrix4x35Fix12IiES5_j((char*)this, &mShadowModel, &mShadowMat, r3, 0x3c000, 0xf);
 }
 
-/* Model matrices: rotates mOpenModel's matrix by mAngleY, sets its translation
+/* dExtSimpleModel_c matrices: rotates mOpenModel's matrix by mAngleY, sets its translation
  * to the position >> 3 and copies it to mCloseModel. */
 // @symbol _ZN18daObjPowerUpItem_c14UpdateMatricesEv
 void daObjPowerUpItem_c::UpdateMatrices(){
@@ -482,8 +487,8 @@ int daObjPowerUpItem_c::InitResources()
 {
     struct Vector3 pos;
 
-    Model::LoadFile(*(SharedFilePtr *)gPFlowerCloseModelFile);
-    Model::LoadFile(*(SharedFilePtr *)gPFlowerOpenModelFile);
+    dExtSimpleModel_c::LoadFile(*(SharedFilePtr *)gPFlowerCloseModelFile);
+    dExtSimpleModel_c::LoadFile(*(SharedFilePtr *)gPFlowerOpenModelFile);
     if (mOpenModel.SetFile((BMD_File*)gPFlowerOpenModelFile[1], 1, -1) == 0)
         return 0;
     if (mCloseModel.SetFile((BMD_File*)gPFlowerCloseModelFile[1], 1, -1) == 0)

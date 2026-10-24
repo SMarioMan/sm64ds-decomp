@@ -17,7 +17,7 @@
  *
  *     0x110 dCcAc_c         0x34   -> 0x144
  *     0x144 dBgCh_Actr               0x1bc  -> 0x300
- *     0x300 Model                      0x50   -> 0x350
+ *     0x300 dExtSimpleModel_c                      0x50   -> 0x350
  *
  * Member NAMES are the ones this header already used -- a rebase should not
  * also rename things its callers spell.
@@ -27,8 +27,8 @@
  */
 
 #include "dEnemyBase_c.h"
-#include "Model.h"
-#include "ModelAnim.h"
+#include "dExtSimpleModel_c.h"
+#include "dExtAnmModel_c.h"
 #include "dCcAc_c.h"
 #include "dCcAcPos_c.h"
 #include "dExtShadowModel_c.h"
@@ -47,7 +47,7 @@ struct daPropeller_Heyho_Fire_c : dEnemyBase_c {
 
     dCcAc_c           mdCcAc_c;   /* 0x110 */
     dBgCh_Actr                 mWithMeshClsn;         /* 0x144 */
-    Model                        mModel;                /* 0x300 */
+    dExtSimpleModel_c mModel;                         /* 0x300 */
     State                       *mCurrentState;         /* 0x350 */
     s32                          mDeflected;            /* 0x354 -- set when a metal player deflected it; func_ov002_020fec94 then skips the player-hit test */
     s32                          unk_358;               /* 0x358 */

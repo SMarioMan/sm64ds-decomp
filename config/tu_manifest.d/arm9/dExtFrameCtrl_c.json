@@ -65,7 +65,7 @@
       "ordinal": 5
     },
     {
-      "symbol": "_ZN15dExtFrameCtrl_c12SetAnimationEti5Fix12IiEt",
+      "symbol": "_ZN15dExtFrameCtrl_c12SetAnimationEtiit",
       "address": "0x02015c20",
       "size": "0x0000001c",
       "legacy_source": "src/_ZN15dExtFrameCtrl_c12SetAnimationEti5Fix12IiEt.cpp",
@@ -119,7 +119,7 @@
   "notes": [
     "Text-only. The class's _ZTV/_ZTI/_ZTS stay in the cartridge .data at 0x0208e744..0x0208e858; this TU's copies are deadstrip-data, compared against the cartridge by romdata_check and then discarded.",
     "mwccarm emits .text in reverse source order, so the file is ROM-descending.",
-    "SetAnimation keeps a mangled extern-C definition at file scope: its declared signature passes Fix12<int> by value, and the wall 6az homes class-typed by-value parameters, so the member definition cannot be spelled without changing bytes (see the local extern note in the source)."
+    "SetAnimation is the scalar method _ZN15dExtFrameCtrl_c12SetAnimationEtiit. The old 5Fix12IiE spelling was a name this tree invented; Fix12i is read straight from a register (notes/mwccarm-codegen.md 6az)."
   ],
   "compiler_only_output": [
     {

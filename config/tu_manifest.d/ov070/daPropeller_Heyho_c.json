@@ -344,7 +344,7 @@
       "address": "0x02123530",
       "size": "0x8",
       "binding": "STB_GLOBAL",
-      "evidence": "model file handle constructed with file ID 0x411; InitResources loads it with Model::LoadFile and CleanupResources releases it"
+      "evidence": "model file handle constructed with file ID 0x411; InitResources loads it with dExtSimpleModel_c::LoadFile and CleanupResources releases it"
     },
     {
       "symbol": "@146",
@@ -477,37 +477,37 @@
   ],
   "defined_symbol_renames": [
     {
-      "from": "@1011",
+      "from": "@976",
       "to": "@140",
       "evidence": "mwcc numbers this registration node @992 per TU and the fleet already defines a global @992, so the scratch link would multiply-define it"
     },
     {
-      "from": "@1012",
+      "from": "@977",
       "to": "@141",
       "evidence": "mwcc numbers this registration node @993 per TU and the fleet already defines a global @993, so the scratch link would multiply-define it"
     },
     {
-      "from": "@1013",
+      "from": "@978",
       "to": "@142",
       "evidence": "mwcc numbers this registration node @994 per TU and the fleet already defines a global @994, so the scratch link would multiply-define it"
     },
     {
-      "from": "@1014",
+      "from": "@979",
       "to": "@143",
       "evidence": "mwcc numbers this registration node @995 per TU and the fleet already defines a global @995, so the scratch link would multiply-define it"
     },
     {
-      "from": "@1015",
+      "from": "@980",
       "to": "@144",
       "evidence": "mwcc numbers this registration node @996 per TU and the fleet already defines a global @996, so the scratch link would multiply-define it"
     },
     {
-      "from": "@1016",
+      "from": "@981",
       "to": "@145",
       "evidence": "mwcc numbers this registration node @997 per TU and the fleet already defines a global @997, so the scratch link would multiply-define it"
     },
     {
-      "from": "@1017",
+      "from": "@982",
       "to": "@146",
       "evidence": "mwcc numbers this registration node @998 per TU and the fleet already defines a global @998, so the scratch link would multiply-define it"
     }

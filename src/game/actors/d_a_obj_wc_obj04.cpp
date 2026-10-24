@@ -6,7 +6,7 @@
  * not daObjWc_Obj02_c (ARROW_LIFT), not daObjWc_Obj03_c (WATER_DIAMOND), not
  * daObjWc_Obj05_c (CAGE_LIFT).
  *
- * common.h FIRST (via dBgActor_c.h): Model.h would otherwise win with
+ * common.h FIRST (via dBgActor_c.h): dExtSimpleModel_c.h would otherwise win with
  * math/Matrix.h's nested Matrix4x3, and InitResources' SetFile matrix
  * argument scalarizes. The two helpers write translation as m[9..11].
  *
@@ -79,7 +79,7 @@ extern CLPS_Block data_ov029_0211304c;
  * Every instruction the cartridge has here falls out of the one `new`.
  * 0x02112968 loads 0x3a8 -- the class's own size -- into the header's leaf
  * operator new; 0x02112978 calls dBgActor_c's C2, the store at 0x02112984
- * lays down this class's vptr, and Model's C1 at 0x320 follows. The null
+ * lays down this class's vptr, and dExtSimpleModel_c's C1 at 0x320 follows. The null
  * check is the one `new` itself emits. The implicit constructor is what
  * keeps the intervening construction inlined; declaring a constructor of
  * our own would emit a `bl` the factory does not have. */
@@ -93,7 +93,7 @@ extern "C" daObjWc_Obj04_c *daObjWc_Obj04_c_classInit()
 // @symbol _ZN15daObjWc_Obj04_c13InitResourcesEv
 int daObjWc_Obj04_c::InitResources()
 {
-    mModel2.SetFile((BMD_File *)Model::LoadFile(data_ov029_0211432c), 1, -1);
+    mModel2.SetFile((BMD_File *)dExtSimpleModel_c::LoadFile(data_ov029_0211432c), 1, -1);
     func_ov029_02112710(this);
     func_ov029_021126dc(this);
     {
@@ -217,8 +217,8 @@ extern "C" void func_ov029_021126dc(daObjWc_Obj04_c *c)
  * what emits the used D1/D0 pair in cartridge order and keeps this TU the
  * vtable's home.
  *
- * Both bodies destroy Model at +0x320 first, then the inlined dBgActor_c
- * step stores _ZTV10dBgActor_c, destroys dBgW_KcMbg at +0x124 and Model at
+ * Both bodies destroy dExtSimpleModel_c at +0x320 first, then the inlined dBgActor_c
+ * step stores _ZTV10dBgActor_c, destroys dBgW_KcMbg at +0x124 and dExtSimpleModel_c at
  * +0xd4, and chains to dActor_c. D0 then returns the object to the actor
  * heap through dActor_c's inline operator delete.
  */

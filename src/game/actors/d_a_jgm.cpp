@@ -25,15 +25,14 @@
  *   UpdateDiscreteNoLava method is WRONG-DEST (ROM 0x02038420).
  * - Fix12<int>-by-value callees stay mangled (6az): dCcAcPos_c::Init,
  *   dBgCh_Actr::Init (whose header mangles Fix12i as `i`, not the ROM's
- *   5Fix12IiE), ModelAnim::SetAnim, TextureSequence::SetFile,
+ *   5Fix12IiE), dExtAnmModel_c::SetAnim, TextureSequence::SetFile,
  *   DropShadowRadHeight, SpawnCoins, Player::Bounce / Hurt and
  *   Particle::System::NewSimple (Particle__System.h lacks it).
  * - dActor_c::IsTooFarAwayFromPlayer, ApproachLinear and cstd::fdiv have
  *   no header decl, so they are declared locally;
  *   ApproachLinear2 keeps C++ linkage (_Z15ApproachLinear2Rsss).
- * - Sound::PlayLong stays a mangled extern, kept as a count holder: its
- *   five named parameters hold the @NNN count. Unnaming them gives -5;
- *   the Sound.h call emits the same bytes.
+ * - Sound::PlayLong is the Sound.h call. d_a_jgmPlayLongHold keeps the five
+ *   named parameters that hold the @NNN count. Unnaming them gives -5.
  * - The manifest pins eight @NNN statics, so every named local, named
  *   parameter and goto label ahead of __sinit counts (each advances the
  *   counter by one, measured). Control-flow shape moves the counter too:
@@ -176,9 +175,6 @@ extern void MulMat4x3Mat4x3(void *a, void *b, void *out);
 extern void Vec3_LslInPlace(void *v, int sh);
 extern void Vec3_Asr(void *d, void *s, int sh);
 
-extern int _ZN8dActor_c22IsTooFarAwayFromPlayerE5Fix12IiE(dActor_c *actor, int distance);
-extern void _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(
-    ModelAnim *model, void *file, int flags, int speed, unsigned int startFrame);
 extern void _ZN15TextureSequence7SetFileER8BTP_Filei5Fix12IiEj(
     TextureSequence *seq, void *file, int flags, int speed, unsigned int startFrame);
 extern int _ZN10dCcAcPos_c4InitEP8dActor_cRK7Vector35Fix12IiES6_jj(
@@ -199,11 +195,9 @@ extern void _ZN6Player4HurtERK7Vector3j5Fix12IiEjjj(
     unsigned int b, unsigned int c, unsigned int d);
 /* local extern: kept as a count holder: its five named parameters hold
  * the @NNN count. Sound.h's PlayLong emits the same bytes. */
-extern unsigned int _ZN5Sound8PlayLongEjjjRK7Vector3s(
-    unsigned int handle, unsigned int a, unsigned int id,
-    const Vector3 *pos, unsigned int e);
-extern void _ZN8Particle6System9NewSimpleEj5Fix12IiES2_S2_(
-    unsigned int n, int x, int y, int z);
+extern void d_a_jgmPlayLongHold(unsigned int handle, unsigned int a, unsigned int id,
+                                const Vector3 *pos, unsigned int e);
+extern void d_a_jgmNewSimpleHold(unsigned int n, int x, int y, int z);
 }
 
 /* C++ linkage on purpose: mangles as _Z15ApproachLinear2Rsss. */
@@ -239,10 +233,10 @@ void daJgm_c::OnTurnIntoEgg(Player &player)
 // @symbol _ZN7daJgm_c13InitResourcesEv
 s32 daJgm_c::InitResources()
 {
-    Model::LoadFile(data_ov077_02127b38);
-    BMD_File *bodyFile = (BMD_File *)Model::LoadFile(data_ov077_02127b50);
+    dExtSimpleModel_c::LoadFile(data_ov077_02127b38);
+    BMD_File *bodyFile = (BMD_File *)dExtSimpleModel_c::LoadFile(data_ov077_02127b50);
     mModelAnim.SetFile(bodyFile, 1, 1);
-    BMD_File *heldFile = (BMD_File *)Model::LoadFile(data_ov077_02127b48);
+    BMD_File *heldFile = (BMD_File *)dExtSimpleModel_c::LoadFile(data_ov077_02127b48);
     mModel.SetFile(heldFile, 1, 1);
     for (int i = 0; i < 2; i++)
         dExtFrameCtrl_c::LoadFile(*data_ov077_02127238[i]);
@@ -280,8 +274,7 @@ s32 daJgm_c::InitResources()
 s32 daJgm_c::Behavior()
 {
     int v = param1;
-    if (_ZN8dActor_c22IsTooFarAwayFromPlayerE5Fix12IiE(
-            this, v ? 0x1068000 : 0x7d0000))
+    if (IsTooFarAwayFromPlayer(v ? 0x1068000 : 0x7d0000))
         return 1;
     UpdateState();
     UpdateModels();
@@ -350,8 +343,7 @@ void daJgm_c::UpdateState()
 s32 daJgm_c::EnterHoverState()
 {
     mHorzSpeed = 0xc000;
-    _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(&mModelAnim, data_ov077_02127b28.filePtr, 0, 0x1000,
-                                                0);
+    mModelAnim.SetAnim((BCA_File *)data_ov077_02127b28.filePtr, 0, 0x1000, 0);
     mModelAnim.speed = 0x1000;
     _ZN15TextureSequence7SetFileER8BTP_Filei5Fix12IiEj(&mTextureSequence,
                                                        data_ov077_02127b20.filePtr, 0, 0x1000, 0);
@@ -392,15 +384,14 @@ s32 daJgm_c::UpdateHoverState()
     }
     mdCcAcPos_c.Clear();
     mdCcAcPos_c.Update();
-    mSoundHandle = _ZN5Sound8PlayLongEjjjRK7Vector3s(mSoundHandle, 3, 0x182, &mCamSpacePos, 0);
+    mSoundHandle = Sound::PlayLong(mSoundHandle, 3, 0x182, *(Vector3 *)&mCamSpacePos, 0);
     return 1;
 }
 
 // @symbol _ZN7daJgm_c15EnterThrowStateEv
 s32 daJgm_c::EnterThrowState()
 {
-    _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(&mModelAnim, data_ov077_02127b40.filePtr, 0, 0x1000,
-                                                0);
+    mModelAnim.SetAnim((BCA_File *)data_ov077_02127b40.filePtr, 0, 0x1000, 0);
     mModelAnim.SetFlags(0x40000000);
     mModelAnim.speed = 0x1000;
     mModelAnim.currFrame = 0;
@@ -438,7 +429,7 @@ s32 daJgm_c::UpdateThrowState()
     }
     mdCcAcPos_c.Clear();
     mdCcAcPos_c.Update();
-    mSoundHandle = _ZN5Sound8PlayLongEjjjRK7Vector3s(mSoundHandle, 3, 0x182, &mCamSpacePos, 0);
+    mSoundHandle = Sound::PlayLong(mSoundHandle, 3, 0x182, *(Vector3 *)&mCamSpacePos, 0);
     return 1;
 }
 
@@ -541,16 +532,13 @@ s32 daJgm_c::EnterFallState()
     mHorzSpeed = 0xa000;
     mVertSpeed = 0x28000;
     mTimer = 0x2d;
-    _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(&mModelAnim, data_ov077_02127b28.filePtr, 0, 0x1000,
-                                                0);
+    mModelAnim.SetAnim((BCA_File *)data_ov077_02127b28.filePtr, 0, 0x1000, 0);
     mModelAnim.speed = 0x4000;
     {
         int aimHeight = OnAimedAtWithEgg();
-        _ZN8Particle6System9NewSimpleEj5Fix12IiES2_S2_(
-            0x43, mPosX, mPosY + aimHeight, mPosZ);
+        Particle::System::NewSimple(0x43, mPosX, mPosY + aimHeight, mPosZ);
         int aimHeightAgain = OnAimedAtWithEgg();
-        _ZN8Particle6System9NewSimpleEj5Fix12IiES2_S2_(
-            0x44, mPosX, mPosY + aimHeightAgain, mPosZ);
+        Particle::System::NewSimple(0x44, mPosX, mPosY + aimHeightAgain, mPosZ);
     }
     mState = 4;
     return 1;

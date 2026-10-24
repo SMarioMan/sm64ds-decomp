@@ -176,7 +176,7 @@ int daIDonketu_c::UpdateRunState()
 /* D1/D0 emit from the header's inline destructor: written out-of-line here
  * it would produce D0 before D1 and a homeless D2. The empty body still
  * chains two vptr stores and the member destructor calls
- * (dExtShadowModel_c, dCcAc_c, dBgCh_Actr, ModelAnim, then dEnemyBase_c);
+ * (dExtShadowModel_c, dCcAc_c, dBgCh_Actr, dExtAnmModel_c, then dEnemyBase_c);
  * D0 adds the inherited inline operator delete. */
 
 /* The Chill Bully's model and animation handles, in the sinit call order the

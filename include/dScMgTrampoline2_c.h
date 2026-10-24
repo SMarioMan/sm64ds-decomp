@@ -20,9 +20,9 @@ extern "C" void __cxa_vec_cleanup(void *base, int count, int stride, void *dtor)
 extern "C" void *Trmp2Mario_Destruct(void);
 extern "C" void TrmpLine_Destroy(void);
 extern "C" void Jump2Popup_ElemDtor(void *object);
-struct Model;
+struct dExtSimpleModel_c;
 extern "C" int Trmp2_DestructJumperModels(char *object);
-extern "C" Model *Trmp2Spinner_Destruct(Model *model);
+extern "C" dExtSimpleModel_c *Trmp2Spinner_Destruct(dExtSimpleModel_c *model);
 extern "C" void Trmp_Nothing(void);
 
 struct dScMgTrampoline2_c : dScMgD3DBase_c {

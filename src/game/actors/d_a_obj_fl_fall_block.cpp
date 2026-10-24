@@ -4,7 +4,7 @@
  *
  * No fields. InitResources / CleanupResources hand this overlay's
  * model, KCL, and CLPS to the shared ov098 helpers.
- * daObjFallBlock_c_InitResources loads the model with Model::LoadFile,
+ * daObjFallBlock_c_InitResources loads the model with dExtSimpleModel_c::LoadFile,
  * the KCL with dBgW_Kc::LoadFile, and the CLPS into SetFile. The ov022
  * sinit constructs those SharedFilePtrs as file IDs 1529 and 1530.
  *

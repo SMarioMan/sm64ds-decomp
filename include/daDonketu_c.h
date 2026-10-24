@@ -5,7 +5,7 @@
 #include "daOts_c.h"
 
 /* daDonketu_c in the ROM's RTTI. Derives from daOts_c, which owns every member this
- * header used to restate -- the ModelAnim, the dBgCh_Actr, the file table, the
+ * header used to restate -- the dExtAnmModel_c, the dBgCh_Actr, the file table, the
  * dCcAc_c and the dExtShadowModel_c are all the base's, and daDonketu_c_classInit proves
  * it by constructing them between the two vtable stores.
  *

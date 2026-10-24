@@ -1,4 +1,11 @@
 //cpp
+struct Vector3_16f;
+namespace Particle {
+struct Callback;
+struct System {
+    static int New(unsigned, unsigned, int, int, int, const ::Vector3_16f *, Callback *);
+};
+}
 /* daWater_Hakidasi_c: a water spout that spawns WATER_RING actors (registry profile
  * WATER_HAKIDASI, ov064).
  * 12 functions, .text 0x02119330..0x02119a58. The last is the registry
@@ -35,7 +42,7 @@
 #include "SharedFilePtr.h"
 #include "Player.h"
 #include "daWater_Ring_c.h"
-#include "Model.h"
+#include "dExtSimpleModel_c.h"
 
 #pragma defer_codegen off
 
@@ -71,8 +78,7 @@ extern void Matrix4x3_FromRotationY(void *m, s16 angle);
 extern void Matrix4x3_ApplyInPlaceToRotationX(void *m, s16 angX);
 extern void MulVec3Mat4x3(struct Vec3 *in, void *m, struct Vec3 *out);
 /* local extern: retain the matched scalar ABI; native Fix12<int> call reconstruction remains pending. */
-extern int _ZN8Particle6System3NewEjj5Fix12IiES2_S2_PK11Vector3_16fPNS_8CallbackE(
-    int a, int b, int x, int y, int z, int f, int cb);
+extern int d_a_water_hakidasiNewHold(int a, int b, int x, int y, int z, int f, int cb);
 extern void func_02012790(int a);
 extern int data_020a0e68;
 extern int SublevelToLevel(int);
@@ -170,8 +176,7 @@ int daWater_Hakidasi_c::func_ov064_021193b4()
     }
 
     if (mNoRings == 0) {
-        mParticle = _ZN8Particle6System3NewEjj5Fix12IiES2_S2_PK11Vector3_16fPNS_8CallbackE(
-            mParticle, 0x138, mPosX, mPosY, mPosZ, 0, 0);
+        mParticle = Particle::System::New(mParticle, 0x138, mPosX, mPosY, mPosZ, 0, 0);
         if (mRingsPassed < 5) {
             if (*(u16 *)&mStateTimer == 0) {
                 ax = *(volatile u16 *)&mAngleX;
@@ -260,8 +265,7 @@ int daWater_Hakidasi_c::func_ov064_021193b4()
             }
         }
     } else {
-        mParticle = _ZN8Particle6System3NewEjj5Fix12IiES2_S2_PK11Vector3_16fPNS_8CallbackE(
-            mParticle, 0x7b, mPosX, mPosY, mPosZ, 0, 0);
+        mParticle = Particle::System::New(mParticle, 0x7b, mPosX, mPosY, mPosZ, 0, 0);
     }
 
     if (mRingsPassed == 5) {
@@ -354,8 +358,8 @@ s32 daWater_Hakidasi_c::Behavior()
    when the parameter is spelled as the real type. See notes/mwccarm-codegen.md 6az. */
 s32 daWater_Hakidasi_c::InitResources()
 {
-    Model::LoadFile(data_ov002_0210da10);
-    Model::LoadFile(data_ov002_0210d9a8);
+    dExtSimpleModel_c::LoadFile(data_ov002_0210da10);
+    dExtSimpleModel_c::LoadFile(data_ov002_0210d9a8);
     mStarID = (param1 >> 0xc) & 0xf;
     mNoRings = param1 & 1;
     if ((param1 & 0xf) > 1)

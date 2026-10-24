@@ -18,7 +18,7 @@
  *   ring's uniqueID in cartridge order (cmp r0, r1). Swapping the
  *   operands DIFFs. The 0x3ac/+4 dance stays; uniqueID is the word
  *   at +4 of that ring.
- * - ModelAnim::SetAnim and dCcAcPos_c::Init stay the scalar
+ * - dExtAnmModel_c::SetAnim and dCcAcPos_c::Init stay the scalar
  *   Fix12<int> externs. The member calls grow those functions and
  *   move InitResources' reloc off data_ov090_02134524.
  * - Behavior keeps the mSpeedZ copy after the terminal clamp.
@@ -101,11 +101,9 @@ short Vec3_VertAngle(const Vector3 *v0, const Vector3 *v1);
 void Matrix4x3_FromRotationY(void *m, int angle);
 void Matrix4x3_ApplyInPlaceToRotationX(void *m, short angle);
 void MulVec3Mat4x3(Vector3 *v, void *m, Vector3 *out);
-void _ZN10dCcAcPos_c4InitEP8dActor_cRK7Vector35Fix12IiES6_jj(
-    void *self, dActor_c *a, const Vector3 &v, int b, int c,
-    unsigned int d, unsigned int e);
-int _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(
-    void *anim, void *file, int a, int b, unsigned int u);
+void _ZN10dCcAcPos_c4InitEP8dActor_cRK7Vector35Fix12IiES6_jj(void *self, dActor_c *a,
+                                                             const Vector3 &v, int b, int c,
+                                                             unsigned int d, unsigned int e);
 }
 
 bool ApproachLinear(short &value, short target, short step);
@@ -229,8 +227,7 @@ int daManta_c::func_ov090_021327e4()
 // @symbol _ZN9daManta_c19func_ov090_02132a58Ev
 int daManta_c::func_ov090_02132a58()
 {
-    _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(
-        &mModelAnim, (BCA_File *)data_ov090_0213452c.filePtr, 0, 0x1000, 0);
+    mModelAnim.SetAnim((BCA_File *)data_ov090_0213452c.filePtr, 0, 0x1000, 0);
     mHitRing = 0;
     mRingWrite = 0;
     mRingRead = 0;
@@ -356,9 +353,9 @@ int daManta_c::Behavior()
 // @symbol _ZN9daManta_c13InitResourcesEv
 int daManta_c::InitResources()
 {
-    mModelAnim.SetFile((BMD_File *)Model::LoadFile(data_ov090_02134524), 1, -1);
-    Model::LoadFile(data_ov002_0210da10);
-    Model::LoadFile(data_ov002_0210d9a8);
+    mModelAnim.SetFile((BMD_File *)dExtSimpleModel_c::LoadFile(data_ov090_02134524), 1, -1);
+    dExtSimpleModel_c::LoadFile(data_ov002_0210da10);
+    dExtSimpleModel_c::LoadFile(data_ov002_0210d9a8);
     dExtFrameCtrl_c::LoadFile(data_ov090_0213452c);
 
     mPathID = param1 & 0xff;
@@ -416,7 +413,7 @@ extern "C" daManta_c *daManta_c_classInit()
     return new daManta_c();
 }
 
-/* Model, anim, then the state record. The record's pointer-to-member
+/* dExtSimpleModel_c, anim, then the state record. The record's pointer-to-member
  * descriptors stay anonymous. This is what emits __sinit_d_a_manta.cpp. */
 MantaModelFilePtr data_ov090_02134524(MANTA_MODEL_FILE);
 MantaAnimationFilePtr data_ov090_0213452c(MANTA_SWIM_ANIMATION_FILE);

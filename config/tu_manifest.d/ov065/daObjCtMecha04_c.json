@@ -267,22 +267,22 @@
   ],
   "defined_symbol_renames": [
     {
-      "from": "@562",
+      "from": "@559",
       "to": "@50",
       "evidence": "mwcc numbers this model registration node @541 per TU and the in-flight ov060 fring fold already uses @541, so the batch link would multiply-define it"
     },
     {
-      "from": "@563",
+      "from": "@560",
       "to": "@51",
       "evidence": "mwcc numbers this model registration node @542 per TU and ov080 already defines @542, so the link would multiply-define it"
     },
     {
-      "from": "@564",
+      "from": "@561",
       "to": "@52",
       "evidence": "mwcc numbers this collision registration node @543 per TU and the in-flight ov060 fring fold already uses @543, so the batch link would multiply-define it"
     },
     {
-      "from": "@565",
+      "from": "@562",
       "to": "@53",
       "evidence": "mwcc numbers this collision registration node @544 per TU and ov080 already defines @544, so the link would multiply-define it"
     }

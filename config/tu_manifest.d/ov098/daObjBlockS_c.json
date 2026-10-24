@@ -1018,14 +1018,14 @@
   "externalized_output": [],
   "defined_symbol_renames": [
     {
-      "from": "@1564",
+      "from": "@1574",
       "to": "@1560",
-      "evidence": "compiler temp; the types.h Vector3 ctors shift this TU's per-TU @NNN uniquifier, so mwcc emits it under this name now; licensed under the existing pin"
+      "evidence": "compiler temp; the types.h Vector3 ctors shift this TU's per-TU @NNN uniquifier, so mwcc emits it under this name now; licensed under the existing pin 2026-10-22: #include \"Sound.h\" shifted file-local numbering; from-names re-pointed by symbol-index order (indices identical pre/post); re-verify linkcheck."
     },
     {
-      "from": "@1565",
+      "from": "@1575",
       "to": "@1561",
-      "evidence": "compiler temp; the types.h Vector3 ctors shift this TU's per-TU @NNN uniquifier, so mwcc emits it under this name now; licensed under the existing pin"
+      "evidence": "compiler temp; the types.h Vector3 ctors shift this TU's per-TU @NNN uniquifier, so mwcc emits it under this name now; licensed under the existing pin 2026-10-22: #include \"Sound.h\" shifted file-local numbering; from-names re-pointed by symbol-index order (indices identical pre/post); re-verify linkcheck."
     }
   ]
 }

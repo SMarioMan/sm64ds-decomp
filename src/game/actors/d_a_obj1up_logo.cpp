@@ -63,8 +63,11 @@ extern "C" {
 void Matrix4x3_FromTranslation(Matrix4x3 *matrix, s32 x, s32 y, s32 z);
 void _ZN15TextureSequence7SetFileER8BTP_Filei5Fix12IiEj(
     void *self, void *btp, int flags, int speed, unsigned int startFrame);
-void _ZN8Particle6System9NewSimpleEj5Fix12IiES2_S2_(
-    u32 id, s32 x, s32 y, s32 z);
+namespace Particle {
+struct System {
+    static void NewSimple(u32 id, s32 x, s32 y, s32 z);
+};
+}
 }
 
 /* Emission order is ROM order. Do not reorder. */
@@ -134,8 +137,7 @@ s32 daObj1UpLogo_c::Behavior()
     case 1:
         if (mPosY < mStartPos.y) {
             /* Volatile: a plain mPosY read is folded into the add above. */
-            _ZN8Particle6System9NewSimpleEj5Fix12IiES2_S2_(
-                kPopParticle, mPosX, *(volatile s32 *)&mPosY, mPosZ);
+            Particle::System::NewSimple(kPopParticle, mPosX, *(volatile s32 *)&mPosY, mPosZ);
             MarkForDestruction();
         }
         break;
@@ -168,7 +170,7 @@ s32 daObj1UpLogo_c::InitResources()
     unsigned int count = param1;
     unsigned short frame = (unsigned short)(count > kFrameCountCap ? kLastFrame : (count - 1));
     TextureSequence::LoadFile(data_ov002_02110a9c);
-    if (mModel.SetFile((BMD_File *)Model::LoadFile(data_ov002_02110aa4), 1, -1) == 0)
+    if (mModel.SetFile((BMD_File *)dExtSimpleModel_c::LoadFile(data_ov002_02110aa4), 1, -1) == 0)
         return 0;
     TextureSequence::Prepare(*(BMD_File *)data_ov002_02110aa4.filePtr,
                              *(BTP_File *)data_ov002_02110a9c.filePtr);

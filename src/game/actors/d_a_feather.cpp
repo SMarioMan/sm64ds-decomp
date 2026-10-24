@@ -1,4 +1,8 @@
 //cpp
+namespace Particle {
+struct Callback;
+}
+struct Vector3_16f;
 /* Wing cap feather (FEATHER 345) -- ov002/daFeather_c.
  *
  * The collectible feather that gives the player wings: Behavior hands any
@@ -56,12 +60,17 @@ void func_ov002_020b2c44(daFeather_c *c);
    ROM is Fix12<int>. */
 void _ZN7dCcAc_c4InitEP8dActor_c5Fix12IiES3_jj(dCcAc_c *self, dActor_c *a, Fix12i b, Fix12i c, unsigned int d, unsigned int e);
 void _ZN10dBgCh_Actr4InitEP8dActor_c5Fix12IiES3_P10Vector3_16S5_(dBgCh_Actr *self, dActor_c *a, Fix12i b, Fix12i c, Vector3_16 *d, Vector3_16 *e);
-u32 _ZN8Particle6System3NewEjj5Fix12IiES2_S2_PK11Vector3_16fPNS_8CallbackE(u32 kind, u32 sub, int x, int y, int z, const Vector3_16 *vec, void* cb);
+u32 d_a_featherNewHold(u32 kind, u32 sub, int x, int y, int z, const Vector3_16 *vec, void *cb);
 void dBgCh_Actr_UpdateContinuous_Veneer(void* p);
 int _Z15ApproachLinear2Rsss(short* ref, short target, short rate);
 void _Z14ApproachLinearRiii(int* ref, int target, int rate);
 u8 DecIfAbove0_Byte(u8* p);
-void *_ZN8Particle6System9NewSimpleEj5Fix12IiES2_S2_(u32 kind, int x, int y, int z);
+namespace Particle {
+struct System {
+    static void *NewSimple(u32 kind, int x, int y, int z);
+    static int New(unsigned, unsigned, int, int, int, const ::Vector3_16f *, Callback *);
+};
+}
 void Vec3_Asr(struct Vector3 *d, struct Vector3 *s, int sh);
 void Matrix4x3_FromTranslation(Matrix4x3 *m, Fix12i x, Fix12i y, Fix12i z);
 void Matrix4x3_ApplyInPlaceToRotationY(Matrix4x3 *m, s16 ang);
@@ -115,7 +124,7 @@ int daFeather_c::InitResources()
     BMD_File *bmd;
     int b;
 
-    bmd = (BMD_File*)Model::LoadFile(data_ov002_0210da58);
+    bmd = (BMD_File *)dExtSimpleModel_c::LoadFile(data_ov002_0210da58);
     if (!mModel.SetFile(bmd, 1, 1))
         return 0;
     if (!mShadowModel.InitCylinder())
@@ -158,8 +167,7 @@ int daFeather_c::Behavior()
         }
     }
 
-    mParticle = _ZN8Particle6System3NewEjj5Fix12IiES2_S2_PK11Vector3_16fPNS_8CallbackE(
-        mParticle, 0x4a, mPosX, mPosY, mPosZ, 0, 0);
+    mParticle = Particle::System::New(mParticle, 0x4a, mPosX, mPosY, mPosZ, 0, 0);
 
     UpdatePos((dCc_c *)0);
     dBgCh_Actr_UpdateContinuous_Veneer(&mWithMeshClsn);
@@ -168,7 +176,7 @@ int daFeather_c::Behavior()
         _Z15ApproachLinear2Rsss((short*)&mSwayAngle, 0, 0x50);
         _Z14ApproachLinearRiii(&mHorzSpeed, 0, 0x555);
         if (DecIfAbove0_Byte(&mLifeTimer) == 0) {
-            _ZN8Particle6System9NewSimpleEj5Fix12IiES2_S2_(0xd2, mPosX, mPosY, mPosZ);
+            Particle::System::NewSimple(0xd2, mPosX, mPosY, mPosZ);
             MarkForDestruction();
         }
     } else {
@@ -205,7 +213,7 @@ int daFeather_c::Behavior()
             int eq = (a->actorID == 0xbf);
             if (eq) {
                 ((Player *)a)->InitWingFeathers(true);
-                _ZN8Particle6System9NewSimpleEj5Fix12IiES2_S2_(0xd2, mPosX, mPosY, mPosZ);
+                Particle::System::NewSimple(0xd2, mPosX, mPosY, mPosZ);
                 MarkForDestruction();
                 return 1;
             }

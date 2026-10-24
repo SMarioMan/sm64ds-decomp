@@ -24,7 +24,7 @@ enum {
  * _ZTI16daObjFl_Puzzle_c is at ov064 0x0211bfa4 and the name bytes at
  * 0x0211bfc4 say daObjFl_Puzzle_c. The vtable at 0x0211c25c stores that
  * typeinfo. The sole base is dBgActor_c: the destructor restores
- * _ZTV10dBgActor_c, destroys the moving-mesh member at 0x124 and Model at
+ * _ZTV10dBgActor_c, destroys the moving-mesh member at 0x124 and dExtSimpleModel_c at
  * 0x0d4, then chains to dActor_c::~dActor_c.
  */
 struct daObjFl_Puzzle_c : dBgActor_c {

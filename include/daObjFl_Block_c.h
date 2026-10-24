@@ -5,7 +5,7 @@
 
 /* Lethal Lava Land's block that floats on the lava (registry profile
  * FL_BLOCK): a dBgActor_c that sinks while the player stands on it and rises
- * back to its spawn height once it is left alone. Model at 0xd4, moving mesh
+ * back to its spawn height once it is left alone. dExtSimpleModel_c at 0xd4, moving mesh
  * collider at 0x124, clsn matrix at 0x2ec, all inherited. Layout evidence:
  * notes/platform-provenance.md.
  *

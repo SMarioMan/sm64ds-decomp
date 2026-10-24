@@ -2,12 +2,12 @@
 #define DMG3DESPANIMSET_C_H
 
 #include "MaterialChanger.h"
-#include "ModelAnim.h"
+#include "dExtAnmModel_c.h"
 
 /* The source spelling and ordinary method names are inferred from the sole
  * owning minigame and each method's role. The object boundary and member order
  * are compiler-proven: its paired helpers construct
- * three ModelAnim objects followed by three MaterialChanger objects, and tear
+ * three dExtAnmModel_c objects followed by three MaterialChanger objects, and tear
  * them down in reverse order. The ordinary methods then prove the trailing
  * 0x18 bytes of per-animation state. */
 struct dMg3DEspAnimSet_c {
@@ -25,7 +25,7 @@ struct dMg3DEspAnimSet_c {
     void SetPeriod(s16 period);
     void SetSpeed(s32 speed);
 
-    ModelAnim mModels[3];                 /* 0x000 */
+    dExtAnmModel_c mModels[3];            /* 0x000 */
     MaterialChanger mMaterialChangers[3]; /* 0x12c */
     s32 mActive[3];                       /* 0x168 */
     s32 mSpeed;                           /* 0x174 */

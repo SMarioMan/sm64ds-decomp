@@ -1,6 +1,6 @@
 /* The multiplayer entry scene object. Its two ROM destructor variants reveal
- * the complete ownership chain: dBase_c, Particle::SysTracker, Model,
- * ModelAnim, and four 0x158-byte player records. The record constructor and
+ * the complete ownership chain: dBase_c, Particle::SysTracker, dExtSimpleModel_c,
+ * dExtAnmModel_c, and four 0x158-byte player records. The record constructor and
  * destructor were previously anonymous address symbols; their four member
  * constructor/destructor calls prove the typed prefix below, while the array
  * stride proves its trailing extent.
@@ -17,9 +17,9 @@
 
 #include "dBase_c.h"
 #include "Particle__SysTracker.h"
-#include "Model.h"
-#include "ModelAnim.h"
-#include "BlendModelAnim.h"
+#include "dExtSimpleModel_c.h"
+#include "dExtAnmModel_c.h"
+#include "dExtBlendAnmModel_c.h"
 #include "TextureSequence.h"
 #include "dExtShadowModel_c.h"
 
@@ -49,8 +49,8 @@ struct UnknownVsPlayer {
         ANIM_FAST_GAIT
     };
 
-    BlendModelAnim mModel;            /* 0x000 */
-    ModelAnim mAnimation;             /* 0x070 */
+    dExtBlendAnmModel_c mModel;       /* 0x000 */
+    dExtAnmModel_c mAnimation;        /* 0x070 */
     TextureSequence mTextureSequence; /* 0x0d4 */
     dExtShadowModel_c mShadow;        /* 0x0e8 */
     s32 mMoveState;                   /* 0x110 */
@@ -124,8 +124,8 @@ struct dEntObj_c : dBase_c {
     enum SceneState { STATE_IDLE = 0, STATE_WAIT_FOR_EXIT, STATE_RUN_OFF_STAGE };
 
     Particle::SysTracker mParticles; /* 0x050 */
-    Model mModel;                    /* 0x86c */
-    ModelAnim mModelAnim;            /* 0x8bc */
+    dExtSimpleModel_c mModel;        /* 0x86c */
+    dExtAnmModel_c mModelAnim;       /* 0x8bc */
     UnknownVsPlayer mPlayers[4];     /* 0x920 */
     /* 0xe80 -- the 0xa8-byte entry-menu grid mesh (EntryMesh,
        include/private/ov075_entry_mesh.h), spelled as its first byte plus

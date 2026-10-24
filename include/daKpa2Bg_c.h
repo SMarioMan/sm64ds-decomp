@@ -43,7 +43,7 @@
  * Two sub-objects of its own, on top of dBgActor_c's two:
  *
  *     dBgActor_c            0x000 + 0x324 = 0x324   -> mModel2
- *     Model               0x324 + 0x050 = 0x374   -> mMovingMeshCollider2
+ *     dExtSimpleModel_c               0x324 + 0x050 = 0x374   -> mMovingMeshCollider2
  *     dBgW_KcMbg  0x374 + 0x1c8 = 0x53c   -> padding, then mSoundHandle
  *
  * mMovingMeshCollider2 was a `u8` marker with 0x1f7 bytes of pad behind it; the pad
@@ -56,7 +56,7 @@
 #ifndef DAKPA2BG_C_H
 #define DAKPA2BG_C_H
 #include "types.h"
-#include "Model.h"
+#include "dExtSimpleModel_c.h"
 #include "dBgW_KcMbg.h"
 
 #ifdef __cplusplus
@@ -70,7 +70,7 @@ struct daKpa2Bg_c : dBgActor_c {
     s16 mAngleXSpeed;                           /* 0x31e -- Behavior adds it to mAngleX every frame */
     s16 mAngleYSpeed;                           /* 0x320 -- ... to mAngleY */
     s16 mAngleZSpeed;                           /* 0x322 -- ... to mAngleZ */
-    Model mModel2;                              /* 0x324 */
+    dExtSimpleModel_c mModel2;                  /* 0x324 */
     dBgW_KcMbg mMovingMeshCollider2;    /* 0x374 */
     u8  pad_53c[0x30];
     s32 mSoundHandle;       /* 0x56c -- the handle Sound_PlayIfNotActive returns; InitResources zeroes it */
@@ -108,18 +108,18 @@ struct daKpa2Bg_c {
     u8  pad_000[0x8e];
     s16 mAngleY;            /* 0x08e */
     u8  pad_090[0x44];
-    /* Model member, named by the class's own destructor calling
-       Model's D1 at +0x0d4 -- a relocation the ROM build
+    /* dExtSimpleModel_c member, named by the class's own destructor calling
+       dExtSimpleModel_c's D1 at +0x0d4 -- a relocation the ROM build
        checks. Was a u8 marker. [src/game/actors/d_a_kpa2_bg.cpp] */
-    Model mModel1;            /* 0x0d4 */
+    dExtSimpleModel_c mModel1;          /* 0x0d4 */
     dBgW_KcMbg mMovingMeshCollider1;    /* 0x124 */
     u8  pad_2ec[0x32];
     s16 mAngleXSpeed;       /* 0x31e */
     s16 mAngleYSpeed;       /* 0x320 */
     s16 mAngleZSpeed;       /* 0x322 */
-    /* Model member, named by _ZN5ModelD1Ev at +0x324 -- a relocation the ROM build checks.
+    /* dExtSimpleModel_c member, named by _ZN17dExtSimpleModel_cD1Ev at +0x324 -- a relocation the ROM build checks.
        D1 and not D2, so it is this type and not an inlined base. Was a u8 marker. */
-    Model mModel2;            /* 0x324 */
+    dExtSimpleModel_c mModel2;          /* 0x324 */
     dBgW_KcMbg mMovingMeshCollider2;    /* 0x374 */
     u8  pad_53c[0x30];
     s32 mSoundHandle;       /* 0x56c */

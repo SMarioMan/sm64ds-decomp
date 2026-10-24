@@ -13,9 +13,9 @@
  *
  * SIZE 0x3fc is the literal passed by daDpLift_c_classInit (historically
  * PyramidLift_Spawn) to fBase_c::operator new. dBgActor_c occupies
- * 0x000..0x31f. The factory constructs the Model at 0x320 and a ten-element,
+ * 0x000..0x31f. The factory constructs the dExtSimpleModel_c at 0x320 and a ten-element,
  * 0xc-stride array at 0x37c. The D1/D0 pair destroys that array through
- * _ZN7Vector3D1Ev, then destroys the Model and inherited dBgActor_c members
+ * _ZN7Vector3D1Ev, then destroys the dExtSimpleModel_c and inherited dBgActor_c members
  * in reverse construction order. Together those independent witnesses close
  * every non-padding span below.
  *
@@ -28,7 +28,7 @@
 #include "dBgActor_c.h"
 
 struct daDpLift_c : dBgActor_c {
-    Model mModel2;                    /* 0x320 */
+    dExtSimpleModel_c mModel2;        /* 0x320 */
     s32 mBasePosX;                    /* 0x370 */
     s32 mBasePosY;                    /* 0x374 */
     s32 mBasePosZ;                    /* 0x378 */

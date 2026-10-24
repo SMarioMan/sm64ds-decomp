@@ -19,7 +19,7 @@
  * - Matrix4x3_FromRotationY stays a TU-local extern: no header declares it.
  * - The actorID switch stays defaultless in matched form; the registry
  *   only spawns the four HS_* profiles (0x12e-0x131).
- * - pad_0d0 stays: untouched anywhere in this TU (Model opens at 0x0d4).
+ * - pad_0d0 stays: untouched anywhere in this TU (dExtSimpleModel_c opens at 0x0d4).
  */
 
 /* Runtime asset handles resolved through the overlay 0 file table. */
@@ -85,7 +85,7 @@ int daObjHsBillboard_c::InitResources()
     case 0x131: mVariant = 3; break; /* HS_B_STAR */
     }
 
-    BMD_File *file = (BMD_File *)Model::LoadFile(*data_ov031_02111424[mVariant]);
+    BMD_File *file = (BMD_File *)dExtSimpleModel_c::LoadFile(*data_ov031_02111424[mVariant]);
     mModel.SetFile(file, 1, -1);
     func_ov031_02111214(this);
     return 1;
@@ -123,7 +123,7 @@ extern "C" void func_ov031_02111214(daObjHsBillboard_c *self)
    the object.
 
    Both bodies are short because the chain is short: this class's vptr store,
-   then the owned Model at 0xd4, then dActor_c's own teardown, which is where
+   then the owned dExtSimpleModel_c at 0xd4, then dActor_c's own teardown, which is where
    the actor-list unlink lives. D0's trailing deallocation is the inherited
    inline `operator delete`, which is why nothing here names a heap. */
 

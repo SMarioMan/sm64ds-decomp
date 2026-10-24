@@ -1,5 +1,5 @@
 #include "types.h"
-#include "ModelBase.h"
+#include "dExtModel_c.h"
 
 /* Texture-pattern (BTP) step: for each sequence of the BTP file, find the
  * last key whose frame is <= the requested frame, then point the material
@@ -7,7 +7,7 @@
  * (src/engine/model/TextureSequence.cpp) calls it with the model's
  * ModelComponents, its BTP_File and the integer frame.
  *
- * ModelComponents and the BMD views come from ModelBase.h and BMD_File.h.
+ * ModelComponents and the BMD views come from dExtModel_c.h and BMD_File.h.
  * BTP_File is a view of TextureSequence.h's (which a C file can't include)
  * with the same names where that header has them, extended with what this
  * function shows:
@@ -20,7 +20,7 @@
  *     it by name; 0xffff is unresolved), name, numKeys, firstKey }.
  *   - texRecords/palRecords are func_02046d50's 8-byte { resourceId, name }
  *     records; resourceId is the BMD texture or palette index.
- *   - the 0x30-byte runtime material (MaterialState here; ModelBase.h types
+ *   - the 0x30-byte runtime material (MaterialState here; dExtModel_c.h types
  *     ModelComponents::materials as BMD_Material, but its builder in
  *     Model4.cpp lays it out differently) gets texImageParam at 0x1c (the
  *     file material's word ORed with the texture's flags) and texPlttBase

@@ -10,7 +10,7 @@
     "contiguous linker run: 0x21196d8..0x2119ebc, 9 function(s), from build/tu_map.json (tools/tu_map.py)",
     "class label(s): daObjCtRotateBlock_c",
     "module sinit corroboration: 10 sinit(s) / 10 .ctor entries, sinit_vs_tu=ok, corroborated=False (module-wide, NOT narrowed to this one TU -- see notes/tu-reconstruction-pilot-report.md sec 2 for the by-hand narrowing step)",
-    "classInit fold (0930c): the two registry factories daObjCtRotateBlock_c_classInit_CT_MECHA02 (0x02119ebc, 0x40) and daObjCtRotateBlock_c_classInit_CT_MECHA01 (0x02119efc, 0x40) abut this TU's former end 0x02119ebc with no gap and nothing between them; tu_map left them in their own unlabelled unit because it cuts on symbol name. Both construct this class (operator new(0x3d8), dBgActor_c C2, _ZTV20daObjCtRotateBlock_c store, Model and dExtShadowModel_c C1). The widened range 0x021196d8..0x02119f3c ends where the daObjCtMecha03_c TU (src/game/actors/d_a_obj_ct_mecha03.cpp) begins."
+    "classInit fold (0930c): the two registry factories daObjCtRotateBlock_c_classInit_CT_MECHA02 (0x02119ebc, 0x40) and daObjCtRotateBlock_c_classInit_CT_MECHA01 (0x02119efc, 0x40) abut this TU's former end 0x02119ebc with no gap and nothing between them; tu_map left them in their own unlabelled unit because it cuts on symbol name. Both construct this class (operator new(0x3d8), dBgActor_c C2, _ZTV20daObjCtRotateBlock_c store, dExtSimpleModel_c and dExtShadowModel_c C1). The widened range 0x021196d8..0x02119f3c ends where the daObjCtMecha03_c TU (src/game/actors/d_a_obj_ct_mecha03.cpp) begins."
   ],
   "sections": [
     {
@@ -635,32 +635,32 @@
   ],
   "defined_symbol_renames": [
     {
-      "from": "@643",
+      "from": "@640",
       "to": "@951",
       "evidence": "mwcc numbers this registration node @627 per TU and the fleet already defines a global @627, so the scratch link would multiply-define it"
     },
     {
-      "from": "@645",
+      "from": "@642",
       "to": "@895",
       "evidence": "mwcc numbers this registration node @629 per TU and the fleet already defines a global @629, so the scratch link would multiply-define it"
     },
     {
-      "from": "@647",
+      "from": "@644",
       "to": "@891",
       "evidence": "mwcc numbers this registration node @631 per TU and the fleet already defines a global @631, so the scratch link would multiply-define it"
     },
     {
-      "from": "@644",
+      "from": "@641",
       "to": "@628",
       "evidence": "compiler temp; the types.h Vector3 ctors and main's sinit folds shift this TU's per-TU @NNN uniquifier, so mwcc emits it as @644 now; licensed under the existing pin @628"
     },
     {
-      "from": "@646",
+      "from": "@643",
       "to": "@630",
       "evidence": "compiler temp; the types.h Vector3 ctors and main's sinit folds shift this TU's per-TU @NNN uniquifier, so mwcc emits it as @646 now; licensed under the existing pin @630"
     },
     {
-      "from": "@648",
+      "from": "@645",
       "to": "@632",
       "evidence": "compiler temp; the types.h Vector3 ctors and main's sinit folds shift this TU's per-TU @NNN uniquifier, so mwcc emits it as @648 now; licensed under the existing pin @632"
     }

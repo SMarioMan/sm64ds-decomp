@@ -30,7 +30,7 @@
 #ifdef __cplusplus
 
 #include "dEnemyBase_c.h"
-#include "ModelAnim.h"
+#include "dExtAnmModel_c.h"
 #include "dCcAc_c.h"
 #include "dBgCh_Actr.h"
 
@@ -45,7 +45,7 @@ struct daHyuhyu_c_State {
 struct daHyuhyu_c : dEnemyBase_c {
     dCcAc_c mdCcAc_c;                 /* 0x110 */
     dBgCh_Actr mWithMeshClsn;         /* 0x144 */
-    ModelAnim mModelAnim;             /* 0x300 -- the cloud only */
+    dExtAnmModel_c mModelAnim;        /* 0x300 -- the cloud only */
     daHyuhyu_c_State *mState;         /* 0x364 */
     u32 mGustParticle;                /* 0x368 -- particle system handles */
     u32 mGustParticle2;               /* 0x36c */

@@ -7,7 +7,7 @@
   "boundary_confidence": "medium",
   "boundary_evidence": [
     "single-function run: 0x020468a0..0x020469ac, 1 function, delinks.txt entry `complete`.",
-    "TOP EDGE: _ZN5Model17UpdateFileOffsetsER8BMD_File (0x020465fc..0x020468a0) ends exactly where the run begins -- a different class's same-named method, matching the fold note \"Model::UpdateFileOffsets has just ended\". BOTTOM EDGE: _ZN15dExtFrameCtrl_c17UpdateFileOffsetsER8BCA_File (0x020469ac..0x020469e0) begins exactly where it ends -- again a different class's method, so neither side claims a TextureSequence classmate.",
+    "TOP EDGE: _ZN17dExtSimpleModel_c17UpdateFileOffsetsER8BMD_File (0x020465fc..0x020468a0) ends exactly where the run begins -- a different class's same-named method, matching the fold note \"dExtSimpleModel_c::UpdateFileOffsets has just ended\". BOTTOM EDGE: _ZN15dExtFrameCtrl_c17UpdateFileOffsetsER8BCA_File (0x020469ac..0x020469e0) begins exactly where it ends -- again a different class's method, so neither side claims a TextureSequence classmate.",
     "the class's real run is arm9/TextureSequence (src/engine/model/TextureSequence.cpp, 0x0201597c..0x02015a7c), a full screen away; this function is its own translation unit, filed as src/engine/model/TextureSequence_UpdateFileOffsets.cpp. The symbol is unchanged."
   ],
   "sections": [

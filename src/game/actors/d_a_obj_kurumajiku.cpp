@@ -39,7 +39,6 @@ int func_ov002_020b6ac8(void *actor, void *descriptor);
 
 /* Matches the scalar definition in d_bg_actor.cpp. Its encoded Fix12 name
    does not establish a by-value class parameter; see dBgActor_c.h. */
-int _ZN10dBgActor_c13IsClsnInRangeE5Fix12IiES1_(dBgActor_c *self, int radius, int yOffset);
 // local extern: the actual free definition accepts a scalar scale; the
 // member call takes Fix12<int> by value (wall 6az).
 void _ZN10dBgW_KcMbg7SetFileEP8KCL_FileRK9Matrix4x35Fix12IiEsR10CLPS_Block(
@@ -74,7 +73,7 @@ void daObjKurumajiku_c_EmitDestructor(daObjKurumajiku_c *p)
 }
 
 // @symbol func_ov002_020b6a80
-/* Build the model transform. Model translation uses 1/8 of the world position.
+/* Build the model transform. dExtSimpleModel_c translation uses 1/8 of the world position.
    The char* entry contract is shared with the existing setup helper. */
 extern "C" int func_ov002_020b6a80(char *self)
 {
@@ -138,7 +137,7 @@ s32 daObjKurumajiku_c::Behavior()
         }
     }
     func_ov002_020b6a80((char *)this);
-    if (_ZN10dBgActor_c13IsClsnInRangeE5Fix12IiES1_(this, 0, 0))
+    if (IsClsnInRange(0, 0))
         UpdateClsnPosAndRot();
     return 1;
 }
@@ -159,7 +158,7 @@ extern "C" int func_ov002_020b6c54(void *actor, void *descriptor, unsigned int r
         static_cast<daObjKurumajiku_c::Resources *>(descriptor);
     void *file;
 
-    file = Model::LoadFile(*resources->model);
+    file = dExtSimpleModel_c::LoadFile(*resources->model);
     self->mModel.SetFile(static_cast<BMD_File *>(file), 1, -1);
     func_ov002_020b6a80(reinterpret_cast<char *>(self));
     self->UpdateClsnPosAndRot();

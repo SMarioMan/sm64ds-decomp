@@ -1,4 +1,8 @@
 //cpp
+namespace Particle {
+struct Callback;
+}
+struct Vector3_16f;
 /* daGrock_c -- Hazy Maze Cave rolling rock (GORO_ROCK 221), ov021.
  *
  * param1's low nibble is the kind. 0 and 1 are invisible spawners: a rock
@@ -22,7 +26,7 @@
  * daGrock_c_classInit (historical alias RollingRock_Spawn, folded in from
  * fold-lane-c-0929) is now the last function in the file, appended after
  * InitResources in ROM order; it hand-called fBase_c::operator new(968),
- * dEnemyBase_c::dEnemyBase_c(), stored _ZTV9daGrock_c, then Model, then
+ * dEnemyBase_c::dEnemyBase_c(), stored _ZTV9daGrock_c, then dExtSimpleModel_c, then
  * dExtShadowModel_c, then dCcAcPos_c, then dBgCh_Actr in field order. daGrock_c
  * declares no constructor of its own, so the compiler-synthesized default
  * constructor emits exactly that sequence, and the factory is now
@@ -119,11 +123,17 @@ extern int _ZN8dActor_c19DropShadowRadHeightER17dExtShadowModel_cR9Matrix4x35Fix
 extern struct Matrix4x3 data_020a0e68;
 /* Same body as Sound::PlayBank3 (0x02012664). The ROM calls these copies. */
 extern void func_02012694(int id, void *pos);
-extern void _ZN8Particle6System9NewSimpleEj5Fix12IiES2_S2_(u32 id, int x, int y, int z);
+namespace Particle {
+struct System {
+    static void NewSimple(u32 id, int x, int y, int z);
+
+    static int New(unsigned, unsigned, int, int, int, const ::Vector3_16f *, Callback *);
+};
+}
 extern void dBgCh_Actr_UpdateContinuous_Veneer(void *clsn);
 extern void func_0201267c(int id, void *pos);
-extern void *_ZN8Particle6System3NewEjj5Fix12IiES2_S2_PK11Vector3_16fPNS_8CallbackE(
-    unsigned int prev, unsigned int effect, int x, int y, int z, void *dir, void *cb);
+extern void *d_a_grockNewHold(unsigned int prev, unsigned int effect, int x, int y, int z,
+                              void *dir, void *cb);
 extern int Vec3_HorzLen(void *v);
 extern int _ZN4cstd5atan2E5Fix12IiES1_(int y, int x);
 /* dActor_c.h types GetSubtraction(short, short). The wall angle is an int
@@ -214,8 +224,7 @@ extern "C" void func_ov021_021123b0(char *raw)
         func_02012694(0x17a, &rock->mCamSpacePosX);
         ((Player *)other)->IncMegaKillCount();
         rock->TriplePoofDust();
-        _ZN8Particle6System9NewSimpleEj5Fix12IiES2_S2_(
-            0x67, rock->mPosX, rock->mPosY, rock->mPosZ);
+        Particle::System::NewSimple(0x67, rock->mPosX, rock->mPosY, rock->mPosZ);
         func_ov021_02112294(rock);
         rock->MarkForDestruction();
         return;
@@ -232,8 +241,7 @@ extern "C" void func_ov021_021123b0(char *raw)
             func_02012694(0x17a, &rock->mCamSpacePosX);
             rock->MarkForDestruction();
             rock->TriplePoofDust();
-            _ZN8Particle6System9NewSimpleEj5Fix12IiES2_S2_(
-                0x67, rock->mPosX, rock->mPosY, rock->mPosZ);
+            Particle::System::NewSimple(0x67, rock->mPosX, rock->mPosY, rock->mPosZ);
             func_ov021_02112294(rock);
             return;
         }
@@ -277,12 +285,11 @@ extern "C" void func_ov021_02112544(char *raw)
             if (rock->mVertSpeed < (rock->mVertAccel << 1) && normal.y >= 0xc00)
                 rock->mVertSpeed = -rock->mVertSpeed * 6 / 10;
             pos.y += 0x3c000;
-            _ZN8Particle6System9NewSimpleEj5Fix12IiES2_S2_(0x68, pos.x, pos.y, pos.z);
+            Particle::System::NewSimple(0x68, pos.x, pos.y, pos.z);
             func_0201267c(0x48, &rock->mCamSpacePosX);
         } else {
             rock->mDustParticleID =
-                (int)_ZN8Particle6System3NewEjj5Fix12IiES2_S2_PK11Vector3_16fPNS_8CallbackE(
-                    rock->mDustParticleID, 0x69, pos.x, pos.y, pos.z, 0, 0);
+                (int)Particle::System::New(rock->mDustParticleID, 0x69, pos.x, pos.y, pos.z, 0, 0);
             rock->mRollSoundID =
                 Sound::PlayLong(rock->mRollSoundID, 3, 0x8a, rock->mCamSpacePos, 0);
         }
@@ -393,7 +400,7 @@ int daGrock_c::Behavior()
                 }
                 UntrackStar(mTrackStarID);
                 TriplePoofDust();
-                _ZN8Particle6System9NewSimpleEj5Fix12IiES2_S2_(0x67, mPosX, mPosY, mPosZ);
+                Particle::System::NewSimple(0x67, mPosX, mPosY, mPosZ);
                 func_02012694(0x17a, &mCamSpacePosX);
             }
         }
@@ -443,7 +450,7 @@ int daGrock_c::InitResources()
     mTrackStarID = -1;
     mSpawnCount = 0;
 
-    Model::LoadFile(data_ov021_02114a50);
+    dExtSimpleModel_c::LoadFile(data_ov021_02114a50);
 
     if (mType >= kGrockRolling) {
         if (mModel.SetFile((BMD_File *)data_ov021_02114a50.filePtr, 1, 1) == 0)

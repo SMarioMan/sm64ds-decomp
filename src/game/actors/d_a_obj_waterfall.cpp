@@ -1,4 +1,5 @@
 //cpp
+struct Vector3_16f;
 /**
  * Waterfall mist.
  *
@@ -27,11 +28,7 @@
 #include "daObjWaterfall_c.h"
 #include "SpawnInfo.h"
 
-extern "C" s8 data_0209f2f8; /* LEVEL_ID */
-
-extern "C" int _ZN8Particle6System3NewEjj5Fix12IiES2_S2_PK11Vector3_16fPNS_8CallbackE(
-    unsigned handle, unsigned effectID, int x, int y, int z,
-    const void *dir, void *cb);
+extern "C" s8 data_0209f2f8;
 
 namespace Particle {
 struct Callback;
@@ -39,12 +36,8 @@ struct Callback;
    the reconstructed 5Fix12IiE symbol so the call spells
    Particle::System::New. See leftover. */
 struct System {
-    static int New(unsigned handle, unsigned effectID,
-                   int x, int y, int z, const void *dir, Callback *cb)
-    {
-        return _ZN8Particle6System3NewEjj5Fix12IiES2_S2_PK11Vector3_16fPNS_8CallbackE(
-            handle, effectID, x, y, z, dir, cb);
-    }
+    static int New(unsigned handle, unsigned effectID, int x, int y, int z,
+                   const ::Vector3_16f *dir, Callback *cb);
 };
 }
 

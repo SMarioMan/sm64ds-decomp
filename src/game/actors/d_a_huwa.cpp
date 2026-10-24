@@ -27,7 +27,7 @@
  *   inlines. A direct `!=` or bit test is 16 / 12 / 12 bytes short.
  * - Behavior copying player->mPosX/Y/Z instead of int* at player+0x5c: 0x264 -> 0x260
  *   (-4).
- * - InitResources ModelAnim::SetAnim: 0x108 -> 0x114 (+12). dCcAc_c::Init:
+ * - InitResources dExtAnmModel_c::SetAnim: 0x108 -> 0x114 (+12). dCcAc_c::Init:
  *   0x108 -> 0x120 (+24). dBgCh_Actr::Init stays 0x108 but the header's Fix12i
  *   parameters mangle to _ZN10dBgCh_Actr4InitEP8dActor_ciiP10Vector3_16S3_,
  *   not the ROM's 5Fix12IiE symbol.
@@ -62,7 +62,7 @@ struct HuwaAnimationFileHandle : SharedFilePtr {
     ~HuwaAnimationFileHandle();
 };
 
-/* Model file (sinit id 813) and animation (sinit id 814). */
+/* dExtSimpleModel_c file (sinit id 813) and animation (sinit id 814). */
 extern HuwaModelFilePtr gHuwahuwaModelModelFile;
 extern HuwaAnimationFileHandle gHuwahuwaMoveAnimationFile;
 
@@ -83,10 +83,14 @@ short Vec3_HorzAngle(const Vector3 *a, const Vector3 *b);
 /* Scalar stand-ins for Fix12<int> by-value callees. The header methods
  * mangle to these same symbols and home the argument. */
 int _ZN8dActor_c10SpawnCoinsERK7Vector3j5Fix12IiEs(void *self, Vector3 *pos, unsigned int count, int spread, short angle);
-void _ZN8Particle6System9NewSimpleEj5Fix12IiES2_S2_(unsigned int id, int x, int y, int z);
+namespace Particle {
+struct System {
+    static void NewSimple(unsigned int id, int x, int y, int z);
+};
+}
 void _ZN8dActor_c19DropShadowRadHeightER17dExtShadowModel_cR9Matrix4x35Fix12IiES5_j(
-    void *self, dExtShadowModel_c &shadow, Matrix4x3 &mtx, int radius, int height, unsigned int opacity);
-void _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(void *self, BCA_File *file, int flags, int speed, unsigned int startFrame);
+    void *self, dExtShadowModel_c &shadow, Matrix4x3 &mtx, int radius, int height,
+    unsigned int opacity);
 void _ZN7dCcAc_c4InitEP8dActor_c5Fix12IiES3_jj(void *self, dActor_c *actor, int radius, int height, unsigned int flags, unsigned int vulnFlags);
 void _ZN10dBgCh_Actr4InitEP8dActor_c5Fix12IiES3_P10Vector3_16S5_(void *self, dActor_c *actor, int radius, int height, void *a, void *b);
 /* dEnemyBase_c::KillByInvincibleChar takes a Fix12<int> by value, so the header
@@ -173,7 +177,7 @@ extern "C" void func_ov081_021237ec(daHuwa_c *self)
     Vec3_LslInPlace(&dust, 3);
     AddVec3(&dust, &self->mPos, &dust);
 
-    _ZN8Particle6System9NewSimpleEj5Fix12IiES2_S2_(0x53, dust.x, dust.y, dust.z);
+    Particle::System::NewSimple(0x53, dust.x, dust.y, dust.z);
     func_0201267c(0xd5, &self->mCamSpacePos);
     self->KillAndTrackInDeathTable();
 }
@@ -365,11 +369,10 @@ int daHuwa_c::Behavior()
 // @symbol _ZN8daHuwa_c13InitResourcesEv
 int daHuwa_c::InitResources()
 {
-    void *modelFile = Model::LoadFile(gHuwahuwaModelModelFile);
-    mModelAnim.ModelBase::SetFile((BMD_File *)modelFile, 1, -1);
+    void *modelFile = dExtSimpleModel_c::LoadFile(gHuwahuwaModelModelFile);
+    mModelAnim.dExtModel_c::SetFile((BMD_File *)modelFile, 1, -1);
     dExtFrameCtrl_c::LoadFile(gHuwahuwaMoveAnimationFile);
-    _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(
-        &mModelAnim, (BCA_File *)gHuwahuwaMoveAnimationFile.filePtr, 0, 0x1000, 0);
+    mModelAnim.SetAnim((BCA_File *)gHuwahuwaMoveAnimationFile.filePtr, 0, 0x1000, 0);
     if (mShadowModel.InitCylinder() == 0)
         return 0;
     _ZN7dCcAc_c4InitEP8dActor_c5Fix12IiES3_jj(&mdCcAc_c, this, 0x3c000, 0x78000, 0x200000, 0xa6efe0);

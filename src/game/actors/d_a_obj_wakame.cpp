@@ -29,7 +29,7 @@
  * not.
  *
  * deslop leftovers:
- * - ModelAnim::SetAnim 6az: InitResources' by-value Fix12<int> speed makes
+ * - dExtAnmModel_c::SetAnim 6az: InitResources' by-value Fix12<int> speed makes
  *   the header method form size-DIFF.
  * - func_ov002_020bc488 keeps its unnamed ROM spelling; the image gives it
  *   neither a member name nor a `this`.
@@ -50,7 +50,7 @@ enum d_a_obj_wakame_AssetId {
 #include "daObjWakame_c.h"
 #include "SharedFilePtr.h"
 
-/* Model: func_02017acc / func_02017ab4. Animation: SharedFilePtr::Construct /
+/* dExtSimpleModel_c: func_02017acc / func_02017ab4. Animation: SharedFilePtr::Construct /
  * SharedFilePtr_Destruct_Anim. filePtr is the file LoadFile just filled in. */
 struct WakameModelFilePtr : SharedFilePtr {
     WakameModelFilePtr(unsigned int fileId);
@@ -68,11 +68,7 @@ typedef char WakameAnimationFileHandle_size_must_be_8[
 extern "C" {
 void Matrix4x3_FromRotationY(Matrix4x3 *m, s16 angleY);
 
-/* ModelAnim::SetAnim -- wall 6az on InitResources. */
-void _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(ModelAnim *self,
-                                                BCA_File *animFile,
-                                                int flags, int speed,
-                                                u32 startFrame);
+/* dExtAnmModel_c::SetAnim -- wall 6az on InitResources. */
 
 extern WakameModelFilePtr data_ov002_0210e0dc;          /* BMD model */
 extern WakameAnimationFileHandle data_ov002_0210e0d4;  /* BCA animation */
@@ -103,12 +99,11 @@ extern "C" daObjWakame_c *daObjWakame_c_classInit(void)
 // @symbol _ZN13daObjWakame_c13InitResourcesEv
 s32 daObjWakame_c::InitResources()
 {
-    void *m = Model::LoadFile(data_ov002_0210e0dc);
+    void *m = dExtSimpleModel_c::LoadFile(data_ov002_0210e0dc);
     mModelAnim.SetFile((BMD_File *)m, 1, -1);
     void *a = dExtFrameCtrl_c::LoadFile(data_ov002_0210e0d4);
     /* MEASURED: by-value Fix12<int> speed is wall 6az. */
-    _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(
-        &mModelAnim, (BCA_File *)a, 0, 0x1000, 0);
+    mModelAnim.SetAnim((BCA_File *)a, 0, 0x1000, 0);
     func_ov002_020bc488(this);
     return 1;
 }
@@ -118,7 +113,7 @@ s32 daObjWakame_c::InitResources()
 // @symbol _ZN13daObjWakame_c8BehaviorEv
 /* The ROM's `add r0, r0, #0x124` then `bl 0x02015c3c` is this call and the
    implicit conversion in front of it: Advance is dExtFrameCtrl_c's, dExtFrameCtrl_c sits at
-   +0x50 inside a ModelAnim, and the member is at +0xd4. Nothing else happens --
+   +0x50 inside a dExtAnmModel_c, and the member is at +0xd4. Nothing else happens --
    a seaweed's whole per-frame behaviour is to advance its animation. */
 s32 daObjWakame_c::Behavior()
 {
@@ -130,7 +125,7 @@ s32 daObjWakame_c::Behavior()
 /* -------------------------------------------------------------------------- */
 // @symbol _ZN13daObjWakame_c6RenderEv
 /* A REAL VIRTUAL DISPATCH, and the ROM insists on it: `ldr r2,[r0,#0xd4]!` loads
-   the member's own vptr, `ldr r2,[r2,#0x14]` picks slot 5 -- Model::Render -- and
+   the member's own vptr, `ldr r2,[r2,#0x14]` picks slot 5 -- dExtSimpleModel_c::Render -- and
    `blx r2` calls through it. mwccarm does not devirtualize this even though the
    member's dynamic type is known here, so the ordinary member call is the right
    spelling and the null argument is Render's `const Vector3 *scale`. */

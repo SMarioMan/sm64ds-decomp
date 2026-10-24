@@ -19,7 +19,7 @@
  * Leftover: func_020393d4 stores &dBgW::UpdatePosWithTransform (no setter).
  * Leftover: data_ov022_02114580 / data_ov022_02114578 SharedFilePtr handles
  *   and data_ov064_0211bb2c CLPS; symbols.txt has no recovered names.
- * Leftover: common.h first (dBgActor_c.h already pulls it; Model.h's nested
+ * Leftover: common.h first (dBgActor_c.h already pulls it; dExtSimpleModel_c.h's nested
  *   Matrix4x3 would scalarize a 12-word copy).
  * Leftover: Behavior writes mPrevAngleZ through a short* (member
  *   assignment size-DIFFs).
@@ -56,7 +56,6 @@ extern "C" {
 unsigned char DecIfAbove0_Byte(unsigned char *p);
 void Matrix4x3_FromRotationZXYExt(void *m, int x, int y, int z);
 void func_020393d4(void *p, void *v);
-int _ZN10dBgActor_c13IsClsnInRangeE5Fix12IiES1_(void *t, int a, int b);
 void _ZN10dBgW_KcMbg7SetFileEP8KCL_FileRK9Matrix4x35Fix12IiEsR10CLPS_Block(
     dBgW_KcMbg *self, void *kcl, Matrix4x3 *mtx, int fix, short s, void *clps);
 void func_ov022_02111a1c(daObjFl_London_c *t);
@@ -90,7 +89,7 @@ extern "C" SpawnInfo<daObjFl_London_c> g_profile_FL_LONDON = {
 // @symbol _ZN16daObjFl_London_c13InitResourcesEv
 s32 daObjFl_London_c::InitResources()
 {
-    void *f = Model::LoadFile(data_ov022_02114580);
+    void *f = dExtSimpleModel_c::LoadFile(data_ov022_02114580);
     mModel.SetFile((BMD_File *)f, 1, -1);
     func_ov022_02111a1c(this);
     UpdateClsnPosAndRot();
@@ -130,7 +129,7 @@ s32 daObjFl_London_c::Behavior()
     mAngleZ = mPrevAngleZ;
     func_ov022_02111a1c(this);
     /* MATCH: header method form of IsClsnInRange is Undefined (wall 6az). */
-    if (_ZN10dBgActor_c13IsClsnInRangeE5Fix12IiES1_(this, 0, 0))
+    if (IsClsnInRange(0, 0))
         UpdateClsnPosAndRot();
     return 1;
 }

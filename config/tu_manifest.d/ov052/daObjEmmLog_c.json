@@ -91,7 +91,7 @@
       "address": "0x02112680",
       "size": "0x8",
       "binding": "STB_GLOBAL",
-      "evidence": "model resource handle constructed with file ID 1507; Model::LoadFile reaches it through data_ov052_021124d4.model"
+      "evidence": "model resource handle constructed with file ID 1507; dExtSimpleModel_c::LoadFile reaches it through data_ov052_021124d4.model"
     },
     {
       "symbol": "gEmmLogCollisionFile",
@@ -117,12 +117,12 @@
   ],
   "defined_symbol_renames": [
     {
-      "from": "@393",
+      "from": "@390",
       "to": "@607",
       "evidence": "batch-5 atdup: @379 collides cross-module (temps are fleet-global); renumber to unused same-length @607"
     },
     {
-      "from": "@394",
+      "from": "@391",
       "to": "@380",
       "evidence": "compiler temp; the types.h Vector3 ctors and main's sinit folds shift this TU's per-TU @NNN uniquifier, so mwcc emits it as @394 now; licensed under the existing pin @380"
     }

@@ -13,7 +13,7 @@
  * SIZE 0x4b4, the literal daObjPathLift_c_classInit factory passes to
  * fBase_c::operator new. dPathLiftActor_c ends at 0x450; the D1 destructor
  * destroys only a dExtShadowModel_c at 0x450 before storing the base vtable and
- * running dPathLiftActor_c's destructor (Model[3] array, inlined per
+ * running dPathLiftActor_c's destructor (dExtSimpleModel_c[3] array, inlined per
  * include/PathLift.h), so dExtShadowModel_c is this class's only member with a
  * constructor/destructor of its own.
  *

@@ -1166,7 +1166,7 @@
       "src/game/stages/d_s_star_sel_methods.cpp": [
         "return:void *"
       ],
-      "src/engine/model/Model.cpp": [
+      "src/engine/model/d_ext_simple_model.cpp": [
         "param:#1 unsigned short",
         "return:void *"
       ],
@@ -1572,7 +1572,7 @@
         "param:#2 const Matrix4x3 *",
         "param:#3 Matrix4x3 *"
       ],
-      "src/engine/model/Model.cpp": [
+      "src/engine/model/d_ext_simple_model.cpp": [
         "param:#1 const Matrix4x3 *",
         "param:#2 const Matrix4x3 *",
         "param:#3 Matrix4x3 *"
@@ -4839,43 +4839,6 @@
         "param:#3 signed char"
       ]
     },
-    "_ZN10ModelAnim213Func_020162C4Eji5Fix12IiEt": {
-      "include/decl_ModelAnim2.h": [
-        "param:#2 unsigned int"
-      ],
-      "src/unnamed/ov002/func_ov002_020dacb4.c": [
-        "param:#2 unsigned int",
-        "return:int"
-      ],
-      "src/unnamed/ov002/func_ov002_020e5948.c": [
-        "param:#2 unsigned int"
-      ]
-    },
-    "_ZN10ModelAnim24CopyERKS_Pcj": {
-      "include/decl_ModelAnim2.h": [
-        "param:#2 void *"
-      ],
-      "src/unnamed/ov002/func_ov002_020e4bb8.c": [
-        "param:#2 void *"
-      ]
-    },
-    "_ZN10dBgActor_c13IsClsnInRangeE5Fix12IiES1_": {
-      "src/game/actors/d_a_dgr.cpp": [
-        "param:#1 daDgr_c *"
-      ],
-      "src/game/actors/d_a_obj_ct_mecha11.cpp": [
-        "param:#1 char *"
-      ],
-      "src/game/actors/d_a_obj_rc_carpet.cpp": [
-        "return:void"
-      ],
-      "src/game/actors/d_a_obj_rc_guruguru.cpp": [
-        "return:bool"
-      ],
-      "src/game/actors/d_a_obj_tatefuda.cpp": [
-        "return:void"
-      ]
-    },
     "_ZN10dBgActor_c14KillByMegaCharER6Player": {
       "include/decl_Platform.h": [
         "param:#2 void *"
@@ -4899,14 +4862,6 @@
       ],
       "src/game/actors/d_a_obj_yajirusi.cpp": [
         "param:#5 int"
-      ]
-    },
-    "_ZN10dBgActor_c21IsClsnInRangeOnScreenE5Fix12IiES1_": {
-      "src/game/actors/d_a_obj_block_l.cpp": [
-        "return:void"
-      ],
-      "src/game/actors/d_a_pg_dfdr.cpp": [
-        "return:void"
       ]
     },
     "_ZN10dBgCh_Actr15ClearGroundFlagEv": {
@@ -5853,47 +5808,17 @@
         "return:void"
       ]
     },
-    "_ZN14BlendModelAnim7SetAnimER8BCA_Fileii5Fix12IiEt": {
-      "src/game/actors/d_a_bombking.cpp": [
-        "param:#2 void *",
-        "return:int"
-      ],
-      "src/game/actors/d_a_iwante.cpp": [
-        "param:#2 void *"
-      ],
-      "src/game/actors/d_a_jango.cpp": [
-        "return:int"
-      ],
-      "src/game/actors/d_a_king_donketu.cpp": [
-        "param:#2 BCA_File *"
-      ],
-      "src/game/actors/d_a_moray.cpp": [
-        "param:#2 void *"
-      ],
-      "src/game/stages/d_ent_obj.cpp": [
-        "param:#2 void *"
-      ],
+    "_ZN19dExtBlendAnmModel_c7SetAnimER8BCA_Fileiiit": {
       "src/minigames/unit020bfec0.cpp": [
         "param:#2 void *"
       ]
     },
-    "_ZN14BlendModelAnimD1Ev": {
+    "_ZN19dExtBlendAnmModel_cD1Ev": {
       "include/decl_BlendModelAnim.h": [
         "return:void"
       ],
       "src/minigames/unit020bfec0.cpp": [
         "return:void"
-      ]
-    },
-    "_ZN14dBgW_KcMbgSclY7SetFileEP8KCL_FileRK9Matrix4x35Fix12IiEsR10CLPS_Block": {
-      "src/game/actors/d_a_obj_km2_nobiru.cpp": [
-        "param:#3 const Matrix4x3 &",
-        "param:#6 CLPS_Block &"
-      ]
-    },
-    "_ZN14dBgW_KcMbgSclY9SetScaleYE5Fix12IiE": {
-      "include/decl_dBgW_KcMbgSclY.h": [
-        "return:int"
       ]
     },
     "_ZN14dBgW_KcMbgSclYD1Ev": {
@@ -6051,9 +5976,6 @@
         "param:#1 void *",
         "return:void"
       ],
-      "src/minigames/unit020bfec0.cpp": [
-        "param:#1 void *"
-      ],
       "src/unnamed/ov002/func_ov002_020e5948.c": [
         "param:#1 void *",
         "return:void"
@@ -6096,13 +6018,6 @@
         "param:#1 void *",
         "return:void *"
       ],
-      "src/game/actors/d_a_demo.cpp": [
-        "return:void *"
-      ],
-      "src/game/actors/d_a_door.cpp": [
-        "param:#1 void *",
-        "return:void *"
-      ],
       "src/game/actors/d_a_iwante.cpp": [
         "param:#1 void *",
         "return:void"
@@ -6114,22 +6029,6 @@
       "src/game/actors/d_a_kpa.cpp": [
         "param:#1 void *",
         "return:void"
-      ],
-      "src/game/actors/d_a_star.cpp": [
-        "param:#1 void *",
-        "return:void"
-      ],
-      "src/minigames/d_mg3d_esp_anim_set.cpp": [
-        "param:#1 void *",
-        "return:int"
-      ],
-      "src/minigames/d_mg_trmpln2_mario.cpp": [
-        "param:#1 SharedFilePtr *",
-        "return:void *"
-      ],
-      "src/minigames/unit020bfec0.cpp": [
-        "param:#1 void *",
-        "return:void *"
       ],
       "src/unnamed/ov002/func_ov002_020e5948.c": [
         "param:#1 void *",
@@ -7525,7 +7424,7 @@
         "return:void"
       ]
     },
-    "_ZN5Model13LoadTexAndPalER8BMD_File": {
+    "_ZN17dExtSimpleModel_c13LoadTexAndPalER8BMD_File": {
       "include/decl_Model.h": [
         "param:#1 void *",
         "return:int"
@@ -7534,18 +7433,18 @@
         "param:#1 BMD_File *"
       ]
     },
-    "_ZN5Model17UpdateFileOffsetsER8BMD_File": {
+    "_ZN17dExtSimpleModel_c17UpdateFileOffsetsER8BMD_File": {
       "src/unnamed/ov007/func_ov007_020b3f20.c": [
         "param:#1 void *"
       ]
     },
-    "_ZN5Model23AddToCommonModelDataArrER8BMD_File": {
+    "_ZN17dExtSimpleModel_c23AddToCommonModelDataArrER8BMD_File": {
       "src/unnamed/arm9/0201/func_02016e70.c": [
         "param:#1 void *",
         "return:Entry *"
       ]
     },
-    "_ZN5Model8LoadFileER13SharedFilePtr": {
+    "_ZN17dExtSimpleModel_c8LoadFileER13SharedFilePtr": {
       "src/game/actors/d_a_btn.cpp": [
         "param:#1 void *"
       ],
@@ -7582,13 +7481,6 @@
         "param:#1 void *",
         "return:int"
       ],
-      "src/minigames/d_mg_trmpln2_mario.cpp": [
-        "param:#1 SharedFilePtr *",
-        "return:struct BMD_File *"
-      ],
-      "src/minigames/unit020bfec0.cpp": [
-        "param:#1 void *"
-      ],
       "src/minigames/unit020cd744.cpp": [
         "param:#1 void *"
       ],
@@ -7606,7 +7498,7 @@
         "param:#1 void *"
       ]
     },
-    "_ZN5ModelD1Ev": {
+    "_ZN17dExtSimpleModel_cD1Ev": {
       "include/dScMgJump2_c.h": [
         "return:void"
       ],
@@ -10468,11 +10360,6 @@
         "return:void"
       ]
     },
-    "_ZN8dActor_c22IsTooFarAwayFromPlayerE5Fix12IiE": {
-      "src/game/actors/d_a_krb.cpp": [
-        "param:#1 char *"
-      ]
-    },
     "_ZN8dActor_c4NextEPKS_": {
       "src/game/actors/d_a_yegg.cpp": [
         "param:#1 const void *",
@@ -10595,223 +10482,11 @@
         "return:void"
       ]
     },
-    "_ZN9ModelAnim4CopyERKS_Pc": {
-      "include/decl_ModelAnim.h": [
-        "param:#2 const void *"
-      ]
-    },
-    "_ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj": {
-      "src/_ZN6Player15St_Balloon_InitEv.cpp": [
-        "param:#5 unsigned int",
-        "return:int"
-      ],
-      "src/_ZN6Player18St_YoshiPower_MainEv.cpp": [
-        "param:#5 unsigned int"
-      ],
-      "src/game/actors/d_a_bakubaku.cpp": [
-        "param:#5 unsigned int"
-      ],
-      "src/game/actors/d_a_basabasa.cpp": [
-        "param:#5 unsigned int"
-      ],
-      "src/game/actors/d_a_brq.cpp": [
-        "param:#5 unsigned int"
-      ],
-      "src/game/actors/d_a_btfly.cpp": [
-        "param:#5 unsigned int"
-      ],
-      "src/game/actors/d_a_btn.cpp": [
-        "param:#5 unsigned int"
-      ],
-      "src/game/actors/d_a_c_jugem.cpp": [
-        "param:#5 unsigned int"
-      ],
-      "src/game/actors/d_a_choropu.cpp": [
-        "param:#5 unsigned int"
-      ],
-      "src/game/actors/d_a_demo.cpp": [
-        "param:#5 unsigned int"
-      ],
-      "src/game/actors/d_a_door.cpp": [
-        "param:#5 unsigned int"
-      ],
-      "src/game/actors/d_a_dossy.cpp": [
-        "param:#5 unsigned int"
-      ],
-      "src/game/actors/d_a_eykn.cpp": [
-        "param:#5 unsigned int"
-      ],
-      "src/game/actors/d_a_f_ring.cpp": [
-        "param:#5 unsigned int"
-      ],
-      "src/game/actors/d_a_fish.cpp": [
-        "param:#5 unsigned int"
-      ],
-      "src/game/actors/d_a_gmch.cpp": [
-        "param:#5 unsigned int"
-      ],
-      "src/game/actors/d_a_hanachan.cpp": [
-        "param:#5 unsigned int",
-        "return:int"
-      ],
-      "src/game/actors/d_a_holhei.cpp": [
-        "param:#5 unsigned int",
-        "return:int"
-      ],
-      "src/game/actors/d_a_huwa.cpp": [
-        "param:#5 unsigned int"
-      ],
-      "src/game/actors/d_a_jgm.cpp": [
-        "param:#5 unsigned int"
-      ],
-      "src/game/actors/d_a_kinopio.cpp": [
-        "param:#5 unsigned int"
-      ],
-      "src/game/actors/d_a_kpa.cpp": [
-        "param:#5 unsigned int"
-      ],
-      "src/game/actors/d_a_krb.cpp": [
-        "param:#5 unsigned int"
-      ],
-      "src/game/actors/d_a_krpa.cpp": [
-        "param:#5 unsigned int"
-      ],
-      "src/game/actors/d_a_kuri_king.cpp": [
-        "param:#5 unsigned int"
-      ],
-      "src/game/actors/d_a_manta.cpp": [
-        "param:#5 unsigned int",
-        "return:int"
-      ],
-      "src/game/actors/d_a_mc_flag.cpp": [
-        "param:#5 unsigned int"
-      ],
-      "src/game/actors/d_a_menbo.cpp": [
-        "param:#5 unsigned int",
-        "return:int"
-      ],
-      "src/game/actors/d_a_mip.cpp": [
-        "param:#5 unsigned int"
-      ],
-      "src/game/actors/d_a_mky.cpp": [
-        "param:#5 unsigned int"
-      ],
-      "src/game/actors/d_a_obj_hatena_block.cpp": [
-        "param:#5 unsigned int"
-      ],
-      "src/game/actors/d_a_obj_hatena_switch.cpp": [
-        "param:#5 unsigned int"
-      ],
-      "src/game/actors/d_a_obj_key.cpp": [
-        "param:#5 unsigned int"
-      ],
-      "src/game/actors/d_a_obj_mario_cap.cpp": [
-        "param:#5 unsigned int"
-      ],
-      "src/game/actors/d_a_obj_rc_carpet.cpp": [
-        "param:#5 unsigned int",
-        "return:int"
-      ],
-      "src/game/actors/d_a_obj_shell.cpp": [
-        "param:#5 unsigned int"
-      ],
-      "src/game/actors/d_a_obj_tbox.cpp": [
-        "param:#5 unsigned int"
-      ],
-      "src/game/actors/d_a_obj_wakame.cpp": [
-        "param:#5 unsigned int"
-      ],
+    "_ZN14dExtAnmModel_c7SetAnimEP8BCA_Fileiit": {
       "src/game/actors/d_a_ots.cpp": [
-        "param:#5 unsigned int",
         "return:int"
-      ],
-      "src/game/actors/d_a_owl.cpp": [
-        "param:#5 unsigned int",
-        "return:int"
-      ],
-      "src/game/actors/d_a_peach.cpp": [
-        "param:#1 char *",
-        "param:#5 unsigned int",
-        "return:int"
-      ],
-      "src/game/actors/d_a_pg_bby.cpp": [
-        "param:#5 unsigned int"
-      ],
-      "src/game/actors/d_a_pg_dfdr.cpp": [
-        "param:#5 unsigned int"
-      ],
-      "src/game/actors/d_a_pg_mthr.cpp": [
-        "param:#5 unsigned int"
-      ],
-      "src/game/actors/d_a_pg_rcer.cpp": [
-        "param:#5 unsigned int",
-        "return:int"
-      ],
-      "src/game/actors/d_a_piano.cpp": [
-        "param:#5 unsigned int"
-      ],
-      "src/game/actors/d_a_pkn.cpp": [
-        "param:#5 unsigned int"
-      ],
-      "src/game/actors/d_a_popoi.cpp": [
-        "param:#5 unsigned int"
-      ],
-      "src/game/actors/d_a_propeller_heyho.cpp": [
-        "param:#5 unsigned int"
-      ],
-      "src/game/actors/d_a_pukupuku.cpp": [
-        "param:#5 unsigned int"
-      ],
-      "src/game/actors/d_a_r_flag.cpp": [
-        "param:#5 unsigned int"
-      ],
-      "src/game/actors/d_a_s_bird.cpp": [
-        "param:#5 unsigned int"
-      ],
-      "src/game/actors/d_a_shark.cpp": [
-        "param:#1 char *",
-        "param:#5 unsigned int",
-        "return:int"
-      ],
-      "src/game/actors/d_a_snowman.cpp": [
-        "param:#5 unsigned int"
-      ],
-      "src/game/actors/d_a_spd.cpp": [
-        "param:#5 unsigned int"
-      ],
-      "src/game/actors/d_a_tor.cpp": [
-        "param:#5 unsigned int"
-      ],
-      "src/game/actors/d_a_trs.cpp": [
-        "param:#5 unsigned int",
-        "return:int"
-      ],
-      "src/game/actors/d_a_wanwan.cpp": [
-        "param:#5 unsigned int"
-      ],
-      "src/game/actors/d_a_wanwan2.cpp": [
-        "param:#1 char *",
-        "param:#5 unsigned int",
-        "return:int"
-      ],
-      "src/game/actors/d_a_water_tatumaki.cpp": [
-        "param:#5 unsigned int"
-      ],
-      "src/game/actors/d_a_yegg.cpp": [
-        "param:#5 unsigned int"
-      ],
-      "src/game/actors/d_a_yurei_mucho.cpp": [
-        "param:#5 unsigned int"
-      ],
-      "src/minigames/d_mg3d_heyho_obj_adapter.cpp": [
-        "param:#5 unsigned int",
-        "return:int"
-      ],
-      "src/minigames/d_mg_jump3d_mario.cpp": [
-        "param:#5 unsigned int"
       ],
       "src/minigames/d_mg_trmpln2_mario.cpp": [
-        "param:#1 char *",
         "param:#4 unsigned int",
         "param:#5 int",
         "param:#5 unsigned int",
@@ -10819,20 +10494,9 @@
       ],
       "src/minigames/unit020bfec0.cpp": [
         "param:#5 unsigned int"
-      ],
-      "src/unnamed/ov002/func_ov002_020d71a0.c": [
-        "param:#1 char *",
-        "param:#5 unsigned int",
-        "return:int"
-      ],
-      "src/unnamed/ov002/func_ov002_020d71ec.c": [
-        "param:#5 unsigned int"
-      ],
-      "src/unnamed/ov002/func_ov002_020e5948.c": [
-        "param:#5 unsigned int"
       ]
     },
-    "_ZN9ModelAnimD1Ev": {
+    "_ZN14dExtAnmModel_cD1Ev": {
       "include/decl_ModelAnim.h": [
         "return:void"
       ],
@@ -10843,7 +10507,7 @@
         "return:void"
       ]
     },
-    "_ZN9ModelBase7SetFileEP8BMD_Fileii": {
+    "_ZN11dExtModel_c7SetFileEP8BMD_Fileii": {
       "src/game/actors/d_a_btn.cpp": [
         "return:void"
       ],
@@ -11630,7 +11294,7 @@
       ]
     },
     "data_0208e738": {
-      "src/_ZN5Model23AddToCommonModelDataArrER8BMD_File.cpp": [
+      "src/_ZN17dExtSimpleModel_c23AddToCommonModelDataArrER8BMD_File.cpp": [
         "return:int []"
       ]
     },
@@ -20438,7 +20102,7 @@
     },
     "func_020167a4": {
       "src/game/actors/d_a_moray.cpp": [
-        "param:#1 BlendModelAnim *"
+        "param:#1 dExtBlendAnmModel_c *"
       ]
     },
     "func_020169f4": {
@@ -20497,8 +20161,8 @@
       ]
     },
     "func_02016b24": {
-      "src/engine/model/Model.cpp": [
-        "param:#1 Model *",
+      "src/engine/model/d_ext_simple_model.cpp": [
+        "param:#1 dExtSimpleModel_c *",
         "param:#2 int"
       ],
       "src/game/actors/d_a_mip.cpp": [
@@ -20518,8 +20182,8 @@
       ]
     },
     "func_02016ff4": {
-      "src/_ZN5Model14LoadAndSetFileEtii.cpp": [
-        "param:#1 Model *"
+      "src/_ZN17dExtSimpleModel_c14LoadAndSetFileEtii.cpp": [
+        "param:#1 dExtSimpleModel_c *"
       ]
     },
     "func_02017060": {
@@ -23528,7 +23192,7 @@
         "param:#1 ModelComponents *",
         "param:#2 BMD_Bone *"
       ],
-      "src/engine/model/Model.cpp": [
+      "src/engine/model/d_ext_simple_model.cpp": [
         "param:#1 ModelComponents *",
         "param:#2 BMD_Bone *"
       ]
@@ -23537,7 +23201,7 @@
       "include/decl_common.h": [
         "return:int"
       ],
-      "src/engine/model/BlendModelAnim.cpp": [
+      "src/engine/model/d_ext_blend_anm_model.cpp": [
         "param:#1 ModelComponents *"
       ],
       "src/game/actors/d_a_moray.cpp": [
@@ -23563,7 +23227,7 @@
       ]
     },
     "func_02045e2c": {
-      "src/engine/model/ModelAnim2.cpp": [
+      "src/engine/model/d_ext_anm2_model.cpp": [
         "param:#4 int"
       ]
     },
@@ -23573,22 +23237,22 @@
       ]
     },
     "func_02045e70": {
-      "src/engine/model/Model.cpp": [
+      "src/engine/model/d_ext_simple_model.cpp": [
         "arity:1"
       ]
     },
     "func_02045ef8": {
-      "src/engine/model/Model.cpp": [
+      "src/engine/model/d_ext_simple_model.cpp": [
         "arity:1"
       ]
     },
     "func_02045f80": {
-      "src/engine/model/Model.cpp": [
+      "src/engine/model/d_ext_simple_model.cpp": [
         "arity:1"
       ]
     },
     "func_02046008": {
-      "src/engine/model/Model.cpp": [
+      "src/engine/model/d_ext_simple_model.cpp": [
         "param:#2 int"
       ],
       "src/engine/model/d_ext_common_model.cpp": [
@@ -23614,17 +23278,17 @@
       ]
     },
     "func_0204605c": {
-      "src/engine/model/Model.cpp": [
+      "src/engine/model/d_ext_simple_model.cpp": [
         "arity:1"
       ]
     },
     "func_02046234": {
-      "src/engine/model/Model.cpp": [
+      "src/engine/model/d_ext_simple_model.cpp": [
         "param:#2 int"
       ]
     },
     "func_020462bc": {
-      "src/engine/model/BlendModelAnim.cpp": [
+      "src/engine/model/d_ext_blend_anm_model.cpp": [
         "return:unsigned int"
       ],
       "src/unnamed/ov007/func_ov007_020bc6d4.c": [
@@ -23632,7 +23296,7 @@
       ]
     },
     "func_020462d0": {
-      "src/engine/model/Model.cpp": [
+      "src/engine/model/d_ext_simple_model.cpp": [
         "param:#1 ModelComponents *",
         "param:#2 BMD_File *"
       ],
@@ -23641,7 +23305,7 @@
       ]
     },
     "func_02046564": {
-      "src/engine/model/Model.cpp": [
+      "src/engine/model/d_ext_simple_model.cpp": [
         "param:#1 BMD_File *",
         "return:unsigned int"
       ],
@@ -23659,7 +23323,7 @@
       ]
     },
     "func_020469e0": {
-      "src/engine/model/Model.cpp": [
+      "src/engine/model/d_ext_simple_model.cpp": [
         "return:unsigned int"
       ]
     },

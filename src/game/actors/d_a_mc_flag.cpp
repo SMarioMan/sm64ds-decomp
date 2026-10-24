@@ -11,7 +11,7 @@
  * required D1/D0 pair; `new` odr-uses the class so that pair is emitted here.
  *
  * deslop leftovers:
- * - ModelAnim::SetAnim stays mangled (Fix12<int> by value, wall 6az)
+ * - dExtAnmModel_c::SetAnim stays mangled (Fix12<int> by value, wall 6az)
  */
 
 /* Runtime asset handles resolved through the overlay 0 file table. */
@@ -42,10 +42,6 @@ extern "C" McFlagAnimResFileHandle data_ov009_02113eb0;
 
 extern "C" {
 void Matrix4x3_FromRotationY(void *, s16);
-void _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(ModelAnim *self,
-                                                BCA_File *animFile,
-                                                int flags, int speed,
-                                                u32 startFrame);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -61,10 +57,8 @@ extern "C" daMcFlag_c *daMcFlag_c_classInit()
 // @symbol _ZN10daMcFlag_c13InitResourcesEv
 s32 daMcFlag_c::InitResources()
 {
-    mModelAnim.SetFile((BMD_File *)Model::LoadFile(data_ov009_02113eb8), 1, -1);
-    _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(
-        &mModelAnim, (BCA_File *)dExtFrameCtrl_c::LoadFile(data_ov009_02113eb0), 0,
-        0x1000, 0);
+    mModelAnim.SetFile((BMD_File *)dExtSimpleModel_c::LoadFile(data_ov009_02113eb8), 1, -1);
+    mModelAnim.SetAnim((BCA_File *)dExtFrameCtrl_c::LoadFile(data_ov009_02113eb0), 0, 0x1000, 0);
     return 1;
 }
 
@@ -100,10 +94,6 @@ s32 daMcFlag_c::CleanupResources()
     return 1;
 }
 
-/* -------------------------------------------------------------------------- */
-/*   _ZN10daMcFlag_cD1Ev  0x02112078  size 0x30  (complete-object destructor) */
-/*   _ZN10daMcFlag_cD0Ev  0x021120a8  size 0x44  (deleting destructor)        */
-/* -------------------------------------------------------------------------- */
 // @symbol _ZN10daMcFlag_cD0Ev
 // @symbol _ZN10daMcFlag_cD1Ev
 

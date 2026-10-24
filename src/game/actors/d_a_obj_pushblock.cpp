@@ -72,7 +72,11 @@ extern "C" PushblockClsnFilePtr data_ov002_0210df94;
  * respelled as C++ calls, and UpdateContinuous must retain the retail veneer.
  * The remaining declarations are untyped engine free functions and globals. */
 extern "C" {
-void _ZN8Particle6System9NewSimpleEj5Fix12IiES2_S2_(u32 id, Fix12i x, Fix12i y, Fix12i z);
+namespace Particle {
+struct System {
+    static void NewSimple(u32 id, Fix12i x, Fix12i y, Fix12i z);
+};
+}
 extern Matrix4x3 data_020a0e68;
 extern void Matrix4x3_FromRotationY(Matrix4x3 *m, int angle);
 extern void MulVec3Mat4x3(Vector3 *v, Matrix4x3 *m, Vector3 *dst);
@@ -80,7 +84,6 @@ extern void AddVec3(Vector3 *a, Vector3 *b, Vector3 *c);
 extern void dBgCh_Actr_UpdateContinuous_Veneer(void *p);
 extern void func_020393a4(int *p, int v);
 extern void func_02039394(int *p, int v);
-extern int _ZN10dBgActor_c21IsClsnInRangeOnScreenE5Fix12IiES1_(void *thiz, int a, int b);
 extern int Vec3_Dist(Vector3 *a, Vector3 *b);
 extern int Vec3_HorzDist(Vector3 *a, Vector3 *b);
 void _ZN10dBgW_KcMbg7SetFileEP8KCL_FileRK9Matrix4x35Fix12IiEsR10CLPS_Block(
@@ -123,7 +126,7 @@ int daObjPushblock_c::InitResources()
     BMD_File *bmd;
     KCL_File *kcl;
 
-    bmd = (BMD_File *)Model::LoadFile(data_ov002_0210df9c);
+    bmd = (BMD_File *)dExtSimpleModel_c::LoadFile(data_ov002_0210df9c);
     mModel.SetFile(bmd, 1, -1);
     UpdateModelPosAndRotY();
     UpdateClsnPosAndRot();
@@ -200,7 +203,7 @@ int daObjPushblock_c::Behavior()
 
     func_020393a4((int *)&mMeshCollider, 0x12c000);
     func_02039394((int *)&mMeshCollider, 0x96000);
-    _ZN10dBgActor_c21IsClsnInRangeOnScreenE5Fix12IiES1_(this, 0x3e8000, 0x96000);
+    IsClsnInRangeOnScreen(0x3e8000, 0x96000);
 
     if (mHorzSpeed != 0 && Vec3_Dist(&mPos, &mPrevPos) != 0) {
         mSlideSound = Sound::PlayLong(mSlideSound, 3, 0x97, mCamSpacePos, 0);
@@ -237,8 +240,8 @@ int daObjPushblock_c::Behavior()
  * vtable: _ZTV16daObjPushblock_c carries this address at slot 9, where
  * _ZTV10dBgActor_c carries fBase_c's generic 0x02043af0.
  *
- * Draws the block's own Model sub-object at +0xd4 (dBgActor_c::mModel, inherited)
- * through Model::Render (vtable slot 5). mwccarm dispatches the embedded-member
+ * Draws the block's own dExtSimpleModel_c sub-object at +0xd4 (dBgActor_c::mModel, inherited)
+ * through dExtSimpleModel_c::Render (vtable slot 5). mwccarm dispatches the embedded-member
  * call through the vtable rather than devirtualizing it, so the ROM's indirect
  * call is reproduced from the plain named form. */
 int daObjPushblock_c::Render() {
@@ -332,11 +335,7 @@ void daObjPushblock_c::OnHitByMegaChar(Player &player)
  *
  * Same shape as dBgActor_c::Kill (its base's slot 31): spawn a poof particle
  * above the block, poof-dust at that point, play the break sound at
- * mCamSpacePos, then mark for destruction. Particle::System::NewSimple stays
- * spelled as its mangled name because its coordinates are Fix12<int> BY VALUE;
- * declaring the true types changes how the caller passes them and breaks the
- * bytes (notes/mwccarm-codegen.md 6az, and
- * src/runtime/actor/d_actor.cpp (dActor_c::PoofDustAt)). */
+ * mCamSpacePos, then mark for destruction. */
 void daObjPushblock_c::Kill()
 {
     Vector3 vec;
@@ -345,7 +344,7 @@ void daObjPushblock_c::Kill()
     vec.y = mPosY;
     vec.z = mPosZ;
     vec.y += 0x96000;
-    _ZN8Particle6System9NewSimpleEj5Fix12IiES2_S2_(0x48, vec.x, vec.y, vec.z);
+    Particle::System::NewSimple(0x48, vec.x, vec.y, vec.z);
     vec2.x = vec.x;
     vec2.y = vec.y;
     vec2.z = vec.z;

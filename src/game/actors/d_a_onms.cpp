@@ -98,7 +98,7 @@ struct OnmsCollisionFilePtr : SharedFilePtr {
     ~OnmsCollisionFilePtr();
 };
 
-/* BMD (Model::LoadFile) and KCL (dBgW_Kc::LoadFile). Cleanup releases both. */
+/* BMD (dExtSimpleModel_c::LoadFile) and KCL (dBgW_Kc::LoadFile). Cleanup releases both. */
 extern "C" OnmsModelFilePtr gOnimasuModelFile;
 extern "C" OnmsCollisionFilePtr gOnimasuCollisionFile;
 extern "C" daOnms_cStateEntry data_ov092_02132568[9];
@@ -111,11 +111,14 @@ void _ZN8dActor_c10EarthquakeERK7Vector35Fix12IiE(void *v, int f);
 void func_02012694(unsigned int id, const Vector3 *v);
 /* Stores mRadius: p[6] = value, the word at dBgCh_Actr + 0x18. */
 void func_0203568c(void *p, int v);
-void *_ZN8Particle6System9NewSimpleEj5Fix12IiES2_S2_(unsigned int a, int b, int cc, int d);
+namespace Particle {
+struct System {
+    static void *NewSimple(unsigned int a, int b, int cc, int d);
+};
+}
 s16 Vec3_HorzAngle(const struct Vector3 *v0, const struct Vector3 *v1);
 int Vec3_HorzDist(const Vector3 *a, const Vector3 *b);
 s16 data_02082214[];
-int _ZN10dBgActor_c13IsClsnInRangeE5Fix12IiES1_(dBgActor_c *self, int range, int offset);
 void _ZN10dBgCh_Actr4InitEP8dActor_c5Fix12IiES3_P10Vector3_16S5_(
     dBgCh_Actr *self, int a1, int a2, int a3, int sp0, int sp1);
 void Vec3_Asr(Vec3 *d, Vec3 *s, int sh);
@@ -276,7 +279,7 @@ void daOnms_c::StateKnocked()
         dActor_c *o;
         int *p;
         TriplePoofDust();
-        _ZN8Particle6System9NewSimpleEj5Fix12IiES2_S2_(0xfa, mPosX, mPosY, mPosZ);
+        Particle::System::NewSimple(0xfa, mPosX, mPosY, mPosZ);
         MarkForDestruction();
         o = mPlayerActor;
         p = &o->mPosX;
@@ -558,7 +561,7 @@ int daOnms_c::Behavior()
         mStateTimer = 0;
 
     UpdateModelMtx();
-    if (_ZN10dBgActor_c13IsClsnInRangeE5Fix12IiES1_(this, 0, 0) != 0)
+    if (IsClsnInRange(0, 0) != 0)
         func_ov092_02131a88((char *)this);
 
     if (mRollDone == 1) {
@@ -586,7 +589,7 @@ int daOnms_c::InitResources()
     void *f;
     Vec3 tmp;
 
-    f = Model::LoadFile(gOnimasuModelFile);
+    f = dExtSimpleModel_c::LoadFile(gOnimasuModelFile);
     mModel.SetFile((BMD_File *)f, 1, -1);
 
     _ZN10dBgCh_Actr4InitEP8dActor_c5Fix12IiES3_P10Vector3_16S5_(

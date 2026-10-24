@@ -8,7 +8,7 @@
  * back except for two pad gaps:
  *
  *     dEnemyBase_c                        ends 0x110
- *     ModelAnim[5]                 0x110 + 5*0x64 = 0x304
+ *     dExtAnmModel_c[5]                 0x110 + 5*0x64 = 0x304
  *     MaterialChanger[5]           0x304 + 5*0x14 = 0x368
  *     TextureSequence[5]           0x368 + 5*0x14 = 0x3cc
  *     Vector3[5]                   0x3cc + 5*0x0c = 0x408
@@ -33,7 +33,7 @@
 #ifdef __cplusplus
 
 #include "dEnemyBase_c.h"
-#include "ModelAnim.h"
+#include "dExtAnmModel_c.h"
 #include "MaterialChanger.h"
 #include "TextureSequence.h"
 #include "dBgCh_Actr.h"
@@ -47,7 +47,7 @@ struct daHanachan_c : dEnemyBase_c {
         const char *mName;               /* 0x10 -- "DEMOWAIT", "MOVE", ... */
     };
 
-    ModelAnim mModelAnims[5];                        /* 0x110 */
+    dExtAnmModel_c mModelAnims[5];                   /* 0x110 */
     MaterialChanger mMaterialChangers[5];            /* 0x304 */
     TextureSequence mTextureSequences[5];            /* 0x368 */
     /* One entry per body segment, head first; these segment names are coined. */

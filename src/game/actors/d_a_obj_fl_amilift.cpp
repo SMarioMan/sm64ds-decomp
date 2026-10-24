@@ -75,7 +75,6 @@ int Vec3_HorzDist(const void* a, const void* b);
 int _Z14ApproachLinearRiii(int* v, int target, int step);
 extern LiftState data_ov064_0211c750[];
 extern short data_02082214[];
-extern int _ZN10dBgActor_c13IsClsnInRangeE5Fix12IiES1_(void*, int, int);
 void _ZN10dBgW_KcMbg7SetFileEP8KCL_FileRK9Matrix4x35Fix12IiEsR10CLPS_Block( void *self, KCL_File *k, Matrix4x3 *m, int fix, short s, CLPS_Block *clps);
 void func_020393d4(void *p, void *v);
 void func_020393c4(void *p, void *v);
@@ -253,7 +252,7 @@ s32 daObjFl_Amilift_c::Behavior() {
     int saved = mPosY;
     mPosY = t324 + (t330 + t320);
     UpdateModelPosAndRotY();
-    if (_ZN10dBgActor_c13IsClsnInRangeE5Fix12IiES1_(this, 0, 0))
+    if (IsClsnInRange(0, 0))
         UpdateClsnPosAndRot();
     mPosY = saved;
     mRiderOn = 0;
@@ -268,7 +267,7 @@ s32 daObjFl_Amilift_c::InitResources() {
     Vector3 nodeB;
     unsigned char b;
 
-    bmd = (BMD_File *)Model::LoadFile(data_ov064_0211c730);
+    bmd = (BMD_File *)dExtSimpleModel_c::LoadFile(data_ov064_0211c730);
     mModel.SetFile(bmd, 1, -1);
 
     b = (param1 >> 8) & 1;

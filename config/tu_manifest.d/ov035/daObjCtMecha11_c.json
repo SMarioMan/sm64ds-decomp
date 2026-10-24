@@ -538,12 +538,12 @@
   ],
   "defined_symbol_renames": [
     {
-      "from": "@542",
+      "from": "@539",
       "to": "@533",
       "evidence": "mwcc numbers this node @528 per TU and the fleet already defines a global @528 in ov080, so the merged link would multiply-define it"
     },
     {
-      "from": "@543",
+      "from": "@540",
       "to": "@535",
       "evidence": "mwcc numbers this node @529 per TU and the fleet already defines a global @529 in ov080, so the merged link would multiply-define it"
     }

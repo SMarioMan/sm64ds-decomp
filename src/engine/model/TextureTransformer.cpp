@@ -7,8 +7,8 @@
    deferred codegen.
 
    leftovers:
-   - SetFile and its SetAnimation call keep mangled spellings (Fix12<int>
-     by value, wall 6az); the member declarations in the headers are real.
+   - SetFile keeps its mangled spelling (Fix12<int> by value, wall 6az).
+     SetAnimation is the scalar method. The member declarations are real.
    - func_020469e8 and func_02046b64 stay extern "C" helpers with no
      declaring header; Prepare's ROM body is a 0xc long-call veneer, so it
      calls func_02046b64 with that function's own two-argument signature.
@@ -25,13 +25,6 @@
 
 extern "C" void func_02046b64(BMD_File *model, BTA_File *file);
 extern "C" void func_020469e8(ModelComponents *model, BTA_File *file, int frame);
-/* SetFile below and its SetAnimation call keep their mangled spellings:
-   wall 6az (notes/mwccarm-codegen.md) homes class-typed by-value
-   parameters that a body reads, and the real signature carries
-   Fix12<int> -- passing one to the member declaration homes it to the
-   caller's stack. The declarations in TextureTransformer.h and dExtFrameCtrl_c.h
-   are the real ones. */
-extern "C" void _ZN15dExtFrameCtrl_c12SetAnimationEti5Fix12IiEt(dExtFrameCtrl_c *self, u16 numFrames, s32 flags, s32 speed, u16 startFrame);
 
 // @symbol _ZN18TextureTransformerC1Ev
 TextureTransformer::TextureTransformer()
@@ -52,7 +45,7 @@ extern "C" void _ZN18TextureTransformer7SetFileER8BTA_Filei5Fix12IiEj(TextureTra
         self->speed = speed;
     } else {
         self->file = file;
-        _ZN15dExtFrameCtrl_c12SetAnimationEti5Fix12IiEt(self, file->numFrames, flags, speed, startFrame);
+        self->SetAnimation(file->numFrames, flags, speed, startFrame);
     }
 }
 

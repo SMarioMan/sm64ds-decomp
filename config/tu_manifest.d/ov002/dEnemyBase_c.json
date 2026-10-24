@@ -48,10 +48,10 @@
       "ordinal": 0
     },
     {
-      "symbol": "_ZN12dEnemyBase_c26UpdateKillByInvincibleCharER10dBgCh_ActrR9ModelAnimj",
+      "symbol": "_ZN12dEnemyBase_c26UpdateKillByInvincibleCharER10dBgCh_ActrR14dExtAnmModel_cj",
       "address": "0x020ad838",
       "size": "0x00000208",
-      "legacy_source": "src/_ZN12dEnemyBase_c26UpdateKillByInvincibleCharER10dBgCh_ActrR9ModelAnimj.cpp",
+      "legacy_source": "src/_ZN12dEnemyBase_c26UpdateKillByInvincibleCharER10dBgCh_ActrR14dExtAnmModel_cj.cpp",
       "ordinal": 1
     },
     {

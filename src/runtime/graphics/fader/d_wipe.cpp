@@ -28,6 +28,18 @@
 #include "IRQ.h"
 #include "decl_common.h"
 
+namespace CP15 {
+void FlushAndInvalidateDataCache(u32 addr, u32 len);
+}
+
+namespace GX {
+void LoadBGPltt(const void *src, u32 offset, u32 len);
+}
+
+namespace GXS {
+void LoadBGPltt(const void *src, u32 offset, u32 len);
+}
+
 extern "C" {
 /* The ROM's SetBackwardTime entry point reads a third argument in r2 and
    forwards it untouched; the header's 2-param member call would drop the
@@ -37,9 +49,7 @@ int  _ZN15dFdBrightness_c15SetBackwardTimeEj(dFdBrightness_c *self, u32 time, u3
 /* local extern: the ROM passes the blend target in r2 with no sign-extend;
    the header's s16 parameter emits sxth at this call site. */
 void _ZN3G2x18SetBlendBrightnessEPVtts(volatile u16 *p, u16 a, int b);
-void _ZN4CP1527FlushAndInvalidateDataCacheEjj(u32 addr, u32 len);
-void _ZN2GX10LoadBGPlttEPKvjj(const void *src, u32 offset, u32 len);
-void _ZN3GXS10LoadBGPlttEPKvjj(const void *src, u32 offset, u32 len);
+
 void MultiStore_Int(int val, int *dst, int len);
 void func_0202f2c4(void);
 }
@@ -119,13 +129,13 @@ extern "C" int _ZN7dWipe_c15SetBackwardTimeEj(dWipe_c *self, u32 frames, u32 ext
         }
 
         if (self->type == 2) {
-            _ZN4CP1527FlushAndInvalidateDataCacheEjj((u32)data_0209f604, 2);
-            _ZN2GX10LoadBGPlttEPKvjj(data_0209f604, 0, 2);
-            _ZN3GXS10LoadBGPlttEPKvjj(data_0209f604, 0, 2);
+            CP15::FlushAndInvalidateDataCache((u32)data_0209f604, 2);
+            GX::LoadBGPltt(data_0209f604, 0, 2);
+            GXS::LoadBGPltt(data_0209f604, 0, 2);
         } else {
-            _ZN4CP1527FlushAndInvalidateDataCacheEjj((u32)data_020926cc, 2);
-            _ZN2GX10LoadBGPlttEPKvjj(data_020926cc, 0, 2);
-            _ZN3GXS10LoadBGPlttEPKvjj(data_020926cc, 0, 2);
+            CP15::FlushAndInvalidateDataCache((u32)data_020926cc, 2);
+            GX::LoadBGPltt(data_020926cc, 0, 2);
+            GXS::LoadBGPltt(data_020926cc, 0, 2);
         }
 
         self->wipeInterp = 0;
@@ -191,13 +201,13 @@ int dWipe_c::SetForwardTime(u32 frames)
         }
 
         if (type == 2) {
-            _ZN4CP1527FlushAndInvalidateDataCacheEjj((u32)data_0209f600, 2);
-            _ZN2GX10LoadBGPlttEPKvjj(data_0209f600, 0, 2);
-            _ZN3GXS10LoadBGPlttEPKvjj(data_0209f600, 0, 2);
+            CP15::FlushAndInvalidateDataCache((u32)data_0209f600, 2);
+            GX::LoadBGPltt(data_0209f600, 0, 2);
+            GXS::LoadBGPltt(data_0209f600, 0, 2);
         } else {
-            _ZN4CP1527FlushAndInvalidateDataCacheEjj((u32)data_020926c8, 2);
-            _ZN2GX10LoadBGPlttEPKvjj(data_020926c8, 0, 2);
-            _ZN3GXS10LoadBGPlttEPKvjj(data_020926c8, 0, 2);
+            CP15::FlushAndInvalidateDataCache((u32)data_020926c8, 2);
+            GX::LoadBGPltt(data_020926c8, 0, 2);
+            GXS::LoadBGPltt(data_020926c8, 0, 2);
         }
 
         wipeInterp = 0x200000;
@@ -470,7 +480,7 @@ void dWipe_c::func_0202efa0()
         }
     }
 
-    _ZN4CP1527FlushAndInvalidateDataCacheEjj((u32)data_0209f648, 0x600);
+    CP15::FlushAndInvalidateDataCache((u32)data_0209f648, 0x600);
     data_0209f60c = idx;
 }
 
@@ -519,7 +529,7 @@ void dWipe_c::func_0202ee94()
         r4--;
     }
 
-    _ZN4CP1527FlushAndInvalidateDataCacheEjj((u32)data_0209f648, 0x600);
+    CP15::FlushAndInvalidateDataCache((u32)data_0209f648, 0x600);
     data_0209f60c = fp;
 }
 

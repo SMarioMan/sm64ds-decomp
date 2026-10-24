@@ -17,10 +17,10 @@
  *
  * mPlayers is dMgJump3DMario_c[3], now named by the ROM's own RTTI and its
  * paired constructor/destructor helpers. The compiler therefore owns the
- * final array teardown after the still-explicit Model, mArray3 and mArray2
+ * final array teardown after the still-explicit dExtSimpleModel_c, mArray3 and mArray2
  * steps. mModel remains raw for now: typing only it would move its automatic
  * destruction after those two still-opaque arrays, opposite the ROM order.
- * The factory's `_ZN5ModelC1Ev(p + 0x5a14)` and sizeof(Model) == 0x50 still
+ * The factory's `_ZN17dExtSimpleModel_cC1Ev(p + 0x5a14)` and sizeof(dExtSimpleModel_c) == 0x50 still
  * fix the model's offset and extent without pretending the other element
  * type names are known.
  *
@@ -41,7 +41,7 @@
  * The casts below adapt the existing lifecycle entries at that ABI boundary. */
 extern "C" void __cxa_vec_cleanup(void *base, unsigned int count, unsigned int stride,
                                   void (*dtor)(void *));
-extern "C" void _ZN5ModelD1Ev(void *p);
+extern "C" void _ZN17dExtSimpleModel_cD1Ev(void *p);
 extern "C" int Heyho_Destruct(int *object);
 extern "C" void Jump2Popup_ElemDtor(void *object);
 
@@ -60,7 +60,7 @@ struct dScMgJump2_c : dScMgD3DBase_c {
        src/minigames/d_s_mg_jump2.cpp, so _ZTV12dScMgJump2_c is still emitted
        by that one translation unit and by no other. */
     virtual ~dScMgJump2_c() {
-        _ZN5ModelD1Ev((char *)this + 0x5a14);
+        _ZN17dExtSimpleModel_cD1Ev((char *)this + 0x5a14);
         __cxa_vec_cleanup(mArray3, 0x10, 0x24, Jump2Popup_ElemDtor);
         __cxa_vec_cleanup(mArray2, 6, 0xf0, (void (*)(void *))Heyho_Destruct);
     }
@@ -79,7 +79,7 @@ struct dScMgJump2_c : dScMgD3DBase_c {
     dMgJump3DMario_c mPlayers[3]; /* 0x500c -- RTTI-proven element type */
     u8 mArray2[0x5a0];            /* 0x5234 -- 6 * 0xf0,  elem dtor Heyho_Destruct */
     u8 mArray3[0x240];            /* 0x57d4 -- 0x10 * 0x24, elem dtor Jump2Popup_ElemDtor */
-    u8 mModel[0x50];              /* 0x5a14 -- a real Model, raw bytes; see banner */
+    u8 mModel[0x50];              /* 0x5a14 -- a real dExtSimpleModel_c, raw bytes; see banner */
     s32 mTextureOffsetT;          /* 0x5a64 -- T texture-coordinate offset for material 0 */
     s32 mTextureScrollRate;       /* 0x5a68 -- texture scroll rate, applied >> 12 */
     u32 mParticleID;              /* 0x5a6c -- particle system unique ID */

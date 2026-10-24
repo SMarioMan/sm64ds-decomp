@@ -57,7 +57,6 @@ void MulMat4x3Mat4x3(Matrix4x3 *a, void *b, void *c);
 void Matrix4x3_ApplyInPlaceToRotationY(void *m, short a);
 unsigned char DecIfAbove0_Byte(unsigned char *p);
 void func_020393c4(dBgW_KcMbg *clsn, void *fn);
-int _ZN10dBgActor_c13IsClsnInRangeE5Fix12IiES1_(void *thiz, int x, int z);
 void _ZN10dBgW_KcMbg7SetFileEP8KCL_FileRK9Matrix4x35Fix12IiEsR10CLPS_Block(
     dBgW_KcMbg *self, KCL_File *kcl, const Matrix4x3 *mtx, int scale,
     s16 angleY, CLPS_Block *clps);
@@ -162,7 +161,7 @@ s32 daObjGuragura_c::Behavior()
     }
     Quaternion_SLerp((char *)mTilt, (char *)mTiltTarget, 0x199, (char *)mTilt);
     func_ov002_020b6074(this);
-    if (_ZN10dBgActor_c13IsClsnInRangeE5Fix12IiES1_(this, 0, 0)) {
+    if (IsClsnInRange(0, 0)) {
         UpdateClsnPosAndRot();
     }
     mBumped = 0;
@@ -170,14 +169,14 @@ s32 daObjGuragura_c::Behavior()
 }
 
 /* ROM ordinal 6 -- func_ov002_020b6244, 0x020b6244, size 0x88.
- * Shared resource setup both leaves call. Slot 0 is Model::LoadFile, slot 1
+ * Shared resource setup both leaves call. Slot 0 is dExtSimpleModel_c::LoadFile, slot 1
  * is dBgW_Kc::LoadFile, slot 2 is CLPS into SetFile; then install 020b6374
  * as the collider callback. */
 // @symbol func_ov002_020b6244
 extern "C" {
 int func_ov002_020b6244(daObjGuragura_c *self, ResourceDescriptor *descriptor)
 {
-    self->mModel.SetFile((BMD_File *)Model::LoadFile(*descriptor->model), 1, -1);
+    self->mModel.SetFile((BMD_File *)dExtSimpleModel_c::LoadFile(*descriptor->model), 1, -1);
     self->UpdateModelPosAndRotY();
     self->UpdateClsnPosAndRot();
     _ZN10dBgW_KcMbg7SetFileEP8KCL_FileRK9Matrix4x35Fix12IiEsR10CLPS_Block(

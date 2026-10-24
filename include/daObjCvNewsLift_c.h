@@ -13,7 +13,7 @@
 #include "dBgActor_c.h"
 
 struct daObjCvNewsLift_c : dBgActor_c {
-    Model mPlatformModels[4];            /* 0x320 */
+    dExtSimpleModel_c mPlatformModels[4]; /* 0x320 */
     Matrix4x3 mPlatformMats[4];          /* 0x460 - the platform colliders' matrices */
     dBgW_KcMbg mPlatformColliders[4];    /* 0x520 */
     Vector3 mHomePos;                    /* 0xc40 - spawn position, restored on reset */

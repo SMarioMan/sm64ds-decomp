@@ -53,10 +53,7 @@ extern void func_020393d4(dBgW_KcMbg *p, void *v);
 /* By-value Fix12<int> is wall 6az: constructing wrapper arguments adds stack
    traffic the ROM does not have. Keep the register-level spelling. */
 void _ZN10dBgW_KcMbg7SetFileEP8KCL_FileRK9Matrix4x35Fix12IiEsR10CLPS_Block(
-    dBgW_KcMbg *self, void *kcl, const Matrix4x3 *mtx, int scale, short angY,
-    CLPS_Block *clps);
-int _ZN10dBgActor_c13IsClsnInRangeE5Fix12IiES1_(
-    dBgActor_c *self, int a, int b);
+    dBgW_KcMbg *self, void *kcl, const Matrix4x3 *mtx, int scale, short angY, CLPS_Block *clps);
 void _ZN8dActor_c18DropShadowScaleXYZER17dExtShadowModel_cR9Matrix4x35Fix12IiES5_S5_j(
     dActor_c *self, dExtShadowModel_c *sm, Matrix4x3 *mtx, int a, int b, int d,
     unsigned int e);
@@ -91,13 +88,13 @@ extern PathLiftCollisionFilePtr data_ov100_02148a5c;
 
 extern "C" {
 extern void *_ZN10dBgActor_cC2Ev(dBgActor_c *actor);
-extern void *_ZN5ModelC1Ev(Model *model);
-extern Model *_ZN5ModelD1Ev(Model *model);
+extern void *_ZN17dExtSimpleModel_cC1Ev(dExtSimpleModel_c *model);
+/* local extern: __cxa_vec_ctor needs D1 by address; only two scene headers declare it */
+extern dExtSimpleModel_c *_ZN17dExtSimpleModel_cD1Ev(dExtSimpleModel_c *model);
 extern void *_ZN7PathPtrC1Ev(PathPtr *path);
 extern void *_ZN17dExtShadowModel_cC1Ev(dExtShadowModel_c *model);
-extern void __cxa_vec_ctor(
-    Model *models, unsigned int count, unsigned int size,
-    void (*ctor)(void *), void (*dtor)(void *));
+extern void __cxa_vec_ctor(dExtSimpleModel_c *models, unsigned int count, unsigned int size,
+                           void (*ctor)(void *), void (*dtor)(void *));
 }
 
 extern int data_ov002_0210af70[];
@@ -111,10 +108,9 @@ extern "C" daObjPathLift_c *daObjPathLift_c_classInit()
     if (actor) {
         _ZN10dBgActor_cC2Ev(actor);
         *(int *)actor = (int)data_ov002_0210af70;
-        __cxa_vec_ctor(
-            actor->mModels, 3, sizeof(Model),
-            (void (*)(void *))_ZN5ModelC1Ev,
-            (void (*)(void *))_ZN5ModelD1Ev);
+        __cxa_vec_ctor(actor->mModels, 3, sizeof(dExtSimpleModel_c),
+                       (void (*)(void *))_ZN17dExtSimpleModel_cC1Ev,
+                       (void (*)(void *))_ZN17dExtSimpleModel_cD1Ev);
         _ZN7PathPtrC1Ev(&actor->mPath);
         *(int *)actor = (int)&_ZTV15daObjPathLift_c[2];
         _ZN17dExtShadowModel_cC1Ev(&actor->mShadowModel);
@@ -126,8 +122,8 @@ extern "C" daObjPathLift_c *daObjPathLift_c_classInit()
 int daObjPathLift_c::InitResources()
 {
     Vector3 pos;
-    Model::LoadFile(data_ov002_0210d9f0);
-    mModel.SetFile((BMD_File *)Model::LoadFile(data_ov100_02148a54), 1, -1);
+    dExtSimpleModel_c::LoadFile(data_ov002_0210d9f0);
+    mModel.SetFile((BMD_File *)dExtSimpleModel_c::LoadFile(data_ov100_02148a54), 1, -1);
     mShadowModel.InitCuboid();
     func_ov100_0214700c(this);
     UpdateClsnPosAndRot();
@@ -181,7 +177,7 @@ int daObjPathLift_c::Behavior()
             mMeshCollider.Enable(this);
         }
     } else {
-        _ZN10dBgActor_c13IsClsnInRangeE5Fix12IiES1_(this, 0, 0);
+        IsClsnInRange(0, 0);
     }
     return 1;
 }
@@ -271,8 +267,6 @@ extern "C" void func_ov100_02146e70(daObjPathLift_c *self)
 // @symbol _ZN15daObjPathLift_cD0Ev
 /* -------------------------------------------------------------------------- */
 /* ROM ordinals 0 and 1 -- the destructor group.                              */
-/*   _ZN15daObjPathLift_cD1Ev  0x02146d7c  size 0x70                          */
-/*   _ZN15daObjPathLift_cD0Ev  0x02146dec  size 0x84                          */
 /* Both come from the `~daObjPathLift_c() {}` in the header: the compiler     */
 /* writes the group, and only the INLINE form writes it in the cartridge's    */
 /* order. An out-of-line definition here emits D2, D0, D1 instead, which is   */

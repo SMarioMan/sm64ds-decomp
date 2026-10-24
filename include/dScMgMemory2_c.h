@@ -10,7 +10,7 @@
  * 0x020f5564 then D0 0x020f55b8.
  *
  * mShared is what Dealer_Construct builds and Dealer_Destruct tears
- * down. The real BlendModelAnim / Model / dExtShadowModel_c stay byte arrays:
+ * down. The real dExtBlendAnmModel_c / dExtSimpleModel_c / dExtShadowModel_c stay byte arrays:
  * a member with a destructor would run twice.
  */
 #ifndef DSCMGMEMORY2_C_H
@@ -31,9 +31,9 @@ struct dMgMemory2SharedState_c {
 
     u8 pad_000[0x1a];        /* 0x000 */
     s16 unk_01a;             /* 0x01a -- Dealer_Construct stores 0 */
-    u8 blendModelAnim[0x70]; /* 0x01c -- BlendModelAnim */
-    u8 model[0x50];          /* 0x08c -- Model */
-    /* MascotWalker_Construct: file handles, a second BlendModelAnim at +0x18,
+    u8 blendModelAnim[0x70]; /* 0x01c -- dExtBlendAnmModel_c */
+    u8 model[0x50];          /* 0x08c -- dExtSimpleModel_c */
+    /* MascotWalker_Construct: file handles, a second dExtBlendAnmModel_c at +0x18,
        dExtShadowModel_c at +0x88. */
     u8 at_0dc[0xf8];  /* 0x0dc */
     u8 pad_1d4[0x8];  /* 0x1d4 */

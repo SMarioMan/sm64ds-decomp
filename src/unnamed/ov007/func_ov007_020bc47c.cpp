@@ -1,5 +1,5 @@
 //cpp
-#include "Model.h"
+#include "dExtSimpleModel_c.h"
 
 extern "C" void func_020462d0(void *a, void *b, int c);
 extern "C" void func_020462b4(int *p, int v);
@@ -24,7 +24,7 @@ struct Ov007Model {
     int visible;
     int animTick; /* 0x98: 1 on the frames that step the animations */
     /* 0x9c: func_ov007_020bc6d4's second argument; 4 cross-fade buffers,
-       8 skips Model::LoadTexAndPal */
+       8 skips dExtSimpleModel_c::LoadTexAndPal */
     int flags;
 };
 
@@ -42,7 +42,7 @@ extern "C" void func_ov007_020bc47c(void *thiz)
     ModelComponents *m = self->model;
 
     if ((self->flags & 8) == 0) {
-        Model::LoadTexAndPal(*m->modelFile);
+        dExtSimpleModel_c::LoadTexAndPal(*m->modelFile);
     }
     func_020462d0(m, m->modelFile, (int)self->transforms);
     if ((self->flags & 4) != 0) {

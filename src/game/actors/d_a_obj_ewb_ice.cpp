@@ -125,7 +125,11 @@ enum {
 };
 
 extern "C" {
-void *_ZN8Particle6System9NewSimpleEj5Fix12IiES2_S2_(unsigned int id, int x, int y, int z);
+namespace Particle {
+struct System {
+    static void *NewSimple(unsigned int id, int x, int y, int z);
+};
+}
 void func_02012694(unsigned int id, const Vector3 *pos);
 unsigned short DecIfAbove0_Short(unsigned short *p);
 extern s16 data_02082214[];
@@ -180,8 +184,8 @@ extern "C" int func_ov073_02122034(char *raw)
     pos.y = y;
     pos.z = ice->mPosZ;
     pos.y = y - kSplashDrop;
-    _ZN8Particle6System9NewSimpleEj5Fix12IiES2_S2_(0x8b, pos.x, pos.y, pos.z);
-    _ZN8Particle6System9NewSimpleEj5Fix12IiES2_S2_(0x8c, pos.x, pos.y, pos.z);
+    Particle::System::NewSimple(0x8b, pos.x, pos.y, pos.z);
+    Particle::System::NewSimple(0x8c, pos.x, pos.y, pos.z);
     func_02012694(0x172, &ice->mCamSpacePos);
     return 1;
 }
@@ -326,7 +330,7 @@ void daObjEwbIce_c::Kill()
     pos.y = mPosY;
     pos.z = mPosZ;
     pos.y += kKillRise;
-    _ZN8Particle6System9NewSimpleEj5Fix12IiES2_S2_(0xa, pos.x, pos.y, pos.z);
+    Particle::System::NewSimple(0xa, pos.x, pos.y, pos.z);
     dust = pos;
     PoofDustAt(dust);
     Sound::PlayBank3(0x41, mCamSpacePos);
@@ -387,7 +391,8 @@ int daObjEwbIce_c::InitResources()
         break;
     }
 
-    bmd = (BMD_File *)Model::LoadFile(*((EwbIceFileSlot *)data_ov073_021231bc)[mVariant].file);
+    bmd = (BMD_File *)dExtSimpleModel_c::LoadFile(
+        *((EwbIceFileSlot *)data_ov073_021231bc)[mVariant].file);
     mModel.SetFile(bmd, 1, -1);
     Matrix4x3_FromRotationXYZExt(&mModel.mat4x3, mAngleX, mAngleY, mAngleZ);
     mModel.mat4x3.t.x = mPosX >> 3;

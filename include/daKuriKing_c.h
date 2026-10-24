@@ -2,15 +2,15 @@
 #define DAKURIKING_C_H
 
 #include "types.h"
-#include "ModelAnim.h"
+#include "dExtAnmModel_c.h"
 #include "dBgCh_Actr.h"
 
 /* The daKuriKing_c. Its destructor is the layout, and eight boundaries close on
  * sizes other headers assert:
  *
  *     dEnemyBase_c                        ends 0x110
- *     dCcAcPos_c[4] 0x110 + 4*0x40 = 0x210  -> ModelAnim
- *     ModelAnim                    0x210 +   0x64 = 0x274  -> the shadows
+ *     dCcAcPos_c[4] 0x110 + 4*0x40 = 0x210  -> dExtAnmModel_c
+ *     dExtAnmModel_c                    0x210 +   0x64 = 0x274  -> the shadows
  *     dExtShadowModel_c[3]               0x274 + 3*0x28 = 0x2ec
  *     Vector3[3]                   0x3ac + 3*0x0c = 0x3d0  -> MaterialChanger
  *     MaterialChanger              0x3d0 +   0x14 = 0x3e4  -> TextureSequence
@@ -38,7 +38,7 @@
 #ifdef __cplusplus
 
 #include "dEnemyBase_c.h"
-#include "ModelAnim.h"
+#include "dExtAnmModel_c.h"
 #include "dExtShadowModel_c.h"
 #include "MaterialChanger.h"
 #include "TextureSequence.h"
@@ -48,7 +48,7 @@
 
 struct daKuriKing_c : dEnemyBase_c {
     dCcAcPos_c mdCc_cs[4];  /* 0x110 */
-    ModelAnim mModelAnim;                         /* 0x210 */
+    dExtAnmModel_c mModelAnim;                    /* 0x210 */
     dExtShadowModel_c mShadowModels[3];           /* 0x274 */
     /* One drop-shadow matrix per foot. func_ov074_02121800 sets each to the
        identity with that foot's mCylClsnPos x/z and mPosY (>> 3) as translation
@@ -204,7 +204,7 @@ struct daKuriKing_c {
     s32 mVertAccel;              /* 0x09c -- dActor_c's; InitResources sets -0xa000 */
     s32 mTerminalVelocity;       /* 0x0a0 -- dActor_c's; InitResources sets -0x3c000 */
     u8 pad_0a4[0x16c];
-    ModelAnim mModelAnim; /* 0x210 */
+    dExtAnmModel_c mModelAnim; /* 0x210 */
     u8 pad_274[0x78];
     s32 mShadowMatrices[3][12]; /* 0x2ec */
     s32 mBodyMatrix[12];        /* 0x37c */

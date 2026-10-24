@@ -35,7 +35,6 @@ typedef char ResourceDescriptor_size_must_be_0x0c[
     sizeof(ResourceDescriptor) == 0x0c ? 1 : -1];
 
 extern "C" {
-int _ZN10dBgActor_c21IsClsnInRangeOnScreenE5Fix12IiES1_(void *c, int a, int b);
 void func_020393d4(dBgW_KcMbg *clsn, void *fn);
 void _ZN10dBgW_KcMbg7SetFileEP8KCL_FileRK9Matrix4x35Fix12IiEsR10CLPS_Block(
     dBgW_KcMbg *self, KCL_File *kcl, const Matrix4x3 *mtx, int scale,
@@ -104,13 +103,13 @@ s32 daObjKaitendai_c::Behavior()
     *p = *p + mPrevAngleZ;
     mAngleY = mPrevAngleY;
     UpdateModelPosAndRotY();
-    if (_ZN10dBgActor_c21IsClsnInRangeOnScreenE5Fix12IiES1_(this, 0, 0))
+    if (IsClsnInRangeOnScreen(0, 0))
         UpdateClsnPosAndRot();
     return 1;
 }
 
 /* ROM ordinal 5 -- func_ov002_020b676c, 0x020b676c, size 0xa8.
- * Shared resource setup the five leaves call. Slot 0 is Model::LoadFile,
+ * Shared resource setup the five leaves call. Slot 0 is dExtSimpleModel_c::LoadFile,
  * slot 1 is dBgW_Kc::LoadFile, slot 2 is CLPS into SetFile; then bind
  * UpdatePosAndAngs and seed mPrevAngleZ. */
 // @symbol func_ov002_020b676c
@@ -119,7 +118,7 @@ int func_ov002_020b676c(daObjKaitendai_c *self, ResourceDescriptor *descriptor, 
 {
     s16 y;
 
-    self->mModel.SetFile((BMD_File *)Model::LoadFile(*descriptor->model), 1, -1);
+    self->mModel.SetFile((BMD_File *)dExtSimpleModel_c::LoadFile(*descriptor->model), 1, -1);
     self->UpdateModelPosAndRotY();
     self->UpdateClsnPosAndRot();
     _ZN10dBgW_KcMbg7SetFileEP8KCL_FileRK9Matrix4x35Fix12IiEsR10CLPS_Block(

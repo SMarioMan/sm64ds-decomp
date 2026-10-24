@@ -27,11 +27,18 @@
 #include "Heap.h"
 #include "OAM.h"
 
+namespace GX {
+void LoadOBJPltt(const void *p, u32 a, u32 b);
+}
+
+namespace GXS {
+void LoadOBJPltt(const void *p, u32 a, u32 b);
+}
+
 extern "C" {
 void MultiStore16(u16 val, char *dst, int nbytes);
 void DecompressLZ16(int src, void *dst);
-void _ZN2GX11LoadOBJPlttEPKvjj(const void *p, u32 a, u32 b);
-void _ZN3GXS11LoadOBJPlttEPKvjj(const void *p, u32 a, u32 b);
+
 void func_020308b4(void);
 void func_02012790(int x);
 
@@ -45,8 +52,8 @@ extern int OVERLAY_102_ID;
 
 void _ZN3OAM6RenderEbP7OamAttriiii5Fix12IiEi(int sub, void *attr, int x, int y, int a, int cc,
                                              int fx, int mode);
-void _ZN3OAM6RenderEbP7OamAttriiii5Fix12IiES3_ii(int sub, void *attr, int x, int y, int a, int cc,
-                                                 int fx0, int fy0, int rot, int mode);
+void OamRender10_d_s_mb(int sub, void *attr, int x, int y, int a, int cc, int fx0, int fy0, int rot,
+                        int mode);
 extern struct OamAttr *data_0208a0f8[];
 extern s16 data_02082214[];
 
@@ -130,8 +137,7 @@ int dScMB_c::graphCallback_c::GraphCallback3() {
                     mStillTimer = 0x78;
             }
         } else {
-            _ZN3OAM6RenderEbP7OamAttriiii5Fix12IiES3_ii(0, sprite, 0x80, 0x80, -1, -1, 0x1000,
-                                                        0x1000, 0, -1);
+            OAM::Render(0, (OamAttr *)sprite, 0x80, 0x80, -1, -1, 0x1000, 0x1000, 0, -1);
             OAM::RenderSub((OamAttr *)sprite, 0x80, 0x80);
             mStillTimer -= data_0208ee44;
             mSpinAngle = 0;
@@ -288,9 +294,9 @@ s32 dScMB_c::InitResources() {
         vram += 0x1280;
         DecompressLZ16((int)&data_0209446c, vram);
     }
-    _ZN2GX11LoadOBJPlttEPKvjj((const void *)&data_0209444c, 0, 0x20);
-    _ZN2GX11LoadOBJPlttEPKvjj((const void *)&data_020945d0, 0xa0, 0x20);
-    _ZN3GXS11LoadOBJPlttEPKvjj((const void *)&data_0209444c, 0, 0x20);
+    GX::LoadOBJPltt((const void *)&data_0209444c, 0, 0x20);
+    GX::LoadOBJPltt((const void *)&data_020945d0, 0xa0, 0x20);
+    GXS::LoadOBJPltt((const void *)&data_0209444c, 0, 0x20);
 
     *(volatile u16 *)0x400000a &= ~3;
     *(volatile u16 *)0x400100a &= ~3;

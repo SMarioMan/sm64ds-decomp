@@ -32,8 +32,8 @@
  */
 
 #include "dEnemyBase_c.h"
-#include "Model.h"
-#include "ModelAnim.h"
+#include "dExtSimpleModel_c.h"
+#include "dExtAnmModel_c.h"
 #include "dCcAc_c.h"
 #include "dCcAcPos_c.h"
 #include "dExtShadowModel_c.h"

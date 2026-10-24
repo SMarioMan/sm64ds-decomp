@@ -1,7 +1,9 @@
 typedef signed int s32;
 typedef signed long long s64;
 
-extern void _ZN4cstd16reciprocal_asyncE5Fix12IiE(int a);
+/* local extern: this file is C and cannot name the C++ namespaced
+   cstd::reciprocal_async, so it calls the symbol directly. */
+extern void _ZN4cstd16reciprocal_asyncEi(int a);
 extern int _ZN4cstd11fdiv_resultEv(void);
 extern void Copy48Bytes(int *src, int *dst);
 
@@ -24,7 +26,7 @@ int InvMat4x3(int *src, int *dst)
         return -1;
     }
 
-    _ZN4cstd16reciprocal_asyncE5Fix12IiE(det);
+    _ZN4cstd16reciprocal_asyncEi(det);
 
     {
         int x1 = (int)(((s64)src[1] * src[8] - (s64)src[7] * src[2]) >> 12);

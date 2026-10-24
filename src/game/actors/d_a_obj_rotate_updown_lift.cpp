@@ -152,9 +152,11 @@ void func_020393a4(int *collider, int range);
 void func_02039394(int *collider, int range);
 void func_020393d4(int *collider, void *callback);
 
-void *_ZN8Particle6System9NewSimpleEj5Fix12IiES2_S2_(unsigned int id, int x, int y, int z);
-void _ZN8dActor_c9SetRangesE5Fix12IiES1_S1_S1_(void *self, int a, int b, int c, int d);
-int _ZN10dBgActor_c13IsClsnInRangeE5Fix12IiES1_(void *self, int a, int b);
+namespace Particle {
+struct System {
+    static void *NewSimple(unsigned int id, int x, int y, int z);
+};
+}
 int _ZN8dActor_c18DropShadowScaleXYZER17dExtShadowModel_cR9Matrix4x35Fix12IiES5_S5_j(
     void *self, void *shadow, void *mat, int sx, int sy, int sz, unsigned int opacity);
 void _ZN10dBgW_KcMbg7SetFileEP8KCL_FileRK9Matrix4x35Fix12IiEsR10CLPS_Block(
@@ -206,7 +208,7 @@ void daObjRotateUpdownLift_c::func_ov091_02130fac()
 // @symbol _ZN23daObjRotateUpdownLift_c4KillEv
 void daObjRotateUpdownLift_c::Kill()
 {
-    _ZN8Particle6System9NewSimpleEj5Fix12IiES2_S2_(0xbb, mPosX, mPosY, mPosZ);
+    Particle::System::NewSimple(0xbb, mPosX, mPosY, mPosZ);
     /* memberwise stores: the (x,y,z) ctor form batches the loads */
     Vector3 v;
     v.x = mPosX;
@@ -471,10 +473,10 @@ int daObjRotateUpdownLift_c::Behavior()
             func_ov091_02131160();
             func_020393a4((int *)&mMeshCollider, 0x150000);
             func_02039394((int *)&mMeshCollider, 0x1000);
-            if (_ZN10dBgActor_c13IsClsnInRangeE5Fix12IiES1_(this, 0x150000, 0x1000) != 0)
+            if (IsClsnInRange(0x150000, 0x1000) != 0)
                 UpdateClsnPosAndRot();
         } else {
-            if (_ZN10dBgActor_c13IsClsnInRangeE5Fix12IiES1_(this, 0, 0) != 0)
+            if (IsClsnInRange(0, 0) != 0)
                 UpdateClsnPosAndRot();
         }
     }
@@ -497,7 +499,7 @@ int daObjRotateUpdownLift_c::InitResources()
 
     if (param1 == 0xffff) {
         mFlags &= ~2;
-        _ZN8dActor_c9SetRangesE5Fix12IiES1_S1_S1_(this, 0, 0x1000, 0, 0);
+        SetRanges(0, 0x1000, 0, 0);
         return 1;
     }
 
@@ -537,7 +539,7 @@ int daObjRotateUpdownLift_c::InitResources()
     mPosZ = placed.z;
 
     variant = mVariant;
-    bmd = Model::LoadFile(*data_ov091_02134c30[variant].file);
+    bmd = dExtSimpleModel_c::LoadFile(*data_ov091_02134c30[variant].file);
     mModel.SetFile((BMD_File *)bmd, 1, -1);
 
     func_ov091_02131340();

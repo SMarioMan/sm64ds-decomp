@@ -4,11 +4,11 @@
 #include "types.h"
 
 /* ROM RTTI at ov085:0x02130194 identifies dEnemyBase_c as the base.
- * Constructor/destructor calls place Model at 0x110 and dExtShadowModel_c at 0x160;
+ * Constructor/destructor calls place dExtSimpleModel_c at 0x110 and dExtShadowModel_c at 0x160;
  * the factory allocates 0x1a0 bytes. */
 
 #include "dEnemyBase_c.h"
-#include "Model.h"
+#include "dExtSimpleModel_c.h"
 #include "dExtShadowModel_c.h"
 
 struct daObj_Mip_Key_c;
@@ -21,7 +21,7 @@ struct MipKeyState {
 };
 
 struct daObj_Mip_Key_c : dEnemyBase_c {
-    Model mModel;                         /* 0x110 */
+    dExtSimpleModel_c mModel;                   /* 0x110 */
     dExtShadowModel_c mShadowModel;             /* 0x160 */
     MipKeyState * mState;                 /* 0x188 */
     Player * mPlayer;                     /* 0x18c */

@@ -31,13 +31,13 @@ independently in **339 files**.
 
 They are not just duplicated. **27% of them contradict each other** — 3,592 of the
 13,279 locally-declared names that exist in `symbols.txt` are declared inconsistently
-across files. `ModelAnim::SetAnim` has **124 distinct spellings**:
+across files. `dExtAnmModel_c::SetAnim` has **124 distinct spellings**:
 
 ```c
-extern "C" int          @(ModelAnim*, BCA_File*, int, int, unsigned int)
+extern "C" int          @(dExtAnmModel_c*, BCA_File*, int, int, unsigned int)
 extern "C" int          @(char*, struct BCA_File*, int, int, unsigned int)
 extern "C" int          @(void*, void*, int, int, int)
-extern "C" unsigned int @(ModelAnim* thiz, BCA_File* f, int a, Fix12i b, unsigned int c)
+extern "C" unsigned int @(dExtAnmModel_c* thiz, BCA_File* f, int a, Fix12i b, unsigned int c)
 ```
 
 `Actor::Spawn` has 117. `ApproachLinear` has 104.

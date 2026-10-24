@@ -15,13 +15,13 @@
  * THE LAST MEMBER CLOSES EXACTLY ON THE ALLOCATION LITERAL:
  * 0x5294 + 6 * 0xf0 = 0x5834. Nothing is left over.
  *
- * mModel IS A TYPED Model, and here that works. The factory constructs it
- * (`_ZN5ModelC1Ev(p + 0x501c)`), the destructor destroys it, and
- * sizeof(Model) == 0x50 closes exactly on mPlayers at 0x506c. Because mModel
+ * mModel IS A TYPED dExtSimpleModel_c, and here that works. The factory constructs it
+ * (`_ZN17dExtSimpleModel_cC1Ev(p + 0x501c)`), the destructor destroys it, and
+ * sizeof(dExtSimpleModel_c) == 0x50 closes exactly on mPlayers at 0x506c. Because mModel
  * is declared BEFORE the two arrays, reverse-declaration order destroys
  * mArray2, mPlayers, then mModel -- exactly the ROM's order, so the compiler
- * emits the Model call and the body does not. Contrast
- * include/dScMgJump2_c.h, whose ROM destructor destroys its Model FIRST and
+ * emits the dExtSimpleModel_c call and the body does not. Contrast
+ * include/dScMgJump2_c.h, whose ROM destructor destroys its dExtSimpleModel_c FIRST and
  * therefore cannot use a typed member at all. Same class, same member, two
  * different answers, decided by the ROM's own ordering.
  *
@@ -43,7 +43,7 @@
 #define DSCMGJUMP_C_H
 #include "dScMgD3DBase_c.h"
 #include "dMgJump3DMario_c.h"
-#include "Model.h"
+#include "dExtSimpleModel_c.h"
 
 /* The array runtime passes each element address and ignores callback results.
  * The casts below adapt the existing lifecycle entries at that ABI boundary. */
@@ -111,7 +111,7 @@ struct dScMgJump_c : dScMgD3DBase_c {
     s32   mAccumStep;      /* 0x5010 -- Fix12 */
     s16   mStateTimer;     /* 0x5014 -- countdown to the state change */
     u8    pad_5016[0x6];   /* 0x5016 */
-    Model mModel;          /* 0x501c -- 0x50, destroyed last, see banner */
+    dExtSimpleModel_c mModel;     /* 0x501c -- 0x50, destroyed last, see banner */
     dMgJump3DMario_c mPlayers[3]; /* 0x506c -- RTTI-proven element type */
     u8    mArray2[0x5a0];  /* 0x5294 -- 6 * 0xf0, elem dtor Heyho_Destruct */
 };

@@ -39,6 +39,7 @@ enum daRNk_c_AssetId {
 #include "Timer.h"
 #include "SharedFilePtr.h"
 #include "nitro/fx/fx.h"
+#include "Sound.h"
 
 /* Actor IDs (symbols/actor_debug_names.tsv). */
 enum {
@@ -129,9 +130,9 @@ struct RNkAnimationFileHandle : SharedFilePtr {
 #define ANIM_LAND      (data_ov062_0211e004.filePtr)   /* on landing, or when the path ends; then ANIM_RUN */
 #define ANIM_BRAKE     (gdaRNkNokonokoWalkEdAnimationFile.filePtr)   /* STATE_PULL_UP's last frame to a stop */
 
-/* Play a BCA on Koopa's ModelAnim at normal speed (0x1000 = 1.0), from frame 0. */
+/* Play a BCA on Koopa's dExtAnmModel_c at normal speed (0x1000 = 1.0), from frame 0. */
 #define SET_ANIM(this, bca, flags) \
-    _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(&(this)->mModelAnim, (bca), (flags), 0x1000, 0)
+    (this)->mModelAnim.SetAnim((BCA_File *)(bca), (flags), 0x1000, 0)
 
 bool ApproachLinear(short &value, short target, short step);
 int ApproachLinear(int &value, int target, int step);
@@ -164,14 +165,16 @@ extern "C" s16 _ZN4cstd5atan2E5Fix12IiES1_(int y, int x);
 extern "C" {
 /* Positional sound at the actor's camera-space position (Sound::Play(3, id, pos)). */
 extern void func_0201267c(unsigned int id, void *p);
-extern void *_ZN8Particle6System9NewSimpleEj5Fix12IiES2_S2_(unsigned int id, int x, int y, int z);
+namespace Particle {
+struct System {
+    static void *NewSimple(unsigned int id, int x, int y, int z);
+};
+}
 extern short data_02082214[];   /* SINE_TABLE: {sin, cos} pairs in fix12, indexed by angle >> 4 */
 /* This scalar entry follows its C definition, including u16 startFrame.
-   ModelAnim.h instead declares u32; that shared contract is still unresolved. */
-extern void _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(void *, void *, int, int, u16);
+   dExtAnmModel_c.h instead declares u32; that shared contract is still unresolved. */
 extern s16 Vec3_HorzAngle(const Vector3 *v0, const Vector3 *v1);
 extern s32 Vec3_Dist(const Vector3 *a, const Vector3 *b);
-extern void _ZN5Sound22StopLoadedMusic_Layer2Ev(void);
 /* Play2D(3, id): a sound with no position. */
 extern unsigned int func_0201277c(unsigned int id);
 extern signed char data_0209f2f8;   /* LEVEL_ID */
@@ -218,7 +221,7 @@ int daRNk_c::InitResources()
     unsigned char b;
     int zero;
 
-    Model::LoadFile(*(SharedFilePtr *)&gdaRNkNokonokoModelFile);
+    dExtSimpleModel_c::LoadFile(*(SharedFilePtr *)&gdaRNkNokonokoModelFile);
     dExtFrameCtrl_c::LoadFile(*(SharedFilePtr *)&data_ov062_0211e014);
     dExtFrameCtrl_c::LoadFile(*(SharedFilePtr *)&data_ov062_0211e024);
     dExtFrameCtrl_c::LoadFile(*(SharedFilePtr *)&gdaRNkNokonokoWalkEdAnimationFile);
@@ -285,7 +288,8 @@ int daRNk_c::CleanupResources()
     ((SharedFilePtr *)&gdaRNkNokonokoWait2AnimationFile)->Release();
     ((SharedFilePtr *)&data_ov062_0211e02c)->Release();
     ((SharedFilePtr *)&data_ov062_0211e004)->Release();
-    if (mIsRacing) _ZN5Sound22StopLoadedMusic_Layer2Ev();
+    if (mIsRacing)
+        Sound::StopLoadedMusic_Layer2();
     return 1;
 }
 
@@ -308,8 +312,8 @@ int daRNk_c::Behavior()
 }
 
 // @symbol _ZN7daRNk_c6RenderEv
-/* Model is the real class now, through daRNk_c.h: HideMaterial is its own
-   non-virtual and the slot-5 virtual is Render, which ModelAnim overrides. */
+/* dExtSimpleModel_c is the real class now, through daRNk_c.h: HideMaterial is its own
+   non-virtual and the slot-5 virtual is Render, which dExtAnmModel_c overrides. */
 int daRNk_c::Render()
 {
   mModelAnim.HideMaterial(0, 1);
@@ -613,8 +617,8 @@ void daRNk_c::func_ov062_0211a1f4()
         tmp[1] = this->mPosY;
         tmp[2] = this->mPosZ;
         tmp[1] = this->mPosY + kDustHeight;
-        _ZN8Particle6System9NewSimpleEj5Fix12IiES2_S2_(kPtclLandingDust, this->mPosX,
-            this->mPosY + kDustHeight, this->mPosZ);
+        Particle::System::NewSimple(kPtclLandingDust, this->mPosX, this->mPosY + kDustHeight,
+                                    this->mPosZ);
         return;
     default:
         return;
@@ -702,7 +706,7 @@ void daRNk_c::func_ov062_02119be0() {
         this->mStep++;
         SET_ANIM(this, ANIM_TALK, kAnimLoop);
         if (this->mHasFinished == 0) {
-            _ZN5Sound22StopLoadedMusic_Layer2Ev();
+            Sound::StopLoadedMusic_Layer2();
             func_0201277c(kSfx4D);
             this->mIsRacing = 0;
             this->mHasFinished = 1;
@@ -1006,7 +1010,7 @@ add_path:
         stack[2] = (int)(cosA * k) + z;
     }
 do_new:
-    _ZN8Particle6System9NewSimpleEj5Fix12IiES2_S2_(kPtclFootstepDust, (int)stack[0], (int)stack[1], (int)stack[2]);
+    Particle::System::NewSimple(kPtclFootstepDust, (int)stack[0], (int)stack[1], (int)stack[2]);
     return;
 
 reset:

@@ -2,7 +2,7 @@
 #define DSCSTAGE_C_H
 
 #include "dScene_c.h"
-#include "Model.h"
+#include "dExtSimpleModel_c.h"
 #include "dBgW_Kc.h"
 #include "Fog.h"
 
@@ -48,15 +48,15 @@ typedef char StageTexAnimSlot_size_must_be_0xc[sizeof(struct StageTexAnimSlot) =
  */
 struct dScStage_c : dScene_c {
     Particle::SysTracker mSysTracker;  /* 0x050 */
-    Model mModel;                      /* 0x86c */
-    StageTexAnimSlot mTexAnimSlots[8]; /* 0x8bc - Model ends here, and dBgW_Kc
+    dExtSimpleModel_c mModel;          /* 0x86c */
+    StageTexAnimSlot mTexAnimSlots[8]; /* 0x8bc - dExtSimpleModel_c ends here, and dBgW_Kc
                                            does not start until 0x91c */
     dBgW_Kc mMeshCollider;             /* 0x91c */
     /* Two fog setups, 0x28 apart: LoadFog fills both by hand and then walks
        this array with `dst += 0x28` per level fog record. */
     Fog mFog[2]; /* 0x96c */
     /* Allocated by LoadSkybox, destroyed through its vtable by CleanupResources. */
-    Model *mSkyboxModel; /* 0x9bc */
+    dExtSimpleModel_c *mSkyboxModel; /* 0x9bc */
 
     /* Declared first, deliberately: makes ~dScStage_c the key function. */
     virtual ~dScStage_c();

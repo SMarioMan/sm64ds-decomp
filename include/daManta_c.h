@@ -9,7 +9,7 @@
  * The destructor and daManta_c_classInit agree on the owned objects:
  *     0x110 dCcAcPos_c   0x40  -> 0x150
  *     0x150 dBgCh_Actr   0x1bc -> 0x30c
- *     0x30c ModelAnim    0x64  -> 0x370
+ *     0x30c dExtAnmModel_c    0x64  -> 0x370
  * classInit allocates 0x404. The tail through 0x400 is the ring challenge
  * (see src/game/actors/d_a_manta.cpp); nothing past 0x400 is read.
  *
@@ -20,7 +20,7 @@
  */
 
 #include "dEnemyBase_c.h"
-#include "ModelAnim.h"
+#include "dExtAnmModel_c.h"
 #include "dCcAcPos_c.h"
 #include "dBgCh_Actr.h"
 
@@ -29,7 +29,7 @@ struct MantaState;
 struct daManta_c : dEnemyBase_c {
     dCcAcPos_c mdCcAcPos_c;    /* 0x110 */
     dBgCh_Actr mWithMeshClsn;  /* 0x150 */
-    ModelAnim mModelAnim;      /* 0x30c */
+    dExtAnmModel_c mModelAnim; /* 0x30c */
     MantaState *mState;        /* 0x370 */
     u8 pad_374[4];             /* 0x374 */
     s32 mRingCount;            /* 0x378 -- rings taken in order; 5 starts the star wait; 0xa after it spawns */

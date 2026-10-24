@@ -33,7 +33,7 @@
  * which is dBgActor_c's mPrevAngleY, and
  * otherwise only calls dBgActor_c::UpdateModelPosAndRotY and the guarded
  * UpdateClsnPosAndRot. Its own Render (`func_ov002_020b66f0`) dispatches through
- * the Model at 0xd4. Its own destructor destroys only dBgActor_c's two members. And
+ * the dExtSimpleModel_c at 0xd4. Its own destructor destroys only dBgActor_c's two members. And
  * all five factories -- daObjBk_Ukisima_c_classInit, daObjFl_Koma_D_c_classInit,
  * daObjWc_Obj07_c_classInit, RotatingPlatformRr_Spawn and
  * daObjKm3_Kaitendai_c_classInit (historical alias func_ov047_021113bc),

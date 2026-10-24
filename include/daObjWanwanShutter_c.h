@@ -5,7 +5,7 @@
 
 /* Derives from dBgActor_c: the destructor stores this class's vtable, then
  * dBgActor_c's -- inlined -- then destroys the dBgW_KcMbg at 0x124 and
- * the Model at 0xd4 before chaining to dActor_c. All three belong to dBgActor_c.
+ * the dExtSimpleModel_c at 0xd4 before chaining to dActor_c. All three belong to dBgActor_c.
  * Everything this header used to restate below 0x31e was dActor_c's and
  * dBgActor_c's, and is inherited now.
  *
@@ -39,7 +39,7 @@ struct daObjWanwanShutter_c : dBgActor_c {
      * vtable header, so nothing derives from it.
      *
      * The body is empty but the FUNCTION IS NOT: at 0x44 bytes it inlines
-     * dBgActor_c's own inline destructor, which destroys the Model at 0xd4
+     * dBgActor_c's own inline destructor, which destroys the dExtSimpleModel_c at 0xd4
      * and the dBgW_KcMbg at 0x124. Do not write those members as padding.
      */
     virtual ~daObjWanwanShutter_c() {}  /* slots 16 (D1), 17 (D0) */

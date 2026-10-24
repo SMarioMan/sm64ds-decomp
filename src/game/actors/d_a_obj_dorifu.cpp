@@ -102,8 +102,8 @@ s32 daObjDorifu_c::CleanupResources(daObjDorifuResources *resources)
  * reloc: _ZTV13daObjDorifu_c+0x24 -> 0x020b4bc4, where
  * _ZTV10dBgActor_c+0x24 -> 0x02043af0, so this is a real override.
  *
- * Indexes the Model[5] at 0x320 with the byte at 0xdc8 and calls the element's
- * vtable slot 5 with a literal 0 -- Model::Render(const Vector3 *), NULL. */
+ * Indexes the dExtSimpleModel_c[5] at 0x320 with the byte at 0xdc8 and calls the element's
+ * vtable slot 5 with a literal 0 -- dExtSimpleModel_c::Render(const Vector3 *), NULL. */
 s32 daObjDorifu_c::Render()
 {
     mPlankModels[mActivePlank].Render(0);
@@ -191,18 +191,18 @@ s32 daObjDorifu_c::InitResources(daObjDorifuResources *resources)
 {
     s32 i;
     daObjDorifuResources *resource;
-    Model *model;
+    dExtSimpleModel_c *model;
     s32 j;
     Matrix4x3 *sourceMat;
     s32 scale = 0x1000;
-    Model *modelDst;
+    dExtSimpleModel_c *modelDst;
     dBgW_KcMbg *clsn;
     daObjDorifuResources *clsnResource = resources;
 
     resource = clsnResource;
     model = mPlankModels;
     for (i = 0; i < 5; ++i) {
-        model->SetFile((BMD_File *)Model::LoadFile(*resource->modelFile), 1, -1);
+        model->SetFile((BMD_File *)dExtSimpleModel_c::LoadFile(*resource->modelFile), 1, -1);
         resource++;
         model++;
     }

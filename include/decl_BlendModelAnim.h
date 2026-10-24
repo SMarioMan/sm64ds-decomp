@@ -20,9 +20,8 @@
 extern "C" {
 #endif
 
-extern void *_ZN14BlendModelAnimC1Ev(void*);
-extern void _ZN14BlendModelAnimD1Ev(void*);
-
+extern void *_ZN19dExtBlendAnmModel_cC1Ev(void *);
+extern void _ZN19dExtBlendAnmModel_cD1Ev(void *);
 
 #ifdef __cplusplus
 }

@@ -6,7 +6,7 @@
 /* The cartridge's own sphere primitive: a centre and a radius, with a vtable.
  * Named by the ROM's RTTI -- _ZTS8dM3dGSph at 0x020992ec, _ZTI8dM3dGSph at
  * 0x020992e4, vtable at 0x020994cc, named _ZTV8dM3dGSph in symbols.txt so
- * objisolate can rebind vptr stores against it (the Model-family arrangement;
+ * objisolate can rebind vptr stores against it (the dExtSimpleModel_c-family arrangement;
  * the addend loses 8 per the standing vtable-preamble rule).
  *
  * 0x14 BYTES, every offset pinned by a one-line matched function:

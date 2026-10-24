@@ -68,7 +68,7 @@ enum daObjSimpleLift_c_AssetId {
 #include "SharedFilePtr.h"
 #include "dBgW.h"
 
-/* Per-variant asset row is three pointers, stride 0xc. Model and KCL are
+/* Per-variant asset row is three pointers, stride 0xc. dExtSimpleModel_c and KCL are
  * data_ov091_02135024 / data_ov091_02135028; the CLPS word is named here.
  * Heading offsets and travel times are data_ov091_02134514 / 02134504.
  * IsClsnInRange and SetFile stay scalar externs: the Fix12<int> method
@@ -87,7 +87,6 @@ struct SimpleLiftClsnFileHandle : SharedFilePtr {
 extern "C" {
 unsigned char DecIfAbove0_Byte(unsigned char *p);
 unsigned short DecIfAbove0_Short(unsigned short *p);
-int _ZN10dBgActor_c13IsClsnInRangeE5Fix12IiES1_(void *self, int a, int b);
 void _ZN10dBgW_KcMbg7SetFileEP8KCL_FileRK9Matrix4x35Fix12IiEsR10CLPS_Block(
     void *mc, void *kcl, void *mtx, int scale, s16 angY, void *clps);
 void func_020393d4(void *collider, void *callback);
@@ -115,7 +114,7 @@ extern SimpleLiftClsnFileHandle gBkTransbarCollisionFile;
 // @symbol _ZN17daObjSimpleLift_cD1Ev
 // @symbol _ZN17daObjSimpleLift_cD0Ev
 /* One definition; mwccarm emits D1 then D0. The body is the inherited
- * dBgW_KcMbg, Model and dActor_c destruction. This class adds nothing
+ * dBgW_KcMbg, dExtSimpleModel_c and dActor_c destruction. This class adds nothing
  * that needs destroying. */
 daObjSimpleLift_c::~daObjSimpleLift_c()
 {
@@ -151,7 +150,7 @@ int daObjSimpleLift_c::Behavior()
         }
     }
     UpdateModelPosAndRotY();
-    if (_ZN10dBgActor_c13IsClsnInRangeE5Fix12IiES1_(this, 0, 0) != 0)
+    if (IsClsnInRange(0, 0) != 0)
         UpdateClsnPosAndRot();
     return 1;
 }
@@ -169,8 +168,8 @@ int daObjSimpleLift_c::InitResources()
         case 0x92: mVariant = 5; break; /* KM2_RIFUT02 */
     }
 
-    void *bmd = Model::LoadFile(
-        **(SharedFilePtr **)(data_ov091_02135024 + mVariant * 0xc));
+    void *bmd =
+        dExtSimpleModel_c::LoadFile(**(SharedFilePtr **)(data_ov091_02135024 + mVariant * 0xc));
     mModel.SetFile((BMD_File *)bmd, 1, -1);
 
     mPrevAngleY = mAngleY + data_ov091_02134514[mVariant];

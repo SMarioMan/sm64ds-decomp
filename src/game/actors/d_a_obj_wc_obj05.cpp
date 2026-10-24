@@ -6,7 +6,7 @@
  * daObjWc_Obj03_c (WATER_DIAMOND), not daObjWc_Obj04_c
  * (SWITCH_ACTIVATED_PLANK), and not daObjWc_Mizu_c (WDW_WATER).
  *
- * common.h FIRST: dBgActor_c.h / Model.h otherwise win with math/Matrix.h's
+ * common.h FIRST: dBgActor_c.h / dExtSimpleModel_c.h otherwise win with math/Matrix.h's
  * nested Matrix4x3, and InitResources' SetFile matrix argument scalarizes.
  *
  * FUNCTION ORDER IS THE REVERSE OF THE ROM'S. Highest-address first.
@@ -20,9 +20,9 @@
  * - func_020393d4 / func_020393c4 / func_020393a4: InitResources stores
  *   dBgW::UpdatePosWithTransform and &func_ov029_02111e60 on mMeshCollider;
  *   Behavior clips at 0x250000; dBgW.h has no setter.
- * - Sound::PlayLong: Behavior recycles mSoundHandle at mCamSpacePosX. Sound.h
- *   declares it, but including Sound.h renumbers this TU's @NNN temps, which
- *   the manifest pins, so the mangled extern stays.
+ * - Sound::PlayLong: Behavior recycles mSoundHandle at mCamSpacePosX.
+ *   Including Sound.h renumbers this TU's pinned @NNN temps, so the
+ *   declaration stays local.
  * - gWcObj05ModelFile / 02114284 are this TU's BMD/KCL file handles;
  *   data_ov029_0211306c the CLPS block stays unowned overlay data.
  * - func_ov029_02111e40 / 02111e60 stay placeholder labels (BeforeClsn
@@ -56,15 +56,18 @@ struct WcObj05CollisionFilePtr : SharedFilePtr {
     ~WcObj05CollisionFilePtr();
 };
 
+namespace Sound {
+/* local extern: including Sound.h renumbers @NNN. */
+int PlayLong(u32, u32, u32, const Vector3 &, s16);
+}
+
 extern "C" {
 void _ZN10dBgW_KcMbg7SetFileEP8KCL_FileRK9Matrix4x35Fix12IiEsR10CLPS_Block(
-    dBgW_KcMbg *self, KCL_File *file, Matrix4x3 *mat, int scale,
-    short angY, CLPS_Block &clps);
-int _ZN10dBgActor_c13IsClsnInRangeE5Fix12IiES1_(void *self, int a, int b);
+    dBgW_KcMbg *self, KCL_File *file, Matrix4x3 *mat, int scale, short angY, CLPS_Block &clps);
 void func_020393d4(void *p, void *v);
 void func_020393c4(void *p, void *v);
 void func_020393a4(int *p, int v);
-int _ZN5Sound8PlayLongEjjjRK7Vector3s(unsigned a, unsigned b, unsigned c, void *pos, unsigned e);
+void d_a_obj_wc_obj05PlayLongHold(unsigned a, unsigned b, unsigned c, void *pos, unsigned e);
 extern WcObj05ModelFilePtr gWcObj05ModelFile;
 extern WcObj05CollisionFilePtr gWcObj05CollisionFile;
 extern CLPS_Block data_ov029_0211306c;
@@ -116,7 +119,7 @@ extern "C" void func_ov029_02111e40(char *a, char *b)
 // @symbol _ZN15daObjWc_Obj05_c13InitResourcesEv
 s32 daObjWc_Obj05_c::InitResources()
 {
-    BMD_File *f = (BMD_File *)Model::LoadFile(gWcObj05ModelFile);
+    BMD_File *f = (BMD_File *)dExtSimpleModel_c::LoadFile(gWcObj05ModelFile);
     mModel.SetFile(f, 1, -1);
     UpdateModelPosAndRotY();
     UpdateClsnPosAndRot();
@@ -157,7 +160,7 @@ s32 daObjWc_Obj05_c::Behavior()
         s32 *p60 = &mPosY;
         *p60 = *p60 - 0x14000;
         mSoundHandle =
-            _ZN5Sound8PlayLongEjjjRK7Vector3s((unsigned)mSoundHandle, 3, 0x8d, &mCamSpacePosX, 0);
+            Sound::PlayLong((unsigned)mSoundHandle, 3, 0x8d, *(Vector3 *)&mCamSpacePosX, 0);
         {
             int v = mRestPosY + (int)0xff5d8000;
             if (mPosY <= v) {
@@ -173,8 +176,8 @@ s32 daObjWc_Obj05_c::Behavior()
     }
     case 2: {
         if ((u16)mDwellTimer >= 0x6e) {
-            int snd = _ZN5Sound8PlayLongEjjjRK7Vector3s((unsigned)mSoundHandle, 3, 0x8d,
-                                                        &mCamSpacePosX, 0);
+            int snd =
+                Sound::PlayLong((unsigned)mSoundHandle, 3, 0x8d, *(Vector3 *)&mCamSpacePosX, 0);
             mSoundHandle = snd;
             {
                 s32 *p60 = &mPosY;
@@ -196,7 +199,7 @@ s32 daObjWc_Obj05_c::Behavior()
     }
 
     UpdateModelPosAndRotY();
-    if (_ZN10dBgActor_c13IsClsnInRangeE5Fix12IiES1_(this, 0, 0)) {
+    if (IsClsnInRange(0, 0)) {
         UpdateClsnPosAndRot();
     }
     mMeshCollider.Transform(mClsnMat, mAngleY);

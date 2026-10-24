@@ -172,6 +172,7 @@ Handler GetIRQHandler(unsigned mask) {
 void SetIRQHandler(unsigned mask, Handler h) { _ZN3IRQ13SetIRQHandlerEjPFvvE(mask, h); }
 unsigned EnableIRQs(unsigned mask) { return _ZN3IRQ10EnableIRQsEj(mask); }
 unsigned DisableIRQs(unsigned mask) { return _ZN3IRQ11DisableIRQsEj(mask); }
+unsigned Disable() { return _ZN3IRQ7DisableEv(); }
 }  // namespace IRQ
 
 // DMA to the FIFO is the display-list path (func_0205a290). ctrl bit 30 is

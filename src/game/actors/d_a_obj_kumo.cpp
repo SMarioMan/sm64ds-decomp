@@ -4,7 +4,7 @@
  * A scenery model that ranks itself against the other clouds by camera-space
  * distance and writes that rank into the model's polygon ID, so nearer
  * clouds draw in front. Direct base is dActor_c; the only owned member is
- * Model at 0xd4, which closes the class on the factory's literal 0x124.
+ * dExtSimpleModel_c at 0xd4, which closes the class on the factory's literal 0x124.
  *
  * daObjKumo_c_classInit is reconstructed (RTTI daObjKumo_c, OBJ_KUMO
  * registry). Retail does not store that spelling. Historical alias
@@ -42,7 +42,7 @@ enum d_a_obj_kumo_AssetId {
 #include "daObjKumo_c.h"
 #include "SharedFilePtr.h"
 
-/* Model-file handle. The derived constructor and destructor are the retail
+/* dExtSimpleModel_c-file handle. The derived constructor and destructor are the retail
  * SharedFilePtr pair (func_02017acc / func_02017ab4); this TU declares but
  * never defines them. The cartridge keeps its 8 bytes between 0x021118e4 and
  * 0x021118ec. */
@@ -72,7 +72,7 @@ extern int data_ov039_021118e0;
 /* Every instruction the cartridge has here falls out of the one `new`.
    0x02111380 loads 0x124 -- the class's own size -- into the header's inline
    operator new; the implicit ctor calls dActor_c's C2, stores this class's
-   vptr, then Model's C1 at 0xd4. The null check is the one `new` itself
+   vptr, then dExtSimpleModel_c's C1 at 0xd4. The null check is the one `new` itself
    emits. */
 extern "C" daObjKumo_c *daObjKumo_c_classInit(void)
 {
@@ -84,7 +84,7 @@ extern "C" daObjKumo_c *daObjKumo_c_classInit(void)
 // @symbol _ZN11daObjKumo_c13InitResourcesEv
 int daObjKumo_c::InitResources()
 {
-    void *f = Model::LoadFile(gOV039ObjKumoModelFile);
+    void *f = dExtSimpleModel_c::LoadFile(gOV039ObjKumoModelFile);
     mModel.SetFile((BMD_File *)f, 1, 2);
     func_ov039_02111214(this);
     data_ov039_021118e0++;

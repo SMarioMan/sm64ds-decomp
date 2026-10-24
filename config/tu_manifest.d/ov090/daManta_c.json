@@ -442,7 +442,7 @@
   ],
   "notes": [
     "Key function is the out-of-line destructor under #pragma defer_codegen off. Factory is outside the licensed range, so this TU does not instantiate daManta_c.",
-    "fold-lane-D-0929: folded the daManta_c_classInit registry factory (0x02132fe8..0x02133034) into this already-promoted TU, widening the complete delinks.txt claim from 0x0213269c..0x02132fe8 to 0x0213269c..0x02133034. The loose one-function source hand-called fBase_c::operator new(1028) + the inherited dEnemyBase_c ctor + this class's vtable store + three member subobjects in field order (dCcAcPos_c, dBgCh_Actr, ModelAnim); daManta_c has no user-declared constructor, so `new daManta_c()` reproduces the identical sequence with zero mangled calls. This TU keeps #pragma defer_codegen off, so emission follows source order (ROM-ascending); the factory appends after InitResources. tools/tubuild.py verify reports 13/13 MATCH, objisolate clean, reloc-destinations clean, TEXT-VERIFIED, with no new compiler_only_output needed (the existing _ZN9daManta_cD2Ev deadstrip row, from the out-of-line destructor, already covers the homeless base-object-destructor helper `return new` emits here). Retired: src/d_a_manta.c (credited tangosdev, carried into attribution.json as a path#symbol override).",
+    "fold-lane-D-0929: folded the daManta_c_classInit registry factory (0x02132fe8..0x02133034) into this already-promoted TU, widening the complete delinks.txt claim from 0x0213269c..0x02132fe8 to 0x0213269c..0x02133034. The loose one-function source hand-called fBase_c::operator new(1028) + the inherited dEnemyBase_c ctor + this class's vtable store + three member subobjects in field order (dCcAcPos_c, dBgCh_Actr, dExtAnmModel_c); daManta_c has no user-declared constructor, so `new daManta_c()` reproduces the identical sequence with zero mangled calls. This TU keeps #pragma defer_codegen off, so emission follows source order (ROM-ascending); the factory appends after InitResources. tools/tubuild.py verify reports 13/13 MATCH, objisolate clean, reloc-destinations clean, TEXT-VERIFIED, with no new compiler_only_output needed (the existing _ZN9daManta_cD2Ev deadstrip row, from the out-of-line destructor, already covers the homeless base-object-destructor helper `return new` emits here). Retired: src/d_a_manta.c (credited tangosdev, carried into attribution.json as a path#symbol override).",
     "The file-scope model handle, anim handle, and state record are defined in this TU. mwcc emits __sinit_d_a_manta.cpp, the ctor word, the two anonymous pointer-to-member descriptors, and the two destructor-registration nodes. Class RTTI and the vtable stay externalized. The handwritten src/__sinit_ov090_02133ea8.c is retired.",
     "Local scratch ROM matched this machine's baseline control. Recorded rom.sha256 is the fleet SHA from the arm9/dBgW.json local-worker note. Module set, symbol inventory, and the owned ranges matched."
   ],
@@ -806,22 +806,22 @@
   ],
   "defined_symbol_renames": [
     {
-      "from": "@789",
+      "from": "@784",
       "to": "@766",
       "evidence": "Measured local resource-field reconstruction changes compiler input @790 to @789; section, offset, size, binding, bytes and typed relocation destinations preserved. Canonical destination unchanged."
     },
     {
-      "from": "@790",
+      "from": "@785",
       "to": "@767",
       "evidence": "Measured local resource-field reconstruction changes compiler input @791 to @790; section, offset, size, binding, bytes and typed relocation destinations preserved. Canonical destination unchanged."
     },
     {
-      "from": "@792",
+      "from": "@787",
       "to": "@769",
       "evidence": "Measured local resource-field reconstruction changes compiler input @793 to @792; section, offset, size, binding, bytes and typed relocation destinations preserved. Canonical destination unchanged."
     },
     {
-      "from": "@794",
+      "from": "@789",
       "to": "@771",
       "evidence": "Measured local resource-field reconstruction changes compiler input @795 to @794; section, offset, size, binding, bytes and typed relocation destinations preserved. Canonical destination unchanged."
     }

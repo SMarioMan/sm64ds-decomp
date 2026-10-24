@@ -80,7 +80,7 @@ extern "C" SpawnInfo<daObjKm2_Ami_Bou_c> g_profile_KM2_AMI_BOU = {
 // @symbol _ZN18daObjKm2_Ami_Bou_c13InitResourcesEv
 s32 daObjKm2_Ami_Bou_c::InitResources()
 {
-    mModel.SetFile((BMD_File *)Model::LoadFile(data_ov045_021131b0), 1, -1);
+    mModel.SetFile((BMD_File *)dExtSimpleModel_c::LoadFile(data_ov045_021131b0), 1, -1);
     if (param1 != kUnsetParam)
         mPosY -= kLoweredY;
     UpdateModelPosAndRotY();

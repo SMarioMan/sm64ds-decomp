@@ -35,8 +35,11 @@ void _ZN15TextureSequence7SetFileER8BTP_Filei5Fix12IiEj(
 void _ZN8dActor_c10EarthquakeERK7Vector35Fix12IiE(
     void *self, const void *pos, int magnitude);
 int func_0201267c(int id, void *pos);
-void _ZN8Particle6System9NewSimpleEj5Fix12IiES2_S2_(
-    unsigned int id, int x, int y, int z);
+namespace Particle {
+struct System {
+    static void NewSimple(unsigned int id, int x, int y, int z);
+};
+}
 int _ZN5Sound7PlaySubEjjj5Fix12IiEb(
     unsigned int soundID, unsigned int volume, unsigned int pan,
     int distance, int loop);
@@ -138,10 +141,8 @@ int daBgSnmHed_c::State2()
             _ZN8dActor_c10EarthquakeERK7Vector35Fix12IiE(
                 this, &pos, 0x5dc000);
             func_0201267c(0x115, &mCamSpacePosX);
-            _ZN8Particle6System9NewSimpleEj5Fix12IiES2_S2_(
-                0x10f, mPosX, mPosY, mPosZ);
-            _ZN8Particle6System9NewSimpleEj5Fix12IiES2_S2_(
-                0x110, mPosX, mPosY, mPosZ);
+            Particle::System::NewSimple(0x10f, mPosX, mPosY, mPosZ);
+            Particle::System::NewSimple(0x110, mPosX, mPosY, mPosZ);
             _ZN5Sound7PlaySubEjjj5Fix12IiEb(
                 0x20, 0x14, 0x7f, 0x15666, 0);
             mSubstate++;
@@ -302,8 +303,7 @@ int daBgSnmHed_c::InitResources()
     struct Vector3 pos;
     int i;
 
-    mModel.SetFile((BMD_File *)Model::LoadFile(
-                       *(SharedFilePtr *)&data_ov072_02122bc4),
+    mModel.SetFile((BMD_File *)dExtSimpleModel_c::LoadFile(*(SharedFilePtr *)&data_ov072_02122bc4),
                    1, -1);
 
     for (i = 0; i < 2; i++) {

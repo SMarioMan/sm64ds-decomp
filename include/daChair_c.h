@@ -2,7 +2,7 @@
 #define DACHAIR_C_H
 
 #include "dActor_c.h"
-#include "Model.h"
+#include "dExtSimpleModel_c.h"
 #include "dExtShadowModel_c.h"
 #include "dCcAcPos_c.h"
 #include "dBgCh_Actr.h"
@@ -20,7 +20,7 @@
  */
 struct daChair_c : dActor_c {
     u8 mPad0d0[0x4];                    /* 0x0d0 */
-    Model mModel;                       /* 0x0d4 */
+    dExtSimpleModel_c mModel;           /* 0x0d4 */
     dExtShadowModel_c mShadowModel;           /* 0x124 */
     Matrix4x3 mShadowMat;               /* 0x14c */
     dCcAcPos_c mCylinder;               /* 0x17c */

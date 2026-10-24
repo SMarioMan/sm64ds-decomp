@@ -1,4 +1,11 @@
 //cpp
+struct Vector3_16f;
+namespace Particle {
+struct Callback;
+struct System {
+    static int New(unsigned, unsigned, int, int, int, const ::Vector3_16f *, Callback *);
+};
+}
 /* daObjKey_c (ov089): OBJ_KEY is actor 0x11a (282) and LAST_STAR is 0x11b
  * (283); both factories install this vtable. param1 & 7 picks the kind: 7 uses
  * the power-star model (data_ov002_0211094c, file 0x8015) and StateStarJump; 3
@@ -18,7 +25,7 @@
  *   does not declare New, and a bare int does not convert to Fix12<int>.
  * - UpdateModelTransform: dActor_c::DropShadowRadHeight with Fix12<int>
  *   radius/depth size 0x130 -> 0x140 (+0x10). A bare int does not compile.
- * - InitResources: ModelAnim::SetAnim, both calls, Fix12<int> speed, size
+ * - InitResources: dExtAnmModel_c::SetAnim, both calls, Fix12<int> speed, size
  *   0x32c -> 0x344 (+0x18). dCcAcPos_c::Init, both calls, Fix12<int>
  *   radius/height, size 0x32c -> 0x34c (+0x20).
  * - InitResources: mWithMeshClsn.Init(...) links to the undefined
@@ -189,7 +196,7 @@ struct ObjKeyStateTable {
 extern ObjKeyStateTable data_ov089_02132cec;
 
 /* local extern: dCamera_c.h has no SetFlag_3. Particle::System::New,
- * DropShadowRadHeight, ModelAnim::SetAnim and dCcAcPos_c::Init take
+ * DropShadowRadHeight, dExtAnmModel_c::SetAnim and dCcAcPos_c::Init take
  * Fix12<int> by value; the scalar call does not compile and the Fix12
  * temporary size-DIFFs (see the file comment). The ROM calls the
  * UpdateContinuous veneer, not the method. */
@@ -197,8 +204,7 @@ extern "C" {
 extern void dBgCh_Actr_UpdateContinuous_Veneer(char *p);
 extern void *data_0209f318;
 extern int data_0209b454;
-extern void *_ZN8Particle6System3NewEjj5Fix12IiES2_S2_PK11Vector3_16fPNS_8CallbackE(
-    u32 a, u32 b, int c, int d, int e, void *f, void *g);
+extern void *d_a_obj_keyNewHold(u32 a, u32 b, int c, int d, int e, void *f, void *g);
 extern void func_02012694(unsigned int id, const Vector3 *pos);
 extern void func_ov002_020c3dbc(void *player);
 extern int data_0209caa0[];
@@ -225,7 +231,6 @@ extern void SubVec3(void *d, void *a, void *b);
 extern void Vec3_LslInPlace(void *v, int sh);
 extern void AddVec3(void *d, void *a, void *b);
 extern void LoadKeyModels(int idx);
-extern void _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(void *thiz, void *bca, int a, int fx, unsigned int f);
 extern void _ZN10dCcAcPos_c4InitEP8dActor_cRK7Vector35Fix12IiES6_jj(void *thiz, void *actor, void *pos, int r, int s, unsigned int a, unsigned int b);
 extern void _ZN10dBgCh_Actr4InitEP8dActor_c5Fix12IiES3_P10Vector3_16S5_(void *thiz, void *actor, int a, int b, void *v, void *w);
 /* An ObjKeyFile in layout, but daDemo_c::InitResources declares it `char`;
@@ -313,11 +318,11 @@ extern "C" void LoadKeyModels(int kind)
     SharedFilePtr *extra;
     if (kind >= 8)
         return;
-    Model::LoadFile(*(SharedFilePtr *)data_ov089_02132894[kind]);
+    dExtSimpleModel_c::LoadFile(*(SharedFilePtr *)data_ov089_02132894[kind]);
     extra = (SharedFilePtr *)data_ov089_021328b4[kind];
     if (extra == 0)
         return;
-    Model::LoadFile(*extra);
+    dExtSimpleModel_c::LoadFile(*extra);
 }
 
 // @symbol _ZN10daObjKey_c19func_ov089_0213115cEi
@@ -329,8 +334,7 @@ void daObjKey_c::func_ov089_0213115c(int anim)
         return;
     }
     mAnimID = anim;
-    _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(&mModelAnim, data_ov089_02132880[anim]->filePtr,
-                                                ANIM_FLAGS, ANIM_SPEED, 0);
+    mModelAnim.SetAnim((BCA_File *)(data_ov089_02132880[anim]->filePtr), ANIM_FLAGS, ANIM_SPEED, 0);
 }
 
 // @symbol _ZN10daObjKey_c16StateFlyToCenterEv
@@ -457,12 +461,9 @@ void daObjKey_c::StateFlyToCenter()
     Vec3_LslInPlace(&v, 3);
     AddVec3(&v, &mPosX, &v);
     v.y = mScaleX * 13 + v.y;
-    mParticleID[0] = (u32)_ZN8Particle6System3NewEjj5Fix12IiES2_S2_PK11Vector3_16fPNS_8CallbackE(
-        mParticleID[0], FX_TRAIL_A, v.x, v.y, v.z, 0, 0);
-    mParticleID[1] = (u32)_ZN8Particle6System3NewEjj5Fix12IiES2_S2_PK11Vector3_16fPNS_8CallbackE(
-        mParticleID[1], FX_TRAIL_B, v.x, v.y, v.z, 0, 0);
-    mParticleID[2] = (u32)_ZN8Particle6System3NewEjj5Fix12IiES2_S2_PK11Vector3_16fPNS_8CallbackE(
-        mParticleID[2], FX_TRAIL_C, v.x, v.y, v.z, 0, 0);
+    mParticleID[0] = (u32)Particle::System::New(mParticleID[0], FX_TRAIL_A, v.x, v.y, v.z, 0, 0);
+    mParticleID[1] = (u32)Particle::System::New(mParticleID[1], FX_TRAIL_B, v.x, v.y, v.z, 0, 0);
+    mParticleID[2] = (u32)Particle::System::New(mParticleID[2], FX_TRAIL_C, v.x, v.y, v.z, 0, 0);
 }
 
 // @symbol _ZN10daObjKey_c13StateStarJumpEv
@@ -480,8 +481,7 @@ void daObjKey_c::StateStarJump()
         v.y = mPosY;
         v.z = mPosZ;
         v.y = v.y + Y_SPARK;
-        mParticleID[0] = (u32)_ZN8Particle6System3NewEjj5Fix12IiES2_S2_PK11Vector3_16fPNS_8CallbackE(
-            mParticleID[0], FX_FALL, v.x, v.y, v.z, 0, 0);
+        mParticleID[0] = (u32)Particle::System::New(mParticleID[0], FX_FALL, v.x, v.y, v.z, 0, 0);
     }
     if (mStep >= 2)
         dBgCh_Actr_UpdateContinuous_Veneer((char *)&mWithMeshClsn);
@@ -662,8 +662,7 @@ void daObjKey_c::StateDrop()
         v.y = mPosY;
         v.z = mPosZ;
         v.y = v.y + Y_SPARK;
-        mParticleID[0] = (u32)_ZN8Particle6System3NewEjj5Fix12IiES2_S2_PK11Vector3_16fPNS_8CallbackE(
-            mParticleID[0], FX_FALL, v.x, v.y, v.z, 0, 0);
+        mParticleID[0] = (u32)Particle::System::New(mParticleID[0], FX_FALL, v.x, v.y, v.z, 0, 0);
         if (mWithMeshClsn.JustHitGround()) {
             mVertSpeed = -mVertSpeed >> 1;
             func_02012694(SND_LAND, &mCamSpacePos);
@@ -845,10 +844,10 @@ int daObjKey_c::Behavior()
                 /* First bone, word at +0xc. BMD_Bone has no field there. */
                 vec.y = *(int *)((char *)mModelAnim.data.bones + 0xc) * BONE_Y_MUL + vec.y;
                 vec.y = vec.y - Y_BONE;
-                mParticleID[0] = (u32)_ZN8Particle6System3NewEjj5Fix12IiES2_S2_PK11Vector3_16fPNS_8CallbackE(
-                    mParticleID[0], FX_BURST_A, vec.x, vec.y, vec.z, 0, 0);
-                mParticleID[1] = (u32)_ZN8Particle6System3NewEjj5Fix12IiES2_S2_PK11Vector3_16fPNS_8CallbackE(
-                    mParticleID[1], FX_BURST_B, vec.x, vec.y, vec.z, 0, 0);
+                mParticleID[0] = (u32)Particle::System::New(mParticleID[0], FX_BURST_A, vec.x,
+                                                            vec.y, vec.z, 0, 0);
+                mParticleID[1] = (u32)Particle::System::New(mParticleID[1], FX_BURST_B, vec.x,
+                                                            vec.y, vec.z, 0, 0);
             }
         }
 
@@ -910,8 +909,7 @@ int daObjKey_c::InitResources()
         if (mModelAnim.SetFile((BMD_File *)((ObjKeyFile *)&data_ov002_0211094c)->filePtr, 1, 1) ==
             0)
             return 0;
-        _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(&mModelAnim, data_ov002_02110964.filePtr,
-                                                    ANIM_FLAGS, ANIM_SPEED, 0);
+        mModelAnim.SetAnim((BCA_File *)data_ov002_02110964.filePtr, ANIM_FLAGS, ANIM_SPEED, 0);
         mScaleX = SCALE_STAR;
         mScaleY = SCALE_STAR;
         mScaleZ = SCALE_STAR;
@@ -938,8 +936,7 @@ int daObjKey_c::InitResources()
                     return 0;
             }
         }
-        _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(&mModelAnim, data_ov002_02110964.filePtr,
-                                                    ANIM_FLAGS, ANIM_SPEED, 0);
+        mModelAnim.SetAnim((BCA_File *)data_ov002_02110964.filePtr, ANIM_FLAGS, ANIM_SPEED, 0);
         mScaleX = SCALE_KEY;
         mScaleY = SCALE_KEY;
         mScaleZ = SCALE_KEY;

@@ -75,12 +75,8 @@ int AngleDiff(int a, int b);
 void Vec3_Sub(void *out, void *a, void *b);
 int LenVec3(void *v);
 u16 DecIfAbove0_Short(u16 *p);
-int _ZN10dBgActor_c20UpdateKillByMegaCharEsss5Fix12IiE(
-    dBgActor_c *self, s16 a, s16 b, s16 c, int d);
-int _ZN10dBgActor_c21IsClsnInRangeOnScreenE5Fix12IiES1_(
-    dBgActor_c *self, int a, int b);
-int _ZN10dBgActor_c13IsClsnInRangeE5Fix12IiES1_(
-    dBgActor_c *self, int a, int b);
+int _ZN10dBgActor_c20UpdateKillByMegaCharEsss5Fix12IiE(dBgActor_c *self, s16 a, s16 b, s16 c,
+                                                       int d);
 void _ZN10dBgW_KcMbg7SetFileEP8KCL_FileRK9Matrix4x35Fix12IiEsR10CLPS_Block(
     dBgW_KcMbg *self, KCL_File *kcl, const Matrix4x3 *mtx, int scale,
     s16 angleY, CLPS_Block *clps);
@@ -122,9 +118,6 @@ void daObjMaruta_c_EmitDestructor(daObjMaruta_c *p)
     p->~daObjMaruta_c();
 }
 
-/* -------------------------------------------------------------------------- */
-/* ROM ordinal 0 -- _ZN13daObjMaruta_c15OnHitByMegaCharER6Player, 0x02127058 */
-/* -------------------------------------------------------------------------- */
 // @symbol _ZN13daObjMaruta_c15OnHitByMegaCharER6Player
 /* Vtable slot 27, and this class's KEY FUNCTION: the destructor is inline in
    the class body, so the first out-of-line virtual declared anchors
@@ -164,12 +157,9 @@ extern "C" int func_ov080_021270dc(daObjMaruta_c *self, ResourceDescriptor *arg)
     return 1;
 }
 
-/* -------------------------------------------------------------------------- */
-/* ROM ordinal 3 -- _ZN13daObjMaruta_c6RenderEv, 0x02127124, size 0x28 */
-/* -------------------------------------------------------------------------- */
 // @symbol _ZN13daObjMaruta_c6RenderEv
-/* Dispatches through the Model at 0xd4 (dBgActor_c's mModel, inherited) --
-   Model::Render(const Vector3 *) with a null scale, matching the ROM's
+/* Dispatches through the dExtSimpleModel_c at 0xd4 (dBgActor_c's mModel, inherited) --
+   dExtSimpleModel_c::Render(const Vector3 *) with a null scale, matching the ROM's
    literal-0 argument. */
 s32 daObjMaruta_c::Render()
 {
@@ -281,10 +271,10 @@ extern "C" int func_ov080_0212714c(daObjMaruta_c *self, int *maxDist)
     {
         int is66 = (int)(self->actorID == 0x66);
         if (is66 != 0) {
-            if (_ZN10dBgActor_c21IsClsnInRangeOnScreenE5Fix12IiES1_(self, 0, 0) != 0)
+            if (self->IsClsnInRangeOnScreen(0, 0) != 0)
                 self->UpdateClsnPosAndRot();
         } else {
-            if (_ZN10dBgActor_c13IsClsnInRangeE5Fix12IiES1_(self, 0, 0) != 0)
+            if (self->IsClsnInRange(0, 0) != 0)
                 self->UpdateClsnPosAndRot();
         }
     }
@@ -299,8 +289,7 @@ extern "C" int func_ov080_0212714c(daObjMaruta_c *self, int *maxDist)
 extern "C" int func_ov080_021274ac(daObjMaruta_c *self, ResourceDescriptor *arg)
 {
     struct Vector3 d;
-    self->mModel.SetFile(
-        (BMD_File *)Model::LoadFile(*arg->model), 1, -1);
+    self->mModel.SetFile((BMD_File *)dExtSimpleModel_c::LoadFile(*arg->model), 1, -1);
     self->func_ov080_02127094();
     self->UpdateClsnPosAndRot();
     _ZN10dBgW_KcMbg7SetFileEP8KCL_FileRK9Matrix4x35Fix12IiEsR10CLPS_Block(

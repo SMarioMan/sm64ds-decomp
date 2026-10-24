@@ -68,7 +68,7 @@ struct SharedFilePtr;
 struct CLPS_Block;
 
 /* The leaf's model/collision/CLPS bundle, stored in mFileTable by the Init
- * helper func_ov002_020b5e58: entry [0] goes to Model::LoadFile, [1] to
+ * helper func_ov002_020b5e58: entry [0] goes to dExtSimpleModel_c::LoadFile, [1] to
  * dBgW_Kc::LoadFile, [2] to dBgW_KcMbg::SetFile as the CLPS. Same member
  * vocabulary as every other typed table in the tree (FlyingCarpetResources,
  * the ki_ita leaf's ResourceDescriptor). */

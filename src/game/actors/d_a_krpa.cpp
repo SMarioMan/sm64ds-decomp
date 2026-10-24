@@ -22,14 +22,14 @@
  *   order; the inline destructor group comes out retail D1 then D0, no D2.
  *   M48, the array wrapper for InitResources' IDENTITY_MATRIX4X3 copy. This
  *   TU uses the nested Matrix4x3 (.t) that math/Matrix.h brings in via
- *   ModelAnim.h; putting common.h first would drop .t.
+ *   dExtAnmModel_c.h; putting common.h first would drop .t.
  *   func_ov070_021213cc calls dBgCh_Actr_UpdateDiscreteNoLava_veneer: the
  *   veneer is the retail call destination.
  *
  * WHY SOME CALLS ARE SPELLED AS MANGLED SYMBOLS (Fix12<int> by value, see
  * notes/mwccarm-codegen.md 6az):
  *   dCcAcPos_c::Init, dBgCh_Actr::Init (its header Fix12i also mangles as
- *   int), ModelAnim::SetAnim, DropShadowRadHeight and
+ *   int), dExtAnmModel_c::SetAnim, DropShadowRadHeight and
  *   Particle::System::NewSimple.
  */
 
@@ -121,7 +121,7 @@ extern void _ZN10dBgCh_Actr4InitEP8dActor_c5Fix12IiES3_P10Vector3_16S5_(
 int daKrpa_c::InitResources()
 {
     Vector3 offset;
-    void *bmd = Model::LoadFile(gKeronpaModelFile);
+    void *bmd = dExtSimpleModel_c::LoadFile(gKeronpaModelFile);
     int groundDistance;
     mModelAnim.SetFile((BMD_File *)bmd, 1, 1);
     if (!mShadowModel.InitCylinder())
@@ -206,8 +206,6 @@ void daKrpa_c::func_ov070_0212180c()
 // @symbol _ZN8daKrpa_c19func_ov070_021217acEv
 /* SetAnim is another proven Fix12-by-value caller seam. */
 extern "C" {
-extern void _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(
-    ModelAnim *model, BCA_File *file, int flags, Fix12i speed, u32 startFrame);
 extern char data_ov070_021234c4[];
 extern char data_ov070_021234dc[];
 extern u32 data_ov070_02122404[];
@@ -215,8 +213,7 @@ extern u32 data_ov070_021222e8[];
 }
 
 int daKrpa_c::func_ov070_021217ac() {
-    _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(
-        &this->mModelAnim, (BCA_File *)data_ov070_021234c4, 0, 0x1000, 0);
+    this->mModelAnim.SetAnim((BCA_File *)data_ov070_021234c4, 0, 0x1000, 0);
     this->mFrameController.func_ov070_02121ae0(
         data_ov070_02122404, 0x64, 1);
     this->mStateTimer = 0x73;
@@ -250,9 +247,7 @@ int daKrpa_c::func_ov070_02121710() {
 }
 // @symbol _ZN8daKrpa_c19func_ov070_021216b8Ev
 int daKrpa_c::func_ov070_021216b8() {
-    _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(
-        &this->mModelAnim, (BCA_File *)data_ov070_021234dc,
-        0x40000000, 0x1000, 0);
+    this->mModelAnim.SetAnim((BCA_File *)data_ov070_021234dc, 0x40000000, 0x1000, 0);
     this->mFrameController.func_ov070_02121ae0(
         data_ov070_021222e8, 0x47, 0);
     this->mStateIndex = 1;
@@ -319,8 +314,11 @@ int daKrpa_c::func_ov070_021214f8()
 /* Particle::System::NewSimple is not yet declared by its shared header; retain
  * this typed ABI import without guessing the unresolved state's source name. */
 namespace Sound { void PlayBank0(u32 soundID, const Vector3 &pos); }
-extern "C" u32 _ZN8Particle6System9NewSimpleEj5Fix12IiES2_S2_(
-    u32 effectID, Fix12i x, Fix12i y, Fix12i z);
+namespace Particle {
+struct System {
+    static u32 NewSimple(u32 effectID, Fix12i x, Fix12i y, Fix12i z);
+};
+}
 
 int daKrpa_c::func_ov070_02121438()
 {
@@ -334,12 +332,9 @@ int daKrpa_c::func_ov070_02121438()
     this->mScaleY = 0x1000;
     this->mScaleZ = 0x1000;
     this->mStateTimer = 0x2d;
-    _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(
-        &this->mModelAnim, (BCA_File *)data_ov070_021234c4, 0, 0x1000, 0);
-    _ZN8Particle6System9NewSimpleEj5Fix12IiES2_S2_(
-        0x43, this->mPosX, this->mPosY, this->mPosZ);
-    _ZN8Particle6System9NewSimpleEj5Fix12IiES2_S2_(
-        0x44, this->mPosX, this->mPosY, this->mPosZ);
+    this->mModelAnim.SetAnim((BCA_File *)data_ov070_021234c4, 0, 0x1000, 0);
+    Particle::System::NewSimple(0x43, this->mPosX, this->mPosY, this->mPosZ);
+    Particle::System::NewSimple(0x44, this->mPosX, this->mPosY, this->mPosZ);
     this->mStateIndex = 3;
     return 1;
 }

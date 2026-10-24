@@ -1,15 +1,15 @@
 {
-  "id": "arm9/ModelAnim2",
+  "id": "arm9/dExtAnm2Model_c",
   "module": "arm9",
-  "source": "src/engine/model/ModelAnim2.cpp",
-  "promoted_source": "src/engine/model/ModelAnim2.cpp",
+  "source": "src/engine/model/d_ext_anm2_model.cpp",
+  "promoted_source": "src/engine/model/d_ext_anm2_model.cpp",
   "status": "promoted",
   "boundary_confidence": "medium",
   "boundary_evidence": [
-    "class run 0x02016254..0x020163e0: first to last function named for the class or in its vtable (tu_map unit also carries 79 other class(es), e.g. BlendModelAnim, CLPS_BlockRef, CP15, Event); a TU boundary a reviewer must confirm against the neighbours",
-    "~ModelAnim2() is defined here, so the object emits the MI vtable group. RTTI is off: the cartridge _ZTS/_ZTI records spell dExtAnm2Model_c, and every base in the chain is coined too, so records under the project spellings would be homeless. The secondary Animation-side preamble (offset-to-top and typeinfo) lands inside _ZTV10ModelAnim2's compared body, ahead of VTable_Animation_ModelAnim2Thunk, and RTTI off emits those two words as zeros. romdata_check masks that pair only when the cartridge words are a negative offset-to-top and a _ZTI pointer; the slots on either side are still compared. The retail vtable at 0x0208e9b4 is externalized, not replaced.",
+    "class run 0x02016254..0x020163e0: first to last function named for the class or in its vtable (tu_map unit also carries 79 other class(es), e.g. dExtBlendAnmModel_c, CLPS_BlockRef, CP15, Event); a TU boundary a reviewer must confirm against the neighbours",
+    "~dExtAnm2Model_c() is defined here, so the object emits the MI vtable group. RTTI is off (it was turned off while the class and its bases carried coined names whose records had no home; under the cartridge spellings they would, so RTTI on is open as a follow-up). The secondary Animation-side preamble (offset-to-top and typeinfo) lands inside _ZTV15dExtAnm2Model_c's compared body, ahead of VTable_Animation_ModelAnim2Thunk, and RTTI off emits those two words as zeros. romdata_check masks that pair only when the cartridge words are a negative offset-to-top and a _ZTI pointer; the slots on either side are still compared. The retail vtable at 0x0208e9b4 is externalized, not replaced.",
     "D2 and C2 are emitted beside D0/D1 and C1 and have no cartridge home, so they are deadstripped. The two _ZThn80_ destructor thunks are also emitted here; their enrolled home is src/engine/model/ModelAnimThunks.cpp, which owns 0x02017168..0x020171c8 (this class's pair at 0x020171a8/0x020171b8), and this TU's copies are deadstrip-duplicates.",
-    "ROM class identity: _ZTI15dExtAnm2Model_c at 0x0208e788, _ZTS at 0x0208e838, vtable _ZTV10ModelAnim2 at 0x0208e9b4"
+    "ROM class identity: _ZTI15dExtAnm2Model_c at 0x0208e788, _ZTS at 0x0208e838, vtable _ZTV15dExtAnm2Model_c at 0x0208e9b4"
   ],
   "sections": [
     {
@@ -20,10 +20,10 @@
   ],
   "functions": [
     {
-      "symbol": "_ZN10ModelAnim24CopyERKS_Pcj",
+      "symbol": "_ZN15dExtAnm2Model_c4CopyERKS_Pcj",
       "address": "0x02016254",
       "size": "0x00000038",
-      "legacy_source": "src/_ZN10ModelAnim24CopyERKS_Pcj.cpp",
+      "legacy_source": "src/_ZN15dExtAnm2Model_c4CopyERKS_Pcj.cpp",
       "ordinal": 0
     },
     {
@@ -41,31 +41,31 @@
       "ordinal": 2
     },
     {
-      "symbol": "_ZN10ModelAnim213Func_020162C4Eji5Fix12IiEt",
+      "symbol": "_ZN15dExtAnm2Model_c13Func_020162C4Ejiit",
       "address": "0x020162c4",
       "size": "0x0000005c",
-      "legacy_source": "src/_ZN10ModelAnim213Func_020162C4Eji5Fix12IiEt.c",
+      "legacy_source": "src/_ZN15dExtAnm2Model_c13Func_020162C4Eji5Fix12IiEt.c",
       "ordinal": 3
     },
     {
-      "symbol": "_ZN10ModelAnim2D0Ev",
+      "symbol": "_ZN15dExtAnm2Model_cD0Ev",
       "address": "0x02016320",
       "size": "0x00000044",
-      "legacy_source": "src/_ZN10ModelAnim2D0Ev.cpp",
+      "legacy_source": "src/_ZN15dExtAnm2Model_cD0Ev.cpp",
       "ordinal": 4
     },
     {
-      "symbol": "_ZN10ModelAnim2D1Ev",
+      "symbol": "_ZN15dExtAnm2Model_cD1Ev",
       "address": "0x02016364",
       "size": "0x0000003c",
-      "legacy_source": "src/_ZN10ModelAnim2D1Ev.cpp",
+      "legacy_source": "src/_ZN15dExtAnm2Model_cD1Ev.cpp",
       "ordinal": 5
     },
     {
-      "symbol": "_ZN10ModelAnim2C1Ev",
+      "symbol": "_ZN15dExtAnm2Model_cC1Ev",
       "address": "0x020163a0",
       "size": "0x00000040",
-      "legacy_source": "src/_ZN10ModelAnim2C1Ev.cpp",
+      "legacy_source": "src/_ZN15dExtAnm2Model_cC1Ev.cpp",
       "ordinal": 6
     }
   ],
@@ -73,64 +73,64 @@
   "bss": [],
   "compiler_only_output": [
     {
-      "symbol": "_ZN10ModelAnim2D2Ev",
+      "symbol": "_ZN15dExtAnm2Model_cD2Ev",
       "disposition": "deadstrip",
-      "reason": "Out-of-line ~ModelAnim2 under deferred codegen emits D2, then D0, then D1. The cartridge has D0 at 0x02016320 and D1 at 0x02016364 and no ModelAnim2 D2."
+      "reason": "Out-of-line ~dExtAnm2Model_c under deferred codegen emits D2, then D0, then D1. The cartridge has D0 at 0x02016320 and D1 at 0x02016364 and no dExtAnm2Model_c D2."
     },
     {
-      "symbol": "_ZN10ModelAnim2C2Ev",
+      "symbol": "_ZN15dExtAnm2Model_cC2Ev",
       "disposition": "deadstrip",
-      "reason": "One ModelAnim2() emits C1 and C2. The cartridge keeps C1 at 0x020163a0 and has no C2; every caller uses the complete-object constructor."
+      "reason": "One dExtAnm2Model_c() emits C1 and C2. The cartridge keeps C1 at 0x020163a0 and has no C2; every caller uses the complete-object constructor."
     },
     {
-      "symbol": "_ZThn80_N10ModelAnim2D0Ev",
+      "symbol": "_ZThn80_N15dExtAnm2Model_cD0Ev",
       "disposition": "deadstrip-duplicate",
       "canonical_module": "arm9",
       "canonical_address": "0x020171a8",
       "reason": "The key function emits the Animation-base deleting thunk. The cartridge copy is enrolled in src/engine/model/ModelAnimThunks.cpp at 0x020171a8; this TU's copy matches that body and is discarded."
     },
     {
-      "symbol": "_ZThn80_N10ModelAnim2D1Ev",
+      "symbol": "_ZThn80_N15dExtAnm2Model_cD1Ev",
       "disposition": "deadstrip-duplicate",
       "canonical_module": "arm9",
       "canonical_address": "0x020171b8",
       "reason": "The key function emits the Animation-base complete thunk. The cartridge copy is enrolled in src/engine/model/ModelAnimThunks.cpp at 0x020171b8; this TU's copy matches that body and is discarded."
     },
     {
-      "symbol": "_ZTV10ModelAnim2",
+      "symbol": "_ZTV15dExtAnm2Model_c",
       "disposition": "deadstrip-data",
       "canonical_module": "arm9",
       "canonical_address": "0x0208e9b4",
-      "reason": "The out-of-line destructor emits the MI vtable group. RTTI is off, so no coined _ZTI/_ZTS records are emitted, and the secondary preamble inside this symbol is zeros where retail has offset-to-top -0x50 and _ZTI15dExtAnm2Model_c. Those two words are masked as an RTTI-off preamble; the primary slots and the thunk slots match. The retail table at 0x0208e9b4 is externalized unchanged."
+      "reason": "The out-of-line destructor emits the MI vtable group. RTTI is off, so no _ZTI/_ZTS records are emitted, and the secondary preamble inside this symbol is zeros where retail has offset-to-top -0x50 and _ZTI15dExtAnm2Model_c. Those two words are masked as an RTTI-off preamble; the primary slots and the thunk slots match. The retail table at 0x0208e9b4 is externalized unchanged."
     }
   ],
   "notes": [
-    "Scaffolded by tools/class_scaffold.py (RTTI record, ROM vtable, srcpath), then filled by hand. tu_map cannot segment arm9 main, so the boundary is the class run: Copy opens it at 0x02016254 and C1 closes it at 0x020163e0, between dExtCommonModel_c's C1 and BlendModelAnim.",
-    "ModelAnim2 is the tree's coined name for the cartridge's dExtAnm2Model_c (_ZTI15dExtAnm2Model_c at 0x0208e788, single inheritance from dExtAnmModel_c, the tree's ModelAnim). Its vtable _ZTV10ModelAnim2 at 0x0208e9b4 overrides only D1/D0; renaming the class is separate work, so the file keeps the class name (AGENTS.md file-name rule) beside ModelAnim.cpp.",
-    "The fold takes the method run and the lifecycle tail D0, D1, C1 (0x02016320..0x020163e0). ~ModelAnim2() is the key function. RTTI is off so the coined dExtAnm2Model_c records are not emitted. D2 and C2 are homeless and deadstripped. The _ZThn80_ thunks at 0x02017168..0x020171c8 are enrolled in src/engine/model/ModelAnimThunks.cpp; this TU's copies are deadstrip-duplicates. _ZTV10ModelAnim2 is deadstrip-data: the secondary preamble's RTTI-off zeros are masked, the slots match, and the retail vtable is unchanged. The mask is the same rule as arm9/BlendModelAnim.",
-    "func_0201628c and func_020162a4 keep their address names and int parameters: Player calls both through an extern (int, int) declaration on a body model with bone 8, so a typed ModelAnim2* parameter would add a declaration disagreement. func_02045e2c is declared with an int frame, matching the ROM's unextended lsr #16 argument; Model4.cpp defines it with short, the same banked disagreement the absorbed source carried.",
-    "Func_020162C4 keeps the mangled extern \"C\" definition for the Fix12<int> by-value wall (6az), as ModelAnim::SetAnim does; ModelAnim2.h's member declaration is the real one. The file is written ROM-descending because mwccarm emits .text in reverse source order under default deferred codegen. The constructor and destructor are first in the source so their clusters land after the methods."
+    "Scaffolded by tools/class_scaffold.py (RTTI record, ROM vtable, srcpath), then filled by hand. tu_map cannot segment arm9 main, so the boundary is the class run: Copy opens it at 0x02016254 and C1 closes it at 0x020163e0, between dExtCommonModel_c's C1 and dExtBlendAnmModel_c.",
+    "dExtAnm2Model_c carries the cartridge RTTI name (_ZTI15dExtAnm2Model_c at 0x0208e788, single inheritance from dExtAnmModel_c). Its vtable _ZTV15dExtAnm2Model_c at 0x0208e9b4 overrides only D1/D0. The source is d_ext_anm2_model.cpp, the snake-case stem its ROM-named siblings use.",
+    "The fold takes the method run and the lifecycle tail D0, D1, C1 (0x02016320..0x020163e0). ~dExtAnm2Model_c() is the key function. RTTI is off so the dExtAnm2Model_c records are not emitted. D2 and C2 are homeless and deadstripped. The _ZThn80_ thunks at 0x02017168..0x020171c8 are enrolled in src/engine/model/ModelAnimThunks.cpp; this TU's copies are deadstrip-duplicates. _ZTV15dExtAnm2Model_c is deadstrip-data: the secondary preamble's RTTI-off zeros are masked, the slots match, and the retail vtable is unchanged. The mask is the same rule as arm9/dExtBlendAnmModel_c.",
+    "func_0201628c and func_020162a4 keep their address names and int parameters: Player calls both through an extern (int, int) declaration on a body model with bone 8, so a typed dExtAnm2Model_c* parameter would add a declaration disagreement. func_02045e2c is declared with an int frame, matching the ROM's unextended lsr #16 argument; Model4.cpp defines it with short, the same banked disagreement the absorbed source carried.",
+    "Func_020162C4 is a real member under its scalar mangling _ZN15dExtAnm2Model_c13Func_020162C4Ejiit (speed is the scalar Fix12i), as dExtAnmModel_c::SetAnim is; it was an extern \"C\" definition under the invented Fix12<int> spelling _ZN15dExtAnm2Model_c13Func_020162C4Eji5Fix12IiEt until that symbol was renamed. The file is written ROM-descending because mwccarm emits .text in reverse source order under default deferred codegen. The constructor and destructor are first in the source so their clusters land after the methods."
   ],
   "verification": {
     "round": "tools/tubuild.py verify -- text-only, whole shadow TU compiled once",
     "toolchain": "tools/mwccarm/2004/b56/mwccarm.exe",
     "flags": "-O4,p -enum int -lang c++ -char signed -interworking -proc arm946e -gccext,on -msgstyle gcc -Cpp_exceptions off",
-    "object": "build/tu/arm9-ModelAnim2/ModelAnim2.o (gitignored)",
+    "object": "build/tu/arm9-dExtAnm2Model_c/d_ext_anm2_model.o (gitignored)",
     "comparison": "tools/match.py extract_func+compare (bytes/relocs) AND tools/objisolate.py plan() (relocation type/addend) AND tools/reloc_audit.py check_destinations() (relocation target identity)",
     "functions_matched": 7,
     "functions_declared": 7,
     "compilerOnlyOutput": {
       "requested": [
-        "_ZN10ModelAnim2D2Ev",
-        "_ZN10ModelAnim2C2Ev",
-        "_ZThn80_N10ModelAnim2D0Ev",
-        "_ZThn80_N10ModelAnim2D1Ev"
+        "_ZN15dExtAnm2Model_cD2Ev",
+        "_ZN15dExtAnm2Model_cC2Ev",
+        "_ZThn80_N15dExtAnm2Model_cD0Ev",
+        "_ZThn80_N15dExtAnm2Model_cD1Ev"
       ],
       "deadstripped": [
-        "_ZN10ModelAnim2C2Ev",
-        "_ZN10ModelAnim2D2Ev",
-        "_ZThn80_N10ModelAnim2D0Ev",
-        "_ZThn80_N10ModelAnim2D1Ev"
+        "_ZN15dExtAnm2Model_cC2Ev",
+        "_ZN15dExtAnm2Model_cD2Ev",
+        "_ZThn80_N15dExtAnm2Model_cD0Ev",
+        "_ZThn80_N15dExtAnm2Model_cD1Ev"
       ],
       "droppedSections": [
         5,
@@ -145,10 +145,10 @@
         28
       ],
       "data": [
-        "_ZTV10ModelAnim2"
+        "_ZTV15dExtAnm2Model_c"
       ],
       "dataExternalized": [
-        "_ZTV10ModelAnim2"
+        "_ZTV15dExtAnm2Model_c"
       ],
       "canonicalDuplicates": []
     },
@@ -162,7 +162,7 @@
     "linkcheck": {
       "round": "tools/tubuild.py linkcheck -- scratch dsd delink+lcf, whole-tree mwccarm, mwldarm link, linked-range and module byte comparison, dsd check symbols --fail, full ROM build",
       "result": "link-verified",
-      "scratch": "build/tu/arm9-ModelAnim2/link (gitignored)",
+      "scratch": "build/tu/arm9-dExtAnm2Model_c/link (gitignored)",
       "phases": {
         "delink": true,
         "lcf": true,

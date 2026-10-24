@@ -58,7 +58,7 @@ extern void _ZN10dBgW_KcMbg7SetFileEP8KCL_FileRK9Matrix4x35Fix12IiEsR10CLPS_Bloc
 // @symbol _ZN18daObjWlSubmarine_cD0Ev
 /* One out-of-line definition; mwccarm emits D1 and D0 from it, in that
  * order: its own vptr, then dBgActor_c's inlined, then dBgActor_c's
- * Model and dBgW_KcMbg, then dActor_c. */
+ * dExtSimpleModel_c and dBgW_KcMbg, then dActor_c. */
 daObjWlSubmarine_c::~daObjWlSubmarine_c()
 {
 }
@@ -81,18 +81,19 @@ s32 daObjWlSubmarine_c::Render() {
 
 // @symbol _ZN18daObjWlSubmarine_c13InitResourcesEv
 s32 daObjWlSubmarine_c::InitResources() {
-  void *m = Model::LoadFile(Submarine_ModelFile);
-  mModel.SetFile((BMD_File *)m, 1, -1);
-  UpdateModelPosAndRotY();
-  UpdateClsnPosAndRot();
-  {
-    void *k = dBgW_Kc::LoadFile(Submarine_ClsnFile);
-    _ZN10dBgW_KcMbg7SetFileEP8KCL_FileRK9Matrix4x35Fix12IiEsR10CLPS_Block(
-        &mMeshCollider,(int)k,&mClsnMat,0x199,mAngleY,(void*)data_ov026_02112fd4);
-  }
-  if(*(int*)(data_0209caa0+4) & 0x204) return 0;
-  mMeshCollider.Enable(this);
-  return 1;
+    void *m = dExtSimpleModel_c::LoadFile(Submarine_ModelFile);
+    mModel.SetFile((BMD_File *)m, 1, -1);
+    UpdateModelPosAndRotY();
+    UpdateClsnPosAndRot();
+    {
+        void *k = dBgW_Kc::LoadFile(Submarine_ClsnFile);
+        _ZN10dBgW_KcMbg7SetFileEP8KCL_FileRK9Matrix4x35Fix12IiEsR10CLPS_Block(
+            &mMeshCollider, (int)k, &mClsnMat, 0x199, mAngleY, (void *)data_ov026_02112fd4);
+    }
+    if (*(int *)(data_0209caa0 + 4) & 0x204)
+        return 0;
+    mMeshCollider.Enable(this);
+    return 1;
 }
 
 /* Reconstructed source-style name: SM64DS proves daObjWlSubmarine_c through

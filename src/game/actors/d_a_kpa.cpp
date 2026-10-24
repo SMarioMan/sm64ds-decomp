@@ -1,4 +1,8 @@
 //cpp
+namespace Particle {
+struct Callback;
+}
+struct Vector3_16f;
 /* daKpa_c + daKpaTail_c -- Bowser and his tail, the ov060 boss-fight actors.
  * ROM span 0x02111900..0x02116484, 81 functions: both destructor pairs,
  * the shared fight helpers, both classes' resource/load/behavior/render
@@ -50,7 +54,8 @@
  *    unnamed: the first two are written here and never read.
  *  - Remaining TUBUILD CONFLICT blocks are the legacy alternates tubuild
  *    create commented out; the ones whose kept side has since been deleted
- *    are noted RESOLVED in the manifest and their blocks removed. */
+ *    are noted RESOLVED in the manifest and their blocks removed.
+ *  - Sound::ChangeMusicVolume keeps its mangled free-function decl (Fix12<int> by value, S13 wall); no Sound.h spelling mangles to it. */
 
 /* TUBUILD NOTE -- codegen is deferred, so .text emits in reverse source
  * order and the function bodies below are ROM-descending. The exception is
@@ -70,7 +75,7 @@
 /* common.h must come first. It carries Matrix4x3 behind a guard, and both
  * spellings are 0x30 bytes and both are real -- Matrix4x3_ApplyInPlace* wants
  * `m[i]` while the model headers want `.r`/`.t`. Whichever is seen first in a TU
- * stands. The class headers reach Model.h, so including them ahead of common.h
+ * stands. The class headers reach dExtSimpleModel_c.h, so including them ahead of common.h
  * hands the TU the `.r`/`.t` form and the helpers below stop compiling. Same
  * ordering constraint daKpa2Bg_c documents. */
 /* Runtime asset handles resolved through the overlay 0 file table. */
@@ -348,12 +353,17 @@ int _ZN4cstd4fdivEii(int a, int b);
 extern PmfEnt data_ov060_0211aed4[];
 
 extern unsigned char NumStars(void);
-extern void *_ZN8Particle6System3NewEjj5Fix12IiES2_S2_PK11Vector3_16fPNS_8CallbackE(
-unsigned a, unsigned b, int x, int y, int z, void *v, void *cb);
+extern void *d_a_kpaNewHold(unsigned a, unsigned b, int x, int y, int z, void *v, void *cb);
 extern void _ZN5Sound17ChangeMusicVolumeEj5Fix12IiE(unsigned int a, int b);
 extern KpaAnimationFileHandle data_ov060_0211ac88;
 extern KpaAnimationFileHandle data_ov060_0211ac60;
-extern void _ZN8Particle6System9NewSimpleEj5Fix12IiES2_S2_(unsigned int kind, int x, int y, int z);
+namespace Particle {
+struct System {
+    static void NewSimple(unsigned int kind, int x, int y, int z);
+
+    static int New(unsigned, unsigned, int, int, int, const ::Vector3_16f *, Callback *);
+};
+}
 extern int Vec3_HorzLen(const Vector3* v);
 extern void _ZN8dActor_c13SpawnFireballERK7Vector3PK10Vector3_165Fix12IiES7_j( void* self, const void* pos, const void* rot, int speed, int gravity, u32 flags);
 extern int RandomIntInternal(int* seed);
@@ -416,7 +426,6 @@ extern KpaAnimationFileHandle data_ov060_0211ac90;
 extern short data_ov060_02119294[];
 extern short data_ov060_02119296[];
 extern short data_ov060_02119298[];
-extern void _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(void *anim, void *file, int a, int d, unsigned e);
 extern void _ZN15TextureSequence7SetFileER8BTP_Filei5Fix12IiEj(void *self, void *btp, int a, int b, unsigned int d);
 extern void _ZN10dCcAcPos_c4InitEP8dActor_cRK7Vector35Fix12IiES6_jj(void *self, void *act, void *pos, int c3, int d, unsigned int e, unsigned int f);
 extern void _ZN10dBgCh_Actr4InitEP8dActor_c5Fix12IiES3_P10Vector3_16S5_(void *self, void *act, int a, int b, void *d1, void *d2);
@@ -524,9 +533,6 @@ int _ZN7dCcAc_c4InitEP8dActor_c5Fix12IiES3_jj(void *self, void *actor, int fix, 
  * ends the object. */
 #pragma defer_codegen off
 
-/* -------------------------------------------------------------------------- */
-/* ROM ordinals 0-1 -- _ZN7daKpa_cD1Ev, 0x02111900 / _ZN7daKpa_cD0Ev, 0x02111950 */
-/* -------------------------------------------------------------------------- */
 // @symbol _ZN7daKpa_cD1Ev
 // @symbol _ZN7daKpa_cD0Ev
 /*
@@ -553,9 +559,6 @@ daKpa_c::~daKpa_c()
 }
 #endif
 
-/* -------------------------------------------------------------------------- */
-/* ROM ordinals 2-3 -- _ZN11daKpaTail_cD1Ev, 0x021119b4 / _ZN11daKpaTail_cD0Ev, 0x021119e4 */
-/* -------------------------------------------------------------------------- */
 // @symbol _ZN11daKpaTail_cD1Ev
 // @symbol _ZN11daKpaTail_cD0Ev
 /*
@@ -587,7 +590,7 @@ daKpaTail_c::~daKpaTail_c()
  *
  * `new daKpa_c` is the whole sequence the loose factory spelled by hand:
  * fBase_c::operator new(0x454), dActor_c's base constructor, the vptr store,
- * then the ModelAnim, TextureSequence, dBgCh_Actr, dExtShadowModel_c and
+ * then the dExtAnmModel_c, TextureSequence, dBgCh_Actr, dExtShadowModel_c and
  * dCcAcPos_c member constructors in declaration order. */
 extern "C" daKpa_c *daKpa_c_classInit(void)
 {
@@ -610,9 +613,6 @@ extern "C" daKpaTail_c *daKpaTail_c_classInit(void)
     return new daKpaTail_c;
 }
 
-/* -------------------------------------------------------------------------- */
-/* ROM ordinal 78 -- _ZN11daKpaTail_c13InitResourcesEv, 0x021163b4, size 0x3c */
-/* -------------------------------------------------------------------------- */
 // @symbol _ZN11daKpaTail_c13InitResourcesEv
 /*
 Tail setup: a single cylinder collider (dCcAc_c::Init) with radius 0x32000 (50
@@ -625,14 +625,11 @@ int daKpaTail_c::InitResources()
     return 1;
 }
 
-/* -------------------------------------------------------------------------- */
-/* ROM ordinal 77 -- _ZN7daKpa_c13InitResourcesEv, 0x02116130, size 0x284 */
-/* -------------------------------------------------------------------------- */
 // @symbol _ZN7daKpa_c13InitResourcesEv
 /*
-Bowser's setup, in order: load the model file and hand it to ModelBase::SetFile,
+Bowser's setup, in order: load the model file and hand it to dExtModel_c::SetFile,
 load the 0x1c Animation files and the six TextureSequence files, then two more
-Model files (CleanupResources releases the same set); shadow cylinder; start the
+dExtSimpleModel_c files (CleanupResources releases the same set); shadow cylinder; start the
 idle animation (0x10) and its texture pattern; body collider (cylinder, radius 0x78000 = 120 units, height
 0x118000 = 280, flags 0x200004); remember the spawn position in mHomePos; gravity
 -0x2000 (-2.0) and terminal velocity -0x3c000 (-60.0); floor collider (0x50000 =
@@ -658,7 +655,7 @@ int daKpa_c::InitResources()
     daKpaFire_c *fire;
     daKpaTail_c *tail;
 
-    this->mModelAnim.SetFile((BMD_File *)Model::LoadFile(data_ov060_0211ac78), 1, 0x16);
+    this->mModelAnim.SetFile((BMD_File *)dExtSimpleModel_c::LoadFile(data_ov060_0211ac78), 1, 0x16);
 
     for (i = 0; i < 0x1c; i++)
         dExtFrameCtrl_c::LoadFile(*data_ov060_021192dc[i]);
@@ -666,8 +663,8 @@ int daKpa_c::InitResources()
     for (i = 0; i < 6; i++)
         TextureSequence::LoadFile(*data_ov060_0211927c[i]);
 
-    Model::LoadFile(*(SharedFilePtr *)data_ov060_0211b208);
-    Model::LoadFile(data_ov089_02132c50);
+    dExtSimpleModel_c::LoadFile(*(SharedFilePtr *)data_ov060_0211b208);
+    dExtSimpleModel_c::LoadFile(data_ov089_02132c50);
 
     if (this->mShadowModel.InitCylinder() == 0)
         return 0;
@@ -737,9 +734,6 @@ int daKpa_c::InitResources()
     return 1;
 }
 
-/* -------------------------------------------------------------------------- */
-/* ROM ordinal 76 -- _ZN11daKpaTail_c8BehaviorEv, 0x02116078, size 0xb8 */
-/* -------------------------------------------------------------------------- */
 // @symbol _ZN11daKpaTail_c8BehaviorEv
 /*
 Per frame: find Bowser by mBowserUniqueID (return 1 if he is gone), put the tail
@@ -775,9 +769,6 @@ int daKpaTail_c::Behavior()
     return 1;
 }
 
-/* -------------------------------------------------------------------------- */
-/* ROM ordinal 75 -- _ZN7daKpa_c8BehaviorEv, 0x02115f64, size 0x114 */
-/* -------------------------------------------------------------------------- */
 // @symbol _ZN7daKpa_c8BehaviorEv
 /*
 One frame of Bowser, in order: advance the random state once (result unused);
@@ -830,9 +821,6 @@ int daKpa_c::Behavior()
     return 1;
 }
 
-/* -------------------------------------------------------------------------- */
-/* ROM ordinal 74 -- _ZN11daKpaTail_c6RenderEv, 0x02115f5c, size 0x8 */
-/* -------------------------------------------------------------------------- */
 // @symbol _ZN11daKpaTail_c6RenderEv
 /*
 Draws nothing; returns 1. */
@@ -841,9 +829,6 @@ int daKpaTail_c::Render()
     return 1;
 }
 
-/* -------------------------------------------------------------------------- */
-/* ROM ordinal 73 -- _ZN7daKpa_c6RenderEv, 0x02115f0c, size 0x50 */
-/* -------------------------------------------------------------------------- */
 // @symbol _ZN7daKpa_c6RenderEv
 /*
 Draw Bowser. Skipped while mOpacity < 8, where the opacity handed to the model
@@ -854,15 +839,12 @@ int daKpa_c::Render()
     if (mOpacity < 8) return 1;
     mTextureSequence.Advance();
     mTextureSequence.Update(mModelAnim.data);
-    /* ModelAnim's slot-5 Render(const Vector3 *) takes the scale vector;
+    /* dExtAnmModel_c's slot-5 Render(const Vector3 *) takes the scale vector;
      * daKpa2Bg_c::Render makes the same call on its mModel2. */
     mModelAnim.Render(&mScale);
     return 1;
 }
 
-/* -------------------------------------------------------------------------- */
-/* ROM ordinal 72 -- _ZN7daKpa_c16OnPendingDestroyEv, 0x02115f08, size 0x4 */
-/* -------------------------------------------------------------------------- */
 // @symbol _ZN7daKpa_c16OnPendingDestroyEv
 /*
 Empty override: the ROM body is a single `bx lr`. */
@@ -870,9 +852,6 @@ void daKpa_c::OnPendingDestroy()
 {
 }
 
-/* -------------------------------------------------------------------------- */
-/* ROM ordinal 71 -- _ZN11daKpaTail_c16CleanupResourcesEv, 0x02115f00, size 0x8 */
-/* -------------------------------------------------------------------------- */
 // @symbol _ZN11daKpaTail_c16CleanupResourcesEv
 /*
 Releases nothing; returns 1. The tail loads no files of its own:
@@ -882,13 +861,10 @@ int daKpaTail_c::CleanupResources()
     return 1;
 }
 
-/* -------------------------------------------------------------------------- */
-/* ROM ordinal 70 -- _ZN7daKpa_c16CleanupResourcesEv, 0x02115e80, size 0x80 */
-/* -------------------------------------------------------------------------- */
 // @symbol _ZN7daKpa_c16CleanupResourcesEv
 /*
 Release every handle InitResources loaded (the model, the 0x1c animations, the six
-texture patterns, then two more Model files), call func_02011cfc (no arguments;
+texture patterns, then two more dExtSimpleModel_c files), call func_02011cfc (no arguments;
 its purpose is not established here) and return 1. */
 /*
  * daKpa_c frees the whole fight. One single, then a 0x1c-entry table and a
@@ -2328,7 +2304,7 @@ void daKpa_c::func_ov060_02113d8c(){
     case 3:
         this->mStepCounter = 0;
         func_ov060_02111cc0(0x1a, 0x40000000);
-        this->mParticleHandle = (unsigned int)_ZN8Particle6System3NewEjj5Fix12IiES2_S2_PK11Vector3_16fPNS_8CallbackE(
+        this->mParticleHandle = (unsigned int)Particle::System::New(
             this->mParticleHandle, 0x101, this->mPosX, this->mPosY + 0x32000, this->mPosZ, 0, 0);
         if (ApproachLinear(this->mHorzSpeed, 0, 0x1000) != 0)
             this->mStep = 2;
@@ -2666,8 +2642,8 @@ void daKpa_c::func_ov060_021135fc(){
         pos.y = pos.y + 0xa0000;
         dActor_c::Spawn(BOWSER_ACTOR_LAST_STAR, 7, pos, 0, this->mAreaId, -1);
     } else {
-        _ZN8Particle6System9NewSimpleEj5Fix12IiES2_S2_(0xad, base.x, base.y, base.z);
-        _ZN8Particle6System9NewSimpleEj5Fix12IiES2_S2_(0xae, base.x, base.y, base.z);
+        Particle::System::NewSimple(0xad, base.x, base.y, base.z);
+        Particle::System::NewSimple(0xae, base.x, base.y, base.z);
         void *spawned = dActor_c::Spawn(BOWSER_ACTOR_OBJ_KEY, this->mVariantID, *((Vector3*)(&this->mPosX)), 0, this->mAreaId, -1);
         ((daObjKey_c *)spawned)->mSpinSpeed = this->mSpinSpeed;
         func_02012694(BOWSER_SND_DEFEATED, (Vector3*)(&this->mCamSpacePosX));
@@ -2787,8 +2763,8 @@ int daKpa_c::func_ov060_021132a4(){
     pos.z = z;
     pos.y = ytmp + 0x32000;
 
-    this->mParticleHandle = (int)_ZN8Particle6System3NewEjj5Fix12IiES2_S2_PK11Vector3_16fPNS_8CallbackE(
-        *(volatile int *)&this->mParticleHandle, 0x99, pos.x, pos.y, z, 0, 0);
+    this->mParticleHandle = (int)Particle::System::New(*(volatile int *)&this->mParticleHandle,
+                                                       0x99, pos.x, pos.y, z, 0, 0);
 
     if (this->mScaleX < 0xccc) {
         this->mSpinSpeed += 0x80;
@@ -2968,10 +2944,8 @@ int daKpa_c::func_ov060_02112ee0(){
             v[2] = z = this->mPosZ;
             v[1] = y + 0x32000;
 
-            *(void **)(&this->mParticleHandle) =
-                _ZN8Particle6System3NewEjj5Fix12IiES2_S2_PK11Vector3_16fPNS_8CallbackE(
-                    *(volatile unsigned *)&this->mParticleHandle, 0x99,
-                    v[0], v[1], z, 0, 0);
+            *(void **)(&this->mParticleHandle) = (void *)Particle::System::New(
+                *(volatile unsigned *)&this->mParticleHandle, 0x99, v[0], v[1], z, 0, 0);
         } else {
             func_ov060_02113260();
             ret = 1;
@@ -3560,7 +3534,7 @@ int daKpa_c::func_ov060_02111f08(){
 /*
 Switch the model to animation idx (entries 0..0x1b of the table at
 data_ov060_021192dc; each handle's filePtr is the file) and pick the texture
-pattern that goes with it. The third parameter reaches ModelAnim::SetAnim
+pattern that goes with it. The third parameter reaches dExtAnmModel_c::SetAnim
 unchanged as its flags word: the local `a` below is never assigned, and the ROM
 passes the caller's third argument (still in r2) straight through. Callers pass
 0 or 0x40000000; the top two bits of an Animation's flag word choose between wrapping and clamping at the end (see
@@ -3570,8 +3544,7 @@ with texture-sequence flags 0x40000000); 3 and 5 use ac10, 0xe uses abf0, and
 every other idx (0 included) uses ac28 (these three with flags 0). */
 void daKpa_c::func_ov060_02111cc0(int idx, int animFlags){
     int a;  /* deliberately never assigned: it is animFlags, still in r2 (see above) */
-    _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(&this->mModelAnim,
-                                                data_ov060_021192dc[idx]->filePtr, a, 0x1000, 0);
+    this->mModelAnim.SetAnim((BCA_File *)(data_ov060_021192dc[idx]->filePtr), a, 0x1000, 0);
     switch (idx) {
     case 1:
         TextureSequence::Prepare(*(BMD_File *)data_ov060_0211ac78.filePtr,

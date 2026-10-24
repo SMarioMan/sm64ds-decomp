@@ -28,7 +28,7 @@
  */
 
 /* daObjCannonShutter_c.h FIRST: it pulls in dBgActor_c.h, which must reach
-   common.h ahead of Model.h or the wrong Matrix4x3 spelling wins. */
+   common.h ahead of dExtSimpleModel_c.h or the wrong Matrix4x3 spelling wins. */
 /* Runtime asset handles resolved through the overlay 0 file table. */
 enum d_a_obj_cannon_shutter_AssetId {
     ASSET_CANNON_SHUTTER_BMD = 0x045f,
@@ -50,7 +50,6 @@ int  Vec3_HorzDist(const Vector3 *a, const Vector3 *b);
 extern Matrix4x3 data_020a0e68;
 
 /* dBgActor_c::IsClsnInRangeOnScreen(Fix12<int>, Fix12<int>) -- wall 6az. */
-int _ZN10dBgActor_c21IsClsnInRangeOnScreenE5Fix12IiES1_(void *self, int a, int b);
 
 /* dBgW_KcMbg::SetFile -- wall 6az. See the call site in InitResources. */
 void _ZN10dBgW_KcMbg7SetFileEP8KCL_FileRK9Matrix4x35Fix12IiEsR10CLPS_Block(
@@ -118,7 +117,7 @@ extern "C" SpawnInfo<daObjCannonShutter_c> g_profile_CANNON_SHUTTER = {
 // @symbol _ZN20daObjCannonShutter_c13InitResourcesEv
 int daObjCannonShutter_c::InitResources()
 {
-    mModel.SetFile((BMD_File *)Model::LoadFile(data_ov002_0210e12c), 1, -1);
+    mModel.SetFile((BMD_File *)dExtSimpleModel_c::LoadFile(data_ov002_0210e12c), 1, -1);
     UpdateModelPosAndRotY();
     UpdateClsnPosAndRot();
     {
@@ -146,7 +145,7 @@ int daObjCannonShutter_c::Behavior()
             mPosX = mHomePosX;
             mPosY = mHomePosY;
             mPosZ = mHomePosZ;
-            if (_ZN10dBgActor_c21IsClsnInRangeOnScreenE5Fix12IiES1_(this, 0, 0)) {
+            if (IsClsnInRangeOnScreen(0, 0)) {
                 UpdateModelPosAndRotY();
                 UpdateClsnPosAndRot();
             }
@@ -188,7 +187,7 @@ int daObjCannonShutter_c::Behavior()
         }
         UpdateModelPosAndRotY();
     }
-    if (_ZN10dBgActor_c21IsClsnInRangeOnScreenE5Fix12IiES1_(this, 0, 0)) {
+    if (IsClsnInRangeOnScreen(0, 0)) {
         UpdateClsnPosAndRot();
     }
     return 1;

@@ -64,6 +64,8 @@ struct OAM {
        coefficient, which is also why the search strides by 4. */
     static int LoadAffineParams(OamAttr* attr, int* count, Matrix2x2* mtx);
     static void Render(bool draw, OamAttr* obj, int x, int y, int palette, int priority, Matrix2x2* mtx);
+    /* 10-arg form. Scales are ints (0x1000), not Fix12. Unnamed: a named parameter renumbers @NNN in every includer. */
+    static void Render(bool, OamAttr *, int, int, int, int, int, int, int, int);
     static void RenderSub(OamAttr* data, s32 x, s32 y);
     static void RenderSub(OamAttr* data, s32 x, s32 y, s32 palette, s32 priority);
 #endif

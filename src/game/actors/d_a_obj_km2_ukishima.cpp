@@ -5,7 +5,7 @@
  * No fields. InitResources / CleanupResources hand this overlay's
  * model and collision files to daObjUkiyuka_c's shared ov002 helpers.
  * Init also stores kBobAmplitude into mBobAmplitude.
- * func_ov002_020b6584 loads slot 0 with Model::LoadFile, slot 1
+ * func_ov002_020b6584 loads slot 0 with dExtSimpleModel_c::LoadFile, slot 1
  * with dBgW_Kc::LoadFile, slot 2 as CLPS into SetFile, copies
  * mPosY to mRestY, and stores arg 3 at mBobAmplitude. ov045 sinit
  * constructs those SharedFilePtrs as file IDs 1643 / 1644.

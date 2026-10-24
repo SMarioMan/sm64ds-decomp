@@ -5,7 +5,7 @@
  * No fields of its own. InitResources / CleanupResources hand this
  * overlay's five-plank file table to daObjDorifu_c's shared
  * overloads. Each daObjDorifuResources row is modelFile, clsnFile,
- * clps: InitResources loads modelFile with Model::LoadFile,
+ * clps: InitResources loads modelFile with dExtSimpleModel_c::LoadFile,
  * clsnFile with dBgW_Kc::LoadFile, clps as CLPS into SetFile.
  * ov043 sinit constructs those SharedFilePtrs as file IDs
  * 1609 / 1610, 1611 / 1612, 1613 / 1614, 1615 / 1616, 1617 / 1618.
@@ -14,7 +14,7 @@
  * after the profile, before the vtable).
  *
  * The ten file handles at 02112658..021126a8 are defined here too.
- * Model handles construct through func_02017acc and destroy through
+ * dExtSimpleModel_c handles construct through func_02017acc and destroy through
  * func_02017ab4; collision handles construct through func_02017b4c
  * and destroy through SharedFilePtr_Destruct_Clsn. The manifest
  * aliases those undefined members onto the ROM symbols, and mwcc

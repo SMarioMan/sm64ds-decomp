@@ -36,9 +36,6 @@ static inline int IsPlayerActor(dActor_c *actor) {
    from decl_common.h; these two wrappers stay TU-local per S13. */
 extern "C" {
 extern int _ZTV11daWarpkun_c[];
-extern void _ZN8dActor_c9SetRangesE5Fix12IiES1_S1_S1_(
-    dActor_c *actor, Fix12i offsetY, Fix12i radius,
-    Fix12i clipDistance, Fix12i farDistance);
 extern void _ZN7dCcAc_c4InitEP8dActor_c5Fix12IiES3_jj(
     dCcAc_c *clsn, dActor_c *actor, Fix12i radius, Fix12i height,
     u32 flags, u32 vulnFlags);
@@ -68,8 +65,7 @@ s32 daWarpkun_c::InitResources()
        SetRanges call below may clobber this->param1. */
     u32 spawnParam = param1;
     Fix12i radius = ((param1 & 0xf) + 1) << 0x12;
-    _ZN8dActor_c9SetRangesE5Fix12IiES1_S1_S1_(
-        this, 0, radius, radius + 0x7d0000, 0);
+    SetRanges(0, radius, radius + 0x7d0000, 0);
     Fix12i height = (((spawnParam >> 4) & 0xf) + 1) << 0x12;
     _ZN7dCcAc_c4InitEP8dActor_c5Fix12IiES3_jj(
         &mdCcAc_c, this, radius, height, 2, 0x400000);

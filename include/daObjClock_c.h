@@ -3,7 +3,7 @@
 
 #include "types.h"
 #include "dActor_c.h"
-#include "Model.h"
+#include "dExtSimpleModel_c.h"
 
 /* daObjClock_c -- the two rotating hands of the clock painting.
  *
@@ -22,7 +22,7 @@
  * run time by actorID and stores the answer in mHandIndex.
  *
  * LAYOUT: dActor_c occupies 0x000..0x0cf; four bytes of derived padding precede
- * the owned Model the implicit constructor builds at +0xd4 (_ZN5ModelC1Ev);
+ * the owned dExtSimpleModel_c the implicit constructor builds at +0xd4 (_ZN17dExtSimpleModel_cC1Ev);
  * the one-byte hand index follows it at 0x124. The helper at 0x02111430 writes
  * mModel.mat4x3 from mAngleX/Y/Z and mModel.mat4x3.t from mPosX/Y/Z >> 3.
  */
@@ -33,7 +33,7 @@ extern "C" void *_ZN7fBase_cnwEj(unsigned size);
 
 struct daObjClock_c : dActor_c {
     u8    pad_0d0[0x4];    /* 0x0d0 */
-    Model mModel;          /* 0x0d4 */
+    dExtSimpleModel_c mModel; /* 0x0d4 */
     u8    mHandIndex;      /* 0x124 -- 0 = long hand, 1 = short hand */
     u8    pad_125[0x3];    /* 0x125 */
 

@@ -16,7 +16,7 @@
  * - The Mtx43 / V3A overlays on mModelAnim.mat4x3, mShadowMat and the
  *   player position copies. Plain Matrix4x3 / Vector3 assignment
  *   scalarizes.
- * - ModelAnim::SetAnim, dCcAc_c::Init, dBgCh_Actr::Init,
+ * - dExtAnmModel_c::SetAnim, dCcAc_c::Init, dBgCh_Actr::Init,
  *   DropShadowRadHeight, KillByInvincibleChar, SpawnCoins, Player::Hurt
  *   and Player::Bounce retain scalar ABI declarations. Native fixed-point
  *   call reconstruction remains separate work; the handoff records the
@@ -68,10 +68,8 @@ extern void _ZN8dActor_c19DropShadowRadHeightER17dExtShadowModel_cR9Matrix4x35Fi
 extern void _ZN6Player6BounceE5Fix12IiE(void *p, int f);
 /* local extern: retain the current scalar definition; native Fix12<int>
    call reconstruction remains separate work. The return value is discarded. */
-extern int _ZN6Player4HurtERK7Vector3j5Fix12IiEjjj(Player *p, void *v, unsigned int a,
-                                                   int b, u8 d, u8 e, u8 f);
-extern void _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(void *self, void *bca, int a, int fix,
-                                                        unsigned int j);
+extern int _ZN6Player4HurtERK7Vector3j5Fix12IiEjjj(Player *p, void *v, unsigned int a, int b, u8 d,
+                                                   u8 e, u8 f);
 extern void _ZN7dCcAc_c4InitEP8dActor_c5Fix12IiES3_jj(void *self, dActor_c *a, int r, int h,
                                                       unsigned int e, unsigned int g);
 extern void _ZN10dBgCh_Actr4InitEP8dActor_c5Fix12IiES3_P10Vector3_16S5_(
@@ -162,8 +160,8 @@ s32 daYurei_Mucho_c::OnAimedAtWithEgg()
    absent from symbols.txt. Retain these ABI calls pending interface repair. */
 int daYurei_Mucho_c::InitResources()
 {
-    mModelAnim.SetFile((BMD_File *)Model::LoadFile(data_ov065_0211d618), 1, -1);
-    Model::LoadFile(data_ov065_0211d610);
+    mModelAnim.SetFile((BMD_File *)dExtSimpleModel_c::LoadFile(data_ov065_0211d618), 1, -1);
+    dExtSimpleModel_c::LoadFile(data_ov065_0211d610);
     mShadowModel.InitCylinder();
     dExtFrameCtrl_c::LoadFile(data_ov065_0211d600);
     dExtFrameCtrl_c::LoadFile(data_ov065_0211d608);
@@ -370,8 +368,7 @@ int daYurei_Mucho_c::func_ov065_021168a8()
 {
     mTargetAngle = (short)((RandomIntInternal(data_0209e650) >> 8) << 0xc);
     mStateTimer = (short)(((RandomIntInternal(data_0209e650) >> 8) & 0x1f) + 0x32);
-    _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(&mModelAnim, data_ov065_0211d600.filePtr, 0, 0x1000,
-                                                0);
+    mModelAnim.SetAnim((BCA_File *)data_ov065_0211d600.filePtr, 0, 0x1000, 0);
     return 1;
 }
 
@@ -491,8 +488,7 @@ int daYurei_Mucho_c::func_ov065_021165d8()
 short daYurei_Mucho_c::func_ov065_02116588()
 {
     mShotCount = 0;
-    _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(&mModelAnim, data_ov065_0211d608.filePtr,
-                                                0x40000000, 0x1000, 0);
+    mModelAnim.SetAnim((BCA_File *)data_ov065_0211d608.filePtr, 0x40000000, 0x1000, 0);
     mStateTimer = 0;
     return 1;
 }
@@ -546,8 +542,7 @@ int daYurei_Mucho_c::func_ov065_02116364()
                 func_ov065_0211691c((State *)data_ov065_0211d670);
             } else {
                 mStateTimer = 0x32;
-                _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(
-                    &mModelAnim, data_ov065_0211d600.filePtr, 0, 0x1000, 0);
+                mModelAnim.SetAnim((BCA_File *)data_ov065_0211d600.filePtr, 0, 0x1000, 0);
                 func_ov065_0211691c((State *)&data_ov065_0211d680);
             }
         } else {
@@ -696,7 +691,7 @@ int daYurei_Mucho_c::func_ov065_02115f84()
  * included class header makes mwccarm emit retail's D1 then D0 pair without
  * the otherwise homeless D2 variant an out-of-line definition produces.
  *
- * D1 stores the vptr, then destroys the dExtShadowModel_c at 0x364, the ModelAnim at
+ * D1 stores the vptr, then destroys the dExtShadowModel_c at 0x364, the dExtAnmModel_c at
  * 0x300, the dBgCh_Actr at 0x144 and the dCcAc_c at 0x110 in reverse
  * declaration order, and tails into ov002 _ZN12dEnemyBase_cD2Ev. D0 repeats
  * that body verbatim -- it does NOT call D1 -- and then hands the object back

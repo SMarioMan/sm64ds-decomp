@@ -59,7 +59,6 @@ extern char data_ov063_0211ecb8;
  * linkage specifications, so everything they call lives here. */
 struct Vec3;
 extern "C" {
-extern void _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(ModelAnim *, BCA_File *, int, int, unsigned int);
 extern void _ZN10dBgCh_Actr4InitEP8dActor_c5Fix12IiES3_P10Vector3_16S5_(dBgCh_Actr *, dActor_c *, Fix12i, Fix12i, Vector3_16 *, Vector3_16 *);
 extern void _ZN10dCcAcPos_c4InitEP8dActor_cRK7Vector35Fix12IiES6_jj(dCcAcPos_c *, dActor_c *, const Vector3 *, Fix12i, Fix12i, unsigned int, unsigned int);
 extern void _ZN10dBgW_KcMbg7SetFileEP8KCL_FileRK9Matrix4x35Fix12IiEsR10CLPS_Block(void *, void *, const Matrix4x3 *, int, short, void *);
@@ -78,7 +77,6 @@ int Vec3_HorzDist(const Vector3 *a, const Vector3 *b);
 void dBgCh_Actr_UpdateContinuous_Veneer(dBgCh_Actr *clsn);
 void func_0203568c(int *clsn, int radius);
 void func_02035684(int *clsn, int height);
-int _ZN10dBgActor_c13IsClsnInRangeE5Fix12IiES1_(dBgActor_c *, int, int);
 void func_ov063_0211ddf4(daPiano_c *self);
 }
 
@@ -101,13 +99,13 @@ int daPiano_c::InitResources()
     dCcAcPos_c *cylinder;
     void *f;
 
-    f = Model::LoadFile(gPianoModelFile);
+    f = dExtSimpleModel_c::LoadFile(gPianoModelFile);
     mModelAnim.SetFile((BMD_File *)f, 1, -1);
     mShadowModel1.InitCuboid();
     mShadowModel2.InitCuboid();
     mShadowModel3.InitCylinder();
     f = dExtFrameCtrl_c::LoadFile(gPianoAttackAnimationFile);
-    _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(&mModelAnim, (BCA_File *)f, 0, 0x1000, 0);
+    mModelAnim.SetAnim((BCA_File *)f, 0, 0x1000, 0);
     mVertAccel = -0x2000;
     mTerminalVelocity = -0x3c000;
     mHomePos.x = mPosX;
@@ -152,7 +150,7 @@ int daPiano_c::Behavior()
         if (mMeshCollider.IsEnabled())
             mMeshCollider.Disable();
     } else {
-        _ZN10dBgActor_c13IsClsnInRangeE5Fix12IiES1_(this, 0x1f4000, 0);
+        IsClsnInRange(0x1f4000, 0);
     }
     func_ov063_0211d88c(this);
     func_ov063_0211d828(this);
@@ -160,7 +158,7 @@ int daPiano_c::Behavior()
     return 1;
 }
 
-/* ModelAnim's real virtual API expresses the same slot-5 dispatch as the ROM. */
+/* dExtAnmModel_c's real virtual API expresses the same slot-5 dispatch as the ROM. */
 // @symbol _ZN9daPiano_c6RenderEv
 int daPiano_c::Render()
 {

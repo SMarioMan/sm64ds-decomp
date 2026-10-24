@@ -89,9 +89,9 @@ u8  DecIfAbove0_Byte(u8 *p);
 int ApproachAngle(s16 *p, int target, int a, int b, int c);
 
 void _ZN5Sound9PlayBank3EjRK7Vector3(u32 id, void *pos);
-void _ZN10dBgW_KcMbg7SetFileEP8KCL_FileRK9Matrix4x35Fix12IiEsR10CLPS_Block(
-    void *self, void *kcl, void *mtx, int scale, s16 angleY, void *clps);
-int _ZN10dBgActor_c13IsClsnInRangeE5Fix12IiES1_(void *self, int a, int b);
+void _ZN10dBgW_KcMbg7SetFileEP8KCL_FileRK9Matrix4x35Fix12IiEsR10CLPS_Block(void *self, void *kcl,
+                                                                           void *mtx, int scale,
+                                                                           s16 angleY, void *clps);
 
 void func_020393a4(void *p, int v);
 void func_02039394(void *p, int v);
@@ -147,7 +147,7 @@ extern "C" void func_ov022_02111558(daObjFl_Ring_c *self, dActor_c *other)
  * so that one call deliberately keeps the measured register-level spelling. */
 s32 daObjFl_Ring_c::InitResources()
 {
-    void *f = Model::LoadFile(*data_ov022_02113cc8.mModelFile);
+    void *f = dExtSimpleModel_c::LoadFile(*data_ov022_02113cc8.mModelFile);
     mModel.SetFile((BMD_File *)f, 1, -1);
     UpdateModelPosAndRotY();
     UpdateClsnPosAndRot();
@@ -230,7 +230,7 @@ s32 daObjFl_Ring_c::Behavior()
     func_020393a4(&mMeshCollider, 0x780000);
     func_02039394(&mMeshCollider, 0x1000);
     UpdateModelPosAndRotY();
-    if (_ZN10dBgActor_c13IsClsnInRangeE5Fix12IiES1_(this, 0x780000, 0x1000) != 0)
+    if (IsClsnInRange(0x780000, 0x1000) != 0)
         UpdateClsnPosAndRot();
 
     mTriggered = 0;

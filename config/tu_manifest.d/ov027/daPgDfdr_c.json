@@ -185,7 +185,7 @@
       "address": "0x02113c7c",
       "size": "0x8",
       "binding": "STB_GLOBAL",
-      "evidence": "model file handle constructed with file ID 0x3fb; InitResources loads it with Model::LoadFile and CleanupResources releases it"
+      "evidence": "model file handle constructed with file ID 0x3fb; InitResources loads it with dExtSimpleModel_c::LoadFile and CleanupResources releases it"
     },
     {
       "symbol": "data_ov027_02113c84",
@@ -1096,32 +1096,32 @@
   "production_mode": "intact-object",
   "defined_symbol_renames": [
     {
-      "from": "@764",
+      "from": "@756",
       "to": "@741",
       "evidence": "compiler temp; the types.h Vector3 ctors shift this TU's per-TU @NNN uniquifier, so mwcc emits it under this name now; licensed under the existing pin"
     },
     {
-      "from": "@765",
+      "from": "@757",
       "to": "@760",
       "evidence": "compiler temp; the types.h Vector3 ctors shift this TU's per-TU @NNN uniquifier, so mwcc emits it under this name now; licensed under the existing pin"
     },
     {
-      "from": "@766",
+      "from": "@758",
       "to": "@761",
       "evidence": "compiler temp; the types.h Vector3 ctors shift this TU's per-TU @NNN uniquifier, so mwcc emits it under this name now; licensed under the existing pin"
     },
     {
-      "from": "@767",
+      "from": "@759",
       "to": "@762",
       "evidence": "compiler temp; the types.h Vector3 ctors shift this TU's per-TU @NNN uniquifier, so mwcc emits it under this name now; licensed under the existing pin"
     },
     {
-      "from": "@768",
+      "from": "@760",
       "to": "@763",
       "evidence": "compiler temp; the types.h Vector3 ctors shift this TU's per-TU @NNN uniquifier, so mwcc emits it under this name now; licensed under the existing pin"
     },
     {
-      "from": "@769",
+      "from": "@761",
       "to": "@201",
       "evidence": "compiler temp; the types.h Vector3 ctors shift this TU's per-TU @NNN uniquifier, so mwcc emits it under this name now; licensed under the existing pin"
     }

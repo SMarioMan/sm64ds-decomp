@@ -526,7 +526,7 @@
       "address": "0x02141e5c",
       "size": "0x8",
       "binding": "STB_GLOBAL",
-      "evidence": "animation resource handle constructed with file ID 0x1eb; consumed by ModelAnim::SetAnim and released in CleanupResources"
+      "evidence": "animation resource handle constructed with file ID 0x1eb; consumed by dExtAnmModel_c::SetAnim and released in CleanupResources"
     },
     {
       "symbol": "gEspCardTexSeqFile",
@@ -554,28 +554,28 @@
       "address": "0x02141e7c",
       "size": "0x8",
       "binding": "STB_GLOBAL",
-      "evidence": "animation resource handle constructed with file ID 0x1ec; consumed by ModelAnim::SetAnim and released in CleanupResources"
+      "evidence": "animation resource handle constructed with file ID 0x1ec; consumed by dExtAnmModel_c::SetAnim and released in CleanupResources"
     },
     {
       "symbol": "gEspCardOpenWaitAnimFile",
       "address": "0x02141e84",
       "size": "0x8",
       "binding": "STB_GLOBAL",
-      "evidence": "animation resource handle constructed with file ID 0x1ea; consumed by ModelAnim::SetAnim and released in CleanupResources"
+      "evidence": "animation resource handle constructed with file ID 0x1ea; consumed by dExtAnmModel_c::SetAnim and released in CleanupResources"
     },
     {
       "symbol": "gEspCardOpenAnimFile",
       "address": "0x02141e8c",
       "size": "0x8",
       "binding": "STB_GLOBAL",
-      "evidence": "animation resource handle constructed with file ID 0x1e9; consumed by ModelAnim::SetAnim and released in CleanupResources"
+      "evidence": "animation resource handle constructed with file ID 0x1e9; consumed by dExtAnmModel_c::SetAnim and released in CleanupResources"
     },
     {
       "symbol": "gEspHamonModelFile",
       "address": "0x02141e94",
       "size": "0x8",
       "binding": "STB_GLOBAL",
-      "evidence": "model resource handle constructed with file ID 0x1ee; consumed by Model::LoadFile in InitResources and released in CleanupResources"
+      "evidence": "model resource handle constructed with file ID 0x1ee; consumed by dExtSimpleModel_c::LoadFile in InitResources and released in CleanupResources"
     },
     {
       "symbol": "gEspIrieModelFile",
@@ -708,10 +708,10 @@
     "Widened from the nine-function dMg3DEspAnimSet_c span 0x020e777c..0x020e7b0c to the whole unit, which also holds dScMg3DEsp_c and dMg3DEspModel_c. The manifest id and the path stay dMg3DEspAnimSet_c's, the smaller change: renaming the TU after dScMg3DEsp_c would re-key the nine existing attribution and converted-baseline entries and the queue row as well. The folded files were dScMg3DEsp_c's D1 and D0, dMg3DEspModel_c's seven members, the 43 helpers from func_ov006_020e7cc0 to func_ov006_020e9bbc, and dScMg3DEsp_c's Virtual50, OnYoshiTryEat, CleanupResources, Render, Behavior and InitResources files; attribution.json keeps each one's credit through a path#symbol override.",
     "Written ROM-ASCENDING because `#pragma defer_codegen off` makes CodeWarrior emit each definition as it is encountered rather than in reverse source order. With dScMg3DEsp_c's out-of-line destructor first in the file it emits D1 and D0 at ordinals 0 and 1; the homeless D2s and C2s of the three classes are dispositioned deadstrip.",
     "Pragma brackets carry each retired file's file-global pragma around its own function: opt_strength_reduction off around the nine dMg3DEspAnimSet_c members (the previous TU's file-global) and dScMg3DEsp_c::ResetSlots, opt_common_subs off around SlotKick (with opt_strength_reduction off), SlotRise, SlotSetup, SlotFall and SlotWait.",
-    "The file does not include decl_common.h, which declares the file handles and sEsp3DTextureAnim as void * and func_ov006_020e8354 as taking char *. The ten SharedFilePtr file handles are declared as SharedFilePtr here, as the retired destructor and CleanupResources files did. The helper declarations decl_common.h used to carry for these functions were dropped when they methodized; the calls now go through the class member declarations. The ModelAnim::SetAnim, TextureSequence::SetFile and TextureTransformer::SetFile calls stay mangled with a scalar speed and an unsigned short last parameter.",
+    "The file does not include decl_common.h, which declares the file handles and sEsp3DTextureAnim as void * and func_ov006_020e8354 as taking char *. The ten SharedFilePtr file handles are declared as SharedFilePtr here, as the retired destructor and CleanupResources files did. The helper declarations decl_common.h used to carry for these functions were dropped when they methodized; the calls now go through the class member declarations. The dExtAnmModel_c::SetAnim, TextureSequence::SetFile and TextureTransformer::SetFile calls stay mangled with a scalar speed and an unsigned short last parameter.",
     "Folding changed four spellings, all measured byte-identical: func_ov006_020e91a0 tests data_020a0de9 directly (the retired C file stored `x != 0` in an int, which in C++ is a bool conversion and costs three instructions); func_ov006_020e989c reads gMgScene through `char *` casts, and the one load the ROM repeats is a volatile read, because dScMgBase_c.h declares it void * and every non-volatile spelling reuses the earlier load; func_ov006_020e9b70 is void, as func_ov006_020e82fc is; and the retired files' mangled `_ZN5Sound12PlayBank2_2DEj` calls are spelled Sound::PlayBank2_2D.",
     "Each member keeps its own legacy shadow types, suffixed with the member's address (G2_7d7c, Ent_82fc, Outer_8354, C_8a44, C_8d08, P_8e10, C_9374, C_989c, C_9b70, ...) so that the retired files' independently-invented tags coexist. The incomplete structs and PMF typedefs above the pointer-to-member dispatchers (C_8a44, C_8d08, C_9374, C_9b70) keep their order: completing a struct before its PMF typedef changes the pointer-to-member representation mwcc emits.",
-    "The classInit tail fold keeps the hand-built construction sequence (fBase_c::operator new, dScMgBase_c C2, the Single3DBase vptr store, SysTracker, the own-vptr store, then the four embedded constructors) rather than `new dScMg3DEsp_c`: the header still keeps the Model/dMg3DEspModel_c/TextureTransformer members as raw storage, and typing them is a separate reconstruction that must change the factory and the destructor together. The own-vtable store is spelled `(int)&_ZTV12dScMg3DEsp_c[2]`: now that this TU owns the vtable, the emitted symbol addresses the storage start and the +8 address-point bias is computed by the compiler (the retired stand-alone file stored the bare symbol, which tubuild verify rejects here as an addend-0 relocation). The base vtable store is unchanged."
+    "The classInit tail fold keeps the hand-built construction sequence (fBase_c::operator new, dScMgBase_c C2, the Single3DBase vptr store, SysTracker, the own-vptr store, then the four embedded constructors) rather than `new dScMg3DEsp_c`: the header still keeps the dExtSimpleModel_c/dMg3DEspModel_c/TextureTransformer members as raw storage, and typing them is a separate reconstruction that must change the factory and the destructor together. The own-vtable store is spelled `(int)&_ZTV12dScMg3DEsp_c[2]`: now that this TU owns the vtable, the emitted symbol addresses the storage start and the +8 address-point bias is computed by the compiler (the retired stand-alone file stored the bare symbol, which tubuild verify rejects here as an addend-0 relocation). The base vtable store is unchanged."
   ],
   "production_mode": "intact-object",
   "verification": {
@@ -2073,52 +2073,52 @@
   ],
   "defined_symbol_renames": [
     {
-      "from": "@1822",
+      "from": "@1816",
       "to": "@1809",
       "evidence": "compiler temp; the types.h Vector3 ctors and main's sinit folds shift this TU's per-TU @NNN uniquifier, so mwcc emits it as @1823 now; licensed under the existing pin @1809"
     },
     {
-      "from": "@1813",
+      "from": "@1807",
       "to": "@1800",
       "evidence": "compiler temp; the types.h Vector3 ctors and main's sinit folds shift this TU's per-TU @NNN uniquifier, so mwcc emits it as @1814 now; licensed under the existing pin @1800"
     },
     {
-      "from": "@1814",
+      "from": "@1808",
       "to": "@1801",
       "evidence": "compiler temp; the types.h Vector3 ctors and main's sinit folds shift this TU's per-TU @NNN uniquifier, so mwcc emits it as @1815 now; licensed under the existing pin @1801"
     },
     {
-      "from": "@1815",
+      "from": "@1809",
       "to": "@1802",
       "evidence": "compiler temp; the types.h Vector3 ctors and main's sinit folds shift this TU's per-TU @NNN uniquifier, so mwcc emits it as @1816 now; licensed under the existing pin @1802"
     },
     {
-      "from": "@1816",
+      "from": "@1810",
       "to": "@1803",
       "evidence": "compiler temp; the types.h Vector3 ctors and main's sinit folds shift this TU's per-TU @NNN uniquifier, so mwcc emits it as @1817 now; licensed under the existing pin @1803"
     },
     {
-      "from": "@1817",
+      "from": "@1811",
       "to": "@1804",
       "evidence": "compiler temp; the types.h Vector3 ctors and main's sinit folds shift this TU's per-TU @NNN uniquifier, so mwcc emits it as @1818 now; licensed under the existing pin @1804"
     },
     {
-      "from": "@1818",
+      "from": "@1812",
       "to": "@1805",
       "evidence": "compiler temp; the types.h Vector3 ctors and main's sinit folds shift this TU's per-TU @NNN uniquifier, so mwcc emits it as @1819 now; licensed under the existing pin @1805"
     },
     {
-      "from": "@1819",
+      "from": "@1813",
       "to": "@1806",
       "evidence": "compiler temp; the types.h Vector3 ctors and main's sinit folds shift this TU's per-TU @NNN uniquifier, so mwcc emits it as @1820 now; licensed under the existing pin @1806"
     },
     {
-      "from": "@1820",
+      "from": "@1814",
       "to": "@1807",
       "evidence": "compiler temp; the types.h Vector3 ctors and main's sinit folds shift this TU's per-TU @NNN uniquifier, so mwcc emits it as @1821 now; licensed under the existing pin @1807"
     },
     {
-      "from": "@1821",
+      "from": "@1815",
       "to": "@1808",
       "evidence": "compiler temp; the types.h Vector3 ctors and main's sinit folds shift this TU's per-TU @NNN uniquifier, so mwcc emits it as @1822 now; licensed under the existing pin @1808"
     }

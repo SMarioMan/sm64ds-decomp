@@ -97,8 +97,11 @@ extern SharedFilePtr *data_ov015_02114534;
 extern SharedFilePtr *data_ov015_02114538;
 extern CLPS_Block *data_ov015_0211453c;
 
-void _ZN8Particle6System9NewSimpleEj5Fix12IiES2_S2_(u32 id, Fix12i x, Fix12i y, Fix12i z);
-int _ZN10dBgActor_c13IsClsnInRangeE5Fix12IiES1_(void *, int, int);
+namespace Particle {
+struct System {
+    static void NewSimple(u32 id, Fix12i x, Fix12i y, Fix12i z);
+};
+}
 int _ZN10dBgW_KcMbg7SetFileEP8KCL_FileRK9Matrix4x35Fix12IiEsR10CLPS_Block(
     void *, int, void *, int, int, void *);
 
@@ -134,8 +137,8 @@ s32 daObjBk_Dossunbar_c::InitResources()
         mVariant = 0;
 
     int j0 = mVariant * 0xc;
-    void *modelFile = Model::LoadFile(
-        **(SharedFilePtr **)((char *)&data_ov015_02114534 + j0));
+    void *modelFile =
+        dExtSimpleModel_c::LoadFile(**(SharedFilePtr **)((char *)&data_ov015_02114534 + j0));
     mModel.SetFile((BMD_File *)modelFile, 1, -1);
     UpdateModelPosAndRotY();
     UpdateClsnPosAndRot();
@@ -170,7 +173,7 @@ s32 daObjBk_Dossunbar_c::Behavior()
 {
     (this->*(data_ov015_021149ec[mState].handler))();
     UpdateModelPosAndRotY();
-    if (_ZN10dBgActor_c13IsClsnInRangeE5Fix12IiES1_(this, 0, 0))
+    if (IsClsnInRange(0, 0))
         UpdateClsnPosAndRot();
     return 1;
 }
@@ -360,7 +363,7 @@ void daObjBk_Dossunbar_c::Kill()
     pos.y = mPosY;
     pos.z = mPosZ;
     pos.y += 0xc8000;
-    _ZN8Particle6System9NewSimpleEj5Fix12IiES2_S2_(0x10a, pos.x, pos.y, pos.z);
+    Particle::System::NewSimple(0x10a, pos.x, pos.y, pos.z);
     dustPos.x = pos.x;
     dustPos.y = pos.y;
     dustPos.z = pos.z;

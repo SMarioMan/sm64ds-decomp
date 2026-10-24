@@ -29,7 +29,7 @@
 
 #include "daObjKinokoTag_c.h"
 #include "SpawnInfo.h"
-#include "Model.h"
+#include "dExtSimpleModel_c.h"
 #include "SharedFilePtr.h"
 
 /* POD view used only to preserve the three-word Vector3 call ABI without
@@ -97,7 +97,7 @@ s32 daObjKinokoTag_c::InitResources()
         &mMovingCylinderClsn, this,
         0x12c000, 0x32000, 0x800002, 0x20);
     mGroupId = param1;
-    Model::LoadFile(data_ov002_0210da30);
+    dExtSimpleModel_c::LoadFile(data_ov002_0210da30);
     return 1;
 }
 

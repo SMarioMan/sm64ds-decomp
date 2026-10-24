@@ -92,7 +92,6 @@ void func_ov036_0211123c(daObjRcBuranko_c *self);
 void func_020393d4(dBgW *bgw, void *fn);
 void Matrix4x3_FromRotationXYZExt(void *mtx, int x, int y, int z);
 
-int _ZN10dBgActor_c13IsClsnInRangeE5Fix12IiES1_(dBgActor_c *self, int a, int b);
 void _ZN10dBgW_KcMbg7SetFileEP8KCL_FileRK9Matrix4x35Fix12IiEsR10CLPS_Block(
     dBgW_KcMbg *self, KCL_File *kcl, const Matrix4x3 *mtx, int scale,
     s16 angleY, CLPS_Block *clps);
@@ -115,7 +114,7 @@ extern "C" daObjRcBuranko_c *daObjRcBuranko_c_classInit()
 // @symbol _ZN16daObjRcBuranko_c13InitResourcesEv
 int daObjRcBuranko_c::InitResources()
 {
-    mModel.SetFile((BMD_File *)Model::LoadFile(data_ov036_02114028), 1, -1);
+    mModel.SetFile((BMD_File *)dExtSimpleModel_c::LoadFile(data_ov036_02114028), 1, -1);
 
     /* The pendulum starts a quarter of the way over, not hanging straight
        down, so it is already moving on the frame the player first sees it. */
@@ -150,7 +149,7 @@ int daObjRcBuranko_c::Behavior()
     mAngleZ += mSwingVelZ;
 
     func_ov036_0211123c(this);
-    if (_ZN10dBgActor_c13IsClsnInRangeE5Fix12IiES1_(this, 0, 0))
+    if (IsClsnInRange(0, 0))
         UpdateClsnPosAndRot();
 
     return 1;
@@ -211,7 +210,7 @@ void func_ov036_0211123c(daObjRcBuranko_c *self)
  *
  * Both bodies are short because the chain is short: this class's vptr store,
  * then dBgActor_c's -- inlined, its destructor is defined in its class body --
- * then dBgActor_c's Model and dBgW_KcMbg, then dActor_c. This class adds only
+ * then dBgActor_c's dExtSimpleModel_c and dBgW_KcMbg, then dActor_c. This class adds only
  * an s16, which has no destructor of its own. D0's trailing deallocation is
  * the inherited inline operator delete, which is why nothing here names a
  * heap.

@@ -18,7 +18,7 @@
  * dScMgJump_c_classInit IS dScMgJump_c's FACTORY, and its own body says
  * so: it writes THIS class's vtable, and then writes _ZTV11dScMgJump_c --
  * dScMgJump_c's own vtable, confirmed by RTTI -- and only AFTER that derived
- * vptr store does it construct the Model at 0x501c and the two tables.
+ * vptr store does it construct the dExtSimpleModel_c at 0x501c and the two tables.
  * Everything a factory builds after the derived vptr store belongs to the
  * derived class. 0x5834 is dScMgJump_c's size.
  *

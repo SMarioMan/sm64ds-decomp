@@ -961,112 +961,112 @@
   ],
   "defined_symbol_renames": [
     {
-      "from": "@930",
+      "from": "@923",
       "to": "data_ov072_02122a34",
       "evidence": "Actual emitted compiler-local symbol mapped by exact retail initializer relocation destination and native target identity; no claim of original source spelling"
     },
     {
-      "from": "@926",
+      "from": "@919",
       "to": "data_ov072_02122a44",
       "evidence": "Actual emitted compiler-local symbol mapped by exact retail initializer relocation destination and native target identity; no claim of original source spelling"
     },
     {
-      "from": "@928",
+      "from": "@921",
       "to": "data_ov072_02122a3c",
       "evidence": "Actual emitted compiler-local symbol mapped by exact retail initializer relocation destination and native target identity; no claim of original source spelling"
     },
     {
-      "from": "@940",
+      "from": "@933",
       "to": "data_ov072_02122a24",
       "evidence": "Actual emitted compiler-local symbol mapped by exact retail initializer relocation destination and native target identity; no claim of original source spelling"
     },
     {
-      "from": "@922",
+      "from": "@915",
       "to": "data_ov072_02122a4c",
       "evidence": "Actual emitted compiler-local symbol mapped by exact retail initializer relocation destination and native target identity; no claim of original source spelling"
     },
     {
-      "from": "@920",
+      "from": "@913",
       "to": "data_ov072_02122a14",
       "evidence": "Actual emitted compiler-local symbol mapped by exact retail initializer relocation destination and native target identity; no claim of original source spelling"
     },
     {
-      "from": "@924",
+      "from": "@917",
       "to": "data_ov072_02122a0c",
       "evidence": "Actual emitted compiler-local symbol mapped by exact retail initializer relocation destination and native target identity; no claim of original source spelling"
     },
     {
-      "from": "@938",
+      "from": "@931",
       "to": "data_ov072_021229f4",
       "evidence": "Actual emitted compiler-local symbol mapped by exact retail initializer relocation destination and native target identity; no claim of original source spelling"
     },
     {
-      "from": "@934",
+      "from": "@927",
       "to": "data_ov072_02122a04",
       "evidence": "Actual emitted compiler-local symbol mapped by exact retail initializer relocation destination and native target identity; no claim of original source spelling"
     },
     {
-      "from": "@932",
+      "from": "@925",
       "to": "data_ov072_02122a2c",
       "evidence": "Actual emitted compiler-local symbol mapped by exact retail initializer relocation destination and native target identity; no claim of original source spelling"
     },
     {
-      "from": "@918",
+      "from": "@911",
       "to": "data_ov072_021229fc",
       "evidence": "Actual emitted compiler-local symbol mapped by exact retail initializer relocation destination and native target identity; no claim of original source spelling"
     },
     {
-      "from": "@936",
+      "from": "@929",
       "to": "data_ov072_02122a1c",
       "evidence": "Actual emitted compiler-local symbol mapped by exact retail initializer relocation destination and native target identity; no claim of original source spelling"
     },
     {
-      "from": "@911",
+      "from": "@904",
       "to": "data_ov072_02122d00",
       "evidence": "Actual emitted compiler-local symbol mapped by exact retail initializer relocation destination and native target identity; no claim of original source spelling"
     },
     {
-      "from": "@912",
+      "from": "@905",
       "to": "data_ov072_02122d0c",
       "evidence": "Actual emitted compiler-local symbol mapped by exact retail initializer relocation destination and native target identity; no claim of original source spelling"
     },
     {
-      "from": "@913",
+      "from": "@906",
       "to": "data_ov072_02122d18",
       "evidence": "Actual emitted compiler-local symbol mapped by exact retail initializer relocation destination and native target identity; no claim of original source spelling"
     },
     {
-      "from": "@914",
+      "from": "@907",
       "to": "data_ov072_02122d24",
       "evidence": "Actual emitted compiler-local symbol mapped by exact retail initializer relocation destination and native target identity; no claim of original source spelling"
     },
     {
-      "from": "@915",
+      "from": "@908",
       "to": "data_ov072_02122d30",
       "evidence": "Actual emitted compiler-local symbol mapped by exact retail initializer relocation destination and native target identity; no claim of original source spelling"
     },
     {
-      "from": "@916",
+      "from": "@909",
       "to": "data_ov072_02122cc4",
       "evidence": "Actual emitted compiler-local symbol mapped by exact retail initializer relocation destination and native target identity; no claim of original source spelling"
     },
     {
-      "from": "@942",
+      "from": "@935",
       "to": "data_ov072_02122cd0",
       "evidence": "Actual emitted compiler-local symbol mapped by exact retail initializer relocation destination and native target identity; no claim of original source spelling"
     },
     {
-      "from": "@945",
+      "from": "@938",
       "to": "data_ov072_02122cdc",
       "evidence": "Actual emitted compiler-local symbol mapped by exact retail initializer relocation destination and native target identity; no claim of original source spelling"
     },
     {
-      "from": "@948",
+      "from": "@941",
       "to": "data_ov072_02122ce8",
       "evidence": "Actual emitted compiler-local symbol mapped by exact retail initializer relocation destination and native target identity; no claim of original source spelling"
     },
     {
-      "from": "@951",
+      "from": "@944",
       "to": "data_ov072_02122cf4",
       "evidence": "Actual emitted compiler-local symbol mapped by exact retail initializer relocation destination and native target identity; no claim of original source spelling"
     }

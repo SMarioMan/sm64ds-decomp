@@ -20,7 +20,7 @@
  * side -- it calls dCc_c's C2 and then stores this vtable.
  *
  * THE DESTRUCTOR IS DECLARED FIRST AND D1 IS A REAL METHOD -- see
- * include/ModelBase.h for the key-function rule and the objisolate exemption
+ * include/dExtModel_c.h for the key-function rule and the objisolate exemption
  * to it. The TU emits D2 and C2 as deadstripped compiler-only variants.
  *
  * LAYOUT: the base is 0x30, and pos starts at exactly 0x30 (GetPos is

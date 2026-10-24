@@ -2,6 +2,7 @@
 #define HEYHO_H
 
 #include "types.h"
+#include "dExtAnmModel_c.h"
 
 /* Heyho, one Shy Guy of the Jump minigames: the 0xf0-byte record the Heyho_*
  * helpers in src/minigames/d_mg3d_heyho_obj_adapter.cpp step and draw. The
@@ -22,10 +23,8 @@ struct Heyho {
     Vector3 mGoal;       /* 0x20 -- the point the gliding motions steer to */
     s32 mMoveKind;       /* 0x2c -- the path a motion takes (switched on) */
     s32 mMotion[2];      /* 0x30 -- the current motion's member-pointer record */
-    u8 mModelAnim[0x1c]; /* 0x38 -- a ModelAnim */
-    u8 mMatrix[0x30];    /* 0x54 -- a Matrix4x3, set by Heyho_UpdateMatrix */
-    u8 pad_84[0x4];      /* 0x84 */
-    u8 mFrameCtrl[0x14]; /* 0x88 -- a dExtFrameCtrl_c */
+    dExtAnmModel_c mModelAnim; /* 0x38 -- 0x64 bytes: Heyho_UpdateMatrix sets its mat4x3,
+                           * Heyho_Update advances its dExtFrameCtrl_c base */
     Vector3 mPos;        /* 0x9c */
     Vector3 mVel;        /* 0xa8 */
     Vector3 mWaypoint;   /* 0xb4 -- the point VShape/Diagonal/Chase step mPos to and Leave flies to;

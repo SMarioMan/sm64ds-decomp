@@ -647,12 +647,12 @@
   ],
   "defined_symbol_renames": [
     {
-      "from": "@458",
+      "from": "@455",
       "to": "@602",
       "evidence": "batch-5 atdup: @441 collides cross-module (temps are fleet-global); renumber to unused same-length @602"
     },
     {
-      "from": "@459",
+      "from": "@456",
       "to": "@442",
       "evidence": "compiler temp; the types.h Vector3 ctors and main's sinit folds shift this TU's per-TU @NNN uniquifier, so mwcc emits it as @456 now; licensed under the existing pin @442"
     }

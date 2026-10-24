@@ -68,7 +68,7 @@
  *   emits one .text section per function in the reverse of source order.
  *
  *   common.h comes first so Matrix4x3 is the flat s32[12] spelling; math/
- *   Matrix.h through ModelAnim.h would scalarize the copies in
+ *   Matrix.h through dExtAnmModel_c.h would scalarize the copies in
  *   UpdateMatrix.
  *
  *   The PMF stand-ins (CapStateSelf / CapStateRec / CapEnterSelf). A PMF on
@@ -88,7 +88,7 @@
  *
  * WHY SOME CALLS ARE SPELLED AS MANGLED SYMBOLS:
  *   dActor_c::SetRanges is not on the header (notes/mwccarm-codegen.md 6az).
- *   ModelAnim::SetAnim / DropShadowRadHeight / ReflectAngle take Fix12<int>
+ *   dExtAnmModel_c::SetAnim / DropShadowRadHeight / ReflectAngle take Fix12<int>
  *   by value, which has no implicit int conversion (notes/mwccarm-codegen.md
  *   6az). dBgCh_Actr::GetFloorResult / GetWallResult are not declared.
  *
@@ -258,13 +258,9 @@ void  _ZN9dBgCh_GndD1Ev(dBgCh_Gnd *ray);
 
 /* SetRanges carries Fix12<int> by value; dActor_c.h deliberately omits it
    (notes/mwccarm-codegen.md 6az). A call is unaffected. */
-void  _ZN8dActor_c9SetRangesE5Fix12IiES1_S1_S1_(void *self, int offsetY, int radius,
-                                                int clipDistance, int farDistance);
 void  _ZN8dActor_c19DropShadowRadHeightER17dExtShadowModel_cR9Matrix4x35Fix12IiES5_j(
           void *self, void *shadow, void *matrix, int radius, int depth, int opacity);
 short _ZN8dActor_c12ReflectAngleE5Fix12IiES1_s(void *self, int nx, int nz, short ang);
-void  _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(void *self, void *file, int flags,
-                                                  int speed, unsigned int startFrame);
 
 /* -- data -- */
 extern Matrix4x3      data_020a0e68;
@@ -373,9 +369,9 @@ int daObjMarioCap_c::InitResources()
         break;
     }
 
-    if (mModelAnim.SetFile(
-            (BMD_File *)Model::LoadFile(*(SharedFilePtr *)data_ov002_020ff0ac[mModelIndex]),
-            1, -1) == 0)
+    if (mModelAnim.SetFile((BMD_File *)dExtSimpleModel_c::LoadFile(
+                               *(SharedFilePtr *)data_ov002_020ff0ac[mModelIndex]),
+                           1, -1) == 0)
         return 0;
 
     mShadowModel.InitCylinder();
@@ -616,10 +612,10 @@ int daObjMarioCap_c::Render()
     int t = mType;
     if (t == 4 || t == 17 || t == 5 || t == 18 || t == 16 || t == 11 || (unsigned)(t - 6) <= 3) {
         if (!(mBlinkHidden & 1) || mStateEntry == (int)&data_ov002_0210df54) {
-            mModelAnim.Model::Render(&mScale);
+            mModelAnim.dExtSimpleModel_c::Render(&mScale);
         }
     } else {
-        mModelAnim.Model::Render(&mScale);
+        mModelAnim.dExtSimpleModel_c::Render(&mScale);
     }
     return 1;
 }
@@ -690,8 +686,7 @@ void daObjMarioCap_c::OnTurnIntoEgg(Player &player)
 {
     if (player.SetNoControlState(8, -1, 0) == 1) {
         player.SetNewHatCharacter(mModelIndex & 0xff, 1, 0);
-        _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(&mModelAnim, data_ov002_0210de30.filePtr,
-                                                    0x40000000, 0x1000, 0);
+        mModelAnim.SetAnim((BCA_File *)data_ov002_0210de30.filePtr, 0x40000000, 0x1000, 0);
         mAnimStarted = 1;
     }
     mPlayer = &player;
@@ -835,7 +830,7 @@ int daObjMarioCap_c::Wait() {
         return 1;
     }
     if (mCarryMatrix == 0) {
-        _ZN8dActor_c9SetRangesE5Fix12IiES1_S1_S1_(this, 0x32000, 0x32000, kClipFar, kClipFar);
+        SetRanges(0x32000, 0x32000, kClipFar, kClipFar);
     }
     CheckTouch();
     if (data_02092138 > mPosY) {
@@ -933,7 +928,7 @@ int daObjMarioCap_c::Fall() {
     if (mWithMeshClsn.IsOnGround()) {
       mHorzSpeed = 0;
       CheckTouch();
-      _ZN8dActor_c9SetRangesE5Fix12IiES1_S1_S1_(this, 0x32000, 0x32000, kClipFar, kClipFar);
+      SetRanges(0x32000, 0x32000, kClipFar, kClipFar);
     }
   }
   if (data_02092138 > mPosY) {
@@ -1187,8 +1182,7 @@ int daObjMarioCap_c::Taken() {
         if (mPlayer->SetNoControlState(0xf, -1, 0) == 1) {
             mPlayer->SetNewHatCharacter(mModelIndex & 0xff, 0, 0);
             func_02013a88();
-            _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(&mModelAnim, data_ov002_0210de38.filePtr,
-                                                        0x40000000, 0x1000, 0);
+            mModelAnim.SetAnim((BCA_File *)data_ov002_0210de38.filePtr, 0x40000000, 0x1000, 0);
             mTakenStep = 2;
         }
         break;
@@ -1205,8 +1199,7 @@ int daObjMarioCap_c::Taken() {
 
     if (mAnimStarted == 0) {
         if (mPlayer->Unk_020c9e5c(8) == 1) {
-            _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(&mModelAnim, data_ov002_0210de30.filePtr,
-                                                        0x40000000, 0x1000, 0);
+            mModelAnim.SetAnim((BCA_File *)data_ov002_0210de30.filePtr, 0x40000000, 0x1000, 0);
             mAnimStarted = 1;
         }
     }
@@ -1256,24 +1249,21 @@ int daObjMarioCap_c::InitAnim()
 
     switch (mType) {
     case 0xa:
-        _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(&mModelAnim, data_ov002_0210de30.filePtr,
-                                                    0x40000000, 0x1000, 0);
+        mModelAnim.SetAnim((BCA_File *)data_ov002_0210de30.filePtr, 0x40000000, 0x1000, 0);
         break;
     case 0xf:
-        _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(
-            &mModelAnim, data_ov002_020ff0a0[mModelIndex]->filePtr, 0x40000000, 0x1000, 0);
+        mModelAnim.SetAnim((BCA_File *)(data_ov002_020ff0a0[mModelIndex]->filePtr), 0x40000000,
+                           0x1000, 0);
         break;
     case 0x14:
-        _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(
-            &mModelAnim, data_ov002_020ff0b8[mModelIndex]->filePtr, 0x40000000, 0x1000, 0);
+        mModelAnim.SetAnim((BCA_File *)(data_ov002_020ff0b8[mModelIndex]->filePtr), 0x40000000,
+                           0x1000, 0);
         break;
     case 0x15:
-        _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(&mModelAnim, data_ov002_0210de58.filePtr,
-                                                    0x40000000, 0x1000, 0);
+        mModelAnim.SetAnim((BCA_File *)data_ov002_0210de58.filePtr, 0x40000000, 0x1000, 0);
         break;
     case 0x16:
-        _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(&mModelAnim, data_ov002_0210de18.filePtr,
-                                                    0x40000000, 0x1000, 0);
+        mModelAnim.SetAnim((BCA_File *)data_ov002_0210de18.filePtr, 0x40000000, 0x1000, 0);
         break;
     }
 
@@ -1321,10 +1311,8 @@ int daObjMarioCap_c::Anim()
 
         case 0x14:
             if (mAnimStarted == 0) {
-                _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(
-                    &mModelAnim,
-                    (void*)data_ov002_020ff0c4[mModelIndex][1],
-                    0, 0x1000, 0);
+                mModelAnim.SetAnim((BCA_File *)((void *)data_ov002_020ff0c4[mModelIndex][1]), 0,
+                                   0x1000, 0);
                 mAnimStarted = 1;
             }
             break;

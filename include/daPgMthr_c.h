@@ -17,7 +17,7 @@
 #ifndef DAPGMTHR_C_H
 #define DAPGMTHR_C_H
 #include "types.h"
-#include "ModelAnim.h"
+#include "dExtAnmModel_c.h"
 #include "TextureSequence.h"
 #include "dExtShadowModel_c.h"
 #include "dCcAc_c.h"
@@ -29,7 +29,7 @@
 
 struct daPgMthr_c : dActor_c {
     u8  pad_0d0[0x4];
-    ModelAnim mModelAnim;            /* 0x0d4 */
+    dExtAnmModel_c mModelAnim;        /* 0x0d4 */
     TextureSequence mTextureSequence; /* 0x138 */
     dExtShadowModel_c mShadowModel;        /* 0x14c */
     dCcAc_c mdCcAc_c;                /* 0x174 */
@@ -104,12 +104,12 @@ struct daPgMthr_c {
     s32 mVertAccel;            /* 0x09c */
     s32 mTerminalVelocity;            /* 0x0a0 */
     u8  pad_0a4[0x30];
-    /* ModelAnim member, named by _ZN9ModelAnimD1Ev at +0xd4 -- a relocation the ROM build
+    /* dExtAnmModel_c member, named by _ZN14dExtAnmModel_cD1Ev at +0xd4 -- a relocation the ROM build
        checks. D1 and not D2, so it is this type and not an inlined base. The marker's pad
        stopped short of the object, so the member also takes over unk_0dc (+0x8 = data),
        mAnimation (+0x50 = the dExtFrameCtrl_c base), which the header declared separately inside
        it. */
-    ModelAnim mModelAnim;            /* 0x0d4 */
+    dExtAnmModel_c mModelAnim; /* 0x0d4 */
     /* TextureSequence member, named by the class's own destructor calling
        TextureSequence's D1 at +0x138 -- a relocation the ROM build
        checks. Was a u8 marker. [_ZN10daPgMthr_cD0Ev, now in src/game/actors/d_a_pg_mthr.cpp] */

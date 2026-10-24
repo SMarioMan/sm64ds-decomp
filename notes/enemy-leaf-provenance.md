@@ -78,7 +78,7 @@ Byte-neutral cleanups (each re-verified, `2004/b56`):
 
 * `Render` — `((char*)this)+0x3e4 / +0x3d0 / +0x3f8` became `&mTextureSequence`,
   `&mMaterialChanger`, `&mTextureTransformer`; `((char*)this)+0x218` became
-  `&mModelAnim.data` (`Model::data` is at +0x08, `include/Model.h`).
+  `&mModelAnim.data` (`dExtSimpleModel_c::data` is at +0x08, `include/dExtSimpleModel_c.h`).
 * `Behavior` — `((char*)this)+0x40c` became `&mWithMeshClsn`, `+0x110` became
   `(char *)mdCc_cs`, `+0x74` became `&mCamSpacePosX`.
 
@@ -98,7 +98,7 @@ one-function files, now all consolidated into the promoted TU
 
 | offset | name | evidence |
 | --- | --- | --- |
-| 0x524 | `mLinkPos[7]` (`Vector3`) | `InitResources` walks a seven-iteration loop writing `mPosX/mPosY/mPosZ` into `self+0x524 + i*0xc`. Seven is the chain-link count this whole header is built around (`Model mLinkModels[7]`, `ShadowModel mLinkShadows[7]`). |
+| 0x524 | `mLinkPos[7]` (`Vector3`) | `InitResources` walks a seven-iteration loop writing `mPosX/mPosY/mPosZ` into `self+0x524 + i*0xc`. Seven is the chain-link count this whole header is built around (`dExtSimpleModel_c mLinkModels[7]`, `ShadowModel mLinkShadows[7]`). |
 | 0x5ec | `mSpawnPosX` | `InitResources` copies `self+0x5c/0x60/0x64` into `self+0x5ec/0x5f0/0x5f4` and then adds `0xc8000` to each of the live position words, so these three are where the actor started. |
 | 0x5f0 | `mSpawnPosY` | as above, and `Behavior` clamps `mPosY` up to `mSpawnPosY + 0xc8000` every frame — the rest height the chomp hangs at. |
 | 0x5f4 | `mSpawnPosZ` | as above. |

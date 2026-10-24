@@ -2,6 +2,7 @@
 #define MASCOTWALKER_H
 
 #include "types.h"
+#include "dExtBlendAnmModel_c.h"
 
 /* MascotWalker, the small figure that walks the card table's paths in the card
  * games (the dealer embeds one at +0xdc, which fixes the 0xf8 size): a Toad,
@@ -16,18 +17,11 @@ struct MascotWalker {
     /* kino_wait.bca (0x206): [1] is the BCA Load starts and StartPause restarts. */
     s32 mPauseAnimFile[2]; /* 0x08 */
     s32 mWalkAnimFile[2];  /* 0x10 -- kino_walk.bca (0x207): [1] StartNextPath restarts */
-    u8 mModel[0x14];       /* 0x18 -- a BlendModelAnim, running to 0x88 */
-    /* mModel's bone matrices (Model +0x14, ModelComponents::transforms):
-       UpdateMatrix turns bone 6 by mHeadAngle. */
-    s32 mBoneMatrices; /* 0x2c */
-    u8 pad_30[0x4];    /* 0x30 */
-    u8 mMatrix[0x30];  /* 0x34 -- mModel's Matrix4x3 (Model +0x1c), set by UpdateMatrix */
-    u8 pad_64[0x4];    /* 0x64 -- the rest of mModel's Model */
-    /* mModel's dExtFrameCtrl_c (ModelAnim +0x50): StateWalk pauses when it
-       hits frame 0. */
-    s32 mModelFrame[4]; /* 0x68 */
-    u8 pad_78[0x10];    /* 0x78 -- the rest of mModel */
-    /* Built by Construct, InitCylinder'd by Load and InitModel'd on mMatrix by Draw. */
+    /* 0x70 bytes. UpdateMatrix sets its mat4x3 and turns bone 6 of its
+       data.transforms by mHeadAngle; StateWalk pauses when its dExtFrameCtrl_c
+       base hits frame 0. */
+    dExtBlendAnmModel_c mModel; /* 0x18 */
+    /* Built by Construct, InitCylinder'd by Load and InitModel'd on mModel.mat4x3 by Draw. */
     u8 mShadow[0x28]; /* 0x88 -- a dExtShadowModel_c */
     s32 mPath;        /* 0xb0 -- the path walked: a point count, then the points */
     s32 mState[2];    /* 0xb4 -- the current state's member-pointer record */

@@ -36,7 +36,7 @@
  * - InitResources dCcAcPos_c::Init: a Fix12<int> temporary grows the
  *   function 0x104 -> 0x114. A bare int does not compile (no conversion
  *   to Fix12<int>). The scalar extern keeps the ROM symbol.
- * - InitResources ModelAnim::SetAnim: a Fix12<int> speed temporary grows
+ * - InitResources dExtAnmModel_c::SetAnim: a Fix12<int> speed temporary grows
  *   it 0x104 -> 0x110. Same symbol, bigger body.
  * - InitResources dBgCh_Actr::Init: the header method (Fix12i) relocates
  *   to _ZN10dBgCh_Actr4InitEP8dActor_ciiP10Vector3_16S3_. The ROM symbol
@@ -114,10 +114,9 @@ extern struct Matrix4x3 data_020a0e68;
 extern unsigned short DecIfAbove0_Short(unsigned short *p);
 extern void _ZN10dCcAcPos_c4InitEP8dActor_cRK7Vector35Fix12IiES6_jj(
 void *thisp, struct dActor_c *, struct Vector3 const &, int, int, unsigned int, unsigned int);
-extern void _ZN10dBgCh_Actr4InitEP8dActor_c5Fix12IiES3_P10Vector3_16S5_(
-void *thisp, struct dActor_c *, int, int, struct Vector3_16 *, int);
-extern void _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(
-void *thisp, struct BCA_File *, int, int, unsigned int);
+extern void _ZN10dBgCh_Actr4InitEP8dActor_c5Fix12IiES3_P10Vector3_16S5_(void *thisp,
+                                                                        struct dActor_c *, int, int,
+                                                                        struct Vector3_16 *, int);
 }
 
 // @symbol daPukupuku_c_classInit
@@ -134,7 +133,7 @@ int daPukupuku_c::InitResources()
     struct BMD_File *bmd;
     struct Vector3 v;
 
-    bmd = (struct BMD_File *)Model::LoadFile(*(SharedFilePtr *)&data_ov090_02134564);
+    bmd = (struct BMD_File *)dExtSimpleModel_c::LoadFile(*(SharedFilePtr *)&data_ov090_02134564);
     mModelAnim.SetFile(bmd, 1, -1);
 
     dExtFrameCtrl_c::LoadFile(*(struct SharedFilePtr *)&data_ov090_0213455c);
@@ -150,8 +149,7 @@ int daPukupuku_c::InitResources()
     _ZN10dBgCh_Actr4InitEP8dActor_c5Fix12IiES3_P10Vector3_16S5_(
         &mWithMeshClsn, this, 0x1e000, 0x1e000, 0, 0);
 
-    _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(
-        &mModelAnim, ((AnimFilePtr *)&data_ov090_0213455c)->file, 0, 0x1000, 0);
+    mModelAnim.SetAnim((BCA_File *)(((AnimFilePtr *)&data_ov090_0213455c)->file), 0, 0x1000, 0);
 
     func_ov090_021332e8((PukuStatePMF *)&data_ov090_02134594);
     return 1;

@@ -4,7 +4,7 @@
  * exactly on the next named field:
  *
  *     dActor_c     0x000 + 0x0d0 = 0x0d0   -> pad_0d0
- *     Model        0x0d4 + 0x050 = 0x124   -> mdCcAcPos_c
+ *     dExtSimpleModel_c        0x0d4 + 0x050 = 0x124   -> mdCcAcPos_c
  *     dCcAcPos_c   0x124 + 0x040 = 0x164   -> padding, then mStateIndex
  *
  * The class's own destructor calls dCcAcPos_c's D1 at +0x124, which is what
@@ -17,7 +17,7 @@
 #ifndef DAKIRAI_C_H
 #define DAKIRAI_C_H
 #include "types.h"
-#include "Model.h"
+#include "dExtSimpleModel_c.h"
 #include "dCcAcPos_c.h"
 
 #ifdef __cplusplus
@@ -26,9 +26,9 @@
 
 struct daKirai_c : dActor_c {
     u8  pad_0d0[0x4];
-    /* Named by the class's own destructor calling Model's D1 at +0x0d4 -- a
+    /* Named by the class's own destructor calling dExtSimpleModel_c's D1 at +0x0d4 -- a
        relocation the ROM build checks. */
-    Model mModel;                                               /* 0x0d4 */
+    dExtSimpleModel_c mModel;     /* 0x0d4 */
     dCcAcPos_c mdCcAcPos_c;       /* 0x124 */
     u8  pad_164[0xc];
     s32 mStateIndex;            /* 0x170 */

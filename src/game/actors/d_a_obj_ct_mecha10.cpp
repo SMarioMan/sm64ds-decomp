@@ -102,7 +102,6 @@ void func_020396c0(dBgW *collider, int v);
 
 /* local extern: not declared on dBgActor_c. int arguments do not convert to
    Fix12<int>, and a Fix12<int> pair grows Behavior (see the file banner). */
-int _ZN10dBgActor_c13IsClsnInRangeE5Fix12IiES1_(void *self, int a, int b);
 /* local extern: dBgW_KcMbg::SetFile takes Fix12<int> by value, and a method
    call homes the scale (see the file banner). The scalar 0x1000 stays. */
 void _ZN10dBgW_KcMbg7SetFileEP8KCL_FileRK9Matrix4x35Fix12IiEsR10CLPS_Block(
@@ -140,7 +139,7 @@ int daObjCtMecha10_c::InitResources()
     int idMatch;
     idMatch = (actorID == ACTOR_CT_MECHA10);
     if (idMatch) {
-        mModel.SetFile((BMD_File *)Model::LoadFile(gCtMechaObj10ModelFile), 1, -1);
+        mModel.SetFile((BMD_File *)dExtSimpleModel_c::LoadFile(gCtMechaObj10ModelFile), 1, -1);
         UpdateModelPosAndRotY();
         UpdateClsnPosAndRot();
         _ZN10dBgW_KcMbg7SetFileEP8KCL_FileRK9Matrix4x35Fix12IiEsR10CLPS_Block(
@@ -154,9 +153,9 @@ int daObjCtMecha10_c::InitResources()
     } else {
         idMatch = (actorID == ACTOR_CT_MECHA12L);
         if (idMatch)
-            mModel.SetFile((BMD_File *)Model::LoadFile(gCtMechaObj12lModelFile), 1, -1);
+            mModel.SetFile((BMD_File *)dExtSimpleModel_c::LoadFile(gCtMechaObj12lModelFile), 1, -1);
         else
-            mModel.SetFile((BMD_File *)Model::LoadFile(gCtMechaObj12sModelFile), 1, -1);
+            mModel.SetFile((BMD_File *)dExtSimpleModel_c::LoadFile(gCtMechaObj12sModelFile), 1, -1);
         UpdateModelPosAndRotY();
         mRotationState = 1;
     }
@@ -178,8 +177,7 @@ int daObjCtMecha10_c::Behavior()
 {
     if (data_0209f2c0 == CLOCK_SETTING_STOPPED) {
         UpdateModelPosAndRotY();
-        if (mRotationState == 0 &&
-            _ZN10dBgActor_c13IsClsnInRangeE5Fix12IiES1_(this, 0, 0))
+        if (mRotationState == 0 && IsClsnInRange(0, 0))
             UpdateClsnPosAndRot();
         return 1;
     }
@@ -206,8 +204,7 @@ int daObjCtMecha10_c::Behavior()
     }
 
     UpdateModelPosAndRotY();
-    if (mRotationState == 0 &&
-        _ZN10dBgActor_c13IsClsnInRangeE5Fix12IiES1_(this, 0, 0))
+    if (mRotationState == 0 && IsClsnInRange(0, 0))
         UpdateClsnPosAndRot();
     return 1;
 }

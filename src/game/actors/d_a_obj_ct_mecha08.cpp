@@ -76,7 +76,6 @@ extern int data_0209e650;                   /* arm9 RNG state */
 u16 DecIfAbove0_Short(u16 *p);
 int RandomIntInternal(int *state);
 
-int _ZN10dBgActor_c13IsClsnInRangeE5Fix12IiES1_(void *self, int a, int b);
 void _ZN10dBgW_KcMbg7SetFileEP8KCL_FileRK9Matrix4x35Fix12IiEsR10CLPS_Block(
     dBgW_KcMbg *self, KCL_File *file, const Matrix4x3 *mat,
     Fix12i scale, s16 angle, CLPS_Block *clps);
@@ -109,7 +108,7 @@ extern "C" daObjCtMecha08_c *daObjCtMecha08_c_classInit_CT_MECHA08B()
    setting. */
 int daObjCtMecha08_c::InitResources()
 {
-    mModel.SetFile((BMD_File *)Model::LoadFile(TtcRotatingGear_ModelFile), 1, -1);
+    mModel.SetFile((BMD_File *)dExtSimpleModel_c::LoadFile(TtcRotatingGear_ModelFile), 1, -1);
     UpdateModelPosAndRotY();
     UpdateClsnPosAndRot();
     _ZN10dBgW_KcMbg7SetFileEP8KCL_FileRK9Matrix4x35Fix12IiEsR10CLPS_Block(
@@ -141,7 +140,7 @@ int daObjCtMecha08_c::Behavior()
     if (data_0209f2c0 == CLOCK_SETTING_STOPPED) {
         mPosY = mHomePosY + LIFT_TRAVEL;
         UpdateModelPosAndRotY();
-        if (_ZN10dBgActor_c13IsClsnInRangeE5Fix12IiES1_(this, 0, 0) != 0)
+        if (IsClsnInRange(0, 0) != 0)
             UpdateClsnPosAndRot();
     } else {
         if (DecIfAbove0_Short(&mMoveTimer) == 0) {
@@ -176,7 +175,7 @@ int daObjCtMecha08_c::Behavior()
         }
 
         UpdateModelPosAndRotY();
-        if (_ZN10dBgActor_c13IsClsnInRangeE5Fix12IiES1_(this, 0, 0) != 0)
+        if (IsClsnInRange(0, 0) != 0)
             UpdateClsnPosAndRot();
     }
     return 1;

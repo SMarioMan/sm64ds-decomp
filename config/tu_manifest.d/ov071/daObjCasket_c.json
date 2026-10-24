@@ -429,12 +429,12 @@
   ],
   "defined_symbol_renames": [
     {
-      "from": "@712",
+      "from": "@709",
       "to": "@645",
       "evidence": "mwcc numbers the first-constructed (0x021230d0 model) destructor node @698 per TU; @645 is fleet-free and carries the 0x021230e0 claim"
     },
     {
-      "from": "@713",
+      "from": "@710",
       "to": "@646",
       "evidence": "mwcc numbers the second-constructed (0x021230d8 collision) destructor node @699 per TU; @646 is fleet-free and carries the 0x021230ec claim"
     }

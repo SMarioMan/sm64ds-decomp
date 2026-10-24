@@ -13,7 +13,7 @@
  *
  * leftovers:
  * - dBgW_KcMbg::SetFile, dBgActor_c::IsClsnInRange, dActor_c::UpdatePos,
- *   Sound::PlayLong, Particle::System::NewSimple and
+ *   Particle::System::NewSimple and
  *   dActor_c::DropShadowScaleXYZ stay mangled extern-C free functions:
  *   each takes Fix12<int> by value, and a real method call homes the
  *   argument and size-DIFFs the caller (notes/mwccarm-codegen.md 6az).
@@ -97,11 +97,12 @@ void func_020393c4(dBgW *collider, void *callback);
 void func_020393d4(dBgW *collider, void *callback);
 int  func_ov015_021128f8(void *collider, daObjBk_Lift_c *lift, void *unused);
 
-int  _ZN10dBgActor_c13IsClsnInRangeE5Fix12IiES1_(void *self, int a, int b);
-unsigned _ZN5Sound8PlayLongEjjjRK7Vector3s(unsigned handle, unsigned a,
-                                           unsigned id, void *pos, s16 f);
-void _ZN8Particle6System9NewSimpleEj5Fix12IiES2_S2_(u32 id, Fix12i x, Fix12i y,
-                                                    Fix12i z);
+void d_a_obj_bk_liftPlayLongHold(unsigned handle, unsigned a, unsigned id, void *pos, s16 f);
+namespace Particle {
+struct System {
+    static void NewSimple(u32 id, Fix12i x, Fix12i y, Fix12i z);
+};
+}
 void _ZN10dBgW_KcMbg7SetFileEP8KCL_FileRK9Matrix4x35Fix12IiEsR10CLPS_Block(
     dBgW_KcMbg *self, KCL_File *file, const Matrix4x3 *mat,
     Fix12i scale, s16 angle, CLPS_Block *clps);
@@ -147,7 +148,7 @@ int daObjBk_Lift_c::func_ov015_021128e8(void *unused)
 // @symbol _ZN14daObjBk_Lift_c13InitResourcesEv
 int daObjBk_Lift_c::InitResources()
 {
-    mModel.SetFile((BMD_File *)Model::LoadFile(data_ov015_02114a64), 1, -1);
+    mModel.SetFile((BMD_File *)dExtSimpleModel_c::LoadFile(data_ov015_02114a64), 1, -1);
     mShadowModel.InitCuboid();
     UpdateModelPosAndRotY();
     UpdateClsnPosAndRot();
@@ -218,7 +219,7 @@ int daObjBk_Lift_c::Behavior()
         }
         UpdatePos(0);
         UpdateModelPosAndRotY();
-        if (_ZN10dBgActor_c13IsClsnInRangeE5Fix12IiES1_(this, 0x150000, 0x1000) != 0)
+        if (IsClsnInRange(0x150000, 0x1000) != 0)
             UpdateClsnPosAndRot();
     } else if (kind == 2) {
         if (DecIfAbove0_Byte(&mMoveTimer) == 0) {
@@ -250,17 +251,17 @@ int daObjBk_Lift_c::Behavior()
             }
         }
         UpdateModelPosAndRotY();
-        if (_ZN10dBgActor_c13IsClsnInRangeE5Fix12IiES1_(this, 0x150000, 0x1000) != 0)
+        if (IsClsnInRange(0x150000, 0x1000) != 0)
             UpdateClsnPosAndRot();
         if (Vec3_Dist(&mPosX, &mPrevPosX) != 0) {
             unsigned z = 0;
-            unsigned r = _ZN5Sound8PlayLongEjjjRK7Vector3s(
-                (unsigned)mSoundID, 3, 0x82, &mCamSpacePosX, (s16)z);
+            unsigned r =
+                Sound::PlayLong((unsigned)mSoundID, 3, 0x82, *(Vector3 *)&mCamSpacePosX, (s16)z);
             mSoundID = (s32)r;
         }
         mJustSteppedOn = 0;
     } else {
-        _ZN10dBgActor_c13IsClsnInRangeE5Fix12IiES1_(this, 0x150000, 0x1000);
+        IsClsnInRange(0x150000, 0x1000);
     }
 
     func_020393a4(&mMeshCollider, 0x150000);
@@ -322,7 +323,7 @@ void daObjBk_Lift_c::OnHitByMegaChar(Player &player)
 void daObjBk_Lift_c::Kill()
 {
     Vector3 dustPos;
-    _ZN8Particle6System9NewSimpleEj5Fix12IiES2_S2_(0x48, mPosX, mPosY, mPosZ);
+    Particle::System::NewSimple(0x48, mPosX, mPosY, mPosZ);
     dustPos.x = mPosX;
     dustPos.y = mPosY;
     dustPos.z = mPosZ;

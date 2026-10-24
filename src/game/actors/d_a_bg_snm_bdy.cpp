@@ -96,9 +96,6 @@ void  func_0203568c(int *clsn, int radius);
 void  func_02035684(int *clsn, int height);
 void  dBgCh_Actr_UpdateContinuous_Veneer(void *self);
 
-void      _ZN8dActor_c9SetRangesE5Fix12IiES1_S1_S1_(void *self, int offsetY,
-                                                    int radius, int clipDist,
-                                                    int farDist);
 void      _ZN8dActor_c10EarthquakeERK7Vector35Fix12IiE(void *self,
                                                        const Vector3 *pos,
                                                        int strength);
@@ -194,7 +191,7 @@ SpawnInfo<daBgSnmBdy_c> g_profile_BIG_SNOWMAN_BODY = {
 int daBgSnmBdy_c::InitResources()
 {
     Vector3 pos;
-    void *file = Model::LoadFile(data_ov072_02122b20);
+    void *file = dExtSimpleModel_c::LoadFile(data_ov072_02122b20);
     mModel.SetFile((BMD_File *)file, 1, 1);
     if (mShadowModel.InitCylinder() == 0)
         return 0;
@@ -297,8 +294,7 @@ int daBgSnmBdy_c::InitState0()
     mCylinder.height = mRadius << 1;
     func_0203568c((int *)&mWithMeshClsn, mRadius);
     func_02035684((int *)&mWithMeshClsn, mRadius);
-    _ZN8dActor_c9SetRangesE5Fix12IiES1_S1_S1_(
-        this, mRadius, mRadius, 0x1000000, 0x1000000);
+    SetRanges(mRadius, mRadius, 0x1000000, 0x1000000);
     mFlags |= 1;
     mStateValue = 0;
     return 1;
@@ -383,8 +379,7 @@ int daBgSnmBdy_c::State2()
         mCylinder.height = mRadius << 1;
         func_0203568c((int *)&mWithMeshClsn, mRadius);
         func_02035684((int *)&mWithMeshClsn, mRadius);
-        _ZN8dActor_c9SetRangesE5Fix12IiES1_S1_S1_(
-            this, mRadius, mRadius, 0x1000000, 0x1000000);
+        SetRanges(mRadius, mRadius, 0x1000000, 0x1000000);
     }
     if (AdvancePath() != 0) {
         if (mPlayerReachedPath != 0 && IsPlayerNearCenter() != 0)

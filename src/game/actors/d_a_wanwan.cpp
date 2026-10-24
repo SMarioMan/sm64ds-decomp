@@ -9,7 +9,7 @@
 /* leftovers: the chain helpers and the twelve state handlers stay extern "C"
  * free functions under their func_ov014_* address names; the rows of
  * data_ov014_0211476c reach the handlers through 8-byte PMF descriptors.
- * g_profile_WANWAN is not this file's data. ModelAnim::SetAnim,
+ * g_profile_WANWAN is not this file's data. dExtAnmModel_c::SetAnim,
  * dCcAcPos_c::Init, DropShadowRadHeight, Player::Hurt and cstd::atan2
  * stay mangled: this file calls them, and each takes Fix12<int> by
  * value. The factory constructs the real class, including its two
@@ -40,13 +40,13 @@ enum {
     kChainMax = 0x64000        /* fully extended lunge */
 };
 
-/* Model handles construct through func_02017acc and destroy through
+/* dExtSimpleModel_c handles construct through func_02017acc and destroy through
  * func_02017ab4; animation handles construct through SharedFilePtr::Construct
  * and destroy through SharedFilePtr_Destruct_Anim. The manifest aliases those
  * undefined members onto the ROM symbols. filePtr is the BMD or BCA the load
  * just filled in.
- *   02114968  body BMD   sinit 0x9c02, Model::LoadFile, mModelAnim
- *   02114978  link BMD   sinit 0x9c01, Model::LoadFile, mLinkModels
+ *   02114968  body BMD   sinit 0x9c02, dExtSimpleModel_c::LoadFile, mModelAnim
+ *   02114978  link BMD   sinit 0x9c01, dExtSimpleModel_c::LoadFile, mLinkModels
  *   02114980  idle BCA   sinit 0x9c04, dExtFrameCtrl_c::LoadFile
  *   02114970  lunge BCA  sinit 0x9c03, dExtFrameCtrl_c::LoadFile
  */
@@ -88,8 +88,6 @@ void _ZN10dCcAcPos_c4InitEP8dActor_cRK7Vector35Fix12IiES6_jj(
 void _ZN8dActor_c19DropShadowRadHeightER17dExtShadowModel_cR9Matrix4x35Fix12IiES5_j(
     dActor_c *self, dExtShadowModel_c *shadow, Matrix4x3 *mtx, int radius, int depth,
     unsigned opacity);
-void _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(
-    ModelAnim *self, void *bca, int flags, int speed, unsigned start);
 /* local extern: Fix12<int> by value; this scalar bridge follows the definition. */
 int _ZN6Player4HurtERK7Vector3j5Fix12IiEjjj(
     Player *player, void *pos, unsigned kind, int power, u8 a, u8 b, u8 c);
@@ -125,10 +123,8 @@ namespace call3_267c {
 extern "C" int func_0201267c(int id, void *pos, int unused);
 }
 
-/* SetAnim takes Fix12<int> by value. The scalar extern stays. */
 #define SetChompAnim(self, bca) \
-    _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj( \
-        &(self)->mModelAnim, (BCA_File *)(bca).filePtr, 0, 0x1000, 0)
+    (self)->mModelAnim.SetAnim((BCA_File *)(bca).filePtr, 0, 0x1000, 0)
 
 // @symbol daWanwan_c_classInit
 extern "C" daWanwan_c *daWanwan_c_classInit()
@@ -139,15 +135,15 @@ extern "C" daWanwan_c *daWanwan_c_classInit()
 // @symbol _ZN10daWanwan_c13InitResourcesEv
 int daWanwan_c::InitResources()
 {
-    void *f = Model::LoadFile(data_ov014_02114968);
+    void *f = dExtSimpleModel_c::LoadFile(data_ov014_02114968);
     mModelAnim.SetFile((BMD_File *)f, 1, 1);
-    Model::LoadFile(data_ov014_02114978);
+    dExtSimpleModel_c::LoadFile(data_ov014_02114978);
     dExtFrameCtrl_c::LoadFile(data_ov014_02114980);
     dExtFrameCtrl_c::LoadFile(data_ov014_02114970);
 
     {
         int i = 0;
-        Model *p = mLinkModels;
+        dExtSimpleModel_c *p = mLinkModels;
         do {
             p->SetFile((BMD_File *)data_ov014_02114978.filePtr, 1, 1);
             i = i + 1;
@@ -265,7 +261,7 @@ int daWanwan_c::Render()
     mModelAnim.Render(&mScale);
 
     int j = 0;
-    Model *p = mLinkModels;
+    dExtSimpleModel_c *p = mLinkModels;
     for (;;) {
         p->Render(0);
         j++;
@@ -293,14 +289,14 @@ void func_ov014_02112788(daWanwan_c *c)
 {
     /* Translation is m[9..11] of each matrix: position >> 3.
        m and sm walk mLinkModels and mLinkShadows. e and o are the actor
-       address advanced by one Vector3 and one Model per link, so
+       address advanced by one Vector3 and one dExtSimpleModel_c per link, so
        e->mLinkPos[0] is link i's position and o->mLinkModels[0] is the model
        m points at. Storing the translation through m, or walking mLinkPos
        with a Vector3 pointer, changes the emitted loop. */
     Matrix4x3 tmp;
     int i;
     int t;
-    Model *m;
+    dExtSimpleModel_c *m;
     daWanwan_c *e;
     daWanwan_c *o;
     dExtShadowModel_c *sm;
@@ -332,7 +328,7 @@ void func_ov014_02112788(daWanwan_c *c)
             c, sm, &m->mat4x3, 0x78000 - FX_MUL(t, 0x180), t + 0x28000, 0xf);
         m++;
         e = (daWanwan_c *)((char *)e + sizeof(Vector3));
-        o = (daWanwan_c *)((char *)o + sizeof(Model));
+        o = (daWanwan_c *)((char *)o + sizeof(dExtSimpleModel_c));
         sm++;
     }
 }

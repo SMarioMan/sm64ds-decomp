@@ -27,7 +27,7 @@
  *   CLPS handles; this TU consumes them, overlay .data owns them.
  * - S14: g_profile_TD_WATER stays outside the licensed .text.
  * - Event::GetBit has no shared header; every caller declares it locally.
- * - common.h first (dBgActor_c.h must see common.h ahead of Model.h).
+ * - common.h first (dBgActor_c.h must see common.h ahead of dExtSimpleModel_c.h).
  * - no Player.h / dCamera_c.h.
  *
  * Consolidated from these legacy one-function sources (ROM address order):
@@ -55,7 +55,7 @@ enum d_a_obj_td_water_AssetId {
 struct KCL_File;
 struct CLPS_Block;
 
-/* Model handles construct through func_02017acc and destroy through
+/* dExtSimpleModel_c handles construct through func_02017acc and destroy through
  * func_02017ab4; collision handles construct through func_02017b4c and
  * destroy through SharedFilePtr_Destruct_Clsn. The manifest aliases those
  * undefined members onto the ROM symbols. */
@@ -106,7 +106,7 @@ extern "C" daObjTdWater_c *daObjTdWater_c_classInit(void)
 // @symbol _ZN14daObjTdWater_c13InitResourcesEv
 s32 daObjTdWater_c::InitResources()
 {
-    mModel.SetFile((BMD_File *)Model::LoadFile(data_ov032_02113afc), 1, 0x14);
+    mModel.SetFile((BMD_File *)dExtSimpleModel_c::LoadFile(data_ov032_02113afc), 1, 0x14);
 
     /* The BMD the SharedFilePtr is holding: the ROM re-reads it out of the
        descriptor rather than reusing LoadFile's return value. */

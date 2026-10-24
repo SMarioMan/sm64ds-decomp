@@ -13,8 +13,8 @@ typed-subobject constructor (dBgCh_Actr).
 
 | file | function | ROM |
 |---|---|---|
-| `src/engine/model/Model.cpp` | `ModelBase::ModelBase()` | 0x02017150, 0x18 |
-| `src/_ZN5ModelC1Ev.cpp` | `Model::Model()` | 0x02016d58, 0x50 |
+| `src/engine/model/d_ext_simple_model.cpp` | `dExtModel_c::dExtModel_c()` | 0x02017150, 0x18 |
+| `src/_ZN17dExtSimpleModel_cC1Ev.cpp` | `dExtSimpleModel_c::dExtSimpleModel_c()` | 0x02016d58, 0x50 |
 | `src/engine/model/d_ext_common_model.cpp` | `dExtCommonModel_c::dExtCommonModel_c()` | 0x02016204, 0x50 |
 | `src/engine/model/d_ext_shadow_model.cpp` | `dExtShadowModel_c::dExtShadowModel_c()` | 0x02016068, 0x34 |
 | `src/engine/path/PathPtr.cpp` | `PathPtr::PathPtr()` | 0x0203ad74, 0x10 |
@@ -33,7 +33,7 @@ What made that possible mechanically was an objisolate extension: a
 constructor-only TU references the class vtable UNDEF (the key function is
 the destructor, defined nowhere), and the secondary store arrives as UNDEF
 `_ZTV9dBgCh_Lin` with **addend 24** — 8 preamble + 0x10 into the secondary
-block. The UNDEF path used to refuse any addend but 8; ModelAnim's already-
+block. The UNDEF path used to refuse any addend but 8; dExtAnmModel_c's already-
 enrolled externalise case (44 − 8 = +0x24 =
 `VTable_Animation_ModelAnimThunk`) is the verification the original refusal
 asked for, so the same subtraction is now accepted there, with a probe test
@@ -141,11 +141,11 @@ the writer, they are emitted around the body.
 
 Consequences, same as the D1/D0 arrangement:
 
-- The enrolled file keeps ONE symbol (`_ZN5ModelC1Ev.cpp` owns C1);
+- The enrolled file keeps ONE symbol (`_ZN17dExtSimpleModel_cC1Ev.cpp` owns C1);
   `objisolate` strips the sibling variant and any local helpers, exactly as
   it strips a real destructor's extra sections.
 - The sibling variant keeps its existing hand-written `.c` file
-  (`_ZN5ModelC2Ev.c` still provides C2). Do not delete it and do not write
+  (`_ZN17dExtSimpleModel_cC2Ev.c` still provides C2). Do not delete it and do not write
   the constructor twice — that is an ODR violation across TUs.
 - Eligibility rules hold unchanged. All four landed files pass
   `tools/eligible.py` with isolation on.
@@ -156,8 +156,8 @@ The single highest-leverage header change. Left undeclared, the compiler
 synthesises the base construction inline — the ROM's out-of-line call never
 appears and the candidate lands tens of bytes short. Declared-but-not-defined
 in the class body is what makes every derived constructor emit
-`bl _ZN…C…Ev`. This is already how `Model()` was declared in
-`include/Model.h`; this wave added the same declaration to `ModelBase`,
+`bl _ZN…C…Ev`. This is already how `dExtSimpleModel_c()` was declared in
+`include/dExtSimpleModel_c.h`; this wave added the same declaration to `dExtModel_c`,
 `dExtCommonModel_c`, and `dExtShadowModel_c`.
 
 Risk to check when adding one: every TU that value-constructs the class or a
@@ -167,7 +167,7 @@ but the gate for the check is the full `rombuild -j16`, not per-file verify.
 
 ## 3. Struct-copy spelling decides the mat4x3 block move
 
-`Model::Model` and `CommonModel::CommonModel` copy a 0x30-byte matrix from
+`dExtSimpleModel_c::dExtSimpleModel_c` and `CommonModel::CommonModel` copy a 0x30-byte matrix from
 `IDENTITY_MATRIX4X3`. Under the structured spelling from `math/Matrix.h`
 `data_02082128`. Under the structured spelling from `math/Matrix.h`
 (`Matrix4x3 { Matrix3x3 r; Vector3 t; }`) the copy splits into a subobject
@@ -182,7 +182,7 @@ guard mechanism exists precisely so both spellings can coexist.
 
 ## 4. The base-object variant label: check which C the callers mean
 
-`ModelBase`'s constructor was labelled `_ZN9ModelBaseC1Ev` since the initial
+`dExtModel_c`'s constructor was labelled `_ZN11dExtModel_cC1Ev` since the initial
 release, and every derived constructor called it by that name through
 hand-spelled externs. It is a **C2**. The evidence, all four callers:
 
@@ -190,16 +190,16 @@ hand-spelled externs. It is a **C2**. The evidence, all four callers:
 |---|---|
 | `_ZN17dExtShadowModel_cC1Ev` | derived ctor, base-subobject step |
 | `_ZN11CommonModelC1Ev` | derived ctor, base-subobject step |
-| `_ZN5ModelC1Ev` (+8) | derived ctor, base-subobject step |
-| `_ZN5ModelC2Ev` (+8) | derived ctor, base-subobject step |
+| `_ZN17dExtSimpleModel_cC1Ev` (+8) | derived ctor, base-subobject step |
+| `_ZN17dExtSimpleModel_cC2Ev` (+8) | derived ctor, base-subobject step |
 
 Under the Itanium ABI mwccarm names the base-subobject call **C2**
-(measured: a real `Model::Model()` references `_ZN9ModelBaseC2Ev`), and
-nothing anywhere constructs a standalone `ModelBase`, so no C1 caller exists.
+(measured: a real `dExtSimpleModel_c::dExtSimpleModel_c()` references `_ZN11dExtModel_cC2Ev`), and
+nothing anywhere constructs a standalone `dExtModel_c`, so no C1 caller exists.
 The linker's dead stripping kept only the referenced variant, which is why
 the image holds one function and why the sibling label was never
 contradicted until something tried to migrate a derived constructor for
-real — objisolate could not resolve `_ZN9ModelBaseC2Ev` against a table that
+real — objisolate could not resolve `_ZN11dExtModel_cC2Ev` against a table that
 only knew C1.
 
 The rename touched: `config/arm9/symbols.txt`, the file itself (git mv +
@@ -209,9 +209,9 @@ caller `.c` files' hand-spelled externs, the header prose, and
 correction, and expect `layout_check` to catch a missed delinks rename.
 
 Related rename, same PR family: the vtable object at 0x0208e87c carried the
-data name `data_0208e87c`; naming it `_ZTV9ModelBase` is what lets
+data name `data_0208e87c`; naming it `_ZTV11dExtModel_c` is what lets
 objisolate rebind the real constructor's vptr store (it already handles
-`_ZTV5Model` et al). Its addend loses 8 on rebinding, per the standing
+`_ZTV17dExtSimpleModel_c` et al). Its addend loses 8 on rebinding, per the standing
 vtable-preamble rule.
 
 ### 4b. Same treatment applied to `_ZN7fBase_cC1Ev` — also a C2
@@ -477,7 +477,7 @@ asm transcription, or absent.
    before anyone promotes its header.
 5. **Anim/model family**: `ModelAnimC1/C2Ev` 0x02016958/98 ·
    `ModelAnim2C1Ev` 0x020163a0 · `BlendModelAnimC1Ev` 0x020166d4.
-   (`Model::C2` stays hand-written until someone wants it real; nothing
+   (`dExtSimpleModel_c::C2` stays hand-written until someone wants it real; nothing
    calls it as a complete object.)
 6. ~~**dCc response family**~~ DONE (2026-08-24): `dCcPos_cC1Ev`,
    `dCcAc_cC1/C2Ev` and `dCcAcPos_cC1Ev` are real C++ -- empty bodies over
@@ -564,11 +564,11 @@ check_destinations/gate_wrong_dests, because the two forms carry different
 addends and no local test can tell them apart. Branch relocs keep name-only
 resolution (their −8 is PC bias, not addressing). Measured on all four shapes
 in-tree: three-block SphCrr, two-block Lin, single-inheritance Clipper,
-no-base Animation, plus ModelAnim2 D0 (the documented 44-addend case) — all
+no-base Animation, plus dExtAnm2Model_c D0 (the documented 44-addend case) — all
 MATCH under strict relocs now, where the MI ones could never pass before.
 
 **Deleting destructors need the original deallocation surface.** The
-RTTI-correct `daTrsTrap_c` D1 is an empty body over typed `Model` and
+RTTI-correct `daTrsTrap_c` D1 is an empty body over typed `dExtSimpleModel_c` and
 `dBgW_KcMbg` members. Its first native D0 compiled 12 bytes short because a
 minimal `dActor_c` shadow fell back to global `operator delete`. Restoring the
 inherited inline operator that calls `Memory::Deallocate(ptr, data_020a0eac)`

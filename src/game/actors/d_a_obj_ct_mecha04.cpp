@@ -15,8 +15,7 @@
 // dBgActor_c::IsClsnInRange stay mangled (Fix12-by-value, 6az -- this TU's
 // InitResources/Behavior/UpdateShadow calls). func_020393c4 / func_020393bc
 // store/load dBgW+0x1c -- the ROM's own call, not an inlineable assignment
-// (no setter). Sound::PlayLong stays TU-local mangled (Sound.h has PlayBank3
-// only).
+// (no setter).
 // common.h first: UpdateShadow writes mShadowMat.m[9..11] on the flat 12-word
 // spelling. InitResources keeps its two-store animationFiles[2] stack array,
 // the variant reloads, MoveActorOnBelt's &mPosX-derived pointer chain and flat
@@ -63,6 +62,11 @@ struct Mecha04ClsnFilePtr : SharedFilePtr {
 
 /* Fix12-by-value calls retain their measured raw ABI declarations. Natural
  * class-typed declarations make mwccarm home arguments absent from retail. */
+namespace Sound {
+/* local extern: including Sound.h renumbers @NNN. */
+int PlayLong(u32, u32, u32, const Vector3 &, s16);
+}
+
 extern "C" {
 extern void Matrix4x3_FromRotationY(Matrix4x3 *matrix, s16 angle);
 extern void _ZN8dActor_c18DropShadowScaleXYZER17dExtShadowModel_cR9Matrix4x35Fix12IiES5_S5_j(
@@ -77,12 +81,10 @@ extern SharedFilePtr *data_ov065_0211d198[][3];
 extern CLPS_Block *data_ov065_0211d19c[][3];
 extern void func_020393c4(dBgW *collider, void *callback);
 extern int func_020393bc(dBgW *collider);
-extern int _ZN10dBgActor_c13IsClsnInRangeE5Fix12IiES1_(dBgActor_c *self, int a, int b);
 extern u16 DecIfAbove0_Short(u16 *p);
 extern int RandomIntInternal(int *seed);
-extern int _ZN5Sound8PlayLongEjjjRK7Vector3s(
-    unsigned int handle, unsigned int bank, unsigned int sound,
-    void *pos, unsigned int flags);
+extern void d_a_obj_ct_mecha04PlayLongHold(unsigned int handle, unsigned int bank,
+                                           unsigned int sound, void *pos, unsigned int flags);
 extern u8 data_0209f2c0;
 extern int data_0209e650;
 extern int data_ov065_0211c0b8[]; /* per-clock-setting belt speeds */
@@ -171,7 +173,7 @@ int daObjCtMecha04_c::InitResources()
     }
 
     variant = mVariant;
-    modelFile = Model::LoadFile(*data_ov065_0211d194[variant][0]);
+    modelFile = dExtSimpleModel_c::LoadFile(*data_ov065_0211d194[variant][0]);
     mModel.SetFile(
         (BMD_File *)modelFile, 1, -1);
 
@@ -227,7 +229,7 @@ int daObjCtMecha04_c::Behavior()
 {
     if (data_0209f2c0 == CLOCK_SETTING_STOPPED) {
         func_020393c4(&mMeshCollider, 0);
-        _ZN10dBgActor_c13IsClsnInRangeE5Fix12IiES1_(this, 0, 0);
+        IsClsnInRange(0, 0);
     } else {
         if (!IsOffScreen(this)) {
             if (!func_020393bc(&mMeshCollider)) {
@@ -255,12 +257,12 @@ int daObjCtMecha04_c::Behavior()
             mTextureTransformer.speed = mBeltSpeed;
             mTextureTransformer.Advance();
             if (mBeltSpeed != 0) {
-                mSoundHandle = _ZN5Sound8PlayLongEjjjRK7Vector3s(
-                    mSoundHandle, 3, 0x88, &mCamSpacePosX, 0);
+                mSoundHandle =
+                    Sound::PlayLong(mSoundHandle, 3, 0x88, *(Vector3 *)&mCamSpacePosX, 0);
             }
         }
 
-        _ZN10dBgActor_c13IsClsnInRangeE5Fix12IiES1_(this, 0, 0);
+        IsClsnInRange(0, 0);
     }
 
     UpdateShadow();

@@ -4,8 +4,6 @@
  * it. The lid stays shut until event bit 0xe opens it.
  */
 // leftovers:
-// - Particle::System::NewSimple stays mangled. This TU's pound passes
-//   Fix12<int> by value.
 // - Event::GetBit and Event::SetBit stay mangled. There is no Event header.
 //   InitResources and the pound call them for bit 0xe.
 // - dBgW_KcMbg::SetFile stays mangled. InitResources passes Fix12<int> by
@@ -41,11 +39,14 @@ extern TtFutaModelFilePtr data_ov033_021124c8;
 extern TtFutaCollisionFilePtr data_ov033_021124c0;
 
 extern "C" {
-extern void _ZN8Particle6System9NewSimpleEj5Fix12IiES2_S2_(unsigned int a, int x, int y, int z);
+namespace Particle {
+struct System {
+    static void NewSimple(unsigned int a, int x, int y, int z);
+};
+}
 extern int data_ov033_02111bfc[];
 extern int _ZN5Event6GetBitEj(unsigned int);
 extern void _ZN5Event6SetBitEj(unsigned int b);
-extern int _ZN10dBgActor_c13IsClsnInRangeE5Fix12IiES1_(void *self, int a, int b);
 extern void _ZN10dBgW_KcMbg7SetFileEP8KCL_FileRK9Matrix4x35Fix12IiEsR10CLPS_Block(void*, void*, void*, int, short, void*);
 }
 
@@ -57,7 +58,7 @@ extern void _ZN10dBgW_KcMbg7SetFileEP8KCL_FileRK9Matrix4x35Fix12IiEsR10CLPS_Bloc
 // @symbol _ZN13daObjTtFuta_cD0Ev
 /* One out-of-line definition; mwccarm emits D1 and D0 from it, in that
  * order: its own vptr, then dBgActor_c's inlined, then dBgActor_c's
- * Model and dBgW_KcMbg, then dActor_c. */
+ * dExtSimpleModel_c and dBgW_KcMbg, then dActor_c. */
 daObjTtFuta_c::~daObjTtFuta_c()
 {
 }
@@ -70,7 +71,7 @@ daObjTtFuta_c::~daObjTtFuta_c()
 void daObjTtFuta_c::OnGroundPounded(dActor_c &other)
 {
     int *v = (int *)(((char *)&other) + 0x5c);
-    _ZN8Particle6System9NewSimpleEj5Fix12IiES2_S2_(0x28, v[0], v[1], v[2]);
+    Particle::System::NewSimple(0x28, v[0], v[1], v[2]);
     Sound::PlayBank3(0xf, mCamSpacePos);
     _ZN5Event6SetBitEj(0xe);
     MarkForDestruction();
@@ -94,19 +95,20 @@ s32 daObjTtFuta_c::Render() {
 
 // @symbol _ZN13daObjTtFuta_c8BehaviorEv
 s32 daObjTtFuta_c::Behavior() {
-    _ZN10dBgActor_c13IsClsnInRangeE5Fix12IiES1_(this, 0, 0);
+    IsClsnInRange(0, 0);
     return 1;
 }
 
 // @symbol _ZN13daObjTtFuta_c13InitResourcesEv
 s32 daObjTtFuta_c::InitResources() {
-  void *f = Model::LoadFile(data_ov033_021124c8);
-  mModel.SetFile((BMD_File *)f, 1, -1);
-  UpdateModelPosAndRotY();
-  UpdateClsnPosAndRot();
-  void *k = dBgW_Kc::LoadFile(data_ov033_021124c0);
-  _ZN10dBgW_KcMbg7SetFileEP8KCL_FileRK9Matrix4x35Fix12IiEsR10CLPS_Block(&mMeshCollider, k, &mClsnMat, 0x199, mAngleY, data_ov033_02111bfc);
-  return _ZN5Event6GetBitEj(0xe) == 0;
+    void *f = dExtSimpleModel_c::LoadFile(data_ov033_021124c8);
+    mModel.SetFile((BMD_File *)f, 1, -1);
+    UpdateModelPosAndRotY();
+    UpdateClsnPosAndRot();
+    void *k = dBgW_Kc::LoadFile(data_ov033_021124c0);
+    _ZN10dBgW_KcMbg7SetFileEP8KCL_FileRK9Matrix4x35Fix12IiEsR10CLPS_Block(
+        &mMeshCollider, k, &mClsnMat, 0x199, mAngleY, data_ov033_02111bfc);
+    return _ZN5Event6GetBitEj(0xe) == 0;
 }
 
 /* TT_FUTA factory. */

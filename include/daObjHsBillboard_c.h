@@ -1,7 +1,7 @@
 #ifndef DAOBJHSBILLBOARD_C_H
 #define DAOBJHSBILLBOARD_C_H
 
-#include "Model.h"
+#include "dExtSimpleModel_c.h"
 #include "dActor_c.h"
 
 extern "C" void *_ZN7fBase_cnwEj(unsigned size);
@@ -18,7 +18,7 @@ extern "C" void *_ZN7fBase_cnwEj(unsigned size);
 
 struct daObjHsBillboard_c : dActor_c {
     u8    pad_0d0[0x4];
-    Model mModel;          /* 0x0d4 */
+    dExtSimpleModel_c mModel; /* 0x0d4 */
     u8    mVariant;        /* 0x124 -- index into data_ov031_02111424 */
 
     /* InitResources is the first out-of-line virtual/key function. The inline

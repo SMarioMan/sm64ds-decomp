@@ -1,4 +1,11 @@
 //cpp
+struct Vector3_16f;
+namespace Particle {
+struct Callback;
+struct System {
+    static int New(unsigned, unsigned, int, int, int, const ::Vector3_16f *, Callback *);
+};
+}
 /* daDemo_c -- the KuppaScript cutscene actor, registry profile 352 (0x160),
  * debug name DEMO.
  *
@@ -54,8 +61,8 @@
  * emits them with the vtables, after this factory, at
  * ov002:0x020f8838 (D0) and 0x020f8848 (D1).
  *
- * The model bases are declared in daDemo_c.h under the cartridge's RTTI
- * spellings, so the vague-linkage typeinfo copies this object emits are
+ * The nested classes derive from the arm9 model classes, so the
+ * vague-linkage typeinfo copies this object emits are
  * _ZTI14dExtAnmModel_c, _ZTI17dExtSimpleModel_c, _ZTI11dExtModel_c and
  * _ZTI15dExtFrameCtrl_c. Each is a canonical import of the arm9 record
  * (notes/model-rtti-names.md); this TU does not emit a homeless _ZTI.
@@ -80,7 +87,7 @@
  *   and C2dd4 remain as the tables' receiver types. Indexed entry fields
  *   are spelled with STAR_OFF and its siblings where the ROM adds the
  *   field offset before the index.
- *   common.h must precede daDemo_c.h: ModelAnim.h's nested Matrix4x3
+ *   common.h must precede daDemo_c.h: dExtAnmModel_c.h's nested Matrix4x3
  *   otherwise wins and scalarizes Behavior's 12-word matrix copy.
  */
 
@@ -107,8 +114,8 @@ enum daDemo_c_AssetId {
 #include "types.h"
 #include "nitro/fx/fx.h"
 #include "common.h"
-#include "Model.h"
-#include "ModelAnim.h"
+#include "dExtSimpleModel_c.h"
+#include "dExtAnmModel_c.h"
 #include "daDemo_c.h"
 #include "SharedFilePtr.h"
 #include "decl_common.h"
@@ -407,16 +414,17 @@ extern void SetSubBg1Offset(int a, int b);
 extern void* data_0209f5bc;
 extern u8 data_ov002_02111144;
 extern u32 data_020a0db0;
-extern void* _Znwj(unsigned int);
 extern int func_ov002_020f2630(daDemo_c *self);
 extern struct OamAttr *data_ov002_0210b6a8[];
 extern void _ZN3OAM6RenderEbP7OamAttriiii5Fix12IiEi( int a, struct OamAttr *b, int c, int d, int e, int f, int g, int h);
-extern u32 _ZN8Particle6System3NewEjj5Fix12IiES2_S2_PK11Vector3_16fPNS_8CallbackE( u32 slot, u32 unk, Fix12i x, Fix12i y, Fix12i z, void* rot, struct ParticleCallback* callback);
+extern u32 d_a_demoNewHold(u32 slot, u32 unk, Fix12i x, Fix12i y, Fix12i z, void *rot,
+                           struct ParticleCallback *callback);
 extern int data_ov002_02100140[];
 extern void func_ov002_020f2790(char *c, int p1, int p2, int p3, short p4);
 extern int func_ov002_020f2984(char *p);
 extern int GetOwnerLanguage(void);
-extern void _ZN3OAM6RenderEbP7OamAttriiii5Fix12IiES3_ii( int a, struct OamAttr* attr, int x, int y, int e, int f, int g, int h, int i, int j);
+extern void OamRender10_d_a_demo(int a, struct OamAttr *attr, int x, int y, int e, int f, int g,
+                                 int h, int i, int j);
 extern struct OamAttr* data_ov002_0210b988[];
 extern void func_0201ef50(unsigned char v);
 extern void func_0201f108(void);
@@ -506,7 +514,6 @@ extern void func_ov002_020f5fe4(char *c);
 extern int _ZN15dExtFrameCtrl_c7AdvanceEv(char*); /* local extern: untyped this. */
 extern int _ZN15dExtFrameCtrl_c8FinishedEv(char*); /* local extern: untyped this. */
 /* local extern dropped: decl_common.h declares func_ov002_020f6514(unsigned char*, void*, unsigned char) */
-extern void _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(void *self, void *f, int b, int c, unsigned int d);
 extern void _ZN15TextureSequence7SetFileER8BTP_Filei5Fix12IiEj(void *self, void *f, int b, int c, unsigned int d);
 extern void __cxa_vec_ctor(void* obj, int a, int b, void* cb1, void* cb2);
 extern void *_ZN7Vector3D1Ev(void *object);
@@ -622,7 +629,6 @@ extern JugemModelFile data_ov085_0213074c;
 /* TUBUILD CONFLICT -- alternate declaration of _ZN6Memory16operator_delete2EPv, from the legacy file for func_ov002_020f5f60, NOT applied: extern void _ZN6Memory16operator_delete2EPv(void *p); */
 /* TUBUILD CONFLICT -- alternate declaration of data_0209d454, from the legacy file for func_ov002_020f5fe4, NOT applied: extern u8 data_0209d454; */
 /* TUBUILD CONFLICT -- alternate declaration of _ZN6Memory16operator_delete2EPv, from the legacy file for func_ov002_020f63a0, NOT applied: extern void _ZN6Memory16operator_delete2EPv(void *p); */
-/* TUBUILD CONFLICT -- alternate declaration of _Znwj, from the legacy file for func_ov002_020f6448, NOT applied: extern void* _Znwj(unsigned int sz); */
 /* TUBUILD CONFLICT -- alternate declaration of _ZN15dExtFrameCtrl_c7AdvanceEv, from the legacy file for func_ov002_020f65ec, NOT applied: extern int _ZN15dExtFrameCtrl_c7AdvanceEv(void *p); */
 /* TUBUILD CONFLICT -- alternate declaration of ReadUnalignedShort, from the legacy file for func_ov002_020f6bc0, NOT applied: extern s16 ReadUnalignedShort(unsigned char *p); */
 /* TUBUILD CONFLICT -- alternate declaration of func_ov002_020f6514, from the legacy file for func_ov002_020f6c34, NOT applied: extern void func_ov002_020f6514(void *p, void *tbl, unsigned char v); */
@@ -656,20 +662,13 @@ extern JugemModelFile data_ov085_0213074c;
 /* TUBUILD CONFLICT -- alternate declaration of Vec3_HorzAngle, from the legacy file for func_ov002_020f7bb8, NOT applied: extern s16 Vec3_HorzAngle(const Vector3 *v0, const Vector3 *v1); */
 /* TUBUILD CONFLICT -- alternate declaration of _ZN4cstd5atan2E5Fix12IiES1_, from the legacy file for func_ov002_020f7bb8, NOT applied: extern s16 _ZN4cstd5atan2E5Fix12IiES1_(Fix12i y, Fix12i x); */
 /* TUBUILD CONFLICT -- alternate declaration of data_0209b41c, from the legacy file for _ZN8daDemo_c6RenderEv, NOT applied: extern M48 data_0209b41c; */
-/* TUBUILD CONFLICT -- alternate declaration of _Znwj, from the legacy file for _ZN8daDemo_c13InitResourcesEv, NOT applied: extern "C" void *_Znwj(int sz); */
 }
 
-/* -------------------------------------------------------------------------- */
-/* ROM ordinal 0 -- _ZN8daDemo_cD1Ev, 0x020f1f70, size 0x24 */
-/* -------------------------------------------------------------------------- */
 // @symbol _ZN8daDemo_cD1Ev
 daDemo_c::~daDemo_c()
 {
 }
 
-/* -------------------------------------------------------------------------- */
-/* ROM ordinal 1 -- _ZN8daDemo_cD0Ev, 0x020f1f94, size 0x38 */
-/* -------------------------------------------------------------------------- */
 // @symbol _ZN8daDemo_cD0Ev
 #ifdef _MSC_VER
 /* THE HOST NEEDS THE ROM'S FLAT D0 NAME, AND MSVC NEVER EMITS IT. MSVC
@@ -967,17 +966,17 @@ int daDemo_c::func_ov002_020f23f0()
 // @symbol func_ov002_020f2630
 extern "C" {  /* .c-derived member: C linkage for the whole block */
 int func_ov002_020f2630(daDemo_c *self){
-  self->mScroll = (daDemo_c::ScrollState *)_Znwj(0x36);
-  self->mScroll->bg0X = 0x30;
-  self->mScroll->bg0Y = 0x20;
-  self->mScroll->bg1X = 0;
-  self->mScroll->bg1Y = 0;
-  self->mScroll->centerSpriteY[0] = 0xfff8;
-  self->mScroll->centerSpriteY[1] = 0xc8;
-  self->mScroll->fadeLevel = 0x10;
-  SetSubBg0Offset(self->mScroll->bg0X, self->mScroll->bg0Y);
-  SetSubBg1Offset(self->mScroll->bg1X, self->mScroll->bg1Y);
-  return 1;
+    self->mScroll = (daDemo_c::ScrollState *)::operator new(0x36);
+    self->mScroll->bg0X = 0x30;
+    self->mScroll->bg0Y = 0x20;
+    self->mScroll->bg1X = 0;
+    self->mScroll->bg1Y = 0;
+    self->mScroll->centerSpriteY[0] = 0xfff8;
+    self->mScroll->centerSpriteY[1] = 0xc8;
+    self->mScroll->fadeLevel = 0x10;
+    SetSubBg0Offset(self->mScroll->bg0X, self->mScroll->bg0Y);
+    SetSubBg1Offset(self->mScroll->bg1X, self->mScroll->bg1Y);
+    return 1;
 }
 }
 
@@ -1046,10 +1045,9 @@ void func_ov002_020f2790(char* c, int p1, int p2, int p3, s16 p4)
 {
     ((StaffRoll *)c)->kira.unk308 = p3;
     ((StaffRoll *)c)->kira.unk30c = p4;
-    ((StaffRoll *)c)->kiraParticle =
-        _ZN8Particle6System3NewEjj5Fix12IiES2_S2_PK11Vector3_16fPNS_8CallbackE(
-            ((StaffRoll *)c)->kiraParticle, 0x3e, p1 << 12, p2 << 12, 0, 0,
-            (struct ParticleCallback *)&((StaffRoll *)c)->kira);
+    ((StaffRoll *)c)->kiraParticle = Particle::System::New(
+        ((StaffRoll *)c)->kiraParticle, 0x3e, p1 << 12, p2 << 12, 0, 0,
+        (Particle::Callback *)((struct ParticleCallback *)&((StaffRoll *)c)->kira));
 }
 }
 
@@ -1146,8 +1144,7 @@ int func_ov002_020f2990(char* c)
     else if (GetOwnerLanguage() == 2 || GetOwnerLanguage() == 5) idx = 2;
     else if (GetOwnerLanguage() == 4) idx = 3;
 
-    _ZN3OAM6RenderEbP7OamAttriiii5Fix12IiES3_ii(
-        0, data_ov002_0210b988[idx], x, y, -1, 1, 0x1000, 0x1000, 0, -1);
+    OAM::Render(0, data_ov002_0210b988[idx], x, y, -1, 1, 0x1000, 0x1000, 0, -1);
 }
 }
 
@@ -3617,7 +3614,7 @@ int daDemo_c::func_ov002_020f6448(unsigned char *arg1)
 {
     StaffRoll *p;
     this->mCue = *arg1;
-    p = (StaffRoll *)_Znwj(sizeof(StaffRoll));
+    p = (StaffRoll *)::operator new(sizeof(StaffRoll));
     if (p)
         _ZN5dPa_c7level_c20edStarKiraCallback_cC1Ev((char *)&p->kira);
     this->mStaffRoll = p;
@@ -3655,7 +3652,7 @@ void daDemo_c::anmModel_c::func_ov002_020f6514(void *tbl, unsigned char arg)
     mAnimEntry = arg;
     e = (u8 *)tbl + mAnimEntry * 4;
     v = (e[2] == 0) ? 0x40000000 : 0;
-    _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(this, mAnimFiles[e[0]]->filePtr, v, 0x1000, 0);
+    ((dExtAnmModel_c *)this)->SetAnim((BCA_File *)(mAnimFiles[e[0]]->filePtr), v, 0x1000, 0);
     {
         void *ts = mTexSeq;
         s8 idx;
@@ -3698,9 +3695,6 @@ int daDemo_c::anmModel_c::func_ov002_020f65ec()
 // @symbol _ZN8daDemo_c10anmModel_c19func_ov002_020f6618EP13SharedFilePtriPS2_ihS3_i
 struct BTP_File;
 extern "C" {
-void* _ZN15dExtFrameCtrl_c8LoadFileER13SharedFilePtr(SharedFilePtr& f); /* local extern: untyped file pointer. */
-void _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(void* self, void* f, int a, int fx, unsigned int e);
-void* _Znwj(unsigned int sz);
 void* _ZN15TextureSequenceC1Ev(void* self);
 void _ZN15TextureSequence7SetFileER8BTP_Filei5Fix12IiEj(void* self, void* btp, int a, int fx, unsigned int e);
 }
@@ -3712,16 +3706,17 @@ int daDemo_c::anmModel_c::func_ov002_020f6618(SharedFilePtr *mdl, int nAnims, Sh
     int i;
     void* ts;
     mModelFile = mdl;
-    if (((ModelBase *)self)->SetFile((BMD_File *)Model::LoadFile(*mModelFile), 1, tsData) == 0)
+    if (((dExtModel_c *)self)
+            ->SetFile((BMD_File *)dExtSimpleModel_c::LoadFile(*mModelFile), 1, tsData) == 0)
         return 0;
     mNumAnimFiles = (u8)nAnims;
     mAnimFiles = anims;
     for (i = 0; i < mNumAnimFiles; i++) {
-        _ZN15dExtFrameCtrl_c8LoadFileER13SharedFilePtr(*mAnimFiles[i]);
+        dExtFrameCtrl_c::LoadFile(*mAnimFiles[i]);
     }
-    _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(self, mAnimFiles[0]->filePtr, 0, 0x1000, 0);
+    ((dExtAnmModel_c *)self)->SetAnim((BCA_File *)(mAnimFiles[0]->filePtr), 0, 0x1000, 0);
     if (texByte) {
-        ts = _Znwj(0x14);
+        ts = ::operator new(0x14);
         if (ts) ts = _ZN15TextureSequenceC1Ev(ts);
         mTexSeq = (TextureSequence *)ts;
         if (mTexSeq == 0)
@@ -3740,9 +3735,6 @@ int daDemo_c::anmModel_c::func_ov002_020f6618(SharedFilePtr *mdl, int nAnims, Sh
     return 1;
 }
 
-/* -------------------------------------------------------------------------- */
-/* ROM ordinal 112 -- _ZN8daDemo_c10anmModel_cD0Ev, 0x020f6778, size 0xf8 */
-/* -------------------------------------------------------------------------- */
 // @symbol _ZN8daDemo_c10anmModel_cD0Ev
 /* D0, the deleting destructor. Same class shape as the D1 file beside this one;
  * one destructor definition emits D0/D1/D2 and objisolate keeps the variant this
@@ -3751,14 +3743,11 @@ int daDemo_c::anmModel_c::func_ov002_020f6618(SharedFilePtr *mdl, int nAnims, Sh
  * without it the bytes still match and only the relocation destination differs.
  * The D0 variant here emits from the ~anmModel_c definition at ordinal 113. */
 
-/* -------------------------------------------------------------------------- */
-/* ROM ordinal 113 -- _ZN8daDemo_c10anmModel_cD1Ev, 0x020f6870, size 0xf0 */
-/* -------------------------------------------------------------------------- */
 // @symbol _ZN8daDemo_c10anmModel_cD1Ev
 /* D1, the complete-object destructor.
  *
- * The shape here is the whole finding. The cartridge destroys the ModelAnim /
- * Model BASE before the Vector3 array at the class's own tail -- a normal
+ * The shape here is the whole finding. The cartridge destroys the dExtAnmModel_c /
+ * dExtSimpleModel_c BASE before the Vector3 array at the class's own tail -- a normal
  * C++ destructor destroys members first and never reaches it. param_c is a
  * real base declared FIRST, so bases destroy in reverse declaration order:
  * the model base runs before the Vector3 array, and param_c lands at the
@@ -3800,13 +3789,10 @@ daDemo_c::anmModel_c::~anmModel_c()
 int daDemo_c::simpleModel_c::func_ov002_020f6960(SharedFilePtr *fp, int n)
 {
     mFile = fp;
-    BMD_File *f = (BMD_File *)Model::LoadFile(*mFile);
-    return ((ModelBase *)this)->SetFile(f, 1, n) != 0 ? 1 : 0;
+    BMD_File *f = (BMD_File *)dExtSimpleModel_c::LoadFile(*mFile);
+    return ((dExtModel_c *)this)->SetFile(f, 1, n) != 0 ? 1 : 0;
 }
 
-/* -------------------------------------------------------------------------- */
-/* ROM ordinal 115 -- _ZN8daDemo_c13simpleModel_cD0Ev, 0x020f69a8, size 0x58 */
-/* -------------------------------------------------------------------------- */
 // @symbol _ZN8daDemo_c13simpleModel_cD0Ev
 /* D0, the deleting destructor. Same class shape as the D1 file beside this one;
  * one destructor definition emits D0/D1/D2 and objisolate keeps the variant this
@@ -3815,14 +3801,11 @@ int daDemo_c::simpleModel_c::func_ov002_020f6960(SharedFilePtr *fp, int n)
  * without it the bytes still match and only the relocation destination differs.
  * The D0 variant here emits from the ~simpleModel_c definition at ordinal 116. */
 
-/* -------------------------------------------------------------------------- */
-/* ROM ordinal 116 -- _ZN8daDemo_c13simpleModel_cD1Ev, 0x020f6a00, size 0x50 */
-/* -------------------------------------------------------------------------- */
 // @symbol _ZN8daDemo_c13simpleModel_cD1Ev
 /* D1, the complete-object destructor.
  *
- * The shape here is the whole finding. The cartridge destroys the ModelAnim /
- * Model BASE before the Vector3 array at the class's own tail -- a normal
+ * The shape here is the whole finding. The cartridge destroys the dExtAnmModel_c /
+ * dExtSimpleModel_c BASE before the Vector3 array at the class's own tail -- a normal
  * C++ destructor destroys members first and never reaches it. param_c is a
  * real base declared FIRST, so bases destroy in reverse declaration order:
  * the model base runs before the Vector3 array, and param_c lands at the
@@ -4154,12 +4137,9 @@ int daDemo_c::func_ov002_020f7038(int a, int arg)
         pos.x = x;
         pos.y = y;
         pos.z = z;
-        mParticleID[0] = _ZN8Particle6System3NewEjj5Fix12IiES2_S2_PK11Vector3_16fPNS_8CallbackE(
-            mParticleID[0], 0x3b, pos.x, pos.y, pos.z, 0, 0);
-        mParticleID[1] = _ZN8Particle6System3NewEjj5Fix12IiES2_S2_PK11Vector3_16fPNS_8CallbackE(
-            mParticleID[1], 0x3c, pos.x, pos.y, pos.z, 0, 0);
-        mParticleID[2] = _ZN8Particle6System3NewEjj5Fix12IiES2_S2_PK11Vector3_16fPNS_8CallbackE(
-            mParticleID[2], 0x3d, pos.x, pos.y, pos.z, 0, 0);
+        mParticleID[0] = Particle::System::New(mParticleID[0], 0x3b, pos.x, pos.y, pos.z, 0, 0);
+        mParticleID[1] = Particle::System::New(mParticleID[1], 0x3c, pos.x, pos.y, pos.z, 0, 0);
+        mParticleID[2] = Particle::System::New(mParticleID[2], 0x3d, pos.x, pos.y, pos.z, 0, 0);
     }
     return 1;
 }
@@ -4186,12 +4166,9 @@ int daDemo_c::func_ov002_020f71c4(int a, int arg)
         pos.x = x;
         pos.y = y;
         pos.z = z;
-        mParticleID[0] = _ZN8Particle6System3NewEjj5Fix12IiES2_S2_PK11Vector3_16fPNS_8CallbackE(
-            mParticleID[0], 0x38, pos.x, pos.y, pos.z, 0, 0);
-        mParticleID[1] = _ZN8Particle6System3NewEjj5Fix12IiES2_S2_PK11Vector3_16fPNS_8CallbackE(
-            mParticleID[1], 0x39, pos.x, pos.y, pos.z, 0, 0);
-        mParticleID[2] = _ZN8Particle6System3NewEjj5Fix12IiES2_S2_PK11Vector3_16fPNS_8CallbackE(
-            mParticleID[2], 0x3a, pos.x, pos.y, pos.z, 0, 0);
+        mParticleID[0] = Particle::System::New(mParticleID[0], 0x38, pos.x, pos.y, pos.z, 0, 0);
+        mParticleID[1] = Particle::System::New(mParticleID[1], 0x39, pos.x, pos.y, pos.z, 0, 0);
+        mParticleID[2] = Particle::System::New(mParticleID[2], 0x3a, pos.x, pos.y, pos.z, 0, 0);
     }
     return 1;
 }
@@ -4212,12 +4189,15 @@ int daDemo_c::func_ov002_020f72bc()
     }
     this->mOpacity = 0x1f;
 
-    mParticleID[0] = _ZN8Particle6System3NewEjj5Fix12IiES2_S2_PK11Vector3_16fPNS_8CallbackE(
-        mParticleID[0], 0x31, *((Fix12i*)&this->mPosX), *((Fix12i*)&this->mPosY), *((Fix12i*)&this->mPosZ), 0, 0);
-    mParticleID[1] = _ZN8Particle6System3NewEjj5Fix12IiES2_S2_PK11Vector3_16fPNS_8CallbackE(
-        mParticleID[1], 0x32, *(Fix12i*)(&this->mPosX), *(Fix12i*)(&this->mPosY), *(Fix12i*)(&this->mPosZ), 0, 0);
-    mParticleID[2] = _ZN8Particle6System3NewEjj5Fix12IiES2_S2_PK11Vector3_16fPNS_8CallbackE(
-        mParticleID[2], 0x33, *(Fix12i*)(&this->mPosX), *(Fix12i*)(&this->mPosY), *((Fix12i*)&this->mPosZ), 0, 0);
+    mParticleID[0] =
+        Particle::System::New(mParticleID[0], 0x31, *((Fix12i *)&this->mPosX),
+                              *((Fix12i *)&this->mPosY), *((Fix12i *)&this->mPosZ), 0, 0);
+    mParticleID[1] =
+        Particle::System::New(mParticleID[1], 0x32, *(Fix12i *)(&this->mPosX),
+                              *(Fix12i *)(&this->mPosY), *(Fix12i *)(&this->mPosZ), 0, 0);
+    mParticleID[2] =
+        Particle::System::New(mParticleID[2], 0x33, *(Fix12i *)(&this->mPosX),
+                              *(Fix12i *)(&this->mPosY), *((Fix12i *)&this->mPosZ), 0, 0);
     return 1;
 }
 
@@ -4612,9 +4592,6 @@ extern "C" void func_ov002_020f7d74(daDemo_c* self, unsigned char* p, int a2, in
     (self->*data_ov002_0211104c[p[6]])(p + 7, a2, a3);
 }
 
-/* -------------------------------------------------------------------------- */
-/* ROM ordinal 140 -- _ZN8daDemo_c16CleanupResourcesEv, 0x020f8028, size 0x80 */
-/* -------------------------------------------------------------------------- */
 // @symbol _ZN8daDemo_c16CleanupResourcesEv
 int daDemo_c::CleanupResources()
 {
@@ -4627,9 +4604,6 @@ int daDemo_c::CleanupResources()
   return 1;
 }
 
-/* -------------------------------------------------------------------------- */
-/* ROM ordinal 141 -- _ZN8daDemo_c16OnPendingDestroyEv, 0x020f80a8, size 0x4 */
-/* -------------------------------------------------------------------------- */
 // @symbol _ZN8daDemo_c16OnPendingDestroyEv
 /* daDemo_c::OnPendingDestroy -- vtable slot 12. The ROM body is empty: the
  * override exists only to occupy the slot. */
@@ -4637,9 +4611,6 @@ void daDemo_c::OnPendingDestroy()
 {
 }
 
-/* -------------------------------------------------------------------------- */
-/* ROM ordinal 142 -- _ZN8daDemo_c6RenderEv, 0x020f80ac, size 0x118 */
-/* -------------------------------------------------------------------------- */
 // @symbol _ZN8daDemo_c6RenderEv
 int daDemo_c::Render() {
     if (param1 == 0x19) {
@@ -4683,9 +4654,6 @@ int daDemo_c::Render() {
     return 1;
 }
 
-/* -------------------------------------------------------------------------- */
-/* ROM ordinal 143 -- _ZN8daDemo_c8BehaviorEv, 0x020f81c4, size 0x1e0 */
-/* -------------------------------------------------------------------------- */
 // @symbol _ZN8daDemo_c8BehaviorEv
 int daDemo_c::Behavior()
 {
@@ -4757,9 +4725,6 @@ int daDemo_c::Behavior()
   return 1;
 }
 
-/* -------------------------------------------------------------------------- */
-/* ROM ordinal 144 -- _ZN8daDemo_c13InitResourcesEv, 0x020f83a4, size 0x464 */
-/* -------------------------------------------------------------------------- */
 // @symbol _ZN8daDemo_c13InitResourcesEv
 /* Each model branch spells the nested class's construction out: param_c's
  * constructor on the tail base, the model base's C2, then the class vptr
@@ -4772,25 +4737,25 @@ int daDemo_c::InitResources()
     int t;
 
     if (param1 == 0x12) {
-        p = _Znwj(0x84);
+        p = ::operator new(0x84);
         if (p) {
             ((param_c &)*(anmModel_c *)p).func_ov002_020f6a50();
-            _ZN9ModelAnimC2Ev(p);
+            _ZN14dExtAnmModel_cC2Ev(p);
             *(void **)p = &data_ov002_0210bcc4;
             *(void **)&(dExtFrameCtrl_c &)*(anmModel_c *)p = &data_ov002_0210bce8;
         }
-        this->mModelAnim = (ModelAnim *)p;
+        this->mModelAnim = (dExtAnmModel_c *)p;
         if (this->mModelAnim == 0) return 0;
         if (((anmModel_c*)this->mModelAnim)->func_ov002_020f6618((SharedFilePtr*)&data_ov085_0213074c, 1, (SharedFilePtr**)&data_ov002_0210b60c, 1, 1, (SharedFilePtr**)&data_ov002_0210b608, -1) == 0) return 0;
     } else if (param1 == 0x13) {
-        p = _Znwj(0x84);
+        p = ::operator new(0x84);
         if (p) {
             ((param_c &)*(anmModel_c *)p).func_ov002_020f6a50();
-            _ZN9ModelAnimC2Ev(p);
+            _ZN14dExtAnmModel_cC2Ev(p);
             *(void **)p = &data_ov002_0210bcc4;
             *(void **)&(dExtFrameCtrl_c &)*(anmModel_c *)p = &data_ov002_0210bce8;
         }
-        this->mModelAnim = (ModelAnim *)p;
+        this->mModelAnim = (dExtAnmModel_c *)p;
         if (this->mModelAnim == 0) return 0;
         t = (*(volatile unsigned char *)&data_0209f2d8 == 2);
         if (t == 0) {
@@ -4799,54 +4764,54 @@ int daDemo_c::InitResources()
             if (((anmModel_c*)this->mModelAnim)->func_ov002_020f6618((SharedFilePtr*)&data_ov002_02110c18, 0xD, (SharedFilePtr**)&data_ov002_0210bcf0, 1, 0xD, (SharedFilePtr**)&data_ov002_0210bd24, 0x16) == 0) return 0;
         }
     } else if (param1 >= 0x14 && param1 <= 0x16) {
-        p = _Znwj(0x60);
+        p = ::operator new(0x60);
         if (p) {
             ((param_c &)*(simpleModel_c *)p).func_ov002_020f6a50();
-            _ZN5ModelC2Ev(p);
+            _ZN17dExtSimpleModel_cC2Ev(p);
             *(void **)p = &data_ov002_0210bae4;
         }
-        this->mModel = (Model *)p;
+        this->mModel = (dExtSimpleModel_c *)p;
         if (this->mModel == 0) return 0;
         if (((simpleModel_c*)this->mModel)->func_ov002_020f6960((SharedFilePtr*)&data_ov002_02110b70, -1) == 0) return 0;
     } else if (param1 == 0x17) {
-        p = _Znwj(0x60);
+        p = ::operator new(0x60);
         if (p) {
             ((param_c &)*(simpleModel_c *)p).func_ov002_020f6a50();
-            _ZN5ModelC2Ev(p);
+            _ZN17dExtSimpleModel_cC2Ev(p);
             *(void **)p = &data_ov002_0210bae4;
         }
-        this->mModel = (Model *)p;
+        this->mModel = (dExtSimpleModel_c *)p;
         if (this->mModel == 0) return 0;
         if (((simpleModel_c*)this->mModel)->func_ov002_020f6960((SharedFilePtr*)&data_ov002_02110b50, 0x19) == 0) return 0;
     } else if (param1 == 0x18) {
-        p = _Znwj(0x60);
+        p = ::operator new(0x60);
         if (p) {
             ((param_c &)*(simpleModel_c *)p).func_ov002_020f6a50();
-            _ZN5ModelC2Ev(p);
+            _ZN17dExtSimpleModel_cC2Ev(p);
             *(void **)p = &data_ov002_0210bae4;
         }
-        this->mModel = (Model *)p;
+        this->mModel = (dExtSimpleModel_c *)p;
         if (this->mModel == 0) return 0;
         if (((simpleModel_c*)this->mModel)->func_ov002_020f6960((SharedFilePtr*)&data_ov002_0211094c, -1) == 0) return 0;
     } else if (param1 == 0x19) {
-        p = _Znwj(0x60);
+        p = ::operator new(0x60);
         if (p) {
             ((param_c &)*(simpleModel_c *)p).func_ov002_020f6a50();
-            _ZN5ModelC2Ev(p);
+            _ZN17dExtSimpleModel_cC2Ev(p);
             *(void **)p = &data_ov002_0210bae4;
         }
-        this->mModel = (Model *)p;
+        this->mModel = (dExtSimpleModel_c *)p;
         if (this->mModel == 0) return 0;
         if (((simpleModel_c*)this->mModel)->func_ov002_020f6960((SharedFilePtr*)&data_ov002_02110b78, 0x13) == 0) return 0;
     } else if (param1 >= 0x1A && param1 <= 0x2D) {
-        p = _Znwj(0x84);
+        p = ::operator new(0x84);
         if (p) {
             ((param_c &)*(anmModel_c *)p).func_ov002_020f6a50();
-            _ZN9ModelAnimC2Ev(p);
+            _ZN14dExtAnmModel_cC2Ev(p);
             *(void **)p = &data_ov002_0210bcc4;
             *(void **)&(dExtFrameCtrl_c &)*(anmModel_c *)p = &data_ov002_0210bce8;
         }
-        this->mModelAnim = (ModelAnim *)p;
+        this->mModelAnim = (dExtAnmModel_c *)p;
         if (this->mModelAnim == 0) return 0;
         if (((anmModel_c*)this->mModelAnim)->func_ov002_020f6618((SharedFilePtr*)data_ov009_02113c20, 1, (SharedFilePtr**)&data_ov002_0210b604, 0, 0, 0, -1) == 0) return 0;
     }

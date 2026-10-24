@@ -80,9 +80,9 @@ extern "C" {
 
    THE HOST KEEPS ITS OWN GLOBAL OPERATORS. Defining operator delete here would
    replace the CRT's for the whole PC port, and port/hal already answers the
-   DS spellings the headers reference (_Znwj, _ZdlPv and Memory's two
-   operators). Only the two unnamed veneers have no host bridge, so the host
-   gets them over the same default heap. Nothing here reaches mwccarm. */
+   DS spellings the headers reference (_ZdlPv and Memory's two operators).
+   Only the two unnamed veneers have no host bridge, so the host gets them
+   over the same default heap. Nothing here reaches mwccarm. */
 #ifdef _MSC_VER
 extern "C" void *func_0203cc0c(u32 size) {
     return Memory::defaultHeapPtr->Allocate(size);
@@ -111,19 +111,20 @@ void operator delete(void *ptr) throw() {
     Memory::defaultHeapPtr->_Deallocate(ptr);
 }
 
-extern "C" {
-
-// @symbol _Znwj
-/* operator new(unsigned int) at 0x0203cbe4 -- a three-word tail-call veneer
- * to func_0203cc0c (`ldr ip,[pc] / bx ip / .word 0x0203cc0c').
+// @symbol _Znwm
+/* operator new(size_t) at 0x0203cbe4 -- a three-word tail-call veneer to
+ * func_0203cc0c (`ldr ip,[pc] / bx ip / .word 0x0203cc0c').
  *
- * The name stays hand-spelled under extern "C". mwccarm's size_t is
- * unsigned long, so a real `operator new(size_t)' emits _Znwm, and
- * `operator new(unsigned int)' is rejected as an illegal 'operator'
- * declaration. Renaming the symbol to _Znwm is a claim of its own. */
-void *_Znwj(u32 size) {
+ * mwccarm's size_t is unsigned long, so the global allocator mangles to
+ * _Znwm. The tree used to carry it as the GCC spelling _Znwj, defined
+ * hand-spelled under extern "C" because `operator new(unsigned int)' is an
+ * illegal 'operator' declaration here; the cartridge carries no mangled
+ * names, so the name was ours to correct. Every new-expression in src/ now
+ * resolves to this definition. An explicit call is spelled `::operator new':
+ * inside a member of an fBase_c-derived class, plain `operator new' finds
+ * fBase_c's class allocator first. */
+void *operator new(size_t size) {
     return func_0203cc0c(size);
-}
 }
 
 namespace Memory {

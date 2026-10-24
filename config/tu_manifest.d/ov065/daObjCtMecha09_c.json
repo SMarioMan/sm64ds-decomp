@@ -548,12 +548,12 @@
   ],
   "defined_symbol_renames": [
     {
-      "from": "@556",
+      "from": "@553",
       "to": "@539",
       "evidence": "mwcc numbers this node @536 per TU and the fleet already defines a global @536 in ov080, so the merged link would multiply-define it"
     },
     {
-      "from": "@557",
+      "from": "@554",
       "to": "@537",
       "evidence": "compiler temp; the types.h Vector3 ctors and main's sinit folds shift this TU's per-TU @NNN uniquifier, so mwcc emits it as @557 now; licensed under the existing pin @537"
     }

@@ -94,7 +94,7 @@ static inline int IsOffScreen(dActor_c *actor) {
 // @symbol _ZN15daObjFlMaruta_cD0Ev
 /* One out-of-line definition; D1 and D0 in cartridge order. THREE vptr
  * stores: its own, daObjMaruta_c's inlined, then dBgActor_c's, then
- * dBgActor_c's dBgW_KcMbg and Model, then dActor_c. */
+ * dBgActor_c's dBgW_KcMbg and dExtSimpleModel_c, then dActor_c. */
 daObjFlMaruta_c::~daObjFlMaruta_c()
 {
 }

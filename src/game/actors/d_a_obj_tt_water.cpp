@@ -61,7 +61,7 @@ extern void _ZN10dBgW_KcMbg7SetFileEP8KCL_FileRK9Matrix4x35Fix12IiEsR10CLPS_Bloc
 // @symbol _ZN14daObjTtWater_cD0Ev
 /* One out-of-line definition; mwccarm emits D1 and D0 from it, in that
  * order: its own vptr, then dBgActor_c's inlined, then dBgActor_c's
- * Model and dBgW_KcMbg, then dActor_c. */
+ * dExtSimpleModel_c and dBgW_KcMbg, then dActor_c. */
 daObjTtWater_c::~daObjTtWater_c()
 {
 }
@@ -113,7 +113,7 @@ int daObjTtWater_c::Behavior()
 // @symbol _ZN14daObjTtWater_c13InitResourcesEv
 int daObjTtWater_c::InitResources()
 {
-    void* m = Model::LoadFile(data_ov033_021124f0);
+    void *m = dExtSimpleModel_c::LoadFile(data_ov033_021124f0);
     mModel.SetFile((BMD_File*)m, 1, 0x14);
     TextureTransformer::Prepare(**(BMD_File**)((char*)&data_ov033_021124f0 + 4), *(BTA_File*)data_ov033_02111bc8);
     _ZN18TextureTransformer7SetFileER8BTA_Filei5Fix12IiEj(&mTextureTransformer, data_ov033_02111bc8, 0, 0x1000, 0);

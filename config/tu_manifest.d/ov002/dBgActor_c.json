@@ -76,14 +76,14 @@
       "ordinal": 7
     },
     {
-      "symbol": "_ZN10dBgActor_c13IsClsnInRangeE5Fix12IiES1_",
+      "symbol": "_ZN10dBgActor_c13IsClsnInRangeEii",
       "address": "0x020ee870",
       "size": "0x000000c4",
       "legacy_source": "src/_ZN10dBgActor_c13IsClsnInRangeE5Fix12IiES1_.cpp",
       "ordinal": 8
     },
     {
-      "symbol": "_ZN10dBgActor_c21IsClsnInRangeOnScreenE5Fix12IiES1_",
+      "symbol": "_ZN10dBgActor_c21IsClsnInRangeOnScreenEii",
       "address": "0x020ee934",
       "size": "0x0000011c",
       "legacy_source": "src/_ZN10dBgActor_c21IsClsnInRangeOnScreenE5Fix12IiES1_.cpp",

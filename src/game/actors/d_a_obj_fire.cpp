@@ -8,6 +8,10 @@
  * One class, two C-linkage factories: EAD would name both
  * daObjFire_c_classInit (not_apply=global_classinit_name_collision).
  *
+ * S41: RTTI daObjFire_c; D1 0x020b5734 size 0x30 (slot 16),
+ * D0 0x020b5764 size 0x44 (slot 17); inline dtor in daObjFire_c.h
+ * emits D1 then D0, no D2.
+ *
  * FUNCTION ORDER IS DELIBERATELY THE REVERSE OF THE ROM'S.
  *
  * deslop leftovers:
@@ -15,7 +19,6 @@
  *   header method form size-DIFFs.
  * - func_020228dc / func_0202293c: blue/red flame particle wrappers
  *   (effects 0x117 / 0x118). No recovered names.
- * - Particle::System::NewSimple stays mangled (Fix12i by value, 6az).
  */
 
 #include "daObjFire_c.h"
@@ -26,8 +29,11 @@ extern "C" {
 u8 DecIfAbove0_Byte(u8 *value);
 u32 func_020228dc(Fix12i x, Fix12i y, Fix12i z);
 u32 func_0202293c(Fix12i x, Fix12i y, Fix12i z);
-void _ZN8Particle6System9NewSimpleEj5Fix12IiES2_S2_(
-    u32 id, Fix12i x, Fix12i y, Fix12i z);
+namespace Particle {
+struct System {
+    static void NewSimple(u32 id, Fix12i x, Fix12i y, Fix12i z);
+};
+}
 void _ZN7dCcAc_c4InitEP8dActor_c5Fix12IiES3_jj(
     void *self, dActor_c *actor, Fix12i radius, Fix12i height,
     u32 flags, u32 vulnFlags);
@@ -146,8 +152,7 @@ int daObjFire_c::Behavior()
         particlePos.y = mFlamePos.y;
         particlePos.z = mFlamePos.z;
         particlePos.y -= 0x1b000;
-        _ZN8Particle6System9NewSimpleEj5Fix12IiES2_S2_(
-            0x9f, particlePos.x, particlePos.y, particlePos.z);
+        Particle::System::NewSimple(0x9f, particlePos.x, particlePos.y, particlePos.z);
     }
 
     {
@@ -169,7 +174,6 @@ int daObjFire_c::Behavior()
     return 1;
 }
 /* -------------------------------------------------------------------------- */
-/* ROM ordinal 1 -- _ZN11daObjFire_cD0Ev, 0x020b5764, size 0x44 */
 /* -------------------------------------------------------------------------- */
 // @symbol _ZN11daObjFire_cD0Ev
 /* Deleting destructor, vtable slot 17. No body here: the destructor is inline in
@@ -178,7 +182,6 @@ int daObjFire_c::Behavior()
  * supplies the actor-heap release after complete destruction. */
 
 /* -------------------------------------------------------------------------- */
-/* ROM ordinal 0 -- _ZN11daObjFire_cD1Ev, 0x020b5734, size 0x30 */
 /* -------------------------------------------------------------------------- */
 // @symbol _ZN11daObjFire_cD1Ev
 /* Complete destructor, vtable slot 16. No body here either -- same inline header

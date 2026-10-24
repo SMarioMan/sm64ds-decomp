@@ -3,7 +3,7 @@
 
 #include "types.h"
 #include "dActor_c.h"
-#include "Model.h"
+#include "dExtSimpleModel_c.h"
 
 extern "C" void *_ZN7fBase_cnwEj(unsigned size);
 
@@ -21,11 +21,11 @@ extern "C" void *_ZN7fBase_cnwEj(unsigned size);
  *
  * TWO WITNESSES, and they close on each other:
  *   factory  fBase_c::operator new(292), dActor_c::dActor_c(), stores
- *            _ZTV11daObjKumo_c, then Model at 0xd4.
+ *            _ZTV11daObjKumo_c, then dExtSimpleModel_c at 0xd4.
  *   dtor     the same member destroyed in reverse, then ~dActor_c.
  *
  * pad_0d0[0x4] IS AN UNKNOWN FIELD, NOT ALIGNMENT. dActor_c asserts 0xd0 and
- * Model needs no more than 4-byte alignment; nothing in this TU reads or
+ * dExtSimpleModel_c needs no more than 4-byte alignment; nothing in this TU reads or
  * writes those four bytes.
  *
  * THE VTABLE was diffed slot by slot against _ZTV8dActor_c. Only the slots
@@ -34,7 +34,7 @@ extern "C" void *_ZN7fBase_cnwEj(unsigned size);
  */
 struct daObjKumo_c : dActor_c {
     u8    pad_0d0[0x4];
-    Model mModel;            /* 0x0d4 */
+    dExtSimpleModel_c mModel; /* 0x0d4 */
 
     /* MEASURED -- INLINE ON PURPOSE. The class TU is the only place these
        two are emitted; with the body out of line mwcc emits D0 ahead of D1

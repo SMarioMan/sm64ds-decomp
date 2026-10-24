@@ -304,7 +304,7 @@
       "address": "0x0213074c",
       "size": "0x8",
       "binding": "STB_GLOBAL",
-      "evidence": "model file handle constructed with file ID 0x2d7; InitResources loads it with Model::LoadFile and CleanupResources releases it"
+      "evidence": "model file handle constructed with file ID 0x2d7; InitResources loads it with dExtSimpleModel_c::LoadFile and CleanupResources releases it"
     },
     {
       "symbol": "@1066",
@@ -493,27 +493,27 @@
   ],
   "defined_symbol_renames": [
     {
-      "from": "@1080",
+      "from": "@1075",
       "to": "@1066",
       "evidence": "compiler temp; the types.h Vector3 ctors and main's sinit folds shift this TU's per-TU @NNN uniquifier, so mwcc emits it as @1080 now; licensed under the existing pin @1066"
     },
     {
-      "from": "@1081",
+      "from": "@1076",
       "to": "@1067",
       "evidence": "compiler temp; the types.h Vector3 ctors and main's sinit folds shift this TU's per-TU @NNN uniquifier, so mwcc emits it as @1081 now; licensed under the existing pin @1067"
     },
     {
-      "from": "@1077",
+      "from": "@1072",
       "to": "@1063",
       "evidence": "compiler temp; the types.h Vector3 ctors and main's sinit folds shift this TU's per-TU @NNN uniquifier, so mwcc emits it as @1077 now; licensed under the existing pin @1063"
     },
     {
-      "from": "@1078",
+      "from": "@1073",
       "to": "@1064",
       "evidence": "compiler temp; the types.h Vector3 ctors and main's sinit folds shift this TU's per-TU @NNN uniquifier, so mwcc emits it as @1078 now; licensed under the existing pin @1064"
     },
     {
-      "from": "@1079",
+      "from": "@1074",
       "to": "@1065",
       "evidence": "compiler temp; the types.h Vector3 ctors and main's sinit folds shift this TU's per-TU @NNN uniquifier, so mwcc emits it as @1079 now; licensed under the existing pin @1065"
     }

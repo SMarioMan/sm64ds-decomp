@@ -2,6 +2,10 @@
 #include "dScEntry_c.h"
 #pragma opt_strength_reduction off
 #include "common.h"
+
+namespace G2S {
+u16 *GetBG2ScrPtr(void);
+}
 extern "C" {
 
 extern int func_0203da9c(void);
@@ -15,7 +19,7 @@ extern void func_ov001_020ab3f0(void *p);
 extern int func_02033ae0(int a);
 extern void TurnBacklightOn(void);
 extern void TurnBacklightOff(void);
-extern u16 *_ZN3G2S12GetBG2ScrPtrEv(void);
+
 extern u16 data_020a0e5a[];
 
 void func_ov075_0211705c(void *thiz) {
@@ -114,7 +118,7 @@ void func_ov075_0211705c(void *thiz) {
         palOn = 0x4000;
         mask = 0xfff;
         do {
-            u16 *p = _ZN3G2S12GetBG2ScrPtrEv() + 6 * 32 + 2;
+            u16 *p = G2S::GetBG2ScrPtr() + 6 * 32 + 2;
             p += dir;
             u16 pal = (i == scene->mSelectedIcon) ? palOn : palOff;
             int j = zero;

@@ -557,12 +557,12 @@
   ],
   "defined_symbol_renames": [
     {
-      "from": "@467",
+      "from": "@464",
       "to": "@86",
       "evidence": "emitted model registration-node temp collides with an existing configured @453; @86 is unused in every module's symbols.txt on origin/main and shorter than the emitted spelling"
     },
     {
-      "from": "@468",
+      "from": "@465",
       "to": "@87",
       "evidence": "emitted collision registration-node temp collides with an existing configured @454; @87 is unused in every module's symbols.txt on origin/main and shorter than the emitted spelling"
     }

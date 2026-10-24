@@ -1,4 +1,8 @@
 //cpp
+namespace Particle {
+struct Callback;
+}
+struct Vector3_16f;
 /* daTgz_c -- the Spiny on the castle roof, ov077.
  *
  * Six PMF state records (func_ov077_02125e94 picks one). State 0 is the
@@ -28,7 +32,7 @@
  * - func_ov077_02124eb0 and func_ov077_021253a4: dActor_c::SpawnCoins is
  *   +12 (0x1f8->0x204, 0xdc->0xe8). Scalar extern kept.
  * - func_ov077_02125304: dActor_c::DropShadowRadHeight is +16 (0xa0->0xb0).
- * - func_ov077_02125480 and func_ov077_02125b1c: ModelAnim::SetAnim is +12
+ * - func_ov077_02125480 and func_ov077_02125b1c: dExtAnmModel_c::SetAnim is +12
  *   (0xd0->0xdc, 0x98->0xa4). Scalar extern passes the u16 start frame.
  * - InitResources: SetAnim + dCcAc_c::Init + dBgCh_Actr::Init together are
  *   +36 (0x13c->0x160). dBgCh_Actr::Init's header mangles
@@ -98,19 +102,22 @@ void Matrix4x3_FromRotationZXYExt(void *m, int x, int y, int z);
 extern Matrix4x3 data_020a0e68;
 void _ZN8dActor_c19DropShadowRadHeightER17dExtShadowModel_cR9Matrix4x35Fix12IiES5_j(void *self, void *shadow, void *mtx, int rad, int depth, u8 opacity);
 unsigned char DecIfAbove0_Byte(unsigned char *p);
-void _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(void *self, void *file, int flags, int speed, u16 startFrame);
-void * _ZN8Particle6System9NewSimpleEj5Fix12IiES2_S2_(unsigned int id, int x, int y, int z);
+namespace Particle {
+struct System {
+    static void *NewSimple(unsigned int id, int x, int y, int z);
+    static int New(unsigned, unsigned, int, int, int, const ::Vector3_16f *, Callback *);
+};
+}
 extern s16 data_02082214[];
 void func_02035684(int *p, int v);
 int RandomIntInternal(int *seed);
 extern int data_0209e650;
-unsigned int _ZN8Particle6System3NewEjj5Fix12IiES2_S2_PK11Vector3_16fPNS_8CallbackE(
-    unsigned int uniqueID, unsigned int effectID, int x, int y, int z, const void *dir, void *callback);
+unsigned int d_a_tgzNewHold(unsigned int uniqueID, unsigned int effectID, int x, int y, int z,
+                            const void *dir, void *callback);
 extern int data_0209f32c;
 void _ZN7dCcAc_c4InitEP8dActor_c5Fix12IiES3_jj(void *self, dActor_c *actor, int radius, int height, unsigned int flags, unsigned int vulnFlags);
 void _ZN10dBgCh_Actr4InitEP8dActor_c5Fix12IiES3_P10Vector3_16S5_(void *self, dActor_c *actor, int radius, int height, Vector3_16 *a, Vector3_16 *b);
 extern char IDENTITY_MATRIX4X3;
-int _ZN8dActor_c22IsTooFarAwayFromPlayerE5Fix12IiE(void *self, int dist);
 extern signed char data_0209f2f8;
 }
 
@@ -423,12 +430,12 @@ extern "C" int func_ov077_02125480(daTgz_c *self)
     self->mAngleX = 0;
     self->mAngleZ = 0;
     self->mActionTimer = 0x2d;
-    _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(&self->mModelAnim, TGZ_BCA, 0, 0x1000, 0);
+    self->mModelAnim.SetAnim((BCA_File *)TGZ_BCA, 0, 0x1000, 0);
     self->mModelAnim.speed = 0x4000;
     int aimHeight = self->OnAimedAtWithEgg();
-    _ZN8Particle6System9NewSimpleEj5Fix12IiES2_S2_(0x43, self->mPosX, self->mPosY + aimHeight, self->mPosZ);
+    Particle::System::NewSimple(0x43, self->mPosX, self->mPosY + aimHeight, self->mPosZ);
     int aimHeightAgain = self->OnAimedAtWithEgg();
-    _ZN8Particle6System9NewSimpleEj5Fix12IiES2_S2_(0x44, self->mPosX, self->mPosY + aimHeightAgain, self->mPosZ);
+    Particle::System::NewSimple(0x44, self->mPosX, self->mPosY + aimHeightAgain, self->mPosZ);
     self->mState = 5;
     return 1;
 }
@@ -457,7 +464,7 @@ extern "C" int func_ov077_02125550(daTgz_c *self)
             ((int *)&vec)[0] = x;
             ((int *)&vec)[1] = y;
             ((int *)&vec)[2] = z;
-            _ZN8Particle6System9NewSimpleEj5Fix12IiES2_S2_(0xb2, vec.x, vec.y, vec.z);
+            Particle::System::NewSimple(0xb2, vec.x, vec.y, vec.z);
             func_0201267c(0x109, &self->mCamSpacePos);
         } else {
             self->mVertSpeed = 0;
@@ -658,7 +665,7 @@ extern "C" void func_ov077_02125b1c(daTgz_c *self)
 {
     self->mVertAccel = -0x2000;
     self->mTerminalVelocity = -0x3c000;
-    _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(&self->mModelAnim, TGZ_BCA, 0, 0x1000, 0);
+    self->mModelAnim.SetAnim((BCA_File *)TGZ_BCA, 0, 0x1000, 0);
     self->mModelAnim.speed = 0x1000;
     func_02035684((int *)&self->mWithMeshClsn, 0x28000);
     self->mHorzSpeed = 0x1b33;
@@ -688,11 +695,8 @@ extern "C" int func_ov077_02125bb4(daTgz_c *self)
             func_02012694(0xe2, &self->mCamSpacePos);
             _ZN8Particle6System12NewBigSplashE5Fix12IiES2_S2_(
                 self->mPosX, data_0209f32c, self->mPosZ);
-            self->mRippleId =
-                _ZN8Particle6System3NewEjj5Fix12IiES2_S2_PK11Vector3_16fPNS_8CallbackE(
-                    self->mRippleId, 0x109,
-                    self->mPosX, data_0209f32c, self->mPosZ,
-                    0, 0);
+            self->mRippleId = Particle::System::New(self->mRippleId, 0x109, self->mPosX,
+                                                    data_0209f32c, self->mPosZ, 0, 0);
         }
         self->mVertAccel = -0x400;
         self->mTerminalVelocity = -0x5000;
@@ -726,7 +730,7 @@ extern "C" int func_ov077_02125bb4(daTgz_c *self)
             ((int *)&vec)[0] = x;
             ((int *)&vec)[1] = y;
             ((int *)&vec)[2] = z;
-            _ZN8Particle6System9NewSimpleEj5Fix12IiES2_S2_(0xb2, vec.x, vec.y, vec.z);
+            Particle::System::NewSimple(0xb2, vec.x, vec.y, vec.z);
             func_0201267c(0x109, &self->mCamSpacePos);
         }
     }
@@ -806,7 +810,7 @@ int daTgz_c::Behavior()
     int s = mState;
     if (s != 1 || mWithMeshClsn.IsOnGround()) {
         s = mState;
-        if (s != 4 && s != 5 && _ZN8dActor_c22IsTooFarAwayFromPlayerE5Fix12IiE(this, 0x5dc000)) {
+        if (s != 4 && s != 5 && IsTooFarAwayFromPlayer(0x5dc000)) {
             if (DecIfAbove0_Byte(&mDespawnTimer) == 0) {
                 MarkForDestruction();
                 return 1;
@@ -831,12 +835,12 @@ done:
 int daTgz_c::InitResources()
 {
     BMD_File *bmd;
-    bmd = (BMD_File *)Model::LoadFile(data_ov077_02127b48);
+    bmd = (BMD_File *)dExtSimpleModel_c::LoadFile(data_ov077_02127b48);
     mModel.SetFile(bmd, 1, -1);
-    bmd = (BMD_File *)Model::LoadFile(data_ov077_02127b38);
+    bmd = (BMD_File *)dExtSimpleModel_c::LoadFile(data_ov077_02127b38);
     mModelAnim.SetFile(bmd, 1, -1);
     dExtFrameCtrl_c::LoadFile(data_ov077_02127c14);
-    _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(&mModelAnim, TGZ_BCA, 0, 0x1000, 0);
+    mModelAnim.SetAnim((BCA_File *)TGZ_BCA, 0, 0x1000, 0);
     if (!mShadowModel.InitCylinder())
         return 0;
     _ZN7dCcAc_c4InitEP8dActor_c5Fix12IiES3_jj(&mdCcAc_c, this, 0x2d000, 0x3c000, 0x200000, 0x4a3d0);

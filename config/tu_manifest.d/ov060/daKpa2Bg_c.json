@@ -10,7 +10,7 @@
     "HISTORY: contiguous linker run: 0x2117980..0x2117cdc, 9 function(s), from build/tu_map.json (tools/tu_map.py)",
     "class label(s): daKpa2Bg_c",
     "module sinit corroboration: 6 sinit(s) / 6 .ctor entries, sinit_vs_tu=ok, corroborated=False (module-wide, NOT narrowed to this one TU -- see notes/tu-reconstruction-pilot-report.md sec 2 for the by-hand narrowing step)",
-    "CLASSINIT TAIL FOLD (2026-10-09): daKpa2Bg_c_classInit (0x02117cdc..0x02117d1c) abuts this TU's .text end with no gap and is now inside it, appended last under the file-level #pragma defer_codegen off and spelled `return new daKpa2Bg_c;` (operator new 0x570, dBgActor_c base ctor, _ZTV10daKpa2Bg_c vptr store, Model and dBgW_KcMbg member ctors -- the retired shard's hand-spelled sequence). It builds only this class, for the KOOPA2BG profile; the unit is 0x02117980..0x02117d1c, bounded above by src/game/actors/d_a_kpa3_bg.cpp, which starts exactly at 0x02117d1c."
+    "CLASSINIT TAIL FOLD (2026-10-09): daKpa2Bg_c_classInit (0x02117cdc..0x02117d1c) abuts this TU's .text end with no gap and is now inside it, appended last under the file-level #pragma defer_codegen off and spelled `return new daKpa2Bg_c;` (operator new 0x570, dBgActor_c base ctor, _ZTV10daKpa2Bg_c vptr store, dExtSimpleModel_c and dBgW_KcMbg member ctors -- the retired shard's hand-spelled sequence). It builds only this class, for the KOOPA2BG profile; the unit is 0x02117980..0x02117d1c, bounded above by src/game/actors/d_a_kpa3_bg.cpp, which starts exactly at 0x02117d1c."
   ],
   "sections": [
     {
@@ -113,7 +113,7 @@
       "address": "0x0211affc",
       "size": "0x8",
       "binding": "STB_GLOBAL",
-      "evidence": "model resource handle constructed with file ID 1571; Model::LoadFile reaches it by name; Model::LoadFile reaches it through CleanupResources/InitResources"
+      "evidence": "model resource handle constructed with file ID 1571; dExtSimpleModel_c::LoadFile reaches it by name; dExtSimpleModel_c::LoadFile reaches it through CleanupResources/InitResources"
     },
     {
       "symbol": "daKpa2Bg_c_ClsnFile",

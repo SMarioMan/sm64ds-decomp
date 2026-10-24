@@ -31,14 +31,14 @@
 #ifdef __cplusplus
 
 #include "dEnemyBase_c.h"
-#include "ModelAnim.h"
+#include "dExtAnmModel_c.h"
 #include "dCcAcPos_c.h"
 #include "dBgCh_Actr.h"
 
 struct daShark_c : dEnemyBase_c {
     dCcAcPos_c mdCcAcPos_c;/* 0x110 */
     dBgCh_Actr mWithMeshClsn;       /* 0x150 */
-    ModelAnim mModelAnim;             /* 0x30c */
+    dExtAnmModel_c mModelAnim;      /* 0x30c */
     /* The state pointer. func_ov090_021338b4 sets it (InitResources passes
        data_ov090_021345cc) and Behavior calls the pointer-to-member-function
        at +8 through it. */
@@ -120,9 +120,9 @@ struct daShark_c {
        dBgCh_Actr's D1 at +0x150 -- a relocation the ROM build
        checks. Was a u8 marker. [_ZN9daShark_cD1Ev, now in src/game/actors/d_a_shark.cpp] */
     dBgCh_Actr mWithMeshClsn;            /* 0x150 */
-    /* ModelAnim member, named by _ZN9ModelAnimD1Ev at +0x30c -- a relocation the ROM build checks.
+    /* dExtAnmModel_c member, named by _ZN14dExtAnmModel_cD1Ev at +0x30c -- a relocation the ROM build checks.
        D1 and not D2, so it is this type and not an inlined base. Was a u8 marker. */
-    ModelAnim mModelAnim;            /* 0x30c */
+    dExtAnmModel_c mModelAnim; /* 0x30c */
     s32 mState;            /* 0x370 */
     s32 mClsnOffsetX;            /* 0x374 */
     s32 mClsnOffsetY;            /* 0x378 */

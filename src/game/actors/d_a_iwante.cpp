@@ -1,4 +1,8 @@
 //cpp
+namespace Particle {
+struct Callback;
+}
+struct Vector3_16f;
 /* Eyerok, the two-handed pyramid boss (.text 0x02115ee0..0x0211a418,
  * 64 functions). ROM RTTI daIwante_c (_ZTS10daIwante_c ov066:0x0211ad30);
  * this tree keeps the coined name.
@@ -52,6 +56,7 @@
  *  - EVec3 and M48 are plain word structs standing in for Vector3 and
  *    Matrix4x3. Vec4 is an unused stack object with a destructor.
  *  - Handler descriptions come from reading the code, not from play-testing.
+ *  - Sound::ChangeMusicVolume keeps its mangled decl (Fix12<int> by value, S13 wall); the Layer3 pair keeps file-local mangled decls because Sound.h declares only Layer1/Layer2 (this file excludes decl_common.h).
  */
 
 /* Turns off deferred codegen, which does two things at once here: it makes
@@ -368,14 +373,21 @@ extern void func_020398fc(void *p);
 /* ---- arm9 / ov002 methods, mangled ROM spelling ---- */
 extern void _Z14ApproachLinearR7Vector3RKS_5Fix12IiE(void *out, void *tgt, int step);
 extern void _ZN10dBgW_KcMbg7SetFileEP8KCL_FileRK9Matrix4x35Fix12IiEsR10CLPS_Block(void *self, void *kcl, void *mtx, int fix, short s, void *clps);
-extern void _ZN10dCcAcPos_c4InitEP8dActor_cRK7Vector35Fix12IiES6_jj(void *self, void *actor, Vector3 *v, s32 f1, s32 f2, u32 a, u32 b);
-extern void _ZN14BlendModelAnim7SetAnimER8BCA_Fileii5Fix12IiEt(void *self, void *bca, int a, int b, int fix, unsigned short t);
+extern void _ZN10dCcAcPos_c4InitEP8dActor_cRK7Vector35Fix12IiES6_jj(void *self, void *actor,
+                                                                    Vector3 *v, s32 f1, s32 f2,
+                                                                    u32 a, u32 b);
 extern void _ZN15TextureSequence7SetFileER8BTP_Filei5Fix12IiEj(void *self, void *btp, int a, int fix, unsigned int b);
 extern void _ZN5Sound17ChangeMusicVolumeEj5Fix12IiE(unsigned int a, int b);
 extern void _ZN5Sound22LoadAndSetMusic_Layer3Ej(unsigned int a);
 extern void _ZN5Sound22StopLoadedMusic_Layer3Ev(void);
-extern void _ZN8Particle6System9NewSimpleEj5Fix12IiES2_S2_(unsigned int a, int x, int y, int z);
-extern u32 _ZN8Particle6System3NewEjj5Fix12IiES2_S2_PK11Vector3_16fPNS_8CallbackE(u32 a, u32 b, int x, int y, int z, const void *v, void *cb);
+namespace Particle {
+struct System {
+    static void NewSimple(unsigned int a, int x, int y, int z);
+
+    static int New(unsigned, unsigned, int, int, int, const ::Vector3_16f *, Callback *);
+};
+}
+extern u32 d_a_iwanteNewHold(u32 a, u32 b, int x, int y, int z, const void *v, void *cb);
 extern void _ZN8dActor_c19DropShadowRadHeightER17dExtShadowModel_cR9Matrix4x35Fix12IiES5_j(void *self, void *sm, void *m, int rad, int h, unsigned int u);
 
 /* ---- the dBgW callback veneer (0x0211a35c), defined at the bottom of this
@@ -414,10 +426,10 @@ static inline int IsOffScreen(dActor_c *actor) {
  *
  * Own vptr, then the members in reverse declaration order (the class-owned
  * dBgW_KcMbg at 0x674, the Vector3 span at 0x4dc via __cxa_vec_cleanup,
- * TextureSequence, dExtShadowModel_c, Model, BlendModelAnim,
+ * TextureSequence, dExtShadowModel_c, dExtSimpleModel_c, dExtBlendAnmModel_c,
  * dCcAcPos_c), then dBgActor_c's vptr -- inlined, because
  * dBgActor_c's destructor is defined in its class body -- then dBgActor_c's
- * own dBgW_Kc and Model, then dActor_c. See include/Eyerok.h for why
+ * own dBgW_Kc and dExtSimpleModel_c, then dActor_c. See include/Eyerok.h for why
  * this is a direct dBgActor_c child, not three levels deep.
  *
  * Out-of-line ~Eyerok is the key function, so this TU also emits the vtable
@@ -501,13 +513,13 @@ int Eyerok::func_ov066_0211603c()
         if (hit != 0) {
             if (mHitPoints > 0) {
                 if (mPartIdx == PART_HAND_2) {
-                    _ZN14BlendModelAnim7SetAnimER8BCA_Fileii5Fix12IiEt(
-                        &mBlendModelAnim, data_ov066_0211ae5c.filePtr, 4, 0x40000000, 0x1000, 0);
+                    mBlendModelAnim.SetAnim(*(BCA_File *)data_ov066_0211ae5c.filePtr, 4, 0x40000000,
+                                            0x1000, 0);
                     _ZN15TextureSequence7SetFileER8BTP_Filei5Fix12IiEj(
                         &mTextureSequence, data_ov066_0211ae3c.filePtr, 0x40000000, 0x1000, 0);
                 } else {
-                    _ZN14BlendModelAnim7SetAnimER8BCA_Fileii5Fix12IiEt(
-                        &mBlendModelAnim, data_ov066_0211ae84.filePtr, 4, 0x40000000, 0x1000, 0);
+                    mBlendModelAnim.SetAnim(*(BCA_File *)data_ov066_0211ae84.filePtr, 4, 0x40000000,
+                                            0x1000, 0);
                     _ZN15TextureSequence7SetFileER8BTP_Filei5Fix12IiEj(
                         &mTextureSequence, data_ov066_0211aebc.filePtr, 0x40000000, 0x1000, 0);
                 }
@@ -611,11 +623,9 @@ void Eyerok::func_ov066_021164ec()
     mFlags = 0x10000000;
     mdCcAcPos_c.flags |= 2;
     if (mPartIdx == PART_HAND_2) {
-        _ZN14BlendModelAnim7SetAnimER8BCA_Fileii5Fix12IiEt(
-            &mBlendModelAnim, data_ov066_0211ae64.filePtr, 4, 0, 0x1000, 0);
+        mBlendModelAnim.SetAnim(*(BCA_File *)data_ov066_0211ae64.filePtr, 4, 0, 0x1000, 0);
     } else {
-        _ZN14BlendModelAnim7SetAnimER8BCA_Fileii5Fix12IiEt(
-            &mBlendModelAnim, data_ov066_0211ae44.filePtr, 4, 0, 0x1000, 0);
+        mBlendModelAnim.SetAnim(*(BCA_File *)data_ov066_0211ae44.filePtr, 4, 0, 0x1000, 0);
     }
     mStateWork1 = 1;
 }
@@ -630,13 +640,11 @@ void Eyerok::func_ov066_021164ec()
 void Eyerok::func_ov066_021165cc()
 {
     if (mPartIdx == PART_HAND_2) {
-        _ZN14BlendModelAnim7SetAnimER8BCA_Fileii5Fix12IiEt(
-            &mBlendModelAnim, data_ov066_0211ae54.filePtr, 4, 0x40000000, 0x1000, 0);
+        mBlendModelAnim.SetAnim(*(BCA_File *)data_ov066_0211ae54.filePtr, 4, 0x40000000, 0x1000, 0);
         _ZN15TextureSequence7SetFileER8BTP_Filei5Fix12IiEj(
             &mTextureSequence, data_ov066_0211ae3c.filePtr, 0x40000000, 0x1000, 0);
     } else {
-        _ZN14BlendModelAnim7SetAnimER8BCA_Fileii5Fix12IiEt(
-            &mBlendModelAnim, data_ov066_0211ae94.filePtr, 4, 0x40000000, 0x1000, 0);
+        mBlendModelAnim.SetAnim(*(BCA_File *)data_ov066_0211ae94.filePtr, 4, 0x40000000, 0x1000, 0);
         _ZN15TextureSequence7SetFileER8BTP_Filei5Fix12IiEj(
             &mTextureSequence, data_ov066_0211aebc.filePtr, 0x40000000, 0x1000, 0);
     }
@@ -660,13 +668,11 @@ void Eyerok::func_ov066_021166c8()
 {
 
     if (mPartIdx == PART_HAND_2) {
-        _ZN14BlendModelAnim7SetAnimER8BCA_Fileii5Fix12IiEt(
-            &mBlendModelAnim, data_ov066_0211ae54.filePtr, 4, 0x40000000, 0x1000, 0);
+        mBlendModelAnim.SetAnim(*(BCA_File *)data_ov066_0211ae54.filePtr, 4, 0x40000000, 0x1000, 0);
         _ZN15TextureSequence7SetFileER8BTP_Filei5Fix12IiEj(
             &mTextureSequence, data_ov066_0211ae2c.filePtr, 0x40000000, 0x1000, 0);
     } else {
-        _ZN14BlendModelAnim7SetAnimER8BCA_Fileii5Fix12IiEt(
-            &mBlendModelAnim, data_ov066_0211ae94.filePtr, 4, 0x40000000, 0x1000, 0);
+        mBlendModelAnim.SetAnim(*(BCA_File *)data_ov066_0211ae94.filePtr, 4, 0x40000000, 0x1000, 0);
         _ZN15TextureSequence7SetFileER8BTP_Filei5Fix12IiEj(
             &mTextureSequence, data_ov066_0211ae9c.filePtr, 0x40000000, 0x1000, 0);
     }
@@ -848,8 +854,8 @@ int Eyerok::func_ov066_02116c6c()
         mHorzSpeed = 0;
     }
     if (mBlendModelAnim.Finished() != 0) {
-        _ZN8Particle6System9NewSimpleEj5Fix12IiES2_S2_(0x7c, mPosX, mPosY, mPosZ);
-        _ZN8Particle6System9NewSimpleEj5Fix12IiES2_S2_(0x7d, mPosX, mPosY, mPosZ);
+        Particle::System::NewSimple(0x7c, mPosX, mPosY, mPosZ);
+        Particle::System::NewSimple(0x7d, mPosX, mPosY, mPosZ);
         {
             EVec3 v;
             v.x = mPosX;
@@ -875,11 +881,9 @@ int Eyerok::func_ov066_02116d14()
     mSubState = 0;
     mHorzSpeed = -0xa000;
     if (mPartIdx == PART_HAND_2) {
-        _ZN14BlendModelAnim7SetAnimER8BCA_Fileii5Fix12IiEt(
-            &mBlendModelAnim, data_ov066_0211aea4.filePtr, 4, 0x40000000, 0x1000, 0);
+        mBlendModelAnim.SetAnim(*(BCA_File *)data_ov066_0211aea4.filePtr, 4, 0x40000000, 0x1000, 0);
     } else {
-        _ZN14BlendModelAnim7SetAnimER8BCA_Fileii5Fix12IiEt(
-            &mBlendModelAnim, data_ov066_0211ae8c.filePtr, 4, 0x40000000, 0x1000, 0);
+        mBlendModelAnim.SetAnim(*(BCA_File *)data_ov066_0211ae8c.filePtr, 4, 0x40000000, 0x1000, 0);
     }
     return 1;
 }
@@ -1848,13 +1852,11 @@ int Eyerok::func_ov066_02118678()
 int Eyerok::func_ov066_021187c8()
 {
     if (mPartIdx == PART_HAND_2) {
-        _ZN14BlendModelAnim7SetAnimER8BCA_Fileii5Fix12IiEt(
-            &mBlendModelAnim, data_ov066_0211ae74.filePtr, 4, 0x40000000, 0x1000, 0);
+        mBlendModelAnim.SetAnim(*(BCA_File *)data_ov066_0211ae74.filePtr, 4, 0x40000000, 0x1000, 0);
         _ZN15TextureSequence7SetFileER8BTP_Filei5Fix12IiEj(
             &mTextureSequence, data_ov066_0211ae3c.filePtr, 0x40000000, 0x1000, 0);
     } else {
-        _ZN14BlendModelAnim7SetAnimER8BCA_Fileii5Fix12IiEt(
-            &mBlendModelAnim, data_ov066_0211ae7c.filePtr, 4, 0x40000000, 0x1000, 0);
+        mBlendModelAnim.SetAnim(*(BCA_File *)data_ov066_0211ae7c.filePtr, 4, 0x40000000, 0x1000, 0);
         _ZN15TextureSequence7SetFileER8BTP_Filei5Fix12IiEj(
             &mTextureSequence, data_ov066_0211aebc.filePtr, 0x40000000, 0x1000, 0);
     }
@@ -2567,16 +2569,14 @@ int Eyerok::Behavior()
             for (; i < 0x14; i++) {
                 if (((Eyerok *)cur)->mDustPos[0].x != 0 || ((Eyerok *)cur)->mDustPos[0].y != 0 ||
                     ((Eyerok *)cur)->mDustPos[0].z != 0) {
-                    mDustParticle1[i] =
-                        _ZN8Particle6System3NewEjj5Fix12IiES2_S2_PK11Vector3_16fPNS_8CallbackE(
-                            mDustParticle1[i], id0, ((Eyerok *)cur)->mDustPos[0].x,
-                            ((Eyerok *)cur)->mDustPos[0].y, ((Eyerok *)cur)->mDustPos[0].z,
-                            (void *)z0, (void *)z0);
-                    mDustParticle2[i] =
-                        _ZN8Particle6System3NewEjj5Fix12IiES2_S2_PK11Vector3_16fPNS_8CallbackE(
-                            mDustParticle2[i], id1, ((Eyerok *)cur)->mDustPos[0].x,
-                            ((Eyerok *)cur)->mDustPos[0].y, ((Eyerok *)cur)->mDustPos[0].z,
-                            (void *)z0, (void *)z0);
+                    mDustParticle1[i] = Particle::System::New(
+                        mDustParticle1[i], id0, ((Eyerok *)cur)->mDustPos[0].x,
+                        ((Eyerok *)cur)->mDustPos[0].y, ((Eyerok *)cur)->mDustPos[0].z,
+                        (const Vector3_16f *)((void *)z0), (Particle::Callback *)((void *)z0));
+                    mDustParticle2[i] = Particle::System::New(
+                        mDustParticle2[i], id1, ((Eyerok *)cur)->mDustPos[0].x,
+                        ((Eyerok *)cur)->mDustPos[0].y, ((Eyerok *)cur)->mDustPos[0].z,
+                        (const Vector3_16f *)((void *)z0), (Particle::Callback *)((void *)z0));
                 }
                 cur += 0xc;
             }
@@ -2667,9 +2667,9 @@ int Eyerok::InitResources()
 
     switch (mPartIdx) {
     case 0:
-        mModel2.SetFile((BMD_File *)Model::LoadFile(data_ov066_0211ae6c), 1, -1);
-        Model::LoadFile(data_ov066_0211ae4c);
-        Model::LoadFile(data_ov066_0211aeb4);
+        mModel2.SetFile((BMD_File *)dExtSimpleModel_c::LoadFile(data_ov066_0211ae6c), 1, -1);
+        dExtSimpleModel_c::LoadFile(data_ov066_0211ae4c);
+        dExtSimpleModel_c::LoadFile(data_ov066_0211aeb4);
         TextureSequence::LoadFile(data_ov066_0211aebc);
         TextureSequence::LoadFile(data_ov066_0211ae9c);
         TextureSequence::LoadFile(data_ov066_0211ae3c);

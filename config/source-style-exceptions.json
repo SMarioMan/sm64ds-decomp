@@ -28,17 +28,17 @@
     {
       "path": "src/game/stages/d_s_star_sel_methods.cpp",
       "rule": "handspelled-member",
-      "match": "_ZN5ModelC1Ev",
+      "match": "_ZN17dExtSimpleModel_cC1Ev",
       "count": 2,
-      "reason": "dScStarSel_c_classInit is the profile factory, moved verbatim from the retired src/game/stages/d_s_star_sel.cpp, which spells these names on main. Model's C1/D1 are passed by address to __cxa_vec_ctor, and C++ cannot take a constructor's or destructor's address. fBase_c's operator new and C2 are the inlined steps of a `new dScStarSel_c` expression. Follow-up: rewrite the factory as `new dScStarSel_c` once dScStarSel_c's constructor is reconstructed, which retires all four.",
+      "reason": "dScStarSel_c_classInit is the profile factory, moved verbatim from the retired src/game/stages/d_s_star_sel.cpp, which spells these names on main. dExtSimpleModel_c's C1/D1 are passed by address to __cxa_vec_ctor, and C++ cannot take a constructor's or destructor's address. fBase_c's operator new and C2 are the inlined steps of a `new dScStarSel_c` expression. Follow-up: rewrite the factory as `new dScStarSel_c` once dScStarSel_c's constructor is reconstructed, which retires all four.",
       "evidence": "src/game/stages/d_s_star_sel.cpp on main (7 occurrences of these four names); ROM ov003 0x020b04f0 size 0x90; ov003/dScStarSel_c 15/15 TEXT-VERIFIED"
     },
     {
       "path": "src/game/stages/d_s_star_sel_methods.cpp",
       "rule": "handspelled-member",
-      "match": "_ZN5ModelD1Ev",
+      "match": "_ZN17dExtSimpleModel_cD1Ev",
       "count": 2,
-      "reason": "dScStarSel_c_classInit is the profile factory, moved verbatim from the retired src/game/stages/d_s_star_sel.cpp, which spells these names on main. Model's C1/D1 are passed by address to __cxa_vec_ctor, and C++ cannot take a constructor's or destructor's address. fBase_c's operator new and C2 are the inlined steps of a `new dScStarSel_c` expression. Follow-up: rewrite the factory as `new dScStarSel_c` once dScStarSel_c's constructor is reconstructed, which retires all four.",
+      "reason": "dScStarSel_c_classInit is the profile factory, moved verbatim from the retired src/game/stages/d_s_star_sel.cpp, which spells these names on main. dExtSimpleModel_c's C1/D1 are passed by address to __cxa_vec_ctor, and C++ cannot take a constructor's or destructor's address. fBase_c's operator new and C2 are the inlined steps of a `new dScStarSel_c` expression. Follow-up: rewrite the factory as `new dScStarSel_c` once dScStarSel_c's constructor is reconstructed, which retires all four.",
       "evidence": "src/game/stages/d_s_star_sel.cpp on main (7 occurrences of these four names); ROM ov003 0x020b04f0 size 0x90; ov003/dScStarSel_c 15/15 TEXT-VERIFIED"
     },
     {
@@ -46,7 +46,7 @@
       "rule": "handspelled-member",
       "match": "_ZN7fBase_cC2Ev",
       "count": 2,
-      "reason": "dScStarSel_c_classInit is the profile factory, moved verbatim from the retired src/game/stages/d_s_star_sel.cpp, which spells these names on main. Model's C1/D1 are passed by address to __cxa_vec_ctor, and C++ cannot take a constructor's or destructor's address. fBase_c's operator new and C2 are the inlined steps of a `new dScStarSel_c` expression. Follow-up: rewrite the factory as `new dScStarSel_c` once dScStarSel_c's constructor is reconstructed, which retires all four.",
+      "reason": "dScStarSel_c_classInit is the profile factory, moved verbatim from the retired src/game/stages/d_s_star_sel.cpp, which spells these names on main. dExtSimpleModel_c's C1/D1 are passed by address to __cxa_vec_ctor, and C++ cannot take a constructor's or destructor's address. fBase_c's operator new and C2 are the inlined steps of a `new dScStarSel_c` expression. Follow-up: rewrite the factory as `new dScStarSel_c` once dScStarSel_c's constructor is reconstructed, which retires all four.",
       "evidence": "src/game/stages/d_s_star_sel.cpp on main (7 occurrences of these four names); ROM ov003 0x020b04f0 size 0x90; ov003/dScStarSel_c 15/15 TEXT-VERIFIED"
     },
     {
@@ -54,16 +54,8 @@
       "rule": "handspelled-member",
       "match": "_ZN7fBase_cnwEj",
       "count": 2,
-      "reason": "dScStarSel_c_classInit is the profile factory, moved verbatim from the retired src/game/stages/d_s_star_sel.cpp, which spells these names on main. Model's C1/D1 are passed by address to __cxa_vec_ctor, and C++ cannot take a constructor's or destructor's address. fBase_c's operator new and C2 are the inlined steps of a `new dScStarSel_c` expression. Follow-up: rewrite the factory as `new dScStarSel_c` once dScStarSel_c's constructor is reconstructed, which retires all four.",
+      "reason": "dScStarSel_c_classInit is the profile factory, moved verbatim from the retired src/game/stages/d_s_star_sel.cpp, which spells these names on main. dExtSimpleModel_c's C1/D1 are passed by address to __cxa_vec_ctor, and C++ cannot take a constructor's or destructor's address. fBase_c's operator new and C2 are the inlined steps of a `new dScStarSel_c` expression. Follow-up: rewrite the factory as `new dScStarSel_c` once dScStarSel_c's constructor is reconstructed, which retires all four.",
       "evidence": "src/game/stages/d_s_star_sel.cpp on main (7 occurrences of these four names); ROM ov003 0x020b04f0 size 0x90; ov003/dScStarSel_c 15/15 TEXT-VERIFIED"
-    },
-    {
-      "path": "src/game/stages/d_s_stage_methods.cpp",
-      "rule": "handspelled-member",
-      "match": "_ZN3OAM6RenderEbP7OamAttriiii5Fix12IiES3_ii",
-      "count": 47,
-      "reason": "OAM::Render (scaled overload): it takes Fix12<int> by value, which this tree cannot declare without changing the call ABI (the Fix12 wall); the C++ name is spelled as the mangled symbol so the by-value word is passed as a plain int, exactly as the absorbed shard did.",
-      "evidence": "include/OAM.h:14 (the three Fix12 Render overloads are deliberately not declared there); arm9/dScStage_c 123/123 TEXT-VERIFIED (tubuild verify); carried from the standalone shards this fold absorbs (0x02029408..0x0202e118)"
     },
     {
       "path": "src/game/stages/d_s_stage_methods.cpp",
@@ -140,17 +132,9 @@
     {
       "path": "src/game/stages/d_s_stage_methods.cpp",
       "rule": "handspelled-member",
-      "match": "_ZN5ModelC1Ev",
-      "count": 2,
-      "reason": "LoadSkybox spells the allocation as _Znwj plus a null-guarded constructor call, which a new-expression does not emit in this shape; the constructor is called by its mangled name.",
-      "evidence": "LoadSkybox; arm9/dScStage_c 123/123 TEXT-VERIFIED (tubuild verify); carried from the standalone shards this fold absorbs (0x02029408..0x0202e118)"
-    },
-    {
-      "path": "src/game/stages/d_s_stage_methods.cpp",
-      "rule": "handspelled-member",
       "match": "_ZN18TextureTransformerC1Ev",
       "count": 2,
-      "reason": "LoadTextureTransformers spells the allocation as _Znwj plus a null-guarded constructor call, which a new-expression does not emit in this shape; the constructor is called by its mangled name.",
+      "reason": "LoadTextureTransformers spells the allocation as an explicit operator new call plus a null-guarded constructor call, a form from before the allocator was named _Znwm; the constructor is called by its mangled name.",
       "evidence": "LoadTextureTransformers; arm9/dScStage_c 123/123 TEXT-VERIFIED (tubuild verify); carried from the standalone shards this fold absorbs (0x02029408..0x0202e118)"
     },
     {
@@ -250,22 +234,6 @@
       "evidence": "src/_ZN10dScEntry_c13InitResourcesEv.cpp on main line 95; include/dScEntry_c.h line 33 (`u8 unk_287; /* 0x287 */`); ROM ov075 dScEntry_c::InitResources TEXT-VERIFIED in ov075/d_s_entry_methods"
     },
     {
-      "path": "src/game/stages/d_s_entry_methods.cpp",
-      "rule": "handspelled-member",
-      "match": "_ZN3OAM6RenderEbP7OamAttriiii5Fix12IiES3_ii",
-      "count": 2,
-      "reason": "OAM::Render's scaled overload takes two Fix12<int> by value, and include/OAM.h deliberately leaves the by-value Fix12 overloads out (the Fix12 wall). dScEntry_c::RenderCourseSelectTitle calls it once; the other occurrence is its extern \"C\" declaration. Both are carried verbatim from src/_ZN10dScEntry_c23RenderCourseSelectTitleEv.cpp, which this fold retires. Follow-up: retire it together with the other Fix12-by-value walls once a Fix12 spelling that passes in registers exists.",
-      "evidence": "include/OAM.h (by-value Fix12 overloads not declared); src/_ZN10dScEntry_c23RenderCourseSelectTitleEv.cpp on main (2 occurrences); ov075/d_s_entry_methods prepush linkcheck 36/36 verified"
-    },
-    {
-      "path": "src/Message2.cpp",
-      "rule": "handspelled-member",
-      "match": "_ZN3OAM6RenderEbP7OamAttriiii5Fix12IiES3_ii",
-      "count": 9,
-      "reason": "OAM::Render's scaled overload takes two Fix12<int> by value, and include/OAM.h deliberately leaves the by-value Fix12 overloads out: a method with that parameter homes r0-r3 to the stack, which the ROM callers do not. Message::Update calls it eight times to draw the choice cursor and the next-page arrow; the ninth occurrence is the extern \"C\" declaration. Follow-up: retire it together with the other Fix12-by-value walls once a Fix12 spelling that passes in registers exists.",
-      "evidence": "include/OAM.h header comment (by-value Fix12 overloads not declared); carried verbatim from src/_ZN7Message6UpdateEv.cpp on main (9 occurrences), which this PR folds; arm9/Message2 13/13 TEXT-VERIFIED"
-    },
-    {
       "path": "src/Message.cpp",
       "rule": "handspelled-member",
       "match": "_ZN3G2S13GetBG0CharPtrEv",
@@ -299,35 +267,11 @@
     },
     {
       "path": "src/game/stages/d_s_entry.cpp",
-      "rule": "handspelled-member",
-      "match": "_ZN3OAM6RenderEbP7OamAttriiii5Fix12IiES3_ii",
-      "count": 4,
-      "reason": "Existing and absorbed OAM scaled Render calls retain the measured Fix12-by-value ABI bridge (OAM.h, wall 6az). Follow-up: resolve that ABI across consumers before replacing the integer arguments.",
-      "evidence": "Original helpers at main 67bf07b, ov075 02116128..021165b0; retained 15-function entry TU strictly verified in 6f196502, full 106/106 module proof. Formatting preserves complete raw ELF; follow-up scope recorded in overlay-functions1016 handoff."
-    },
-    {
-      "path": "src/game/stages/d_s_entry.cpp",
       "rule": "raw-offset",
       "match": "(int*)(data_0209ee90+0x1d4",
       "count": 1,
       "reason": "Inherited score field access in absorbed helper 0211621c; ROM loads the base score at offset 0x1d4 then adds the per-player delta. The cross-overlay global layout is not yet reconstructed. Follow-up: recover its owning arm9 type and verify all consumers before substituting a shared field.",
       "evidence": "Original helpers at main 67bf07b, ov075 02116128..021165b0; retained 15-function entry TU strictly verified in 6f196502, full 106/106 module proof. Formatting preserves complete raw ELF; follow-up scope recorded in overlay-functions1016 handoff."
-    },
-    {
-      "path": "src/engine/model/ModelAnim2.cpp",
-      "rule": "handspelled-member",
-      "match": "_ZN15dExtFrameCtrl_c12SetAnimationEti5Fix12IiEt",
-      "count": 2,
-      "reason": "Func_020162C4 calls dExtFrameCtrl_c::SetAnimation, which takes Fix12<int> speed by value; a by-value Fix12 argument costs the caller too (wall 6az, notes/mwccarm-codegen.md, CORRECTED 2026-09-23). One occurrence is the local extern \"C\" declaration, one the call. The same bridge is already used by ModelAnim.cpp and BlendModelAnim.cpp. Follow-up: rename SetAnimation to its scalar mangling across its callers, or retire it with the other Fix12-by-value walls.",
-      "evidence": "Measured on 2004/b56 at arm9 0x020162c4 (target 0x5c): calling otherAnim.SetAnimation(..., *(Fix12<int> *)&speed, ...) through dExtFrameCtrl_c.h gives 0x70; the extern \"C\" scalar call reproduces 0x5c. arm9/ModelAnim2 4/4 TEXT-VERIFIED and LINK-VERIFIED."
-    },
-    {
-      "path": "src/engine/model/ModelAnim2.cpp",
-      "rule": "handspelled-member",
-      "match": "_ZN10ModelAnim213Func_020162C4Eji5Fix12IiEt",
-      "count": 1,
-      "reason": "Definition of ModelAnim2::Func_020162C4 under its existing Fix12<int> mangling, as an extern \"C\" function with a scalar speed (wall 6az): the body reads speed twice, and a class-typed parameter is homed per use. include/ModelAnim2.h carries the real member declaration. Follow-up: rename the symbol to its scalar mangling _ZN10ModelAnim213Func_020162C4Ejiit, which matches as a real member, once Player.cpp's four extern call sites move to the member call.",
-      "evidence": "Measured on 2004/b56 at arm9 0x020162c4 (target 0x5c): a real member with Fix12<int> speed gives 0x6c; a real member with Fix12i speed (mangles _ZN10ModelAnim213Func_020162C4Ejiit) reproduces 0x5c exactly; the extern \"C\" definition reproduces 0x5c. Carried from the absorbed one-function source."
     },
     {
       "path": "src/game/actors/d_a_krb.cpp",
@@ -410,22 +354,6 @@
       "evidence": "df88a655 RenderModel/RenderModelTransparent local Inner::count; include/BMD_File.h BMD_Bone pad_08 spans0x08..0x33; notes/experiments/scene-physics3955-review.md; full106/106 ROM proof at005807df4f and independent prepared-object verification."
     },
     {
-      "path": "src/minigames/d_mg_trmpln2_mario.cpp",
-      "rule": "raw-offset",
-      "match": "(ModelAnim*)(self+0x78",
-      "count": 2,
-      "reason": "The real ModelAnim API replaces shadow calls for the embedded model at +0x78. The address and model storage are inherited from Trmp2Mario; the enclosing record remains partial. Retire this cast when its model member is represented without changing lifecycle codegen.",
-      "evidence": "df88a655 Trmp2Mario_Draw and Trmp2Mario_UpdateMatrix model at+0x78; notes/experiments/scene-physics3955-review.md; full106/106 ROM proof at005807df4f and independent prepared-object verification."
-    },
-    {
-      "path": "src/minigames/d_mg_trmpln2_mario.cpp",
-      "rule": "raw-offset",
-      "match": "(ModelAnim*)(self+0x6c",
-      "count": 2,
-      "reason": "The real ModelAnim API replaces shadow calls for the embedded model at +0x6c. The address and model storage are inherited from Trmp3DMario; the enclosing record remains partial. Retire this cast when its model member is represented without changing lifecycle codegen.",
-      "evidence": "df88a655 Trmp3DMario_Draw and Trmp3DMario_UpdateMatrix model at+0x6c; notes/experiments/scene-physics3955-review.md; full106/106 ROM proof at005807df4f and independent prepared-object verification."
-    },
-    {
       "path": "src/minigames/d_s_mg_roulette_methods.cpp",
       "rule": "raw-offset",
       "match": "(RouletteSliderView*)(c+0x530c",
@@ -452,18 +380,18 @@
     {
       "path": "src/minigames/d_s_mg_roulette_methods.cpp",
       "rule": "raw-offset",
-      "match": "(Model*)(slider+0x10",
+      "match": "(dExtSimpleModel_c*)(slider+0x10",
       "count": 1,
-      "reason": "Use real Model calls for the embedded model at slider+0x10; main already used ModelBase/Sub views at the same address. The containing slider remains partial; name the model member only once lifecycle and complete layout are established.",
-      "evidence": "df88a655 Roulette slider render ModelBase/Sub at+0x10; notes/experiments/scene-physics3955-review.md; full106/106 ROM proof at005807df4f and independent prepared-object verification."
+      "reason": "Use real dExtSimpleModel_c calls for the embedded model at slider+0x10; main already used dExtModel_c/Sub views at the same address. The containing slider remains partial; name the model member only once lifecycle and complete layout are established.",
+      "evidence": "df88a655 Roulette slider render dExtModel_c/Sub at+0x10; notes/experiments/scene-physics3955-review.md; full106/106 ROM proof at005807df4f and independent prepared-object verification."
     },
     {
       "path": "src/minigames/d_s_mg_roulette_methods.cpp",
       "rule": "raw-offset",
-      "match": "(Model*)(slider+0x60",
+      "match": "(dExtSimpleModel_c*)(slider+0x60",
       "count": 1,
-      "reason": "Use real Model calls for the embedded model at slider+0x60; main already used ModelBase/Sub views at the same address. The containing slider remains partial; name the model member only once lifecycle and complete layout are established.",
-      "evidence": "df88a655 Roulette slider render ModelBase/Sub at+0x60; notes/experiments/scene-physics3955-review.md; full106/106 ROM proof at005807df4f and independent prepared-object verification."
+      "reason": "Use real dExtSimpleModel_c calls for the embedded model at slider+0x60; main already used dExtModel_c/Sub views at the same address. The containing slider remains partial; name the model member only once lifecycle and complete layout are established.",
+      "evidence": "df88a655 Roulette slider render dExtModel_c/Sub at+0x60; notes/experiments/scene-physics3955-review.md; full106/106 ROM proof at005807df4f and independent prepared-object verification."
     },
     {
       "path": "include/cMgSmartball_wing_c.h",
@@ -484,6 +412,14 @@
     {
       "path": "src/game/player/Player.cpp",
       "rule": "handspelled-member",
+      "match": "_ZN6Player7SetAnimEjiit",
+      "count": 9,
+      "reason": "Six call sites stay on the scalar symbol. func_ov002_020bec9c tail-forwards the callee's r0 as its own int result, so the call cannot be a void method return. func_ov002_020d1f78 passes (w << 4) >> 16, and narrowing that to u16 grew the function by 8 bytes. func_ov002_020d4748 passes AnimSpeed() three times and s5 once; each narrowing cost 8 bytes (0x4e8 to 0x508). The other three occurrences are the local externs those calls need. The definition itself is Player::SetAnim.",
+      "evidence": "ov002/Player 618/618 TEXT-VERIFIED on cpp/player-setanim-1023; SetAnim remains 0x020bef2c size 0x210"
+    },
+    {
+      "path": "src/game/player/Player.cpp",
+      "rule": "handspelled-member",
       "match": "_ZN6PlayerC1Ev",
       "count": 1,
       "reason": "Player's C1 stays the enrolled free function. Its body addresses mModelAnim3, mModelAnim4, mTexSeqBody, mMatChanger and mTexSeqPlayer from one base at this+0xdc, and a Player::Player() definition changes that addressing. Follow-up: rewrite it as the real constructor once that base is preserved.",
@@ -500,9 +436,9 @@
     {
       "path": "src/game/player/Player.cpp",
       "rule": "handspelled-member",
-      "match": "_ZN9ModelAnimC1Ev",
+      "match": "_ZN14dExtAnmModel_cC1Ev",
       "count": 5,
-      "reason": "C1 passes constructor and destructor addresses to __cxa_vec_ctor, and C++ cannot take a constructor's or destructor's address. Two earlier members already spelled ModelAnim's C1; the three new occurrences are this constructor. Follow-up: retire these with the C1 rewrite.",
+      "reason": "C1 passes constructor and destructor addresses to __cxa_vec_ctor, and C++ cannot take a constructor's or destructor's address. Two earlier members already spelled dExtAnmModel_c's C1; the three new occurrences are this constructor. Follow-up: retire these with the C1 rewrite.",
       "evidence": "Retired src/_ZN6PlayerC1Ev.cpp, ROM 0x020e68f4 size 0xc4; ov002/Player C1 relocations identical to the enrolled object"
     },
     {
@@ -584,6 +520,14 @@
       "count": 2,
       "reason": "func_0200897c is a C translation unit (its enum-typed Bool local is the measured -enum int lever), so it cannot name the dBgCh member that sets the vanish-surface pass-through bit; it spells the mangled name once in the extern declaration and once at the call. Follow-up: retire with the C++ migration of this dCamera_c-cluster helper.",
       "evidence": "The callee was func_02035414/func_02035428 before the dBgCh member rename; arm9 0x0200897c still byte-matches (rombuild 106/106 exact) and prepush_linkcheck resolves the call to the renamed symbol."
+    },
+    {
+      "path": "src/unnamed/arm9/0203/func_0203083c.c",
+      "rule": "handspelled-member",
+      "match": "_ZN3OAM6RenderEbP7OamAttriiiiiiii",
+      "count": 2,
+      "reason": "func_0203083c is a C translation unit, so it cannot name the C++ member OAM::Render; it spells the 10-argument overload's mangled name once in the extern declaration and once at the call. Follow-up: retire with this helper's C++ migration.",
+      "evidence": "The call spelled _ZN3OAM6RenderEbP7OamAttriiii5Fix12IiES3_ii before the OAM::Render rename (#4317); include/OAM.h declares the scalar overload."
     },
     {
       "path": "src/engine/particle/Particle_Manager.cpp",
@@ -818,20 +762,444 @@
       "evidence": "src/game/stages/d_s_entry_methods.cpp owns ov075 0x021190a4..0x0211a854. 30/30 functions byte-match the ROM under mwccarm 2004/b56 with relocation destinations checked, including the nine functions the file already owned."
     },
     {
-      "path": "src/runtime/actor/d_actor.cpp",
+      "path": "src/game/actors/d_a_ots.cpp",
       "rule": "handspelled-member",
-      "match": "_ZN8dActor_c9SetRangesE5Fix12IiES1_S1_S1_",
-      "count": 3,
-      "reason": "SetRanges takes four Fix12<int> by value. A decl-only member does not accept the constructor's scalar words (mwcc rejects the call as not matching SetRanges(Fix12<int>, Fix12<int>, Fix12<int>, Fix12<int>)), and defining the body as a method homes each used parameter. The extern \"C\" spelling passes them as ints. These three occurrences are the local declaration, the constructor call, and the definition.",
-      "evidence": "include/dActor_c.h does not declare SetRanges; notes/mwccarm-codegen.md 6az measured +0x14 on this function at 0x02010e08; _ZN8dActor_cC2Ev 0x0201150c size 0x148 MATCH under 2004/b56 with the scalar call."
+      "match": "_ZN14dExtAnmModel_c7SetAnimEP8BCA_Fileiit",
+      "count": 2,
+      "reason": "func_ov064_02116560 tail-forwards SetAnim's r0 as its own int result. A return on the void member does not compile, and splitting it into call-then-return loses the tail call. The two occurrences are the int-returning local extern and its single call.",
+      "evidence": "src/engine/model/d_ext_anm_model.cpp: void dExtAnmModel_c::SetAnim(BCA_File *, int, Fix12i, u16) at 0x02016748 size 0x5c MATCH under 2004/b56; func_ov064_02116560 byte-matched with the int-returning spelling; the local extern carries a 'local extern:' reason at d_a_ots.cpp:230."
     },
     {
-      "path": "src/_ZN10dScEntry_c23RenderCourseSelectTitleEv.cpp",
+      "path": "src/game/player/Player.cpp",
       "rule": "handspelled-member",
-      "match": "_ZN3OAM6RenderEbP7OamAttriiii5Fix12IiES3_ii",
+      "match": "_ZN14dExtAnmModel_c7SetAnimEP8BCA_Fileiit",
+      "count": 3,
+      "reason": "St_YoshiPower_Main is the only caller that passes a non-constant startFrame ((currFrame << 4) >> 0x10). Narrowing it to the member's real u16 costs +0x10, so this body keeps the scalar unsigned int spelling, per this file's per-body declaration policy. The three occurrences are the block-scope declaration and its two calls.",
+      "evidence": "src/engine/model/d_ext_anm_model.cpp: void dExtAnmModel_c::SetAnim(BCA_File *, int, Fix12i, u16) at 0x02016748 size 0x5c MATCH under 2004/b56; St_YoshiPower_Main MATCH with the scalar unsigned int startFrame, +0x10 with the u16 member call (PR #4290 measurement)."
+    },
+    {
+      "path": "src/InvMat4x3.c",
+      "rule": "handspelled-member",
+      "match": "_ZN4cstd16reciprocal_asyncEi",
       "count": 2,
-      "reason": "Retained scalar ABI bridge from the former course-title renderer. OAM.h deliberately excludes this Fix12-by-value overload, and its enrolled definition still uses the scalar extern C interface. Follow-up: replace the bridge when the Fix12 interface is reconstructed with matching caller and callee ABI.",
-      "evidence": "include/OAM.h; src/engine/oam/OAM.cpp; notes/mwccarm-codegen.md section 6az; former func_ov075_02118cd0.c at ov075 0x02118cd0 size 0x4c. The declaration and single call are inherited, not newly introduced interfaces."
+      "reason": "InvMat4x3.c is C and cannot name the C++ namespaced cstd::reciprocal_async, so it declares and calls the mangled symbol directly. This renames the file's two pre-existing occurrences of the retired _ZN4cstd16reciprocal_asyncE5Fix12IiE spelling and is not new debt. The two occurrences are the local extern and its single call.",
+      "evidence": "src/cstd.cpp: cstd::reciprocal_async(int) at 0x02053090 size 0x3c MATCH under 2004/b56; InvMat4x3 MATCH with the renamed extern (PR #4293); the local extern carries a 'local extern:' reason at InvMat4x3.c:4."
+    },
+    {
+      "path": "include/dScMgJump2_c.h",
+      "rule": "handspelled-member",
+      "match": "_ZN17dExtSimpleModel_cD1Ev",
+      "count": 2,
+      "reason": "Respelled by the Model-family RTTI rename: include/dScMgJump2_c.h on main carries the same 2 occurrence(s) as _ZN5ModelD1Ev. No new hand-spelled binding is added. Follow-up: convert to a real member call with the rest of this file's bindings.",
+      "evidence": "origin/main:include/dScMgJump2_c.h 2x _ZN5ModelD1Ev; head 2x _ZN17dExtSimpleModel_cD1Ev; tools/source_style.py --base origin/main"
+    },
+    {
+      "path": "include/dScMgRoulette_c.h",
+      "rule": "handspelled-member",
+      "match": "_ZN17dExtSimpleModel_cD1Ev",
+      "count": 3,
+      "reason": "Respelled by the Model-family RTTI rename: include/dScMgRoulette_c.h on main carries the same 3 occurrence(s) as _ZN5ModelD1Ev. No new hand-spelled binding is added. Follow-up: convert to a real member call with the rest of this file's bindings.",
+      "evidence": "origin/main:include/dScMgRoulette_c.h 3x _ZN5ModelD1Ev; head 3x _ZN17dExtSimpleModel_cD1Ev; tools/source_style.py --base origin/main"
+    },
+    {
+      "path": "include/decl_BlendModelAnim.h",
+      "rule": "handspelled-member",
+      "match": "_ZN19dExtBlendAnmModel_cC1Ev",
+      "count": 1,
+      "reason": "Respelled by the Model-family RTTI rename: include/decl_BlendModelAnim.h on main carries the same 1 occurrence(s) as _ZN14BlendModelAnimC1Ev. No new hand-spelled binding is added. Follow-up: convert to a real member call with the rest of this file's bindings.",
+      "evidence": "origin/main:include/decl_BlendModelAnim.h 1x _ZN14BlendModelAnimC1Ev; head 1x _ZN19dExtBlendAnmModel_cC1Ev; tools/source_style.py --base origin/main"
+    },
+    {
+      "path": "include/decl_BlendModelAnim.h",
+      "rule": "handspelled-member",
+      "match": "_ZN19dExtBlendAnmModel_cD1Ev",
+      "count": 1,
+      "reason": "Respelled by the Model-family RTTI rename: include/decl_BlendModelAnim.h on main carries the same 1 occurrence(s) as _ZN14BlendModelAnimD1Ev. No new hand-spelled binding is added. Follow-up: convert to a real member call with the rest of this file's bindings.",
+      "evidence": "origin/main:include/decl_BlendModelAnim.h 1x _ZN14BlendModelAnimD1Ev; head 1x _ZN19dExtBlendAnmModel_cD1Ev; tools/source_style.py --base origin/main"
+    },
+    {
+      "path": "include/decl_Model.h",
+      "rule": "handspelled-member",
+      "match": "_ZN17dExtSimpleModel_c12HideMaterialEii",
+      "count": 1,
+      "reason": "Respelled by the Model-family RTTI rename: include/decl_Model.h on main carries the same 1 occurrence(s) as _ZN5Model12HideMaterialEii. No new hand-spelled binding is added. Follow-up: convert to a real member call with the rest of this file's bindings.",
+      "evidence": "origin/main:include/decl_Model.h 1x _ZN5Model12HideMaterialEii; head 1x _ZN17dExtSimpleModel_c12HideMaterialEii; tools/source_style.py --base origin/main"
+    },
+    {
+      "path": "include/decl_Model.h",
+      "rule": "handspelled-member",
+      "match": "_ZN17dExtSimpleModel_c12ShowMaterialEii",
+      "count": 1,
+      "reason": "Respelled by the Model-family RTTI rename: include/decl_Model.h on main carries the same 1 occurrence(s) as _ZN5Model12ShowMaterialEii. No new hand-spelled binding is added. Follow-up: convert to a real member call with the rest of this file's bindings.",
+      "evidence": "origin/main:include/decl_Model.h 1x _ZN5Model12ShowMaterialEii; head 1x _ZN17dExtSimpleModel_c12ShowMaterialEii; tools/source_style.py --base origin/main"
+    },
+    {
+      "path": "include/decl_Model.h",
+      "rule": "handspelled-member",
+      "match": "_ZN17dExtSimpleModel_c13GetVramOffsetEj",
+      "count": 1,
+      "reason": "Respelled by the Model-family RTTI rename: include/decl_Model.h on main carries the same 1 occurrence(s) as _ZN5Model13GetVramOffsetEj. No new hand-spelled binding is added. Follow-up: convert to a real member call with the rest of this file's bindings.",
+      "evidence": "origin/main:include/decl_Model.h 1x _ZN5Model13GetVramOffsetEj; head 1x _ZN17dExtSimpleModel_c13GetVramOffsetEj; tools/source_style.py --base origin/main"
+    },
+    {
+      "path": "include/decl_Model.h",
+      "rule": "handspelled-member",
+      "match": "_ZN17dExtSimpleModel_c13LoadTexAndPalER8BMD_File",
+      "count": 1,
+      "reason": "Respelled by the Model-family RTTI rename: include/decl_Model.h on main carries the same 1 occurrence(s) as _ZN5Model13LoadTexAndPalER8BMD_File. No new hand-spelled binding is added. Follow-up: convert to a real member call with the rest of this file's bindings.",
+      "evidence": "origin/main:include/decl_Model.h 1x _ZN5Model13LoadTexAndPalER8BMD_File; head 1x _ZN17dExtSimpleModel_c13LoadTexAndPalER8BMD_File; tools/source_style.py --base origin/main"
+    },
+    {
+      "path": "include/decl_Model.h",
+      "rule": "handspelled-member",
+      "match": "_ZN17dExtSimpleModel_cC1Ev",
+      "count": 1,
+      "reason": "Respelled by the Model-family RTTI rename: include/decl_Model.h on main carries the same 1 occurrence(s) as _ZN5ModelC1Ev. No new hand-spelled binding is added. Follow-up: convert to a real member call with the rest of this file's bindings.",
+      "evidence": "origin/main:include/decl_Model.h 1x _ZN5ModelC1Ev; head 1x _ZN17dExtSimpleModel_cC1Ev; tools/source_style.py --base origin/main"
+    },
+    {
+      "path": "include/decl_Model.h",
+      "rule": "handspelled-member",
+      "match": "_ZN17dExtSimpleModel_cC2Ev",
+      "count": 1,
+      "reason": "Respelled by the Model-family RTTI rename: include/decl_Model.h on main carries the same 1 occurrence(s) as _ZN5ModelC2Ev. No new hand-spelled binding is added. Follow-up: convert to a real member call with the rest of this file's bindings.",
+      "evidence": "origin/main:include/decl_Model.h 1x _ZN5ModelC2Ev; head 1x _ZN17dExtSimpleModel_cC2Ev; tools/source_style.py --base origin/main"
+    },
+    {
+      "path": "include/decl_Model.h",
+      "rule": "handspelled-member",
+      "match": "_ZN17dExtSimpleModel_cD1Ev",
+      "count": 1,
+      "reason": "Respelled by the Model-family RTTI rename: include/decl_Model.h on main carries the same 1 occurrence(s) as _ZN5ModelD1Ev. No new hand-spelled binding is added. Follow-up: convert to a real member call with the rest of this file's bindings.",
+      "evidence": "origin/main:include/decl_Model.h 1x _ZN5ModelD1Ev; head 1x _ZN17dExtSimpleModel_cD1Ev; tools/source_style.py --base origin/main"
+    },
+    {
+      "path": "include/decl_ModelAnim.h",
+      "rule": "handspelled-member",
+      "match": "_ZN14dExtAnmModel_c6RenderEPK7Vector3",
+      "count": 1,
+      "reason": "Respelled by the Model-family RTTI rename: include/decl_ModelAnim.h on main carries the same 1 occurrence(s) as _ZN9ModelAnim6RenderEPK7Vector3. No new hand-spelled binding is added. Follow-up: convert to a real member call with the rest of this file's bindings.",
+      "evidence": "origin/main:include/decl_ModelAnim.h 1x _ZN9ModelAnim6RenderEPK7Vector3; head 1x _ZN14dExtAnmModel_c6RenderEPK7Vector3; tools/source_style.py --base origin/main"
+    },
+    {
+      "path": "include/decl_ModelAnim.h",
+      "rule": "handspelled-member",
+      "match": "_ZN14dExtAnmModel_cC1Ev",
+      "count": 1,
+      "reason": "Respelled by the Model-family RTTI rename: include/decl_ModelAnim.h on main carries the same 1 occurrence(s) as _ZN9ModelAnimC1Ev. No new hand-spelled binding is added. Follow-up: convert to a real member call with the rest of this file's bindings.",
+      "evidence": "origin/main:include/decl_ModelAnim.h 1x _ZN9ModelAnimC1Ev; head 1x _ZN14dExtAnmModel_cC1Ev; tools/source_style.py --base origin/main"
+    },
+    {
+      "path": "include/decl_ModelAnim.h",
+      "rule": "handspelled-member",
+      "match": "_ZN14dExtAnmModel_cC2Ev",
+      "count": 1,
+      "reason": "Respelled by the Model-family RTTI rename: include/decl_ModelAnim.h on main carries the same 1 occurrence(s) as _ZN9ModelAnimC2Ev. No new hand-spelled binding is added. Follow-up: convert to a real member call with the rest of this file's bindings.",
+      "evidence": "origin/main:include/decl_ModelAnim.h 1x _ZN9ModelAnimC2Ev; head 1x _ZN14dExtAnmModel_cC2Ev; tools/source_style.py --base origin/main"
+    },
+    {
+      "path": "include/decl_ModelAnim.h",
+      "rule": "handspelled-member",
+      "match": "_ZN14dExtAnmModel_cD1Ev",
+      "count": 1,
+      "reason": "Respelled by the Model-family RTTI rename: include/decl_ModelAnim.h on main carries the same 1 occurrence(s) as _ZN9ModelAnimD1Ev. No new hand-spelled binding is added. Follow-up: convert to a real member call with the rest of this file's bindings.",
+      "evidence": "origin/main:include/decl_ModelAnim.h 1x _ZN9ModelAnimD1Ev; head 1x _ZN14dExtAnmModel_cD1Ev; tools/source_style.py --base origin/main"
+    },
+    {
+      "path": "src/engine/model/d_ext_anm_model.cpp",
+      "rule": "unknown-field",
+      "match": "unk_00",
+      "count": 1,
+      "reason": "Carried unchanged from src/engine/model/ModelAnim.cpp, which this PR moves to src/engine/model/d_ext_anm_model.cpp (the Model-family RTTI rename rewrites enough of the file that git no longer pairs the two).",
+      "evidence": "origin/main:src/engine/model/ModelAnim.cpp 1x unk_00; head 1x unk_00; tools/source_style.py --base origin/main"
+    },
+    {
+      "path": "src/game/actors/d_a_demo.cpp",
+      "rule": "handspelled-member",
+      "match": "_ZN14dExtAnmModel_cC2Ev",
+      "count": 3,
+      "reason": "Respelled by the Model-family RTTI rename: src/game/actors/d_a_demo.cpp on main carries the same 3 occurrence(s) as _ZN9ModelAnimC2Ev. No new hand-spelled binding is added. Follow-up: convert to a real member call with the rest of this file's bindings.",
+      "evidence": "origin/main:src/game/actors/d_a_demo.cpp 3x _ZN9ModelAnimC2Ev; head 3x _ZN14dExtAnmModel_cC2Ev; tools/source_style.py --base origin/main"
+    },
+    {
+      "path": "src/game/actors/d_a_demo.cpp",
+      "rule": "handspelled-member",
+      "match": "_ZN17dExtSimpleModel_cC2Ev",
+      "count": 4,
+      "reason": "Respelled by the Model-family RTTI rename: src/game/actors/d_a_demo.cpp on main carries the same 4 occurrence(s) as _ZN5ModelC2Ev. No new hand-spelled binding is added. Follow-up: convert to a real member call with the rest of this file's bindings.",
+      "evidence": "origin/main:src/game/actors/d_a_demo.cpp 4x _ZN5ModelC2Ev; head 4x _ZN17dExtSimpleModel_cC2Ev; tools/source_style.py --base origin/main"
+    },
+    {
+      "path": "src/game/actors/d_a_dp_lift.cpp",
+      "rule": "handspelled-member",
+      "match": "_ZN17dExtSimpleModel_cC1Ev",
+      "count": 2,
+      "reason": "Respelled by the Model-family RTTI rename: src/game/actors/d_a_dp_lift.cpp on main carries the same 2 occurrence(s) as _ZN5ModelC1Ev. No new hand-spelled binding is added. Follow-up: convert to a real member call with the rest of this file's bindings.",
+      "evidence": "origin/main:src/game/actors/d_a_dp_lift.cpp 2x _ZN5ModelC1Ev; head 2x _ZN17dExtSimpleModel_cC1Ev; tools/source_style.py --base origin/main"
+    },
+    {
+      "path": "src/game/actors/d_a_obj_path_lift.cpp",
+      "rule": "handspelled-member",
+      "match": "_ZN17dExtSimpleModel_cC1Ev",
+      "count": 2,
+      "reason": "Respelled by the Model-family RTTI rename: src/game/actors/d_a_obj_path_lift.cpp on main carries the same 2 occurrence(s) as _ZN5ModelC1Ev. No new hand-spelled binding is added. Follow-up: convert to a real member call with the rest of this file's bindings.",
+      "evidence": "origin/main:src/game/actors/d_a_obj_path_lift.cpp 2x _ZN5ModelC1Ev; head 2x _ZN17dExtSimpleModel_cC1Ev; tools/source_style.py --base origin/main"
+    },
+    {
+      "path": "src/game/actors/d_a_obj_path_lift.cpp",
+      "rule": "handspelled-member",
+      "match": "_ZN17dExtSimpleModel_cD1Ev",
+      "count": 2,
+      "reason": "Respelled by the Model-family RTTI rename: src/game/actors/d_a_obj_path_lift.cpp on main carries the same 2 occurrence(s) as _ZN5ModelD1Ev. No new hand-spelled binding is added. Follow-up: convert to a real member call with the rest of this file's bindings.",
+      "evidence": "origin/main:src/game/actors/d_a_obj_path_lift.cpp 2x _ZN5ModelD1Ev; head 2x _ZN17dExtSimpleModel_cD1Ev; tools/source_style.py --base origin/main"
+    },
+    {
+      "path": "src/game/actors/d_a_obj_rc_carpet.cpp",
+      "rule": "handspelled-member",
+      "match": "_ZN14dExtAnmModel_cC1Ev",
+      "count": 2,
+      "reason": "Respelled by the Model-family RTTI rename: src/game/actors/d_a_obj_rc_carpet.cpp on main carries the same 2 occurrence(s) as _ZN9ModelAnimC1Ev. No new hand-spelled binding is added. Follow-up: convert to a real member call with the rest of this file's bindings.",
+      "evidence": "origin/main:src/game/actors/d_a_obj_rc_carpet.cpp 2x _ZN9ModelAnimC1Ev; head 2x _ZN14dExtAnmModel_cC1Ev; tools/source_style.py --base origin/main"
+    },
+    {
+      "path": "src/game/actors/d_a_obj_rc_carpet.cpp",
+      "rule": "handspelled-member",
+      "match": "_ZN17dExtSimpleModel_cC1Ev",
+      "count": 2,
+      "reason": "Respelled by the Model-family RTTI rename: src/game/actors/d_a_obj_rc_carpet.cpp on main carries the same 2 occurrence(s) as _ZN5ModelC1Ev. No new hand-spelled binding is added. Follow-up: convert to a real member call with the rest of this file's bindings.",
+      "evidence": "origin/main:src/game/actors/d_a_obj_rc_carpet.cpp 2x _ZN5ModelC1Ev; head 2x _ZN17dExtSimpleModel_cC1Ev; tools/source_style.py --base origin/main"
+    },
+    {
+      "path": "src/game/actors/d_a_obj_rc_carpet.cpp",
+      "rule": "handspelled-member",
+      "match": "_ZN17dExtSimpleModel_cD1Ev",
+      "count": 2,
+      "reason": "Respelled by the Model-family RTTI rename: src/game/actors/d_a_obj_rc_carpet.cpp on main carries the same 2 occurrence(s) as _ZN5ModelD1Ev. No new hand-spelled binding is added. Follow-up: convert to a real member call with the rest of this file's bindings.",
+      "evidence": "origin/main:src/game/actors/d_a_obj_rc_carpet.cpp 2x _ZN5ModelD1Ev; head 2x _ZN17dExtSimpleModel_cD1Ev; tools/source_style.py --base origin/main"
+    },
+    {
+      "path": "src/game/actors/d_a_obj_sm_lift.cpp",
+      "rule": "raw-offset",
+      "match": "(dExtModel_c*)(c+0xd4",
+      "count": 1,
+      "reason": "Respelled by the Model-family RTTI rename: src/game/actors/d_a_obj_sm_lift.cpp on main carries the same 1 occurrence(s) as (ModelBase*)(c+0xd4. No new hand-spelled binding is added. Follow-up: convert to a real member call with the rest of this file's bindings.",
+      "evidence": "origin/main:src/game/actors/d_a_obj_sm_lift.cpp 1x (ModelBase*)(c+0xd4; head 1x (dExtModel_c*)(c+0xd4; tools/source_style.py --base origin/main"
+    },
+    {
+      "path": "src/game/actors/d_a_obj_wl_polelift.cpp",
+      "rule": "handspelled-member",
+      "match": "_ZN17dExtSimpleModel_cC1Ev",
+      "count": 2,
+      "reason": "Respelled by the Model-family RTTI rename: src/game/actors/d_a_obj_wl_polelift.cpp on main carries the same 2 occurrence(s) as _ZN5ModelC1Ev. No new hand-spelled binding is added. Follow-up: convert to a real member call with the rest of this file's bindings.",
+      "evidence": "origin/main:src/game/actors/d_a_obj_wl_polelift.cpp 2x _ZN5ModelC1Ev; head 2x _ZN17dExtSimpleModel_cC1Ev; tools/source_style.py --base origin/main"
+    },
+    {
+      "path": "src/game/actors/d_a_spd.cpp",
+      "rule": "handspelled-member",
+      "match": "_ZN14dExtAnmModel_cC1Ev",
+      "count": 2,
+      "reason": "Respelled by the Model-family RTTI rename: src/game/actors/d_a_spd.cpp on main carries the same 2 occurrence(s) as _ZN9ModelAnimC1Ev. No new hand-spelled binding is added. Follow-up: convert to a real member call with the rest of this file's bindings.",
+      "evidence": "origin/main:src/game/actors/d_a_spd.cpp 2x _ZN9ModelAnimC1Ev; head 2x _ZN14dExtAnmModel_cC1Ev; tools/source_style.py --base origin/main"
+    },
+    {
+      "path": "src/game/actors/d_a_star_base.c",
+      "rule": "handspelled-member",
+      "match": "_ZN17dExtSimpleModel_cC1Ev",
+      "count": 1,
+      "reason": "Respelled by the Model-family RTTI rename: src/game/actors/d_a_star_base.c on main carries the same 1 occurrence(s) as _ZN5ModelC1Ev. No new hand-spelled binding is added. Follow-up: convert to a real member call with the rest of this file's bindings.",
+      "evidence": "origin/main:src/game/actors/d_a_star_base.c 1x _ZN5ModelC1Ev; head 1x _ZN17dExtSimpleModel_cC1Ev; tools/source_style.py --base origin/main"
+    },
+    {
+      "path": "src/game/actors/d_a_star_silver_star.c",
+      "rule": "handspelled-member",
+      "match": "_ZN14dExtAnmModel_cC1Ev",
+      "count": 2,
+      "reason": "Respelled by the Model-family RTTI rename: src/game/actors/d_a_star_silver_star.c on main carries the same 2 occurrence(s) as _ZN9ModelAnimC1Ev. No new hand-spelled binding is added. Follow-up: convert to a real member call with the rest of this file's bindings.",
+      "evidence": "origin/main:src/game/actors/d_a_star_silver_star.c 2x _ZN9ModelAnimC1Ev; head 2x _ZN14dExtAnmModel_cC1Ev; tools/source_style.py --base origin/main"
+    },
+    {
+      "path": "src/game/actors/d_a_star_star.c",
+      "rule": "handspelled-member",
+      "match": "_ZN14dExtAnmModel_cC1Ev",
+      "count": 2,
+      "reason": "Respelled by the Model-family RTTI rename: src/game/actors/d_a_star_star.c on main carries the same 2 occurrence(s) as _ZN9ModelAnimC1Ev. No new hand-spelled binding is added. Follow-up: convert to a real member call with the rest of this file's bindings.",
+      "evidence": "origin/main:src/game/actors/d_a_star_star.c 2x _ZN9ModelAnimC1Ev; head 2x _ZN14dExtAnmModel_cC1Ev; tools/source_style.py --base origin/main"
+    },
+    {
+      "path": "src/game/player/Player.cpp",
+      "rule": "handspelled-member",
+      "match": "_ZN11dExtModel_c12ApplyOpacityEjj",
+      "count": 5,
+      "reason": "Respelled by the Model-family RTTI rename: src/game/player/Player.cpp on main carries the same 5 occurrence(s) as _ZN9ModelBase12ApplyOpacityEjj. No new hand-spelled binding is added. Follow-up: convert to a real member call with the rest of this file's bindings.",
+      "evidence": "origin/main:src/game/player/Player.cpp 5x _ZN9ModelBase12ApplyOpacityEjj; head 5x _ZN11dExtModel_c12ApplyOpacityEjj; tools/source_style.py --base origin/main"
+    },
+    {
+      "path": "src/game/player/Player.cpp",
+      "rule": "handspelled-member",
+      "match": "_ZN11dExtModel_c7SetFileEP8BMD_Fileii",
+      "count": 10,
+      "reason": "Respelled by the Model-family RTTI rename: src/game/player/Player.cpp on main carries the same 10 occurrence(s) as _ZN9ModelBase7SetFileEP8BMD_Fileii. No new hand-spelled binding is added. Follow-up: convert to a real member call with the rest of this file's bindings.",
+      "evidence": "origin/main:src/game/player/Player.cpp 10x _ZN9ModelBase7SetFileEP8BMD_Fileii; head 10x _ZN11dExtModel_c7SetFileEP8BMD_Fileii; tools/source_style.py --base origin/main"
+    },
+    {
+      "path": "src/game/player/Player.cpp",
+      "rule": "handspelled-member",
+      "match": "_ZN17dExtSimpleModel_c14SetPolygonModeEi",
+      "count": 9,
+      "reason": "Respelled by the Model-family RTTI rename: src/game/player/Player.cpp on main carries the same 9 occurrence(s) as _ZN5Model14SetPolygonModeEi. No new hand-spelled binding is added. Follow-up: convert to a real member call with the rest of this file's bindings.",
+      "evidence": "origin/main:src/game/player/Player.cpp 9x _ZN5Model14SetPolygonModeEi; head 9x _ZN17dExtSimpleModel_c14SetPolygonModeEi; tools/source_style.py --base origin/main"
+    },
+    {
+      "path": "src/game/player/Player.cpp",
+      "rule": "handspelled-member",
+      "match": "_ZN17dExtSimpleModel_c6RenderEPK7Vector3",
+      "count": 5,
+      "reason": "Respelled by the Model-family RTTI rename: src/game/player/Player.cpp on main carries the same 5 occurrence(s) as _ZN5Model6RenderEPK7Vector3. No new hand-spelled binding is added. Follow-up: convert to a real member call with the rest of this file's bindings.",
+      "evidence": "origin/main:src/game/player/Player.cpp 5x _ZN5Model6RenderEPK7Vector3; head 5x _ZN17dExtSimpleModel_c6RenderEPK7Vector3; tools/source_style.py --base origin/main"
+    },
+    {
+      "path": "src/game/player/Player.cpp",
+      "rule": "handspelled-member",
+      "match": "_ZN17dExtSimpleModel_c8LoadFileER13SharedFilePtr",
+      "count": 15,
+      "reason": "Respelled by the Model-family RTTI rename: src/game/player/Player.cpp on main carries the same 15 occurrence(s) as _ZN5Model8LoadFileER13SharedFilePtr. No new hand-spelled binding is added. Follow-up: convert to a real member call with the rest of this file's bindings.",
+      "evidence": "origin/main:src/game/player/Player.cpp 15x _ZN5Model8LoadFileER13SharedFilePtr; head 15x _ZN17dExtSimpleModel_c8LoadFileER13SharedFilePtr; tools/source_style.py --base origin/main"
+    },
+    {
+      "path": "src/game/stages/d_ent_obj.cpp",
+      "rule": "handspelled-member",
+      "match": "_ZN14dExtAnmModel_cC1Ev",
+      "count": 2,
+      "reason": "Respelled by the Model-family RTTI rename: src/game/stages/d_ent_obj.cpp on main carries the same 2 occurrence(s) as _ZN9ModelAnimC1Ev. No new hand-spelled binding is added. Follow-up: convert to a real member call with the rest of this file's bindings.",
+      "evidence": "origin/main:src/game/stages/d_ent_obj.cpp 2x _ZN9ModelAnimC1Ev; head 2x _ZN14dExtAnmModel_cC1Ev; tools/source_style.py --base origin/main"
+    },
+    {
+      "path": "src/game/stages/d_ent_obj.cpp",
+      "rule": "handspelled-member",
+      "match": "_ZN17dExtSimpleModel_cC1Ev",
+      "count": 2,
+      "reason": "Respelled by the Model-family RTTI rename: src/game/stages/d_ent_obj.cpp on main carries the same 2 occurrence(s) as _ZN5ModelC1Ev. No new hand-spelled binding is added. Follow-up: convert to a real member call with the rest of this file's bindings.",
+      "evidence": "origin/main:src/game/stages/d_ent_obj.cpp 2x _ZN5ModelC1Ev; head 2x _ZN17dExtSimpleModel_cC1Ev; tools/source_style.py --base origin/main"
+    },
+    {
+      "path": "src/minigames/d_mg3d_esp_anim_set.cpp",
+      "rule": "handspelled-member",
+      "match": "_ZN17dExtSimpleModel_cC1Ev",
+      "count": 3,
+      "reason": "Respelled by the Model-family RTTI rename: src/minigames/d_mg3d_esp_anim_set.cpp on main carries the same 3 occurrence(s) as _ZN5ModelC1Ev. No new hand-spelled binding is added. Follow-up: convert to a real member call with the rest of this file's bindings.",
+      "evidence": "origin/main:src/minigames/d_mg3d_esp_anim_set.cpp 3x _ZN5ModelC1Ev; head 3x _ZN17dExtSimpleModel_cC1Ev; tools/source_style.py --base origin/main"
+    },
+    {
+      "path": "src/minigames/d_mg3d_heyho_obj_adapter.cpp",
+      "rule": "handspelled-member",
+      "match": "_ZN14dExtAnmModel_cC1Ev",
+      "count": 2,
+      "reason": "Respelled by the Model-family RTTI rename: src/minigames/d_mg3d_heyho_obj_adapter.cpp on main carries the same 2 occurrence(s) as _ZN9ModelAnimC1Ev. No new hand-spelled binding is added. Follow-up: convert to a real member call with the rest of this file's bindings.",
+      "evidence": "origin/main:src/minigames/d_mg3d_heyho_obj_adapter.cpp 2x _ZN9ModelAnimC1Ev; head 2x _ZN14dExtAnmModel_cC1Ev; tools/source_style.py --base origin/main"
+    },
+    {
+      "path": "src/minigames/d_mg_trmpln2_mario.cpp",
+      "rule": "handspelled-member",
+      "match": "_ZN14dExtAnmModel_cC1Ev",
+      "count": 2,
+      "reason": "Respelled by the Model-family RTTI rename: src/minigames/d_mg_trmpln2_mario.cpp on main carries the same 2 occurrence(s) as _ZN9ModelAnimC1Ev. No new hand-spelled binding is added. Follow-up: convert to a real member call with the rest of this file's bindings.",
+      "evidence": "origin/main:src/minigames/d_mg_trmpln2_mario.cpp 2x _ZN9ModelAnimC1Ev; head 2x _ZN14dExtAnmModel_cC1Ev; tools/source_style.py --base origin/main"
+    },
+    {
+      "path": "src/minigames/d_s_mg_jump.cpp",
+      "rule": "handspelled-member",
+      "match": "_ZN17dExtSimpleModel_cC1Ev",
+      "count": 2,
+      "reason": "Respelled by the Model-family RTTI rename: src/minigames/d_s_mg_jump.cpp on main carries the same 2 occurrence(s) as _ZN5ModelC1Ev. No new hand-spelled binding is added. Follow-up: convert to a real member call with the rest of this file's bindings.",
+      "evidence": "origin/main:src/minigames/d_s_mg_jump.cpp 2x _ZN5ModelC1Ev; head 2x _ZN17dExtSimpleModel_cC1Ev; tools/source_style.py --base origin/main"
+    },
+    {
+      "path": "src/minigames/d_s_mg_jump2.cpp",
+      "rule": "handspelled-member",
+      "match": "_ZN17dExtSimpleModel_cC1Ev",
+      "count": 2,
+      "reason": "Respelled by the Model-family RTTI rename: src/minigames/d_s_mg_jump2.cpp on main carries the same 2 occurrence(s) as _ZN5ModelC1Ev. No new hand-spelled binding is added. Follow-up: convert to a real member call with the rest of this file's bindings.",
+      "evidence": "origin/main:src/minigames/d_s_mg_jump2.cpp 2x _ZN5ModelC1Ev; head 2x _ZN17dExtSimpleModel_cC1Ev; tools/source_style.py --base origin/main"
+    },
+    {
+      "path": "src/minigames/d_s_mg_roulette.cpp",
+      "rule": "handspelled-member",
+      "match": "_ZN17dExtSimpleModel_cC1Ev",
+      "count": 3,
+      "reason": "Respelled by the Model-family RTTI rename: src/minigames/d_s_mg_roulette.cpp on main carries the same 3 occurrence(s) as _ZN5ModelC1Ev. No new hand-spelled binding is added. Follow-up: convert to a real member call with the rest of this file's bindings.",
+      "evidence": "origin/main:src/minigames/d_s_mg_roulette.cpp 3x _ZN5ModelC1Ev; head 3x _ZN17dExtSimpleModel_cC1Ev; tools/source_style.py --base origin/main"
+    },
+    {
+      "path": "src/minigames/d_s_mg_snowball.cpp",
+      "rule": "handspelled-member",
+      "match": "_ZN17dExtSimpleModel_cC1Ev",
+      "count": 2,
+      "reason": "Respelled by the Model-family RTTI rename: src/minigames/d_s_mg_snowball.cpp on main carries the same 2 occurrence(s) as _ZN5ModelC1Ev. No new hand-spelled binding is added. Follow-up: convert to a real member call with the rest of this file's bindings.",
+      "evidence": "origin/main:src/minigames/d_s_mg_snowball.cpp 2x _ZN5ModelC1Ev; head 2x _ZN17dExtSimpleModel_cC1Ev; tools/source_style.py --base origin/main"
+    },
+    {
+      "path": "src/minigames/d_s_mg_trampoline2.cpp",
+      "rule": "handspelled-member",
+      "match": "_ZN17dExtSimpleModel_cC1Ev",
+      "count": 5,
+      "reason": "Respelled by the Model-family RTTI rename: src/minigames/d_s_mg_trampoline2.cpp on main carries the same 5 occurrence(s) as _ZN5ModelC1Ev. No new hand-spelled binding is added. Follow-up: convert to a real member call with the rest of this file's bindings.",
+      "evidence": "origin/main:src/minigames/d_s_mg_trampoline2.cpp 5x _ZN5ModelC1Ev; head 5x _ZN17dExtSimpleModel_cC1Ev; tools/source_style.py --base origin/main"
+    },
+    {
+      "path": "src/minigames/d_s_mg_trampoline2.cpp",
+      "rule": "handspelled-member",
+      "match": "_ZN17dExtSimpleModel_cD1Ev",
+      "count": 6,
+      "reason": "Respelled by the Model-family RTTI rename: src/minigames/d_s_mg_trampoline2.cpp on main carries the same 6 occurrence(s) as _ZN5ModelD1Ev. No new hand-spelled binding is added. Follow-up: convert to a real member call with the rest of this file's bindings.",
+      "evidence": "origin/main:src/minigames/d_s_mg_trampoline2.cpp 6x _ZN5ModelD1Ev; head 6x _ZN17dExtSimpleModel_cD1Ev; tools/source_style.py --base origin/main"
+    },
+    {
+      "path": "src/minigames/unit020bfec0.cpp",
+      "rule": "handspelled-member",
+      "match": "_ZN14dExtAnmModel_cC1Ev",
+      "count": 2,
+      "reason": "Respelled by the Model-family RTTI rename: src/minigames/unit020bfec0.cpp on main carries the same 2 occurrence(s) as _ZN9ModelAnimC1Ev. No new hand-spelled binding is added. Follow-up: convert to a real member call with the rest of this file's bindings.",
+      "evidence": "origin/main:src/minigames/unit020bfec0.cpp 2x _ZN9ModelAnimC1Ev; head 2x _ZN14dExtAnmModel_cC1Ev; tools/source_style.py --base origin/main"
+    },
+    {
+      "path": "src/minigames/unit020bfec0.cpp",
+      "rule": "handspelled-member",
+      "match": "_ZN17dExtSimpleModel_cC1Ev",
+      "count": 4,
+      "reason": "Respelled by the Model-family RTTI rename: src/minigames/unit020bfec0.cpp on main carries the same 4 occurrence(s) as _ZN5ModelC1Ev. No new hand-spelled binding is added. Follow-up: convert to a real member call with the rest of this file's bindings.",
+      "evidence": "origin/main:src/minigames/unit020bfec0.cpp 4x _ZN5ModelC1Ev; head 4x _ZN17dExtSimpleModel_cC1Ev; tools/source_style.py --base origin/main"
+    },
+    {
+      "path": "src/minigames/unit020bfec0.cpp",
+      "rule": "handspelled-member",
+      "match": "_ZN19dExtBlendAnmModel_cC1Ev",
+      "count": 5,
+      "reason": "Respelled by the Model-family RTTI rename: src/minigames/unit020bfec0.cpp on main carries the same 5 occurrence(s) as _ZN14BlendModelAnimC1Ev. No new hand-spelled binding is added. Follow-up: convert to a real member call with the rest of this file's bindings.",
+      "evidence": "origin/main:src/minigames/unit020bfec0.cpp 5x _ZN14BlendModelAnimC1Ev; head 5x _ZN19dExtBlendAnmModel_cC1Ev; tools/source_style.py --base origin/main"
+    },
+    {
+      "path": "src/runtime/actor/d_cap_enemy.cpp",
+      "rule": "handspelled-member",
+      "match": "_ZN17dExtSimpleModel_cD1Ev",
+      "count": 2,
+      "reason": "Respelled by the Model-family RTTI rename: src/runtime/actor/d_cap_enemy.cpp on main carries the same 2 occurrence(s) as _ZN5ModelD1Ev. No new hand-spelled binding is added. Follow-up: convert to a real member call with the rest of this file's bindings.",
+      "evidence": "origin/main:src/runtime/actor/d_cap_enemy.cpp 2x _ZN5ModelD1Ev; head 2x _ZN17dExtSimpleModel_cD1Ev; tools/source_style.py --base origin/main"
+    },
+    {
+      "path": "src/unnamed/ov007/func_ov007_020b3f20.c",
+      "rule": "handspelled-member",
+      "match": "_ZN17dExtSimpleModel_c17UpdateFileOffsetsER8BMD_File",
+      "count": 2,
+      "reason": "Respelled by the Model-family RTTI rename: src/unnamed/ov007/func_ov007_020b3f20.c on main carries the same 2 occurrence(s) as _ZN5Model17UpdateFileOffsetsER8BMD_File. No new hand-spelled binding is added. Follow-up: convert to a real member call with the rest of this file's bindings.",
+      "evidence": "origin/main:src/unnamed/ov007/func_ov007_020b3f20.c 2x _ZN5Model17UpdateFileOffsetsER8BMD_File; head 2x _ZN17dExtSimpleModel_c17UpdateFileOffsetsER8BMD_File; tools/source_style.py --base origin/main"
+    },
+    {
+      "path": "src/unnamed/ov075/func_ov075_0211aa94.c",
+      "rule": "handspelled-member",
+      "match": "_ZN17dExtSimpleModel_c27LoadCompressedTextureToVramEPcjS0_",
+      "count": 2,
+      "reason": "Respelled by the Model-family RTTI rename: src/unnamed/ov075/func_ov075_0211aa94.c on main carries the same 2 occurrence(s) as _ZN5Model27LoadCompressedTextureToVramEPcjS0_. No new hand-spelled binding is added. Follow-up: convert to a real member call with the rest of this file's bindings.",
+      "evidence": "origin/main:src/unnamed/ov075/func_ov075_0211aa94.c 2x _ZN5Model27LoadCompressedTextureToVramEPcjS0_; head 2x _ZN17dExtSimpleModel_c27LoadCompressedTextureToVramEPcjS0_; tools/source_style.py --base origin/main"
     }
   ]
 }

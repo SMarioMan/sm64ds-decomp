@@ -8,7 +8,7 @@
  * - common.h stays before daGmch_c.h. InitResources assigns
  *   IDENTITY_MATRIX4X3 into mMatrix; the .r/.t Matrix4x3 spelling is
  *   0x1f0 against the ROM's 0x1d4. decl_common.h is not included.
- * - ModelAnim::SetAnim, dCcAc_c::Init, dBgCh_Actr::Init,
+ * - dExtAnmModel_c::SetAnim, dCcAc_c::Init, dBgCh_Actr::Init,
  *   Particle::System::NewSimple, dActor_c::SpawnCoins,
  *   DropShadowRadHeight, Player::Bounce and Player::Hurt stay mangled
  *   (Fix12<int> by value). SpawnCoins as a member stopped
@@ -51,7 +51,7 @@ enum daGmch_c_AssetId {
 #include "dBgCh_Gnd.h"
 #include "Player.h"
 #include "Sound.h"
-#include "Model.h"
+#include "dExtSimpleModel_c.h"
 #include "dExtFrameCtrl_c.h"
 #include "SharedFilePtr.h"
 #include "SpawnInfo.h"
@@ -121,7 +121,7 @@ struct GmchDrawReg { GmchDrawReg(Vector3 &v) { v.x = 0; v.y = 0x2000; v.z = 0; }
  *
  * Of the original 54 declarations, exactly NINE had more than one type spelling
  * across the 36 shards: Vec3_Dist, dActor_c::DistToCPlayer, func_02038414,
- * ModelAnim::SetAnim, Vec3_HorzAngle, DecIfAbove0_Byte, Sound::PlayBank0,
+ * dExtAnmModel_c::SetAnim, Vec3_HorzAngle, DecIfAbove0_Byte, Sound::PlayBank0,
  * ApproachLinear and RandomIntInternal.  Collapsing each onto ONE spelling was
  * measured, not assumed, and eight of the nine cost nothing:
  *
@@ -131,8 +131,8 @@ struct GmchDrawReg { GmchDrawReg(Vector3 &v) { v.x = 0; v.y = 0x2000; v.z = 0; }
  *
  *   FIVE disagreed only about something no call site can see: a return value
  *   that every caller discards or compares against zero (func_02038414,
- *   ModelAnim::SetAnim, DecIfAbove0_Byte) or which pointer type spells the same
- *   address (Vec3_HorzAngle, ModelAnim::SetAnim, and ApproachLinear, which
+ *   dExtAnmModel_c::SetAnim, DecIfAbove0_Byte) or which pointer type spells the same
+ *   address (Vec3_HorzAngle, dExtAnmModel_c::SetAnim, and ApproachLinear, which
  *   takes the short & its mangled name encodes).
  *
  *   ONE needed a call site adapted rather than a declaration chosen.
@@ -165,9 +165,12 @@ extern void   Matrix4x3_ApplyInPlaceToTranslation(void *m, int x, int y, int z);
 extern void   Matrix4x3_ApplyInPlaceToRotationX(void *m, s16 angX);
 extern void   Matrix4x3_ApplyInPlaceToRotationY(void *m, s16 angY);
 extern void   _ZN8dActor_c19DropShadowRadHeightER17dExtShadowModel_cR9Matrix4x35Fix12IiES5_j(void *self, void *shadow, void *mtx, int rad, int height, u32 flags);
-extern int    DecIfAbove0_Byte(void *p);
-extern void   _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(void *self, void *bca, int a, int fix, unsigned int j);
-extern void   _ZN8Particle6System9NewSimpleEj5Fix12IiES2_S2_(unsigned int n, int a, int b, int c);
+extern int DecIfAbove0_Byte(void *p);
+namespace Particle {
+struct System {
+    static void NewSimple(unsigned int n, int a, int b, int c);
+};
+}
 extern int    _Z15ApproachLinear2Riii(int *p, int target, int step);
 extern void   func_0201267c(int id, void *pos);
 extern void   _ZN7dCcAc_c4InitEP8dActor_c5Fix12IiES3_jj(void *self, void *actor, int a, int b, unsigned int c, unsigned int d);
@@ -421,13 +424,12 @@ int daGmch_c::EnterState8()
     mHorzSpeed = 0xa000;
     mVertSpeed = 0x28000;
     mTimer = 0x2d;
-    _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(&mModelAnim, data_ov081_02128edc.filePtr, 0, 0x1000,
-                                                0);
+    mModelAnim.SetAnim((BCA_File *)data_ov081_02128edc.filePtr, 0, 0x1000, 0);
     mModelAnim.speed = 0x4000;
     int yOffset1 = OnAimedAtWithEgg();
-    _ZN8Particle6System9NewSimpleEj5Fix12IiES2_S2_(0x43, mPosX, mPosY + yOffset1, mPosZ);
+    Particle::System::NewSimple(0x43, mPosX, mPosY + yOffset1, mPosZ);
     int yOffset2 = OnAimedAtWithEgg();
-    _ZN8Particle6System9NewSimpleEj5Fix12IiES2_S2_(0x44, mPosX, mPosY + yOffset2, mPosZ);
+    Particle::System::NewSimple(0x44, mPosX, mPosY + yOffset2, mPosZ);
     mStateIndex = 8;
     return 1;
 }
@@ -583,8 +585,7 @@ int daGmch_c::EnterState5()
     extern GmchAnimationFileHandle data_ov081_02128edc;
 
     mHorzSpeed = 0xa000;
-    _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(&mModelAnim, data_ov081_02128edc.filePtr, 0, 0x1000,
-                                                0);
+    mModelAnim.SetAnim((BCA_File *)data_ov081_02128edc.filePtr, 0, 0x1000, 0);
     mModelAnim.speed = 0x1000;
     mStateIndex = 5;
     return 1;
@@ -609,8 +610,7 @@ int daGmch_c::EnterState4()
 {
     extern GmchAnimationFileHandle gGamaguchiJumpEndAnimationFile;
 
-    _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(&mModelAnim, gGamaguchiJumpEndAnimationFile.filePtr,
-                                                0x40000000, 0x1000, 0);
+    mModelAnim.SetAnim((BCA_File *)gGamaguchiJumpEndAnimationFile.filePtr, 0x40000000, 0x1000, 0);
     mModelAnim.speed = 0x1000;
     mHorzSpeed = 0;
     mStateIndex = 4;
@@ -652,8 +652,7 @@ int daGmch_c::EnterState3()
     extern int data_0209e650[];
 
     mFlags &= ~1;
-    _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(&mModelAnim, gGamaguchiJumpAnimationFile.filePtr,
-                                                0x40000000, 0x1000, 0);
+    mModelAnim.SetAnim((BCA_File *)gGamaguchiJumpAnimationFile.filePtr, 0x40000000, 0x1000, 0);
     mModelAnim.currFrame = 0;
     mAngleY = (short)RandomIntInternal(data_0209e650);
     mPrevAngleY = mAngleY;
@@ -681,8 +680,7 @@ int daGmch_c::EnterState2()
 {
     extern GmchAnimationFileHandle gGamaguchiWalkEndAnimationFile;
 
-    _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(&mModelAnim, gGamaguchiWalkEndAnimationFile.filePtr,
-                                                0x40000000, 0x1000, 0);
+    mModelAnim.SetAnim((BCA_File *)gGamaguchiWalkEndAnimationFile.filePtr, 0x40000000, 0x1000, 0);
     mModelAnim.speed = 0x1000;
     mHorzSpeed = 0;
     mStateIndex = 2;
@@ -712,8 +710,7 @@ void daGmch_c::EnterState1()
     extern GmchAnimationFileHandle data_ov081_02128edc;
     extern int data_0209e650[];
 
-    _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(&mModelAnim, data_ov081_02128edc.filePtr, 0, 0x1000,
-                                                0);
+    mModelAnim.SetAnim((BCA_File *)data_ov081_02128edc.filePtr, 0, 0x1000, 0);
     mModelAnim.speed = 0x1000;
     mHorzSpeed = 0xa000;
     mTargetAngleY = (short)RandomIntInternal(data_0209e650);
@@ -764,8 +761,7 @@ int daGmch_c::EnterState0()
 {
     extern GmchAnimationFileHandle gGamaguchiJumpEndAnimationFile;
 
-    _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(&mModelAnim, gGamaguchiJumpEndAnimationFile.filePtr,
-                                                0, 0x1000, 0);
+    mModelAnim.SetAnim((BCA_File *)gGamaguchiJumpEndAnimationFile.filePtr, 0, 0x1000, 0);
     mModelAnim.speed = 0x1000;
     mModelAnim.currFrame = 0x6000;
     mPhase = 0;
@@ -825,7 +821,7 @@ void daGmch_c::OnPendingDestroy()
 }
 
 // @symbol _ZN8daGmch_c6RenderEv
-/* Vtable slot 9.  Draws the ModelAnim only above mState 1 and the Model only at
+/* Vtable slot 9.  Draws the dExtAnmModel_c only above mState 1 and the dExtSimpleModel_c only at
    or below 0x1f, so the two overlap for 2..0x1f.  Both draws go through the
    models' own slot-5 Render, virtually, as the ROM dispatches them. */
 int daGmch_c::Render()
@@ -868,7 +864,7 @@ int daGmch_c::InitResources()
     extern Matrix4x3 IDENTITY_MATRIX4X3;
 
     Vector3 pos;
-    void *modelFile = Model::LoadFile(*(SharedFilePtr *)&data_ov081_02128ed4);
+    void *modelFile = dExtSimpleModel_c::LoadFile(*(SharedFilePtr *)&data_ov081_02128ed4);
     mModelAnim.SetFile((BMD_File *)modelFile, 1, 1);
     if (mModel.SetFile((BMD_File *)data_ov002_0210d9b8.filePtr, 1, 1) == 0)
         return 0;

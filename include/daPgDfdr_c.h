@@ -6,7 +6,7 @@
 #ifdef __cplusplus
 
 #include "dBgActor_c.h"
-#include "ModelAnim.h"
+#include "dExtAnmModel_c.h"
 #include "TextureSequence.h"
 #include "dCcAc_c.h"
 
@@ -20,7 +20,7 @@ extern "C" void *_ZN7fBase_cnwEj(unsigned size);
  * / snowman breath) -- this is the penguin, not those.
  *
  * SIZE 0x3dc, the literal daPgDfdr_c_classInit passes to operator new.
- * Factory constructs ModelAnim 0x320, TextureSequence 0x384, dCcAc_c 0x398
+ * Factory constructs dExtAnmModel_c 0x320, TextureSequence 0x384, dCcAc_c 0x398
  * in that order; D1 tears them down in reverse. 0x398 + 0x34 = 0x3cc, and
  * 0x3cc..0x3dc is POD this TU writes:
  *
@@ -36,7 +36,7 @@ extern "C" void *_ZN7fBase_cnwEj(unsigned size);
  */
 
 struct daPgDfdr_c : dBgActor_c {
-    ModelAnim mModelAnim;                  /* 0x320 */
+    dExtAnmModel_c mModelAnim;             /* 0x320 */
     TextureSequence mTextureSequence;      /* 0x384 */
     dCcAc_c mdCcAc_c;                      /* 0x398 */
     void *mStateTable;                     /* 0x3cc */

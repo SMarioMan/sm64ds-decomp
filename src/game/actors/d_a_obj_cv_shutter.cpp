@@ -13,7 +13,7 @@
  * Leftover: func_ov002_020bad10 / func_ov002_020baba8 / func_ov002_020bac18
  *   are still the linker names of daObjSwdoor_c setup / teardown / step
  *   (the base leaves those slots pure virtual). Naming belongs in ov002.
- *   The setup helper loads data_ov021_021148d0 slot 0 with Model::LoadFile,
+ *   The setup helper loads data_ov021_021148d0 slot 0 with dExtSimpleModel_c::LoadFile,
  *   slot 1 with dBgW_Kc::LoadFile, slot 2 as CLPS into SetFile, and writes
  *   daObjSwdoor_c's four byte fields from param1.
  * Leftover: data_ov021_021148d0 is overlay data; this TU is text-only so
@@ -44,7 +44,6 @@ extern "C" {
 int func_ov002_020bad10(daObjSwdoor_c *self, ResourceDescriptor *descriptor);
 int func_ov002_020baba8(daObjSwdoor_c *self, ResourceDescriptor *descriptor);
 int func_ov002_020bac18(daObjSwdoor_c *self);
-int _ZN10dBgActor_c13IsClsnInRangeE5Fix12IiES1_(void *self, int a, int b);
 extern ResourceDescriptor data_ov021_021148d0;
 }
 
@@ -78,7 +77,7 @@ s32 daObjCvShutter_c::InitResources()
 s32 daObjCvShutter_c::Behavior()
 {
     s32 r = func_ov002_020bac18(this);
-    if (_ZN10dBgActor_c13IsClsnInRangeE5Fix12IiES1_(this, 0, 0))
+    if (IsClsnInRange(0, 0))
         UpdateClsnPosAndRot();
     return r;
 }
@@ -99,7 +98,7 @@ s32 daObjCvShutter_c::CleanupResources()
    Their bodies are THREE vptr stores, and the middle one is the finding:
    `daObjCvShutter_c : daObjSwdoor_c : dBgActor_c` emits this class's vptr,
    then daObjSwdoor_c's -- inlined, because that destructor is defined in its
-   class body -- then dBgActor_c's, then dBgActor_c's dBgW_KcMbg and Model,
+   class body -- then dBgActor_c's, then dBgActor_c's dBgW_KcMbg and dExtSimpleModel_c,
    then dActor_c. A one-level chain would emit two. This class adds no member
    with a destructor of its own, and D0's trailing deallocation is the inline
    `operator delete` it inherits, which is why nothing here names a heap. */

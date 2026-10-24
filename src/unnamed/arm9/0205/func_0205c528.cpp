@@ -1,7 +1,11 @@
 //cpp
+
+namespace IRQ {
+int Disable(void);
+void Restore(unsigned int);
+}
 extern "C" {
-    int _ZN3IRQ7DisableEv(void);
-    void _ZN3IRQ7RestoreEj(unsigned int);
+
     void OS_SleepThread(void *p);
 }
 
@@ -45,11 +49,11 @@ extern "C" void func_0205c528(FSiSyncReadParam *p, int dst, int len) {
         arc->flag &= ~0x200;
         break;
     case 6: {
-        unsigned int saved = (unsigned int)_ZN3IRQ7DisableEv();
+        unsigned int saved = (unsigned int)IRQ::Disable();
         while (IsBusy(arc)) {
             OS_SleepThread(&arc->sync_q);
         }
-        _ZN3IRQ7RestoreEj(saved);
+        IRQ::Restore(saved);
         break;
     }
     }

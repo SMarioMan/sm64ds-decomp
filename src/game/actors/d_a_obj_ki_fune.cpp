@@ -83,7 +83,7 @@ int daObjKi_Fune_c::InitResources()
         mModelIndex = 0;
     else mModelIndex = 1;
     idx = mModelIndex;
-    file = Model::LoadFile(*(SharedFilePtr *)data_ov016_021136e4[idx]);
+    file = dExtSimpleModel_c::LoadFile(*(SharedFilePtr *)data_ov016_021136e4[idx]);
     mModel.SetFile((BMD_File *)file, 1, -1);
     func_ov016_021126a8();
     UpdateClsnPosAndRot();

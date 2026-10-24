@@ -87,7 +87,6 @@ extern short data_02082214[];
 extern void Matrix4x3_FromRotationXYZExt(void *mtx, int angleX, int angleY, int angleZ);
 
 void dBgCh_Actr_UpdateContinuous_Veneer(void *clsn);
-int _ZN10dBgActor_c13IsClsnInRangeE5Fix12IiES1_(void *self, int radius, int height);
 extern void _ZN10dBgW_KcMbg7SetFileEP8KCL_FileRK9Matrix4x35Fix12IiEsR10CLPS_Block(
     void *thiz, void *kcl, void *mtx, int scale, short angleY, void *clps);
 extern void func_020393d4(void *clsn, void *callback);
@@ -249,7 +248,7 @@ int daSlide_Box_c::Behavior()
     }
 
     UpdateModel();
-    if (_ZN10dBgActor_c13IsClsnInRangeE5Fix12IiES1_(this, 0, 0)) {
+    if (IsClsnInRange(0, 0)) {
         UpdateClsnPosAndRot();
     }
     return 1;
@@ -258,7 +257,7 @@ int daSlide_Box_c::Behavior()
 // @symbol _ZN13daSlide_Box_c13InitResourcesEv
 int daSlide_Box_c::InitResources()
 {
-    BMD_File *modelFile = (BMD_File *)Model::LoadFile(ModelFile);
+    BMD_File *modelFile = (BMD_File *)dExtSimpleModel_c::LoadFile(ModelFile);
     mModel.SetFile(modelFile, 1, -1);
     UpdateModel();
     UpdateClsnPosAndRot();

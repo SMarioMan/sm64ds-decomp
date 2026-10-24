@@ -2,7 +2,9 @@
 #include "types.h"
 #include "dScEntry_c.h"
 #include "OamAttr.h"
-extern "C" int _ZN3OAM6RenderEbP7OamAttriiii5Fix12IiES3_ii(int, OamAttr*, int, int, int, int, int, int, int, int);
+struct OAM {
+    static void Render(bool, OamAttr *, int, int, int, int, int, int, int, int);
+};
 extern "C" int _ZN3OAM6RenderEbP7OamAttriiii5Fix12IiEi(int, OamAttr*, int, int, int, int, int, int);
 extern "C" int func_0203da9c(void);
 extern "C" void func_ov075_0211621c(char *sl);
@@ -17,7 +19,7 @@ extern "C" void func_ov075_021184b0(char *sl)
 {
     dScEntry_c *scene = (dScEntry_c *)sl;
     int id = func_0203da9c();
-    _ZN3OAM6RenderEbP7OamAttriiii5Fix12IiES3_ii(false, &data_ov075_0211cb84, 0x80, 0x20, -1, -1, 0x1000, 0x1000, 0, -1);
+    OAM::Render(false, &data_ov075_0211cb84, 0x80, 0x20, -1, -1, 0x1000, 0x1000, 0, -1);
     func_ov075_0211621c(sl);
 
     u8 *p = data_0209b2f0 + id;

@@ -41,6 +41,16 @@
 #include "G2x.h"
 #include "nitro/fx/fx.h"
 
+namespace GX {
+void LoadBGPltt(const void *p, u32 a, u32 b);
+void LoadOBJPltt(const void *p, u32 a, u32 b);
+}
+
+namespace GXS {
+void LoadBGPltt(const void *p, u32 a, u32 b);
+void LoadOBJPltt(const void *p, u32 a, u32 b);
+}
+
 extern "C" {
 extern void Hud_RenderSprite(void* a0, int a1, int a2, int a3, int a4);
 extern int sBomroomPenGateSprites[];
@@ -75,12 +85,10 @@ extern u16 sBomroomSpawnDelays[];
 extern int sBomroomRoundEndTable[];
 extern int LoadFile(int handle);
 extern void DecompressLZ16(void *src, void *dst);
-extern void _ZN2GX10LoadBGPlttEPKvjj(const void *p, u32 a, u32 b);
+
 extern void *_ZN2G212GetBG2ScrPtrEv(void);
 extern void MultiStore16(u16 val, char *dst, int nbytes);
-extern void _ZN2GX11LoadOBJPlttEPKvjj(const void *p, u32 a, u32 b);
-extern void _ZN3GXS10LoadBGPlttEPKvjj(const void *p, u32 a, u32 b);
-extern void _ZN3GXS11LoadOBJPlttEPKvjj(const void *p, u32 a, u32 b);
+
 extern void func_02056554(const void *src, int offset, int count);
 extern u8 data_0209d45c;
 extern u8 data_0209d454;
@@ -2188,7 +2196,7 @@ s32 dScMgBomroom_c::InitResources() {
     Deallocate((void *)f);
 
     f = LoadFile(0x24);
-    _ZN2GX10LoadBGPlttEPKvjj((const void *)f, 0x180, 0x80);
+    GX::LoadBGPltt((const void *)f, 0x180, 0x80);
     Deallocate((void *)f);
 
     f = LoadFile(0x25);
@@ -2223,7 +2231,7 @@ s32 dScMgBomroom_c::InitResources() {
     arc = LoadFile(0xb5);
     f = LoadFile(0xb6);
     DecompressLZ16((void *)arc, (void *)0x6400000);
-    _ZN2GX11LoadOBJPlttEPKvjj((const void *)f, 0, 0x100);
+    GX::LoadOBJPltt((const void *)f, 0, 0x100);
 
     data_0209d454 |= 8;
     *(volatile u16 *)0x400100e = (*(volatile u16 *)0x400100e & ~3) | 1;
@@ -2235,7 +2243,7 @@ s32 dScMgBomroom_c::InitResources() {
         Deallocate((void *)f7);
 
         f7 = LoadFile(0x24);
-        _ZN3GXS10LoadBGPlttEPKvjj((const void *)f7, 0x180, 0x80);
+        GXS::LoadBGPltt((const void *)f7, 0x180, 0x80);
         Deallocate((void *)f7);
 
         f7 = LoadFile(0x22);
@@ -2243,7 +2251,7 @@ s32 dScMgBomroom_c::InitResources() {
         Deallocate((void *)f7);
 
         DecompressLZ16((void *)arc, (void *)0x6600000);
-        _ZN3GXS11LoadOBJPlttEPKvjj((const void *)f, 0, 0x100);
+        GXS::LoadOBJPltt((const void *)f, 0, 0x100);
         Deallocate((void *)arc);
         Deallocate((void *)f);
     }

@@ -2,7 +2,7 @@
 #define DAOBJTBOX_C_H
 
 #include "dActor_c.h"
-#include "ModelAnim.h"
+#include "dExtAnmModel_c.h"
 #include "dCcAc_c.h"
 
 extern "C" void *_ZN7fBase_cnwEj(unsigned size);
@@ -21,13 +21,13 @@ extern "C" void *_ZN7fBase_cnwEj(unsigned size);
  * pair and invokes its first PMF; Behavior invokes the second. Descriptive
  * original names are absent, so the evidenced indices are retained.
  *
- * The factory allocates 0x178 bytes and constructs ModelAnim at 0x0d4 and
+ * The factory allocates 0x178 bytes and constructs dExtAnmModel_c at 0x0d4 and
  * dCcAc_c at 0x138. D1 and D0 destroy those same members in reverse order,
  * independently pinning both member types, offsets and the total class size.
  */
 struct daObjTbox_c : dActor_c {
     u32 unk_0d0;                         /* 0x0d0 -- not accessed by this TU */
-    ModelAnim mModelAnim;                /* 0x0d4 */
+    dExtAnmModel_c mModelAnim;           /* 0x0d4 */
     dCcAc_c mCylinder;                   /* 0x138 */
     s32 mState;                          /* 0x16c -- indexes the three PMF pairs */
     u16 mStateTimer;                     /* 0x170 -- opening/star countdown */
@@ -44,7 +44,7 @@ struct daObjTbox_c : dActor_c {
      * 0x0211a238 -- and no leaf D2. Written out of line in the translation
      * unit instead, the same two bodies come out D0-before-D1 and the
      * isolation step rejects the object. Every instruction in both is
-     * compiler-generated: the vptr store, then dCcAc_c at 0x138 and ModelAnim
+     * compiler-generated: the vptr store, then dCcAc_c at 0x138 and dExtAnmModel_c
      * at 0x0d4 in reverse construction order, then the dActor_c base; D0 also
      * returns the object to the actor heap. */
     virtual ~daObjTbox_c() {}          /* slots 16, 17 */

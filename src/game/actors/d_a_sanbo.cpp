@@ -77,14 +77,13 @@ extern void _ZN8dActor_c19DropShadowRadHeightER17dExtShadowModel_cR9Matrix4x35Fi
 extern struct Matrix4x3 data_020a0e68;
 extern short Vec3_HorzAngle(const void* a, const void* b);
 extern int RandomIntInternal(void*);
-extern void _ZN8Particle6System9NewSimpleEj5Fix12IiES2_S2_(unsigned int, int, int, int);
+extern void d_a_sanboNewSimpleHold(unsigned int, int, int, int);
 extern int data_0209e650[];
 extern s16 data_02082214[];
 extern int Vec3_HorzDist(const void* a, const void* b);
 extern unsigned char DecIfAbove0_Byte(unsigned char* p);
 extern void func_02038414(void *p);
 void UnloadBlueCoinModel(void *);
-extern int _ZN8dActor_c22IsTooFarAwayFromPlayerE5Fix12IiE(void *c, int d);
 void LoadBlueCoinModel(void* actor);
 void _ZN7dCcAc_c4InitEP8dActor_c5Fix12IiES3_jj(void* self, void* actor, int r, int h, unsigned int d, unsigned int e);
 void _ZN10dBgCh_Actr4InitEP8dActor_c5Fix12IiES3_P10Vector3_16S5_(void* self, void* actor, int b, int c, void* v, int e);
@@ -135,15 +134,15 @@ int daSanbo_c::InitResources()
 
     t = (actorID == SANBO_HEAD);
     if (t != false) {
-        void* m = Model::LoadFile(gSanboHeadModelFile);
+        void *m = dExtSimpleModel_c::LoadFile(gSanboHeadModelFile);
         mModel.SetFile((BMD_File *)m, 1, 1);
-        Model::LoadFile(gSanboBodyModelFile);
+        dExtSimpleModel_c::LoadFile(gSanboBodyModelFile);
         LoadBlueCoinModel(this);
         mInstantSprout = 1;
     } else {
         t = (actorID == SANBO_BODY);
         if (t != false) {
-            void* m = Model::LoadFile(gSanboBodyModelFile);
+            void *m = dExtSimpleModel_c::LoadFile(gSanboBodyModelFile);
             if (mModel.SetFile((BMD_File *)m, 1, 1) == 0)
                 return 0;
         }
@@ -197,7 +196,8 @@ int daSanbo_c::Behavior()
 {
     int s = mState;
     if (s != 2 && s != 5) {
-        if (_ZN8dActor_c22IsTooFarAwayFromPlayerE5Fix12IiE(this, 0x5dc000)) return 1;
+        if (IsTooFarAwayFromPlayer(0x5dc000))
+            return 1;
     }
     func_ov096_021368b4();
     MakeVanishLuigiWork(mdCcAc_c);
@@ -211,7 +211,7 @@ int daSanbo_c::Render()
     unsigned int f = mFlags;
     int b = ((f & 0x40000) != 0);
     if(b) return 1;
-    Model *model = &mModel;
+    dExtSimpleModel_c *model = &mModel;
     model->Render(&mScale);
     return 1;
 }
@@ -283,8 +283,7 @@ bool ApproachLinear(short &value, short target, short step);
 
 extern "C" {
 void _ZN8Particle20RunningSlidingDustAtE5Fix12IiES1_S1_(int x, int y, int z);
-unsigned _ZN8Particle6System3NewEjj5Fix12IiES2_S2_PK11Vector3_16fPNS_8CallbackE(
-    unsigned a, unsigned b, int x, int y, int z, const void *dir, void *cb);
+unsigned d_a_sanboNewHold(unsigned a, unsigned b, int x, int y, int z, const void *dir, void *cb);
 unsigned _ZN8Particle6System17NewUnkCallback818Ejj5Fix12IiES2_S2_PK11Vector3_16f(
     unsigned a, unsigned b, int x, int y, int z, const Vector3_16f *dir);
 void _ZN6Player4HurtERK7Vector3j5Fix12IiEjjj(
@@ -443,8 +442,7 @@ int daSanbo_c::func_ov096_02136434()
         ((int *)&pos)[0] = x;
         ((int *)&pos)[1] = y;
         ((int *)&pos)[2] = z;
-        mParticle0 = _ZN8Particle6System3NewEjj5Fix12IiES2_S2_PK11Vector3_16fPNS_8CallbackE(
-            mParticle0, 0x13a, pos.x, pos.y, pos.z, 0, 0);
+        mParticle0 = Particle::System::New(mParticle0, 0x13a, pos.x, pos.y, pos.z, 0, 0);
         mParticle1 = _ZN8Particle6System17NewUnkCallback818Ejj5Fix12IiES2_S2_PK11Vector3_16f(
             mParticle1, 0x13b, pos.x, pos.y, pos.z, 0);
         p0 = Particle::System::FromUniqueID(mParticle0);
@@ -554,10 +552,8 @@ int daSanbo_c::func_ov096_02136134()
     mVertSpeed = 0x28000;
     mHorzSpeed = 0xa000;
     mTimer = 0x2d;
-    _ZN8Particle6System9NewSimpleEj5Fix12IiES2_S2_(0x43, mPosX,
-        mPosY + OnAimedAtWithEgg(), mPosZ);
-    _ZN8Particle6System9NewSimpleEj5Fix12IiES2_S2_(0x44, mPosX,
-        mPosY + OnAimedAtWithEgg(), mPosZ);
+    Particle::System::NewSimple(0x43, mPosX, mPosY + OnAimedAtWithEgg(), mPosZ);
+    Particle::System::NewSimple(0x44, mPosX, mPosY + OnAimedAtWithEgg(), mPosZ);
     mState = 5;
     return 1;
 }
@@ -726,8 +722,7 @@ void daSanbo_c::func_ov096_02135948()
             ((int *)&pos)[0] = x;
             ((int *)&pos)[1] = y;
             ((int *)&pos)[2] = z;
-            mParticle0 = _ZN8Particle6System3NewEjj5Fix12IiES2_S2_PK11Vector3_16fPNS_8CallbackE(
-                mParticle0, 0x13a, pos.x, pos.y, pos.z, 0, 0);
+            mParticle0 = Particle::System::New(mParticle0, 0x13a, pos.x, pos.y, pos.z, 0, 0);
             mParticle1 = _ZN8Particle6System17NewUnkCallback818Ejj5Fix12IiES2_S2_PK11Vector3_16f(
                 mParticle1, 0x13b, pos.x, pos.y, pos.z, 0);
             Sound::PlayBank0(9, mCamSpacePos);

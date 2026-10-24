@@ -16,11 +16,8 @@ extern "C" {
 void _ZN10dBgW_KcMbg7SetFileEP8KCL_FileRK9Matrix4x35Fix12IiEsR10CLPS_Block(
     dBgW_KcMbg *self, KCL_File *kcl, const Matrix4x3 *mtx, int scale,
     s16 angleY, CLPS_Block *clps);
-void _ZN7dCcAc_c4InitEP8dActor_c5Fix12IiES3_jj(
-    dCcAc_c *self, dActor_c *act, int radius, int height,
-    unsigned flags, unsigned vulnFlags);
-int _ZN10dBgActor_c21IsClsnInRangeOnScreenE5Fix12IiES1_(
-    dBgActor_c *self, int rangeX, int rangeY);
+void _ZN7dCcAc_c4InitEP8dActor_c5Fix12IiES3_jj(dCcAc_c *self, dActor_c *act, int radius, int height,
+                                               unsigned flags, unsigned vulnFlags);
 }
 
 /* daKpa_c in the Fire Sea net pole (profile KM2_AMI_BOU).
@@ -52,8 +49,7 @@ struct daObjKm2_Ami_Bou_c : dBgActor_c {
             &mdCcAc_c, this, radius, height, flags, vulnFlags);
     }
     int ClsnInRangeOnScreen(int rangeX, int rangeY) {
-        return _ZN10dBgActor_c21IsClsnInRangeOnScreenE5Fix12IiES1_(
-            this, rangeX, rangeY);
+        return IsClsnInRangeOnScreen(rangeX, rangeY);
     }
 };
 

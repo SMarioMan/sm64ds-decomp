@@ -47,7 +47,6 @@ extern char* data_0209f394[];
 extern int data_020a0ebc[];
 extern u8 data_0209caa0[];
 extern char* data_0209f318;
-void* _Znwj(unsigned int);
 }
 
 extern int _ZTV12daMugenBGM_c[];
@@ -73,7 +72,7 @@ int daMugenBGM_c::InitResources()
     param1 = ro->param1 & 0xf;
     if (param1 != 1) {
         data_ov002_02110af4 = mAngleY;
-        p = _Znwj(0x28);
+        p = ::operator new(0x28);
         data_ov002_02110af8 = p;
         if (p != 0) {
             _ZN3Fog4InitEt5Fix12IiES1_(p, 0, 0x700, 0xd00);

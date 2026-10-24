@@ -27,9 +27,8 @@
  * `opt_common_subs off` as a push/pop bracket.
  *
  * leftovers:
- * - ModelAnim::SetAnim takes Fix12<int> by value; its real spelling makes
- *   the compiler home the argument and the size changes. NewSimple takes
- *   Fix12<int> the same way and has no header. Both stay mangled.
+ * - dExtAnmModel_c::SetAnim takes Fix12<int> by value; its real spelling makes
+ *   the compiler home the argument and the size changes. It stays mangled.
  * - The helper functions and data_ov006_ tables have no header or name yet.
  * - The five gTouch-lane and gActivePlayerSlot externs keep the file-local record
  *   spellings (u8 [][4] lanes) because the ROM scales the slot in the
@@ -63,8 +62,11 @@ struct Mtx { int a, b, c, d; };
 extern "C" {
 
 /* Fix12<int> by value in the real signatures; see the banner. */
-void _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(void *self, void *file, int a, int b, unsigned int d);
-void _ZN8Particle6System9NewSimpleEj5Fix12IiES2_S2_(unsigned int id, int x, int y, int z);
+namespace Particle {
+struct System {
+    static void NewSimple(unsigned int id, int x, int y, int z);
+};
+}
 void Sound_PlayBank1Panned(int a, int b, int c);
 void Vec3_Sub(Jump3DVec *out, Jump3DVec *a, Jump3DVec *b);
 void AddVec3(Jump3DVec *a, Jump3DVec *b, Jump3DVec *c);
@@ -74,7 +76,7 @@ void func_02012718(int a, int b);
 int  func_02053200(int x);
 void func_02016a14(void *self, int a);
 void func_02016a04(void *self, int a);
-int  func_020179b4(SharedFilePtr *f, ModelBase *m, int extra);
+int func_020179b4(SharedFilePtr *f, dExtModel_c *m, int extra);
 void Camera_ProjectToScreen16(void *cam, Jump3DVec *pos, short *out);
 void D3D_PlaySeAtX(int a, int b);
 void Puff_Spawn(int a, int b);
@@ -502,7 +504,7 @@ void dMgJump3DMario_c::EnterDamp()
         Sound::PlayBank2_2D(0x1ca);
     else
         Sound::PlayBank2_2D(0x1c9);
-    _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(&mModelAnim, sJump3DAnimStruggle, 0, kAnimSpeed, 0);
+    mModelAnim.SetAnim((BCA_File *)sJump3DAnimStruggle, 0, kAnimSpeed, 0);
     mTimer = 0x28;
     mState = pmf_dMgJump3DMario_c_StateDamp;
 }
@@ -587,8 +589,7 @@ void dMgJump3DMario_c::EnterHold()
         mVel.x = -mVel.x;
         mVel.y = -mVel.y;
     }
-    _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(&mModelAnim, sJump3DAnimSdown, 0x40000000,
-                                                kAnimSpeed, 0);
+    mModelAnim.SetAnim((BCA_File *)sJump3DAnimSdown, 0x40000000, kAnimSpeed, 0);
     mModelAnim.dExtFrameCtrl_c::currFrame = 0;
     Sound_PlayBank1Panned(0, 6, mPos.x);
     mTimer = 0x20;
@@ -651,12 +652,12 @@ void dMgJump3DMario_c::StateMove()
                         mAnimIdx = 0;
                     else
                         mAnimIdx = 1;
-                    _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(
-                        &mModelAnim, *sJump3DAnimTable[mAnimIdx], 0x40000000, kAnimSpeed, 0);
+                    mModelAnim.SetAnim((BCA_File *)(*sJump3DAnimTable[mAnimIdx]), 0x40000000,
+                                       kAnimSpeed, 0);
                     mModelAnim.dExtFrameCtrl_c::currFrame = 0;
-                    _ZN8Particle6System9NewSimpleEj5Fix12IiES2_S2_(0xed, mPos.x << 3, mPos.y << 3, mPos.z << 3);
-                    _ZN8Particle6System9NewSimpleEj5Fix12IiES2_S2_(0xee, v[0] << 3, v[1] << 3, v[2] << 3);
-                    _ZN8Particle6System9NewSimpleEj5Fix12IiES2_S2_(0xef, v[0] << 3, v[1] << 3, v[2] << 3);
+                    Particle::System::NewSimple(0xed, mPos.x << 3, mPos.y << 3, mPos.z << 3);
+                    Particle::System::NewSimple(0xee, v[0] << 3, v[1] << 3, v[2] << 3);
+                    Particle::System::NewSimple(0xef, v[0] << 3, v[1] << 3, v[2] << 3);
                     Sound_PlayBank1Panned(0, mAnimIdx, mPos.x);
                     func_02012718(0x1c6, mScreenX << 12);
                     EnterBounce();
@@ -676,8 +677,8 @@ void dMgJump3DMario_c::StateMove()
             mVel.x = -FX_MUL(mVel.x, 0xd00);
             if (mVel.y > 0) {
                 mAnimIdx = 2;
-                _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(
-                    &mModelAnim, *sJump3DAnimTable[mAnimIdx], 0x40000000, kAnimSpeed, 0);
+                mModelAnim.SetAnim((BCA_File *)(*sJump3DAnimTable[mAnimIdx]), 0x40000000,
+                                   kAnimSpeed, 0);
                 mModelAnim.dExtFrameCtrl_c::currFrame = 0;
                 Sound_PlayBank1Panned(0, mAnimIdx, mPos.x);
             }
@@ -685,8 +686,8 @@ void dMgJump3DMario_c::StateMove()
             mVel.x = -FX_MUL(mVel.x, 0xd00);
             if (mVel.y > 0) {
                 mAnimIdx = 2;
-                _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(
-                    &mModelAnim, *sJump3DAnimTable[mAnimIdx], 0x40000000, kAnimSpeed, 0);
+                mModelAnim.SetAnim((BCA_File *)(*sJump3DAnimTable[mAnimIdx]), 0x40000000,
+                                   kAnimSpeed, 0);
                 mModelAnim.dExtFrameCtrl_c::currFrame = 0;
                 Sound_PlayBank1Panned(0, mAnimIdx, mPos.x);
             }
@@ -728,8 +729,7 @@ void dMgJump3DMario_c::StartFallOut()
         mVel.x = 0;
         mVel.y = 0x2000;
         Sound::PlayBank2_2D(0x1c9);
-        _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(&mModelAnim, sJump3DAnimStruggle, 0, kAnimSpeed,
-                                                    0);
+        mModelAnim.SetAnim((BCA_File *)sJump3DAnimStruggle, 0, kAnimSpeed, 0);
         mModelAnim.dExtFrameCtrl_c::currFrame = 0;
         mState = pmf_dMgJump3DMario_c_StateFallOut;
     }
@@ -756,8 +756,7 @@ void dMgJump3DMario_c::StartRiseOut()
 {
     mVel.x = 0;
     mVel.y = sJump3DRiseVy;
-    _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(&mModelAnim, sJump3DAnimRollJump, 0x40000000,
-                                                kAnimSpeed, 0);
+    mModelAnim.SetAnim((BCA_File *)sJump3DAnimRollJump, 0x40000000, kAnimSpeed, 0);
     mModelAnim.dExtFrameCtrl_c::currFrame = 0;
     Sound::PlayBank2_2D(0x10f);
     func_02012718(0x1b5, mScreenX << 12);
@@ -767,8 +766,7 @@ void dMgJump3DMario_c::StartRiseOut()
 // @symbol _ZN16dMgJump3DMario_c8EnterHitEv
 void dMgJump3DMario_c::EnterHit()
 {
-    _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(&mModelAnim, sJump3DAnimRollJump, 0x40000000,
-                                                kAnimSpeed, 0);
+    mModelAnim.SetAnim((BCA_File *)sJump3DAnimRollJump, 0x40000000, kAnimSpeed, 0);
     mModelAnim.dExtFrameCtrl_c::currFrame = 0;
     if (mState == pmf_dMgJump3DMario_c_StateWindUp_2) {
         func_02012718(0x110, mScreenX << 12);
@@ -799,8 +797,8 @@ void dMgJump3DMario_c::StateBounce()
         mVel.x = -FX_MUL(mVel.x, 0xd00);
         if (mVel.y > 0) {
             mAnimIdx = 2;
-            _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(&mModelAnim, *sJump3DAnimTable[mAnimIdx],
-                                                        0x40000000, kAnimSpeed, 0);
+            mModelAnim.SetAnim((BCA_File *)(*sJump3DAnimTable[mAnimIdx]), 0x40000000, kAnimSpeed,
+                               0);
             mModelAnim.dExtFrameCtrl_c::currFrame = 0;
             Sound_PlayBank1Panned(0, mAnimIdx, mPos.x);
         }
@@ -808,8 +806,8 @@ void dMgJump3DMario_c::StateBounce()
         mVel.x = -FX_MUL(mVel.x, 0xd00);
         if (mVel.y > 0) {
             mAnimIdx = 2;
-            _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(&mModelAnim, *sJump3DAnimTable[mAnimIdx],
-                                                        0x40000000, kAnimSpeed, 0);
+            mModelAnim.SetAnim((BCA_File *)(*sJump3DAnimTable[mAnimIdx]), 0x40000000, kAnimSpeed,
+                               0);
             mModelAnim.dExtFrameCtrl_c::currFrame = 0;
             Sound_PlayBank1Panned(0, mAnimIdx, mPos.x);
         }
@@ -895,8 +893,7 @@ void dMgJump3DMario_c::StateRespawn()
         speed = sJump3DMoveSpeed;
         rnd = ((unsigned int)RandomIntInternal(&data_0209e650) & 0x7fffffff) >> 0x13;
         mVel.x = FX_MUL((((int)rnd - 0x800) << 1), speed);
-        _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(&mModelAnim, sJump3DAnimWallJump, 0x40000000,
-                                                    kAnimSpeed, 0);
+        mModelAnim.SetAnim((BCA_File *)sJump3DAnimWallJump, 0x40000000, kAnimSpeed, 0);
         EnterMove();
         return;
     }
@@ -911,8 +908,7 @@ void dMgJump3DMario_c::EnterRespawn()
     mTimer = 0x3c;
     mPos.y = 0x100000;
     mVel.y = 0;
-    _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(&mModelAnim, sJump3DAnimWallJump, 0x40000000,
-                                                kAnimSpeed, 0);
+    mModelAnim.SetAnim((BCA_File *)sJump3DAnimWallJump, 0x40000000, kAnimSpeed, 0);
     mState = pmf_dMgJump3DMario_c_StateRespawn;
 }
 
@@ -945,8 +941,7 @@ int dMgJump3DMario_c::LoadResources()
         func_02016a14(&mModelAnim, 0x7fff);
         func_02016a04(&mModelAnim, 0x210);
     }
-    _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(&mModelAnim, sJump3DAnimJump, 0x40000000,
-                                                kAnimSpeed, 0);
+    mModelAnim.SetAnim((BCA_File *)sJump3DAnimJump, 0x40000000, kAnimSpeed, 0);
 
     HideAndIdle();
     return 1;
@@ -971,7 +966,7 @@ dMgJump3DMario_c::~dMgJump3DMario_c()
 
 
 // @symbol _ZN16dMgJump3DMario_cC1Ev
-/* Empty: the base constructor, the vptr store and the ModelAnim member
+/* Empty: the base constructor, the vptr store and the dExtAnmModel_c member
  * construction are all generated. */
 dMgJump3DMario_c::dMgJump3DMario_c()
 {

@@ -14,7 +14,7 @@
  *
  *     0x110 dCcAcPos_c  0x40    -> 0x150
  *     0x150 dBgCh_Actr               0x1bc   -> 0x30c
- *     0x30c ModelAnim                  0x64    -> 0x370
+ *     0x30c dExtAnmModel_c                  0x64    -> 0x370
  *
  * SIZE IS THE ROM'S OWN: `Skeeter_Spawn` calls
  * `fBase_c::operator new(944)` -- 0x3b0 -- and stores this class's
@@ -32,14 +32,14 @@
  */
 
 #include "dEnemyBase_c.h"
-#include "ModelAnim.h"
+#include "dExtAnmModel_c.h"
 #include "dCcAcPos_c.h"
 #include "dBgCh_Actr.h"
 
 struct daMenbo_c : dEnemyBase_c {
     dCcAcPos_c    mdCcAcPos_c; /* 0x110 */
     dBgCh_Actr                 mWithMeshClsn;         /* 0x150 */
-    ModelAnim                    mModelAnim;            /* 0x30c */
+    dExtAnmModel_c mModelAnim;                        /* 0x30c */
     void*                        mState;                /* 0x370 */
     /* Where the skeeter drops anchor: InitResources and, whenever it is off
        the water, the water-rest and water-chase updates (02131ac4, 02131c48)

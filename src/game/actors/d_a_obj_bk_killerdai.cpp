@@ -53,9 +53,13 @@ extern SharedFilePtr data_ov079_021282f0;
 extern void *data_ov079_02127f64[];
 
 extern "C" {
-extern void _ZN8Particle6System9NewSimpleEj5Fix12IiES2_S2_(u32 id, int x, int y, int z);
-extern int _ZN10dBgActor_c20UpdateKillByMegaCharEsss5Fix12IiE(void *self, short a, short b, short c, int d);
-extern int _ZN10dBgActor_c13IsClsnInRangeE5Fix12IiES1_(void *self, int a, int b);
+namespace Particle {
+struct System {
+    static void NewSimple(u32 id, int x, int y, int z);
+};
+}
+extern int _ZN10dBgActor_c20UpdateKillByMegaCharEsss5Fix12IiE(void *self, short a, short b, short c,
+                                                              int d);
 extern void _ZN10dBgW_KcMbg7SetFileEP8KCL_FileRK9Matrix4x35Fix12IiEsR10CLPS_Block(
     void *self, void *kcl, const void *mtx, int scale, short angY, void *clps);
 extern int IsStarCollectedInCurLevel(int starID);
@@ -88,7 +92,7 @@ void daObjBkKillerdai_c::Kill()
     pos.x = x;
     pos.y = y;
     pos.z = z;
-    _ZN8Particle6System9NewSimpleEj5Fix12IiES2_S2_(0x8d, pos.x, pos.y, pos.z);
+    Particle::System::NewSimple(0x8d, pos.x, pos.y, pos.z);
     dustPos.x = pos.x;
     dustPos.y = pos.y;
     dustPos.z = pos.z;
@@ -150,7 +154,7 @@ s32 daObjBkKillerdai_c::Behavior()
             *(u32 *)((char *)spawned + 0x3dc) = (u32)this;
         }
     }
-    _ZN10dBgActor_c13IsClsnInRangeE5Fix12IiES1_(this, 0, 0);
+    IsClsnInRange(0, 0);
     return 1;
 }
 
@@ -161,9 +165,9 @@ s32 daObjBkKillerdai_c::InitResources()
     void *file;
     s8 course;
 
-    Model::LoadFile(data_ov079_02128300);
-    Model::LoadFile(data_ov079_021282f0);
-    file = Model::LoadFile(*(SharedFilePtr *)data_ov079_02127f64[0]);
+    dExtSimpleModel_c::LoadFile(data_ov079_02128300);
+    dExtSimpleModel_c::LoadFile(data_ov079_021282f0);
+    file = dExtSimpleModel_c::LoadFile(*(SharedFilePtr *)data_ov079_02127f64[0]);
     mModel.SetFile((BMD_File *)file, 1, -1);
     UpdateModelPosAndRotY();
     UpdateClsnPosAndRot();

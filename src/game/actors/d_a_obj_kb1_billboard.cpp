@@ -66,7 +66,7 @@ extern "C" SpawnInfo<daObjKb1Billboard_c> g_profile_KB1_BILLBOARD = {
 // @symbol _ZN19daObjKb1Billboard_c13InitResourcesEv
 int daObjKb1Billboard_c::InitResources()
 {
-    BMD_File *file = (BMD_File *)Model::LoadFile(gKb1BallModelFile);
+    BMD_File *file = (BMD_File *)dExtSimpleModel_c::LoadFile(gKb1BallModelFile);
     mModel.SetFile(file, 1, -1);
     UpdateModelTransform();
     return 1;

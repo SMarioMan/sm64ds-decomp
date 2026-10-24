@@ -124,7 +124,11 @@ extern void func_0201267c(int id, void *pos);
  * and move the caller. Scalar tail is deliberate; the (const Vector3 &)
  * is what the mangled name spells. */
 extern void _ZN8dActor_c10EarthquakeERK7Vector35Fix12IiE(void *self, const Vector3 &pos, int magnitude);
-extern void _ZN8Particle6System9NewSimpleEj5Fix12IiES2_S2_(unsigned id, int x, int y, int z);
+namespace Particle {
+struct System {
+    static void NewSimple(unsigned id, int x, int y, int z);
+};
+}
 
 /* Same 6az tail, and the same pointer spelling the enrolled definition uses
  * (dActor_c / dExtShadowModel_c / Matrix4x3 pointers, scalar ints -- see the
@@ -253,7 +257,7 @@ void daDsnBase_c::func_ov091_02132f04()
         dustPos.y = mPosY;
         dustPos.z = mPosZ;
         dustPos.y = dustPos.y + 0x3c000;
-        _ZN8Particle6System9NewSimpleEj5Fix12IiES2_S2_(0x2e, dustPos.x, dustPos.y, dustPos.z);
+        Particle::System::NewSimple(0x2e, dustPos.x, dustPos.y, dustPos.z);
     }
     quakePos.x = mPosX;
     quakePos.y = mPosY;
@@ -379,7 +383,7 @@ s32 daDsnBase_c::Init()
     SharedFilePtr *texAnim;
 
     files = (DsnBaseFileTable *)mFileTable;
-    bmd = (BMD_File *)Model::LoadFile(*files->model);
+    bmd = (BMD_File *)dExtSimpleModel_c::LoadFile(*files->model);
     mModel.SetFile(bmd, 1, -1);
     UpdateModelPosAndRotY();
     UpdateClsnPosAndRot();

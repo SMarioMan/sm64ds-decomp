@@ -12,11 +12,11 @@
  * exactly on the next -- no padding anywhere between 0x0d4 and 0x214:
  *
  *     dActor_c            0x000 + 0x0d0 = 0x0d0   -> pad_0d0
- *     ModelAnim           0x0d4 + 0x064 = 0x138   -> mTextureSequence1
+ *     dExtAnmModel_c           0x0d4 + 0x064 = 0x138   -> mTextureSequence1
  *     TextureSequence     0x138 + 0x014 = 0x14c   -> mMaterialChanger1
  *     MaterialChanger     0x14c + 0x014 = 0x160   -> mTextureTransformer1
  *     TextureTransformer  0x160 + 0x014 = 0x174   -> mModelAnim2
- *     ModelAnim           0x174 + 0x064 = 0x1d8   -> mTextureSequence2
+ *     dExtAnmModel_c           0x174 + 0x064 = 0x1d8   -> mTextureSequence2
  *     TextureSequence     0x1d8 + 0x014 = 0x1ec   -> mMaterialChanger2
  *     MaterialChanger     0x1ec + 0x014 = 0x200   -> mTextureTransformer2
  *     TextureTransformer  0x200 + 0x014 = 0x214   -> mFrame
@@ -40,7 +40,7 @@
 #ifndef DAFRING_C_H
 #define DAFRING_C_H
 #include "types.h"
-#include "ModelAnim.h"
+#include "dExtAnmModel_c.h"
 #include "TextureSequence.h"
 #include "MaterialChanger.h"
 #include "TextureTransformer.h"
@@ -51,11 +51,11 @@
 
 struct daFRing_c : dActor_c {
     u8 pad_0d0[0x4];
-    ModelAnim mModelAnim1;                     /* 0x0d4 */
+    dExtAnmModel_c mModelAnim1;                /* 0x0d4 */
     TextureSequence mTextureSequence1;         /* 0x138 */
     MaterialChanger mMaterialChanger1;         /* 0x14c */
     TextureTransformer mTextureTransformer1;   /* 0x160 */
-    ModelAnim mModelAnim2;                     /* 0x174 */
+    dExtAnmModel_c mModelAnim2;                /* 0x174 */
     TextureSequence mTextureSequence2;         /* 0x1d8 */
     MaterialChanger mMaterialChanger2;         /* 0x1ec */
     TextureTransformer mTextureTransformer2;   /* 0x200 */
@@ -88,11 +88,11 @@ struct daFRing_c {
     s32 mPosY;                                 /* 0x060 */
     s32 mPosZ;                                 /* 0x064 */
     u8 pad_068[0x6c];
-    ModelAnim mModelAnim1;                     /* 0x0d4 */
+    dExtAnmModel_c mModelAnim1;                /* 0x0d4 */
     TextureSequence mTextureSequence1;         /* 0x138 */
     MaterialChanger mMaterialChanger1;         /* 0x14c */
     TextureTransformer mTextureTransformer1;   /* 0x160 */
-    ModelAnim mModelAnim2;                     /* 0x174 */
+    dExtAnmModel_c mModelAnim2;                /* 0x174 */
     TextureSequence mTextureSequence2;         /* 0x1d8 */
     MaterialChanger mMaterialChanger2;         /* 0x1ec */
     TextureTransformer mTextureTransformer2;   /* 0x200 */

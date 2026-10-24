@@ -1,4 +1,8 @@
 //cpp
+namespace Particle {
+struct Callback;
+}
+struct Vector3_16f;
 /* Production translation unit for ov063/daTrs_c.
  * 97 functions, .text 0x02115ee0..0x0211c600: the Boo (TERESA, actor 0xd1) and
  * Big Boo (BOSS_TERESA, 0xd2), both daTrs_c; the Boo cage (T_BASKET, 0xd4,
@@ -27,7 +31,7 @@
  *
  * deslop leftovers:
  * - DropShadowRadHeight, dCcAcPos_c::Init, dCcAc_c::Init, dBgCh_Actr::Init,
- *   UpdateCapPos, ModelAnim::SetAnim, SpawnFireball, Player::
+ *   UpdateCapPos, dExtAnmModel_c::SetAnim, SpawnFireball, Player::
  *   Bounce/Hurt, KillByInvincibleChar and the Sound/Particle/dCamera_c calls
  *   retain scalar or opaque boundaries. UpdateCapPos has a shared reference
  *   declaration, but the direct call currently changes two argument-address
@@ -126,13 +130,11 @@ s32 Vec3_HorzDist(const void *a, const void *b);
 u16 DecIfAbove0_Short(void *p);
 
 /* ABI seams whose header member forms do not reproduce the ROM (see notes) */
-int _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(void *self, void *file, int a, int speed, unsigned int d);
 void _ZN10dCcAcPos_c4InitEP8dActor_cRK7Vector35Fix12IiES6_jj(void *self, void *actor, void *pos, int r, int h, unsigned int e, unsigned int g);
 void _ZN7dCcAc_c4InitEP8dActor_c5Fix12IiES3_jj(void *self, dActor_c *actor, Fix12i radius, Fix12i height, unsigned int flags, unsigned int vulnFlags);
 void _ZN10dBgCh_Actr4InitEP8dActor_c5Fix12IiES3_P10Vector3_16S5_(void *self, dActor_c *actor, Fix12i radius, Fix12i height, Vector3_16 *a, Vector3_16 *b);
-unsigned int _ZN8Particle6System3NewEjj5Fix12IiES2_S2_PK11Vector3_16fPNS_8CallbackE(
-    unsigned int uniqueID, unsigned int effectID,
-    int x, int y, int z, const void *dir, void *callback);
+unsigned int d_a_trsNewHold(unsigned int uniqueID, unsigned int effectID, int x, int y, int z,
+                            const void *dir, void *callback);
 
 extern signed char data_0209f2f8;
 extern unsigned char data_0209f264;
@@ -192,7 +194,13 @@ extern void func_020167a4(void *p);
 void Matrix4x3_FromRotationY(Matrix4x3 *m, s16 angle);
 extern int data_0209e650;
 extern int Vec3_Dist(const void* a, const void* b);
-extern void _ZN8Particle6System9NewSimpleEj5Fix12IiES2_S2_(unsigned int id, int x, int y, int z);
+namespace Particle {
+struct System {
+    static void NewSimple(unsigned int id, int x, int y, int z);
+
+    static int New(unsigned, unsigned, int, int, int, const ::Vector3_16f *, Callback *);
+};
+}
 extern void _ZN5Sound17ChangeMusicVolumeEj5Fix12IiE(unsigned a, int fx);
 extern void _ZN5Sound22StopLoadedMusic_Layer3Ev(void);
 extern void func_02011cfc(void);
@@ -893,7 +901,6 @@ void daTrs_c::func_ov063_021172a8() {
 }
 
 
-#define New _ZN8Particle6System3NewEjj5Fix12IiES2_S2_PK11Vector3_16fPNS_8CallbackE
 // @symbol _ZN7daTrs_c19func_ov063_02117364Ev
 void daTrs_c::func_ov063_02117364() {
 
@@ -924,8 +931,10 @@ void daTrs_c::func_ov063_02117364() {
         pos.y += this->mClsnScale * 0xaf;
         if (this->mBooFlags.mirrored)
             pos.x = pos.x * -1;
-        this->mParticle0 = New(*(volatile u32*)&this->mParticle0, 0x95, pos.x, pos.y, pos.z, 0, 0);
-        this->mParticle1 = New(*(volatile u32*)&this->mParticle1, 0x96, pos.x, pos.y, pos.z, 0, 0);
+        this->mParticle0 = Particle::System::New(*(volatile u32 *)&this->mParticle0, 0x95, pos.x,
+                                                 pos.y, pos.z, 0, 0);
+        this->mParticle1 = Particle::System::New(*(volatile u32 *)&this->mParticle1, 0x96, pos.x,
+                                                 pos.y, pos.z, 0, 0);
         return;
     }
 
@@ -933,8 +942,10 @@ void daTrs_c::func_ov063_02117364() {
         pos.y += this->mClsnScale * 0xaf;
         if (this->mBooFlags.mirrored)
             pos.x = pos.x * -1;
-        this->mParticle0 = New(*(volatile u32*)&this->mParticle0, 0x97, pos.x, pos.y, pos.z, 0, 0);
-        this->mParticle1 = New(*(volatile u32*)&this->mParticle1, 0x98, pos.x, pos.y, pos.z, 0, 0);
+        this->mParticle0 = Particle::System::New(*(volatile u32 *)&this->mParticle0, 0x97, pos.x,
+                                                 pos.y, pos.z, 0, 0);
+        this->mParticle1 = Particle::System::New(*(volatile u32 *)&this->mParticle1, 0x98, pos.x,
+                                                 pos.y, pos.z, 0, 0);
     }
     if (this->mOpacity != 0xff)
         return;
@@ -1086,8 +1097,8 @@ void daTrs_c::func_ov063_021177b0() {
                     int m = ~0;
                     pos.x = px * (volatile int)m;
                 }
-                _ZN8Particle6System9NewSimpleEj5Fix12IiES2_S2_(0x93, pos.x, yarg, pos.z);
-                _ZN8Particle6System9NewSimpleEj5Fix12IiES2_S2_(0x94, pos.x, pos.y, pos.z);
+                Particle::System::NewSimple(0x93, pos.x, yarg, pos.z);
+                Particle::System::NewSimple(0x94, pos.x, pos.y, pos.z);
             }
         }
         return;
@@ -1438,9 +1449,8 @@ void daTrs_c::func_ov063_02118458() {
         if (func_ov063_0211a8a4()) {
             if (this->mModelAnim.file == (BCA_File *)data_ov063_0211edcc.filePtr) {
                 func_02012694(0x158, &this->mCamSpacePosX);
-                _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(&this->mModelAnim,
-                                                            (BCA_File *)data_ov063_0211edd4.filePtr,
-                                                            0x40000000, 0x1000, 0);
+                this->mModelAnim.SetAnim((BCA_File *)data_ov063_0211edd4.filePtr, 0x40000000,
+                                         0x1000, 0);
             } else if (this->mAttackRepeats != 0) {
                 this->mAttackRepeats -= 1;
                 this->mModelAnim.currFrame = 0;
@@ -1451,8 +1461,7 @@ void daTrs_c::func_ov063_02118458() {
                 this->mdCcAcPos_c.flags &= ~1;
                 rnd = ((unsigned int)RandomIntInternal(&data_0209e650) >> 16) & 0x3f;
                 this->mAttackTimer = rnd + 0xb4;
-                _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(
-                    &this->mModelAnim, (BCA_File *)data_ov063_0211ede4.filePtr, 0, 0x1000, 0);
+                this->mModelAnim.SetAnim((BCA_File *)data_ov063_0211ede4.filePtr, 0, 0x1000, 0);
             }
         } else {
             int rnd;
@@ -1460,8 +1469,7 @@ void daTrs_c::func_ov063_02118458() {
             this->mdCcAcPos_c.flags &= ~1;
             rnd = ((unsigned int)RandomIntInternal(&data_0209e650) >> 16) & 0x3f;
             this->mAttackTimer = rnd + 0xb4;
-            _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(
-                &this->mModelAnim, (BCA_File *)data_ov063_0211ede4.filePtr, 0, 0x1000, 0);
+            this->mModelAnim.SetAnim((BCA_File *)data_ov063_0211ede4.filePtr, 0, 0x1000, 0);
         }
     } else {
         if (this->mModelAnim.file == (BCA_File *)data_ov063_0211edd4.filePtr &&
@@ -1498,8 +1506,6 @@ void daTrs_c::func_ov063_02118458() {
     func_02012694(0x152, &this->mCamSpacePosX);
 }
 
-
-#define ModelAnim_SetAnim _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj
 // @symbol _ZN7daTrs_c19func_ov063_0211873cEv
 void daTrs_c::func_ov063_0211873c() {
 
@@ -1552,16 +1558,13 @@ void daTrs_c::func_ov063_0211873c() {
     this->mVertSpeed = 0;
     this->mVertAccel = 0;
     func_02012694(0x159, &this->mCamSpacePosX);
-    ModelAnim_SetAnim(&this->mModelAnim, (BCA_File *)data_ov063_0211edcc.filePtr, 0x40000000,
-                      0x1000, 0);
+    this->mModelAnim.SetAnim((BCA_File *)data_ov063_0211edcc.filePtr, 0x40000000, 0x1000, 0);
     {
         unsigned int rnd = (unsigned int)RandomIntInternal(&data_0209e650);
         this->mAttackRepeats = (u8)((rnd >> 0x10) % 3);
     }
     this->mHorzSpeed = 0;
 }
-
-#undef ModelAnim_SetAnim
 
 // @symbol _ZN7daTrs_c19func_ov063_02118914Ev
 void daTrs_c::func_ov063_02118914() {
@@ -3049,7 +3052,7 @@ int daTrs_c::Render()
          mState == 3 ||
          mState == 3 ||
          mState == 3)) {
-        mModelAnim.Model::Render(&mScale);
+        mModelAnim.dExtSimpleModel_c::Render(&mScale);
     } else {
         mModelAnim.Render(&mScale);
     }
@@ -3385,8 +3388,7 @@ int daTBasket_c::Behavior()
         int y = mPosY;
         int x = mPosX;
         unsigned int pid = (unsigned int)mParticleID;
-        mParticleID = _ZN8Particle6System3NewEjj5Fix12IiES2_S2_PK11Vector3_16fPNS_8CallbackE(
-            pid, 0x119, x, y + 0x64000, z, 0, 0);
+        mParticleID = Particle::System::New(pid, 0x119, x, y + 0x64000, z, 0, 0);
     }
 
     UpdatePos(0);
@@ -3424,9 +3426,8 @@ int daTrs_c::InitResources()
             mFoundActor = 0;
         }
         dExtFrameCtrl_c::LoadFile(data_ov063_0211ede4);
-        mModelAnim.SetFile((BMD_File *)Model::LoadFile(data_ov063_0211edf4), 1, 1);
-        _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(
-            &mModelAnim, (BCA_File *)data_ov063_0211ede4.filePtr, 0, 0x1000, 0);
+        mModelAnim.SetFile((BMD_File *)dExtSimpleModel_c::LoadFile(data_ov063_0211edf4), 1, 1);
+        mModelAnim.SetAnim((BCA_File *)data_ov063_0211ede4.filePtr, 0, 0x1000, 0);
         mHitPoints = 3;
         mClsnRadius = 0xc8;
         mClsnHeight = 0x104;
@@ -3444,9 +3445,8 @@ int daTrs_c::InitResources()
     } else {
         mVariant = param1 & 0xf;
         dExtFrameCtrl_c::LoadFile(data_ov063_0211eddc);
-        mModelAnim.SetFile((BMD_File *)Model::LoadFile(data_ov063_0211edc4), 1, 0x16);
-        _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(
-            &mModelAnim, (BCA_File *)data_ov063_0211eddc.filePtr, 0, 0x1000, 0);
+        mModelAnim.SetFile((BMD_File *)dExtSimpleModel_c::LoadFile(data_ov063_0211edc4), 1, 0x16);
+        mModelAnim.SetAnim((BCA_File *)data_ov063_0211eddc.filePtr, 0, 0x1000, 0);
         mHitPoints = 1;
         if (mVariant == 5) {
             mClsnZBias = -0x24000;
@@ -3476,7 +3476,7 @@ int daTrs_c::InitResources()
     if (mVariant == 5) {
         mBooFlags.carrying = 1;
         mCarriedID = TRS_ID_T_BASKET;
-        Model::LoadFile(data_ov063_0211edec);
+        dExtSimpleModel_c::LoadFile(data_ov063_0211edec);
     } else if (mVariant == 0 || mVariant == 1 || mVariant == 2 || mVariant == 6 || (unsigned)(unsigned char)(mVariant + 0xf8) <= 3) {
         mdCcAcPos_c.vulnFlags |= 0x8000;
         mBooFlags.carrying = 1;
@@ -3639,7 +3639,7 @@ int daTrs_c::InitResources()
 // @symbol _ZN11daTBasket_c13InitResourcesEv
 int daTBasket_c::InitResources()
 {
-    BMD_File *bmd = (BMD_File *)Model::LoadFile(data_ov063_0211edec);
+    BMD_File *bmd = (BMD_File *)dExtSimpleModel_c::LoadFile(data_ov063_0211edec);
     if (mModel.SetFile(bmd, 1, -1) == 0)
         return 0;
     if (mShadowModel.InitCylinder() == 0)

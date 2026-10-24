@@ -280,15 +280,12 @@ void daEyBm_c::UpdateCollision(dBgCh_Actr &collision)
  * 0x02121b08, size 0x48. Particle::System::New is not yet shared-header
  * declared, so this exact typed ABI import remains local. */
 // @symbol _ZN8daEyBm_c18SpawnDestroyEffectEv
-extern "C" u32 _ZN8Particle6System3NewEjj5Fix12IiES2_S2_PK11Vector3_16fPNS_8CallbackE(
-    u32 uniqueID, u32 effectID, Fix12i x, Fix12i y, Fix12i z,
-    const Vector3_16f *rotation, Particle::Callback *callback);
+extern "C" u32 d_a_ey_bmNewHold(u32 uniqueID, u32 effectID, Fix12i x, Fix12i y, Fix12i z,
+                                const Vector3_16f *rotation, Particle::Callback *callback);
 
 void daEyBm_c::SpawnDestroyEffect()
 {
-    mParticle1 =
-        _ZN8Particle6System3NewEjj5Fix12IiES2_S2_PK11Vector3_16fPNS_8CallbackE(
-            0, 0x45, mPosX, mPosY, mPosZ, 0, 0);
+    mParticle1 = Particle::System::New(0, 0x45, mPosX, mPosY, mPosZ, 0, 0);
     MarkForDestruction();
 }
 

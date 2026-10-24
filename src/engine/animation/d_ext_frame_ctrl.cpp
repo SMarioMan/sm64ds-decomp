@@ -23,10 +23,6 @@
  * own files.
  *
  * leftovers:
- * - SetAnimation's definition stays a mangled extern-C free function:
- *   its declared signature takes Fix12<int> by value and wall 6az
- *   (notes/mwccarm-codegen.md) homes class-typed by-value parameters,
- *   so the member spelling changes bytes.
  * - Advance's `(int)this + 8` read-modify-write launder is load-bearing
  *   (the member reload the ROM's way; see the site comment).
  */
@@ -34,11 +30,6 @@
 
 extern "C" {
 int __aeabi_idivmod(int n, int d);
-/* SetAnimation's declared signature carries Fix12<int> by value and wall 6az
-   homes class-typed by-value parameters, so the definition stays a mangled
-   free function; scalar args keep the bytes.
-   local extern: byte-required, notes/mwccarm-codegen.md 6az */
-void _ZN15dExtFrameCtrl_c12SetAnimationEti5Fix12IiEt(dExtFrameCtrl_c *self, unsigned short numFrames, int flags, int speed, unsigned short startFrame);
 }
 
 #ifdef _MSC_VER
@@ -62,7 +53,7 @@ extern "C" dExtFrameCtrl_c *_ZN15dExtFrameCtrl_cD0Ev(dExtFrameCtrl_c *thiz) {
  * sets speed (+0xc) to 0x1000 = 1.0, in that order. C1 and C2 are the same
  * code (root class, nothing to chain); every ROM caller of C2 is a derived
  * base step -- MaterialChanger, TextureTransformer, TextureSequence and
- * ModelAnim construct their dExtFrameCtrl_c at its base offset. */
+ * dExtAnmModel_c construct their dExtFrameCtrl_c at its base offset. */
 dExtFrameCtrl_c::dExtFrameCtrl_c() {
     currFrame = 0;
     speed = 0x1000;
@@ -101,12 +92,11 @@ void dExtFrameCtrl_c::Advance()
     }
 }
 
-// @symbol _ZN15dExtFrameCtrl_c12SetAnimationEti5Fix12IiEt
-extern "C"
-void _ZN15dExtFrameCtrl_c12SetAnimationEti5Fix12IiEt(dExtFrameCtrl_c *self, unsigned short numFrames, int flags, int speed, unsigned short startFrame) {
-  *(int*)((char*)&self->numFramesAndFlags) = flags | (numFrames << 12);
-  *(int*)((char*)&self->currFrame) = startFrame << 12;
-  *(int*)((char*)&self->speed) = speed;
+// @symbol _ZN15dExtFrameCtrl_c12SetAnimationEtiit
+void dExtFrameCtrl_c::SetAnimation(u16 numFrames, int flags, Fix12i speed, u16 startFrame) {
+    *(int *)((char *)&this->numFramesAndFlags) = flags | (numFrames << 12);
+    *(int *)((char *)&this->currFrame) = startFrame << 12;
+    *(int *)((char *)&this->speed) = speed;
 }
 
 // @symbol _ZNK15dExtFrameCtrl_c13GetFrameCountEv

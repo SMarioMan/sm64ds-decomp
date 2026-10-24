@@ -29,7 +29,7 @@
  *
  * THE DESTRUCTOR IS DECLARED FIRST. One ~dCcAcPos_c() in
  * src/engine/collision/d_cc_ac.cpp emits D2, D0 and D1. D2 has no ROM home.
- * See include/ModelBase.h for the key-function rule.
+ * See include/dExtModel_c.h for the key-function rule.
  *
  * LAYOUT: dCcAc_c is 0x34 and pos starts at exactly 0x34, so the
  * object is 0x40.

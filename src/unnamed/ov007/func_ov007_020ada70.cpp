@@ -1,9 +1,16 @@
 //cpp
 #include "Ov007MenuState.h"
+
+namespace CP15 {
+void FlushAndInvalidateDataCache(unsigned int a, unsigned int b);
+}
+
+namespace GXS {
+void LoadOBJPltt(const void *p, unsigned int a, unsigned int b);
+}
 extern "C" {
 extern void func_ov007_020c32e8(void *a, int b, int c, int d);
-extern void _ZN4CP1527FlushAndInvalidateDataCacheEjj(unsigned int a, unsigned int b);
-extern void _ZN3GXS11LoadOBJPlttEPKvjj(const void *p, unsigned int a, unsigned int b);
+
 extern void RequestScreenFade(int a, int b, int c);
 extern void *data_ov007_0210342c;
 extern void func_ov007_020adb84(void);
@@ -64,8 +71,8 @@ void func_ov007_020ada70(void) {
     }
     char *base = r5->palettes[1]->colors;
     char *dst = base + (n << 5);
-    _ZN4CP1527FlushAndInvalidateDataCacheEjj((unsigned int)dst, 0x20);
-    _ZN3GXS11LoadOBJPlttEPKvjj(dst, 0x180, 0x20);
+    CP15::FlushAndInvalidateDataCache((unsigned int)dst, 0x20);
+    GXS::LoadOBJPltt(dst, 0x180, 0x20);
     RequestScreenFade(9, 2, (int)&func_ov007_020adb84);
 }
 }

@@ -1,8 +1,8 @@
 #ifndef DABRQ_C_H
 #define DABRQ_C_H
 
-#include "Model.h"
-#include "ModelAnim.h"
+#include "dExtSimpleModel_c.h"
+#include "dExtAnmModel_c.h"
 #include "dCcAcPos_c.h"
 #include "dExtShadowModel_c.h"
 #include "TextureSequence.h"
@@ -29,8 +29,8 @@ struct daBrq_c : dActor_c {
     };
 
     u8                        pad_0d0[0x4];
-    ModelAnim                 mModelAnim;                    /* 0x0d4 */
-    Model                     mModel;                        /* 0x138 */
+    dExtAnmModel_c mModelAnim;                               /* 0x0d4 */
+    dExtSimpleModel_c mModel;                                /* 0x138 */
     TextureSequence           mTextureSequence;              /* 0x188 */
     TextureTransformer        mTextureTransformer;           /* 0x19c */
     dExtShadowModel_c               mShadowModel;                  /* 0x1b0 */

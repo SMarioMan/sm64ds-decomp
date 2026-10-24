@@ -19,7 +19,7 @@ extern "C" void *_ZN7fBase_cnwEj(unsigned size);
  *   size  0x320             daObjIceBoard_c_classInit's own literal, which is
  *                           also dBgActor_c's own size: this class adds no
  *                           fields, and the destructor confirms it -- it
- *                           destroys only the inherited dBgW_KcMbg and Model
+ *                           destroys only the inherited dBgW_KcMbg and dExtSimpleModel_c
  *                           before chaining to dActor_c.
  * The coined `IceSheet` spelling this class used to carry is gone; the ROM's
  * own type string is where the class name now comes from.

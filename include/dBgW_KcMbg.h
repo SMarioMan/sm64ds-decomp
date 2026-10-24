@@ -11,14 +11,14 @@
  * this in turn. Overrides every slot except BeforeClsn (slot 9) and
  * GetSurfaceInfo (slot 3), both of which it inherits unchanged.
  *
- * THE DESTRUCTOR IS DECLARED FIRST -- see include/ModelBase.h for the
+ * THE DESTRUCTOR IS DECLARED FIRST -- see include/dExtModel_c.h for the
  * key-function rule. src/engine/collision/d_bg_w_kc_mbg.cpp defines it once
  * and the TU keeps all five structor variants.
  *
  * SetFile keeps an extern-C free definition: its mangled name carries
  * Fix12<int> by value (wall 6az). Its declaration here is the real
  * signature. SetFile and Transform copy matrices through a flat 12-word
- * view (the Model::Virtual10 lesson).
+ * view (the dExtSimpleModel_c::Virtual10 lesson).
  */
 
 #ifdef __cplusplus

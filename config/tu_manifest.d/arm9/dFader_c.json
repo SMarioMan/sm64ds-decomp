@@ -10,7 +10,7 @@
     "contiguous linker run 0x020171c8..0x0201787c: the thirty delinks entries tile the span exactly with no hole and no foreign function inside (config/arm9/delinks.txt, config/arm9/symbols.txt).",
     "class-label homogeneity: every symbol in the run is a member of the one inheritance chain -- dFdDummy_c : dFdColor_c : dFdBrightness_c : dFader_c, plus dFdWipe_c : dFdColor_c -- the screen-fade hierarchy documented in include/dFader_c.h.",
     "ROM evidence says one family: the vtable chain written by _ZN9dFdWipe_cC1Ev (0x0208eafc, 0x0208eacc, 0x0208eb2c, 0x0208ea9c) and the __si_class_type_info records (dFader_c -> dFdBrightness_c -> dFdColor_c -> dFdWipe_c / dFdDummy_c) are the same adjacency this run shows in .text.",
-    "neighbour below: the ModelAnim thunk row _ZThn80_N10ModelAnim2D1Ev at 0x020171b8 (a different class). Neighbour above: func_0201787c, a SharedFilePtr/Model helper of the TextureSequence family at 0x020178e4+. The run is bracketed rather than cut out of a uniform stretch.",
+    "neighbour below: the dExtAnmModel_c thunk row _ZThn80_N15dExtAnm2Model_cD1Ev at 0x020171b8 (a different class). Neighbour above: func_0201787c, a SharedFilePtr/dExtSimpleModel_c helper of the TextureSequence family at 0x020178e4+. The run is bracketed rather than cut out of a uniform stretch.",
     "Current production enrollment owns the complete .text run 0x020171c8..0x0201787c, including dFader_c D2/D0/D1. The earlier trimmed-tail experiment is superseded: the native destructor variants are included in this intact object, with no remaining D0/D1 shards."
   ],
   "sections": [

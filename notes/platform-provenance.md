@@ -27,14 +27,14 @@ named field:
 | sub-object | span | closes on |
 |---|---|---|
 | `dActor_c`   | 0x000 + 0x0d0 = 0x0d0 | `pad_0d0` |
-| `Model`      | 0x0d4 + 0x050 = 0x124 | `mMeshCollider` |
+| `dExtSimpleModel_c`      | 0x0d4 + 0x050 = 0x124 | `mMeshCollider` |
 | `dBgW_KcMbg` | 0x124 + 0x1c8 = 0x2ec | padding, then the clsn matrix |
 
 `mModel` and `mMeshCollider` are named by the class's own destructor calling
-`Model`'s D1 at +0x0d4 and `dBgW_KcMbg`'s at +0x124 — relocations the ROM build
+`dExtSimpleModel_c`'s D1 at +0x0d4 and `dBgW_KcMbg`'s at +0x124 — relocations the ROM build
 checks.
 
-**Four of the generated header's fields were the `Model`'s own insides** and are
+**Four of the generated header's fields were the `dExtSimpleModel_c`'s own insides** and are
 gone: `unk_0f0` (0x0d4 + 0x1c) and `unk_114` / `unk_118` / `unk_11c`
 (0x0d4 + 0x40 / +0x44 / +0x48). They had been declared as siblings of a
 `u8 mModel` marker whose pad stopped short of the real object.
@@ -50,7 +50,7 @@ same bytes twice.
 
 ### `sizeof` is 0x320, and it takes more than one derived class to see why
 
-`daKpa2Bg_c` starts its own `Model` at 0x324, which alone reads like the
+`daKpa2Bg_c` starts its own `dExtSimpleModel_c` at 0x324, which alone reads like the
 class ending there. But four classes derive from `dBgActor_c` **directly** — one
 non-`dBgActor_c` vtable store each, so no intermediate — and each places a
 4-byte-aligned class member at 0x320, impossible if this class occupied
@@ -58,7 +58,7 @@ non-`dBgActor_c` vtable store each, so no intermediate — and each places a
 
 | header name | RTTI name | member at 0x320 |
 |---|---|---|
-| `daObjDlPyramid_c`    | `daObjDlPyramid_c` | `Model` |
+| `daObjDlPyramid_c`    | `daObjDlPyramid_c` | `dExtSimpleModel_c` |
 | `daObjC0Water_c` | `daObjC0Water_c`   | `TextureTransformer` |
 | `daObjBk_Lift_c`     | `daObjBk_Lift_c`   | `ShadowModel` |
 | `daObjKanban_c`      | `daObjKanban_c`    | `dCcAcPos_c` |
@@ -68,7 +68,7 @@ at 0x320 before storing `_ZTV10dBgActor_c` and running the base.
 
 One layout satisfies all five: **data ends 0x31e, `sizeof` 0x320.** The four
 above align up from 0x31e to 0x320; `daKpa2Bg_c` puts its own three `s16`
-at 0x31e/0x320/0x322 so its `Model` lands at 0x324; `daObjRc_Guruguru_c` puts
+at 0x31e/0x320/0x322 so its `dExtSimpleModel_c` lands at 0x324; `daObjRc_Guruguru_c` puts
 a single `s16` at 0x31e, in this class's tail padding, and its `Behavior` reads
 `this+0x31e` and reproduces. Ending at 0x324 satisfies `daKpa2Bg_c` and
 contradicts the other four.
@@ -77,7 +77,7 @@ contradicts the other four.
 
 `Matrix4x3` has two guarded spellings that share the same 0x30 bytes: `common.h`'s
 flat `s32 m[12]`, and `math/Matrix.h`'s `{ Matrix3x3 r; Vector3 t; }`. Whichever a
-translation unit sees first stands. `Model.h` pulls in the second one, so without
+translation unit sees first stands. `dExtSimpleModel_c.h` pulls in the second one, so without
 the explicit `common.h` line ahead of it `dBgActor_c`'s TUs would get `.r`/`.t`.
 
 The ROM says it was the flat one here: `UpdateClsnPosAndRot` copies
@@ -143,7 +143,7 @@ migrated, so the header keeps a flat C spelling of the same object behind
 ## The standard derived-class argument
 
 For a class whose destructor stores its own vptr and then `dBgActor_c`'s
-(inlined), and destroys the `dBgW_KcMbg` at 0x124 and the `Model` at 0xd4 before
+(inlined), and destroys the `dBgW_KcMbg` at 0x124 and the `dExtSimpleModel_c` at 0xd4 before
 chaining to `dActor_c`: all three of those are `dBgActor_c`'s own. Everything such
 a header used to restate below 0x31e was `dActor_c`'s and `dBgActor_c`'s, and is
 inherited. This applies to `daObjSimpleLift_c`, `daObjFl_Block_c`,
@@ -322,7 +322,7 @@ never existed in this repo (see notes/minigame-provenance.md), shared by
 | 0x33c | `mNodeIndex` | `+= mNodeStep` |
 | 0x34c | `mNodeStep` | `= 1`; the increment applied to `mNodeIndex` |
 
-Left as `unk_`: `unk_094`, `unk_130` (inside the `Model` at 0xd4, +0x5c — an
+Left as `unk_`: `unk_094`, `unk_130` (inside the `dExtSimpleModel_c` at 0xd4, +0x5c — an
 animation field, not this class's), `unk_320`, `unk_330`, `unk_331` (set to 0x3c,
 so plausibly a one-second timer, but only ever written), `unk_350`, `unk_374`,
 `unk_37c`.
@@ -368,7 +368,7 @@ filename.**
 
 The daKpa_c-in-the-Sky drifting platform. ROM name `daObjKm3_Dorifu_c`. It does
 not derive from `dBgActor_c`; it derives from `daObjDorifu_c`, which does. The
-destructor stores three vptrs and destroys `daObjDorifu_c`'s `Model[5]` and
+destructor stores three vptrs and destroys `daObjDorifu_c`'s `dExtSimpleModel_c[5]` and
 `dBgW_KcMbg[5]` in between, all of it from the base declaration.
 
 | symbol/type | overlay | address/detail |
@@ -402,7 +402,7 @@ which lands exactly on the next member), and 0x350 + 0x30 closes on the 0x380
 
 ## `include/daObjKm2_Nobiru_c.h`
 
-The `Model` marker's pad ran 0x30 bytes past the end of the object; that space is
+The `dExtSimpleModel_c` marker's pad ran 0x30 bytes past the end of the object; that space is
 not evidenced and stays explicit padding rather than being folded into the
 member.
 

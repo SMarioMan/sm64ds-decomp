@@ -3,7 +3,7 @@
 
 #include "types.h"
 #include "dActor_c.h"
-#include "Model.h"
+#include "dExtSimpleModel_c.h"
 #include "dCcAc_c.h"
 
 struct Player;
@@ -13,7 +13,7 @@ struct Player;
  * {__si_class_type_info vtable+8, &_ZTS, _ZTI8dActor_c}, so the direct base is
  * dActor_c. The tree called the class Cannon until then.
  *
- * daCnn_c_classInit constructs dActor_c first, then the owned Model and dCcAc_c;
+ * daCnn_c_classInit constructs dActor_c first, then the owned dExtSimpleModel_c and dCcAc_c;
  * D1/D0 destroy those members in reverse before the actor base. The two
  * directions pin this inheritance and layout. SIZE IS THE ROM'S OWN: the
  * factory calls fBase_c::operator new(0x198).
@@ -33,7 +33,7 @@ struct Player;
  */
 struct daCnn_c : dActor_c {
     u8 pad_0d0[0x4];          /* 0x0d0 */
-    Model mModel;             /* 0x0d4 */
+    dExtSimpleModel_c mModel; /* 0x0d4 */
     dCcAc_c mdCcAc_c;         /* 0x124 */
     Player *mPlayer;          /* 0x158 -- the player riding the load sequence */
     s32 mSpawnPosX;           /* 0x15c */

@@ -9,7 +9,7 @@
 #ifndef DATRSTRAP_C_H
 #define DATRSTRAP_C_H
 #include "types.h"
-#include "Model.h"
+#include "dExtSimpleModel_c.h"
 #include "dBgW_KcMbg.h"
 #include "dActor_c.h"
 
@@ -17,7 +17,7 @@ extern "C" void *_ZN7fBase_cnwEj(unsigned size);
 
 struct daTrsTrap_c : dActor_c {
     u32 pad_0d0;                 /* 0x0d0 -- dActor_c closes at 0xd0, mModel opens at 0xd4 */
-    Model mModel;                /* 0x0d4 */
+    dExtSimpleModel_c mModel;    /* 0x0d4 */
     /* Set by the mesh-collision callback (func_ov063_0211d270) while the player
        (actor 0xbf) stands on the trapdoor; cleared every Behavior frame. The
        trapdoor state steers off its position, the merry-go-round off nullness. */

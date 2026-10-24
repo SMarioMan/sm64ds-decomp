@@ -147,7 +147,7 @@ s32 daKpa3Bg_c::InitResources()
     mVariant = (u8)(param1 & 0xf);
     data_0208e738 = 0;
     /* bmd is named for the @NNN count (see the banner). */
-    BMD_File *bmd = (BMD_File *)Model::LoadFile(*data_ov060_02119514[mVariant]);
+    BMD_File *bmd = (BMD_File *)dExtSimpleModel_c::LoadFile(*data_ov060_02119514[mVariant]);
     mModel.SetFile(bmd, 1, -1);
     CopyTexPalFromLevelModel(&mModel.data);
     data_0208e738 = 1;

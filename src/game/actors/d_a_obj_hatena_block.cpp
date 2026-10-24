@@ -34,7 +34,7 @@
  *
  * DO NOT "TIDY" THESE -- each one is load-bearing:
  *
- *   common.h must be included first. Otherwise Model.h's nested Matrix4x3
+ *   common.h must be included first. Otherwise dExtSimpleModel_c.h's nested Matrix4x3
  *   wins and func_ov102_02149e38 / 02149ff0 change size (0x18 / 0x1c).
  *
  *   The destructor stays inline; out of line, mwccarm emits D0 before D1.
@@ -56,7 +56,7 @@
  * WHY SOME CALLS ARE SPELLED AS MANGLED SYMBOLS:
  *
  *   (a) Fix12<int> passed by value (notes/mwccarm-codegen.md 6az). A
- *       method call homes the argument and the bytes move: ModelAnim::SetAnim and
+ *       method call homes the argument and the bytes move: dExtAnmModel_c::SetAnim and
  *       dBgW_KcMbg::SetFile (InitResources), dBgActor_c::IsClsnInRange
  *       (Behavior), dActor_c::DropShadowScaleXYZ (func_ov102_02149ea4),
  *       Particle::System::NewSimple (also absent from Particle.h).
@@ -217,12 +217,15 @@ extern void Matrix4x3_FromRotationY(void *m, int angle);
 extern void func_020393a4(int *p, int v);
 extern void func_02039394(int *p, int v);
 extern void _ZN8dActor_c10EarthquakeERK7Vector35Fix12IiE(void *self, void *pos, s32 radius);
-extern void _ZN8dActor_c18DropShadowScaleXYZER17dExtShadowModel_cR9Matrix4x35Fix12IiES5_S5_j(void *self, void *shadow, void *mtx, int fix, int t1, int t2, unsigned int n);
-extern int _ZN10dBgActor_c13IsClsnInRangeE5Fix12IiES1_(void *self, int a, int b);
-extern void _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(void *thiz, void *bca, int a, int fx, unsigned int f);
+extern void _ZN8dActor_c18DropShadowScaleXYZER17dExtShadowModel_cR9Matrix4x35Fix12IiES5_S5_j(
+    void *self, void *shadow, void *mtx, int fix, int t1, int t2, unsigned int n);
 extern void _ZN10dBgW_KcMbg7SetFileEP8KCL_FileRK9Matrix4x35Fix12IiEsR10CLPS_Block(void *thiz, void *kcl, void *mtx, int fix, short s, void *clps);
 extern void func_ov102_0214ad14(void *actor);
-extern void _ZN8Particle6System9NewSimpleEj5Fix12IiES2_S2_(unsigned id, int x, int y, int z);
+namespace Particle {
+struct System {
+    static void NewSimple(unsigned id, int x, int y, int z);
+};
+}
 
 /* Free: the block is its second argument (dst, src), so member form would
    swap the register operands. */
@@ -254,7 +257,7 @@ struct HatenaBlockClsnFileHandle : SharedFilePtr {
 /* -------------------------------------------------------------------------- */
 /* The six model handles, the animation handle and the collision handle, in
    static-initializer order: the initializer constructs each and registers
-   its destructor. InitResources feeds the models to Model::LoadFile, the
+   its destructor. InitResources feeds the models to dExtSimpleModel_c::LoadFile, the
    animation to dExtFrameCtrl_c::LoadFile and the collision one to
    dBgW_Kc::LoadFile. */
 /* -------------------------------------------------------------------------- */
@@ -362,30 +365,30 @@ int daObjHatenaBlock_c::InitResources()
     void *modelFile = 0;
     switch (actorID - ACTOR_HATENA_BLOCK) {
     case 0:   /* HATENA_BLOCK */
-        modelFile = Model::LoadFile(data_ov102_0214e7e8);
-        mModelAnim.SetFile((BMD_File *)Model::LoadFile(data_ov102_0214e808), 1, 0x19);
-        _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(
-            &mModelAnim, dExtFrameCtrl_c::LoadFile(data_ov102_0214e7f8), 0, 0x1000, 0);
-        Model::LoadFile(data_ov002_0210d9e0);
+        modelFile = dExtSimpleModel_c::LoadFile(data_ov102_0214e7e8);
+        mModelAnim.SetFile((BMD_File *)dExtSimpleModel_c::LoadFile(data_ov102_0214e808), 1, 0x19);
+        mModelAnim.SetAnim((BCA_File *)(dExtFrameCtrl_c::LoadFile(data_ov102_0214e7f8)), 0, 0x1000,
+                           0);
+        dExtSimpleModel_c::LoadFile(data_ov002_0210d9e0);
         break;
     case 1:   /* ITEM_BLOCK */
     case 2:   /* VS_ITEM_BLOCK */
-        modelFile = Model::LoadFile(data_ov102_0214e800);
+        modelFile = dExtSimpleModel_c::LoadFile(data_ov102_0214e800);
         break;
     case 3:   /* CAP_BLOCK_M */
-        modelFile = Model::LoadFile(data_ov102_0214e7f0);
-        Model::LoadFile(data_ov002_0210da40);
-        Model::LoadFile(data_ov002_0210d9e0);
+        modelFile = dExtSimpleModel_c::LoadFile(data_ov102_0214e7f0);
+        dExtSimpleModel_c::LoadFile(data_ov002_0210da40);
+        dExtSimpleModel_c::LoadFile(data_ov002_0210d9e0);
         break;
     case 5:   /* CAP_BLOCK_L */
-        modelFile = Model::LoadFile(data_ov102_0214e7d8);
-        Model::LoadFile(data_ov002_0210d9a0);
-        Model::LoadFile(data_ov002_0210d9e0);
+        modelFile = dExtSimpleModel_c::LoadFile(data_ov102_0214e7d8);
+        dExtSimpleModel_c::LoadFile(data_ov002_0210d9a0);
+        dExtSimpleModel_c::LoadFile(data_ov002_0210d9e0);
         break;
     case 4:   /* CAP_BLOCK_W */
-        modelFile = Model::LoadFile(data_ov102_0214e7e0);
-        Model::LoadFile(data_ov002_0210d9c0);
-        Model::LoadFile(data_ov002_0210d9e0);
+        modelFile = dExtSimpleModel_c::LoadFile(data_ov102_0214e7e0);
+        dExtSimpleModel_c::LoadFile(data_ov002_0210d9c0);
+        dExtSimpleModel_c::LoadFile(data_ov002_0210d9e0);
         break;
     }
 
@@ -419,7 +422,7 @@ int daObjHatenaBlock_c::InitResources()
         int b16 = !(actorID != ACTOR_VS_ITEM_BLOCK);
         if (b16 != 0) {
             mContentType = 0;
-            Model::LoadFile(*(SharedFilePtr *)data_ov002_0210da58);
+            dExtSimpleModel_c::LoadFile(*(SharedFilePtr *)data_ov002_0210da58);
         }
     }
 
@@ -437,27 +440,27 @@ int daObjHatenaBlock_c::InitResources()
     case CONTENT_STAR:
         break;
     case CONTENT_SHELL:
-        Model::LoadFile(data_ov002_0210da18);
+        dExtSimpleModel_c::LoadFile(data_ov002_0210da18);
         break;
     case CONTENT_ONEUP:
-        Model::LoadFile(data_ov002_0210d9d8);
+        dExtSimpleModel_c::LoadFile(data_ov002_0210d9d8);
         break;
     case CONTENT_SCALEUP_KINOKO:
-        Model::LoadFile(data_ov002_0210da30);
+        dExtSimpleModel_c::LoadFile(data_ov002_0210da30);
         break;
     case CONTENT_POWER_UP_7:
-        Model::LoadFile(*(SharedFilePtr *)gPFlowerOpenModelFile);
-        Model::LoadFile(*(SharedFilePtr *)gPFlowerCloseModelFile);
-        Model::LoadFile(data_ov002_0210d9e0);
+        dExtSimpleModel_c::LoadFile(*(SharedFilePtr *)gPFlowerOpenModelFile);
+        dExtSimpleModel_c::LoadFile(*(SharedFilePtr *)gPFlowerCloseModelFile);
+        dExtSimpleModel_c::LoadFile(data_ov002_0210d9e0);
         break;
     case CONTENT_POWER_UP_5:
-        Model::LoadFile(*(SharedFilePtr *)data_ov002_0210da58);
-        Model::LoadFile(*(SharedFilePtr *)gPFlowerOpenModelFile);
-        Model::LoadFile(*(SharedFilePtr *)gPFlowerCloseModelFile);
+        dExtSimpleModel_c::LoadFile(*(SharedFilePtr *)data_ov002_0210da58);
+        dExtSimpleModel_c::LoadFile(*(SharedFilePtr *)gPFlowerOpenModelFile);
+        dExtSimpleModel_c::LoadFile(*(SharedFilePtr *)gPFlowerCloseModelFile);
         break;
     case CONTENT_POWER_UP_6:
-        Model::LoadFile(*(SharedFilePtr *)gPFlowerOpenModelFile);
-        Model::LoadFile(*(SharedFilePtr *)gPFlowerCloseModelFile);
+        dExtSimpleModel_c::LoadFile(*(SharedFilePtr *)gPFlowerOpenModelFile);
+        dExtSimpleModel_c::LoadFile(*(SharedFilePtr *)gPFlowerCloseModelFile);
         break;
     }
 end:
@@ -516,12 +519,12 @@ int daObjHatenaBlock_c::Behavior()
         }
     }
     if (data_0209f2f8 == 0x1c) {   /* LEVEL_ID 0x1c */
-        if (_ZN10dBgActor_c13IsClsnInRangeE5Fix12IiES1_(this, 0x460000, 0x46000) != 0) {
+        if (IsClsnInRange(0x460000, 0x46000) != 0) {
             func_ov102_02149e38();
         }
         goto end;
     }
-    if (_ZN10dBgActor_c13IsClsnInRangeE5Fix12IiES1_(this, 0x118000, 0x46000) != 0) {
+    if (IsClsnInRange(0x118000, 0x46000) != 0) {
         func_ov102_02149e38();
     }
 end:
@@ -845,16 +848,19 @@ void daObjHatenaBlock_c::func_ov102_021498e0()
         mHeldActor = 0;
     }
     Sound::PlayBank3(0, mCamSpacePos);
-    _ZN8Particle6System9NewSimpleEj5Fix12IiES2_S2_(0xb, pos.x, pos.y, pos.z);
-    _ZN8Particle6System9NewSimpleEj5Fix12IiES2_S2_(0xd, pos.x, pos.y, pos.z);
+    Particle::System::NewSimple(0xb, pos.x, pos.y, pos.z);
+    Particle::System::NewSimple(0xd, pos.x, pos.y, pos.z);
     typ = actorID;
     switch (typ - ACTOR_HATENA_BLOCK) {
     case 1: case 2:   /* ITEM_BLOCK, VS_ITEM_BLOCK */
-        _ZN8Particle6System9NewSimpleEj5Fix12IiES2_S2_(0x10, pos.x, pos.y, pos.z); break;
+        Particle::System::NewSimple(0x10, pos.x, pos.y, pos.z);
+        break;
     case 0:           /* HATENA_BLOCK */
-        _ZN8Particle6System9NewSimpleEj5Fix12IiES2_S2_(0xc, pos.x, pos.y, pos.z); break;
+        Particle::System::NewSimple(0xc, pos.x, pos.y, pos.z);
+        break;
     case 3: case 4: case 5:   /* CAP_BLOCK_M, W, L */
-        _ZN8Particle6System9NewSimpleEj5Fix12IiES2_S2_(9, pos.x, pos.y, pos.z); break;
+        Particle::System::NewSimple(9, pos.x, pos.y, pos.z);
+        break;
     }
     ch = (int)mHitterParam;
     if (ch < 0) ch = 0; else if (ch > 3) ch = 3;

@@ -5,16 +5,16 @@
 
 /* Derives from dBgActor_c: the destructor stores this class's vtable, then
  * dBgActor_c's -- inlined -- then destroys the dBgW_KcMbg at 0x124 and
- * the Model at 0xd4 before chaining to dActor_c. All three belong to dBgActor_c.
+ * the dExtSimpleModel_c at 0xd4 before chaining to dActor_c. All three belong to dBgActor_c.
  * Everything this header used to restate below 0x31e was dActor_c's and
  * dBgActor_c's, and is inherited now.
  *
  * SIZE IS THE OBSERVED FIELD SPAN, rounded up. It guards this declaration; it
  * is not independent evidence about the ROM.
  *
- * dBgActor_c.h FIRST so common.h beats Model.h on Matrix4x3 (the two guarded
+ * dBgActor_c.h FIRST so common.h beats dExtSimpleModel_c.h on Matrix4x3 (the two guarded
  * spellings over the same 0x30 bytes). This class's TU does not copy a
- * Matrix4x3, but the header used to pull Model.h ahead of the base and that
+ * Matrix4x3, but the header used to pull dExtSimpleModel_c.h ahead of the base and that
  * is the order UpdateClsnPosAndRot refuses.
  *
  * The flat-C `#else` spelling this header used to carry is gone: it existed

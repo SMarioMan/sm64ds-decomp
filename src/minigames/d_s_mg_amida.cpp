@@ -86,6 +86,11 @@ enum dScMgAmida_c_AssetId {
 #include "SpawnInfo.h"
 #include "nitro/fx/fx.h"
 
+namespace G2S {
+unsigned int GetBG1CharPtr(void);
+void *GetBG1ScrPtr(void);
+}
+
 extern "C" {
 /* --- shared ov004 and main helpers --- */
 extern void Mg_RenderSpriteBoth(void *a0, int a1, int a2, int a3, int a4);
@@ -109,8 +114,6 @@ extern void func_020126ac(int a0, int a1, int a2, int a3, int a4);
 extern int func_02012468(int handle, int a, int sfx, int b, int c, int d, int pan, short e);
 extern void func_02012790(int sfx);
 extern int GetGameLanguage(void);
-extern unsigned int _ZN3G2S13GetBG1CharPtrEv(void);
-extern void *_ZN3G2S12GetBG1ScrPtrEv(void);
 
 /* --- the class's own functions defined below --- */
 extern void Amida_RestoreBgChars(void *);
@@ -290,9 +293,9 @@ int dScMgAmida_c::InitSubScreenBg() {
     SetSubBg1Offset(0, 0);
     data_0209d454 = (unsigned char)(data_0209d454 & ~2);
     id = GetGameLanguage();
-    t = (void *)_ZN3G2S13GetBG1CharPtrEv();
+    t = (void *)G2S::GetBG1CharPtr();
     LoadCompressedFileAt(sAmidaOptionNcgByLanguage[id], t);
-    LoadCompressedFileAt(ASSET_D_2D_MG_BG_OPTION_NSC_BIN, _ZN3G2S12GetBG1ScrPtrEv());
+    LoadCompressedFileAt(ASSET_D_2D_MG_BG_OPTION_NSC_BIN, G2S::GetBG1ScrPtr());
 }
 
 // @symbol _ZN12dScMgAmida_c12ShuffleGoalsEi

@@ -607,7 +607,7 @@
   "notes": [
     "Whole class, text only. The abutting registry factory daSnowman_c_classInit (0x02125ec0) was folded in by the 0930c classInit fold (below).",
     "Renamed from the cartridge type string 11daSnowman_c. The coined vtable label was dropped; the ROM name _ZTV11daSnowman_c stays.",
-    "classInit fold (0930c): daSnowman_c_classInit is folded in last, in ROM order, under the file's `#pragma defer_codegen off`, as `return new daSnowman_c();`. The retired one-function source hand-called fBase_c::operator new(1132 = 0x46c), dEnemyBase_c's C2 constructor, this class's vtable store and the four member C1 constructors (dCcAcPos_c 0x110, dBgCh_Actr 0x150, ModelAnim 0x30c, dExtShadowModel_c 0x370); daSnowman_c has no user-declared constructor, so the synthesized one emits the identical sequence and no new compiler-only output. tubuild verify: 35/35 MATCH, objisolate clean, reloc-destinations clean, TEXT-VERIFIED. Retired src/d_a_snowman.c; its credit carries in attribution.json as a path#symbol override.",
+    "classInit fold (0930c): daSnowman_c_classInit is folded in last, in ROM order, under the file's `#pragma defer_codegen off`, as `return new daSnowman_c();`. The retired one-function source hand-called fBase_c::operator new(1132 = 0x46c), dEnemyBase_c's C2 constructor, this class's vtable store and the four member C1 constructors (dCcAcPos_c 0x110, dBgCh_Actr 0x150, dExtAnmModel_c 0x30c, dExtShadowModel_c 0x370); daSnowman_c has no user-declared constructor, so the synthesized one emits the identical sequence and no new compiler-only output. tubuild verify: 35/35 MATCH, objisolate clean, reloc-destinations clean, TEXT-VERIFIED. Retired src/d_a_snowman.c; its credit carries in attribution.json as a path#symbol override.",
     "Folded __sinit_ov081_02128154 into this TU. The compiler now emits the initializer, the seven file handles, their registration nodes and the ten state tables. The class vtable and RTTI stay deadstrip-data, outside the licensed data span.",
     "LOCAL WORKER NOTE: this machine stock dump is the EU image (gamecode ASMP), so the scratch link built ROM sha256 ddab9300b24aeae254192c2a30d812b07ece3adff83230e75c865ed915c9de40, byte-identical to this tree stock build and to the strict control, while the recorded rom.sha256 carries the fleet-canonical stock SHA-256 that every other intact entry on main shares (d1506e90efae5e2d2cf119926a4ac2a291bd5ca78349d09d5024e1a918c478e8). The divergent bytes are NDS container fields outside every module range. The content proof is the same either way: moduleSetSha256 f9852ffaf80ef19662ab5535df4b13b935188ac3087b5b1d4561c089e4dd802b, 106/106 modules, and the five owned ranges identical."
   ],
@@ -2200,137 +2200,137 @@
   ],
   "defined_symbol_renames": [
     {
-      "from": "@1396",
+      "from": "@1386",
       "to": "@1357",
       "evidence": "compiler temp; the types.h Vector3 ctors shift this TU's per-TU @NNN uniquifier, so mwcc emits it under this name now; licensed under the existing pin"
     },
     {
-      "from": "@1397",
+      "from": "@1387",
       "to": "@1358",
       "evidence": "compiler temp; the types.h Vector3 ctors shift this TU's per-TU @NNN uniquifier, so mwcc emits it under this name now; licensed under the existing pin"
     },
     {
-      "from": "@1398",
+      "from": "@1388",
       "to": "@1359",
       "evidence": "compiler temp; the types.h Vector3 ctors shift this TU's per-TU @NNN uniquifier, so mwcc emits it under this name now; licensed under the existing pin"
     },
     {
-      "from": "@1399",
+      "from": "@1389",
       "to": "@1360",
       "evidence": "compiler temp; the types.h Vector3 ctors shift this TU's per-TU @NNN uniquifier, so mwcc emits it under this name now; licensed under the existing pin"
     },
     {
-      "from": "@1400",
+      "from": "@1390",
       "to": "@1361",
       "evidence": "compiler temp; the types.h Vector3 ctors shift this TU's per-TU @NNN uniquifier, so mwcc emits it under this name now; licensed under the existing pin"
     },
     {
-      "from": "@1401",
+      "from": "@1391",
       "to": "@1362",
       "evidence": "compiler temp; the types.h Vector3 ctors shift this TU's per-TU @NNN uniquifier, so mwcc emits it under this name now; licensed under the existing pin"
     },
     {
-      "from": "@1402",
+      "from": "@1392",
       "to": "@1363",
       "evidence": "compiler temp; the types.h Vector3 ctors shift this TU's per-TU @NNN uniquifier, so mwcc emits it under this name now; licensed under the existing pin"
     },
     {
-      "from": "@1406",
+      "from": "@1396",
       "to": "@1367",
       "evidence": "compiler temp; the types.h Vector3 ctors shift this TU's per-TU @NNN uniquifier, so mwcc emits it under this name now; licensed under the existing pin"
     },
     {
-      "from": "@1408",
+      "from": "@1398",
       "to": "@1369",
       "evidence": "compiler temp; the types.h Vector3 ctors shift this TU's per-TU @NNN uniquifier, so mwcc emits it under this name now; licensed under the existing pin"
     },
     {
-      "from": "@1412",
+      "from": "@1402",
       "to": "@1373",
       "evidence": "compiler temp; the types.h Vector3 ctors shift this TU's per-TU @NNN uniquifier, so mwcc emits it under this name now; licensed under the existing pin"
     },
     {
-      "from": "@1414",
+      "from": "@1404",
       "to": "@1375",
       "evidence": "compiler temp; the types.h Vector3 ctors shift this TU's per-TU @NNN uniquifier, so mwcc emits it under this name now; licensed under the existing pin"
     },
     {
-      "from": "@1418",
+      "from": "@1408",
       "to": "@1379",
       "evidence": "compiler temp; the types.h Vector3 ctors shift this TU's per-TU @NNN uniquifier, so mwcc emits it under this name now; licensed under the existing pin"
     },
     {
-      "from": "@1420",
+      "from": "@1410",
       "to": "@1381",
       "evidence": "compiler temp; the types.h Vector3 ctors shift this TU's per-TU @NNN uniquifier, so mwcc emits it under this name now; licensed under the existing pin"
     },
     {
-      "from": "@1424",
+      "from": "@1414",
       "to": "@1385",
       "evidence": "compiler temp; the types.h Vector3 ctors shift this TU's per-TU @NNN uniquifier, so mwcc emits it under this name now; licensed under the existing pin"
     },
     {
-      "from": "@1426",
+      "from": "@1416",
       "to": "@1387",
       "evidence": "compiler temp; the types.h Vector3 ctors shift this TU's per-TU @NNN uniquifier, so mwcc emits it under this name now; licensed under the existing pin"
     },
     {
-      "from": "@1430",
+      "from": "@1420",
       "to": "@1391",
       "evidence": "compiler temp; the types.h Vector3 ctors shift this TU's per-TU @NNN uniquifier, so mwcc emits it under this name now; licensed under the existing pin"
     },
     {
-      "from": "@1432",
+      "from": "@1422",
       "to": "@38",
       "evidence": "compiler temp; the types.h Vector3 ctors shift this TU's per-TU @NNN uniquifier, so mwcc emits it under this name now; licensed under the existing pin"
     },
     {
-      "from": "@1436",
+      "from": "@1426",
       "to": "@39",
       "evidence": "compiler temp; the types.h Vector3 ctors shift this TU's per-TU @NNN uniquifier, so mwcc emits it under this name now; licensed under the existing pin"
     },
     {
-      "from": "@1438",
+      "from": "@1428",
       "to": "@40",
       "evidence": "compiler temp; the types.h Vector3 ctors shift this TU's per-TU @NNN uniquifier, so mwcc emits it under this name now; licensed under the existing pin"
     },
     {
-      "from": "@1442",
+      "from": "@1432",
       "to": "@41",
       "evidence": "compiler temp; the types.h Vector3 ctors shift this TU's per-TU @NNN uniquifier, so mwcc emits it under this name now; licensed under the existing pin"
     },
     {
-      "from": "@1444",
+      "from": "@1434",
       "to": "@202",
       "evidence": "compiler temp; the types.h Vector3 ctors shift this TU's per-TU @NNN uniquifier, so mwcc emits it under this name now; licensed under the existing pin"
     },
     {
-      "from": "@1448",
+      "from": "@1438",
       "to": "@204",
       "evidence": "compiler temp; the types.h Vector3 ctors shift this TU's per-TU @NNN uniquifier, so mwcc emits it under this name now; licensed under the existing pin"
     },
     {
-      "from": "@1450",
+      "from": "@1440",
       "to": "@205",
       "evidence": "compiler temp; the types.h Vector3 ctors shift this TU's per-TU @NNN uniquifier, so mwcc emits it under this name now; licensed under the existing pin"
     },
     {
-      "from": "@1454",
+      "from": "@1444",
       "to": "@206",
       "evidence": "compiler temp; the types.h Vector3 ctors shift this TU's per-TU @NNN uniquifier, so mwcc emits it under this name now; licensed under the existing pin"
     },
     {
-      "from": "@1456",
+      "from": "@1446",
       "to": "@207",
       "evidence": "compiler temp; the types.h Vector3 ctors shift this TU's per-TU @NNN uniquifier, so mwcc emits it under this name now; licensed under the existing pin"
     },
     {
-      "from": "@1460",
+      "from": "@1450",
       "to": "@208",
       "evidence": "compiler temp; the types.h Vector3 ctors shift this TU's per-TU @NNN uniquifier, so mwcc emits it under this name now; licensed under the existing pin"
     },
     {
-      "from": "@1462",
+      "from": "@1452",
       "to": "@209",
       "evidence": "compiler temp; the types.h Vector3 ctors shift this TU's per-TU @NNN uniquifier, so mwcc emits it under this name now; licensed under the existing pin"
     }

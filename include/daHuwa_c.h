@@ -12,7 +12,7 @@
  * The members close on each other, which is what makes the layout a reading
  * rather than a guess:
  *
- *     0x110 ModelAnim                  0x64    -> 0x174
+ *     0x110 dExtAnmModel_c                  0x64    -> 0x174
  *     0x174 dExtShadowModel_c                0x28    -> 0x19c
  *     0x19c dCcAc_c         0x34    -> 0x1d0
  *     0x1d0 dBgCh_Actr               0x1bc   -> 0x38c
@@ -35,13 +35,13 @@
  */
 
 #include "dEnemyBase_c.h"
-#include "ModelAnim.h"
+#include "dExtAnmModel_c.h"
 #include "dCcAc_c.h"
 #include "dExtShadowModel_c.h"
 #include "dBgCh_Actr.h"
 
 struct daHuwa_c : dEnemyBase_c {
-    ModelAnim                    mModelAnim;            /* 0x110 */
+    dExtAnmModel_c mModelAnim;                                /* 0x110 */
     dExtShadowModel_c                  mShadowModel;          /* 0x174 */
     dCcAc_c                      mdCcAc_c;              /* 0x19c */
     dBgCh_Actr                   mWithMeshClsn;         /* 0x1d0 */

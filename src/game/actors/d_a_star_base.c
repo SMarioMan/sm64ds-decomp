@@ -14,7 +14,7 @@
 struct daStarBase_c {
     u8 pad_000[0xd4];
     u8 mdCcAcPos_c[0x40];  /* 0x0d4 -- dCcAcPos_c */
-    u8 mModel[0x50];       /* 0x114 -- Model */
+    u8 mModel[0x50];       /* 0x114 -- dExtSimpleModel_c */
     u8 mShadowModel[0x28]; /* 0x164 -- dExtShadowModel_c */
 };
 
@@ -29,7 +29,7 @@ int *daStarBase_c_classInit(void)
         _ZN8dActor_cC2Ev(p);
         p[0] = (int)_ZTV12daStarBase_c;
         _ZN10dCcAcPos_cC1Ev(((struct daStarBase_c *)p)->mdCcAcPos_c);
-        _ZN5ModelC1Ev(((struct daStarBase_c *)p)->mModel);
+        _ZN17dExtSimpleModel_cC1Ev(((struct daStarBase_c *)p)->mModel);
         _ZN17dExtShadowModel_cC1Ev(((struct daStarBase_c *)p)->mShadowModel);
     }
     return p;

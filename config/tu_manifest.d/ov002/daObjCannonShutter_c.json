@@ -684,14 +684,14 @@
   ],
   "defined_symbol_renames": [
     {
-      "from": "@665",
+      "from": "@656",
       "to": "@651",
-      "evidence": "compiler temp; the types.h Vector3 ctors shift this TU's per-TU @NNN uniquifier, so mwcc emits it under this name now; licensed under the existing pin"
+      "evidence": "compiler temp; the types.h Vector3 ctors shift this TU's per-TU @NNN uniquifier, so mwcc emits it under this name now; licensed under the existing pin. Deleting the leaf operator new from daObjCannonShutter_c.h moved the emission from @665 to @659 (same entity: section 21, symbol index 22)"
     },
     {
-      "from": "@666",
+      "from": "@657",
       "to": "@652",
-      "evidence": "compiler temp; the types.h Vector3 ctors shift this TU's per-TU @NNN uniquifier, so mwcc emits it under this name now; licensed under the existing pin"
+      "evidence": "compiler temp; the types.h Vector3 ctors shift this TU's per-TU @NNN uniquifier, so mwcc emits it under this name now; licensed under the existing pin. Deleting the leaf operator new from daObjCannonShutter_c.h moved the emission from @666 to @660 (same entity: section 14, symbol index 21)"
     }
   ]
 }

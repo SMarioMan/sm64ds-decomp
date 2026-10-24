@@ -663,22 +663,22 @@
   ],
   "defined_symbol_renames": [
     {
-      "from": "@995",
+      "from": "@990",
       "to": "@169",
       "evidence": "Native factory constructor declarations change raw @1006 to @1007; identical complete initializer bytes and typed ABS32 edge at 0xbc identify this same 12B destructor-registration node. Canonical target @169 unchanged."
     },
     {
-      "from": "@996",
+      "from": "@991",
       "to": "@170",
       "evidence": "Native factory constructor declarations change raw @1007 to @1008; identical complete initializer bytes and typed ABS32 edge at 0xc8 identify this same 12B destructor-registration node. Canonical target @170 unchanged."
     },
     {
-      "from": "@997",
+      "from": "@992",
       "to": "@171",
       "evidence": "Native factory constructor declarations change raw @1008 to @1009; identical complete initializer bytes and typed ABS32 edge at 0xd8 identify this same 12B destructor-registration node. Canonical target @171 unchanged."
     },
     {
-      "from": "@998",
+      "from": "@993",
       "to": "@172",
       "evidence": "Native factory constructor declarations change raw @1009 to @1010; identical complete initializer bytes and typed ABS32 edge at 0xe4 identify this same 12B destructor-registration node. Canonical target @172 unchanged."
     }

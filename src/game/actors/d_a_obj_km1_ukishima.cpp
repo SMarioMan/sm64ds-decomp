@@ -68,7 +68,6 @@ extern CLPS_Block    data_ov043_02111c00;   /* the CLPS block SetFile is handed 
 unsigned char DecIfAbove0_Byte(unsigned char *p);
 void func_020393d4(dBgW *bgw, void *fn);
 
-int _ZN10dBgActor_c13IsClsnInRangeE5Fix12IiES1_(dBgActor_c *self, int a, int b);
 void _ZN10dBgW_KcMbg7SetFileEP8KCL_FileRK9Matrix4x35Fix12IiEsR10CLPS_Block(
     dBgW_KcMbg *self, KCL_File *kcl, const Matrix4x3 *mtx, int scale,
     s16 angleY, CLPS_Block *clps);
@@ -98,7 +97,7 @@ extern "C" daObjKm1_Ukishima_c *daObjKm1_Ukishima_c_classInit()
  * so this one call deliberately retains the measured register-level view. */
 s32 daObjKm1_Ukishima_c::InitResources()
 {
-    mModel.SetFile((BMD_File *)Model::LoadFile(data_ov043_021125e8), 1, -1);
+    mModel.SetFile((BMD_File *)dExtSimpleModel_c::LoadFile(data_ov043_021125e8), 1, -1);
     UpdateModelPosAndRotY();
     UpdateClsnPosAndRot();
 
@@ -137,7 +136,7 @@ s32 daObjKm1_Ukishima_c::Behavior()
 
     UpdatePos(0);
     UpdateModelPosAndRotY();
-    if (_ZN10dBgActor_c13IsClsnInRangeE5Fix12IiES1_(this, 0, 0))
+    if (IsClsnInRange(0, 0))
         UpdateClsnPosAndRot();
 
     return 1;

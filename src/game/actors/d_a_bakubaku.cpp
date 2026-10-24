@@ -108,8 +108,6 @@ void Matrix4x3_ApplyInPlaceToRotationX(void *m, s16 angX);
 void MulVec3Mat4x3(void *in, void *m, void *out);
 
 /* local extern: retain the matched scalar ABI; native Fix12<int> calls remain pending. */
-void _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(
-    void *self, void *bca, int a, int fix, unsigned int b);
 void _ZN10dCcAcPos_c4InitEP8dActor_cRK7Vector35Fix12IiES6_jj(
     dCcAcPos_c *self, dActor_c *actor, const Vector3 &offset,
     int radius, int height, u32 d, u32 e);
@@ -173,7 +171,7 @@ s32 daBakubaku_c::InitResources()
     Vector3 headOffset;
     void *f;
 
-    f = Model::LoadFile(*(SharedFilePtr *)&gBakubakuModelFile);
+    f = dExtSimpleModel_c::LoadFile(*(SharedFilePtr *)&gBakubakuModelFile);
     mModelAnim.SetFile((BMD_File *)f, 1, -1);
     mShadowModel.InitCylinder();
     dExtFrameCtrl_c::LoadFile(*(SharedFilePtr *)&data_ov032_02113a50);
@@ -201,8 +199,7 @@ s32 daBakubaku_c::InitResources()
         &mWithMeshClsn, this, 0x64000, 0, 0, 0);
 
     mTerminalVelocity = -0x1e000;
-    _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(
-        &mModelAnim, (BCA_File *)data_ov032_02113a50.filePtr, 0, 0x1000, 0);
+    mModelAnim.SetAnim((BCA_File *)data_ov032_02113a50.filePtr, 0, 0x1000, 0);
     mModelAnim.speed = 0x1000;
 
     func_ov032_02111ff4((State *)&data_ov032_02113a8c);
@@ -272,7 +269,7 @@ s32 daBakubaku_c::CleanupResources()
     return 1;
 }
 
-/* Model matrix, shadow matrix, drop shadow. */
+/* dExtSimpleModel_c matrix, shadow matrix, drop shadow. */
 // @symbol _ZN12daBakubaku_c19func_ov032_02112044Ev
 void daBakubaku_c::func_ov032_02112044()
 {
@@ -401,8 +398,7 @@ int daBakubaku_c::func_ov032_02111b9c()
     /* Out of time, chase aborted, or no target: back to wandering. */
     if (*(unsigned short *)&mStateTimer == 0 || func_ov032_02111350() == 1 ||
         func_ov032_02111254() == 0) {
-        _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(
-            &mModelAnim, (BCA_File *)data_ov032_02113a50.filePtr, 0, 0x1000, 0);
+        mModelAnim.SetAnim((BCA_File *)data_ov032_02113a50.filePtr, 0, 0x1000, 0);
         mChaseCooldown = 0x64;
         func_ov032_02111ff4((State *)&data_ov032_02113a8c);
         return 1;
@@ -422,8 +418,7 @@ int daBakubaku_c::func_ov032_02111b9c()
             mStateTimer = 0;
             mHorzSpeed = 0x14000;
             unk_429 = 0;
-            _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(
-                &mModelAnim, (BCA_File *)data_ov032_02113a48.filePtr, 0x40000000, 0x1000, 0);
+            mModelAnim.SetAnim((BCA_File *)data_ov032_02113a48.filePtr, 0x40000000, 0x1000, 0);
             if (mAngTarget > 0)
                 func_ov032_02111ff4(&data_ov032_02113a7c);
             else
@@ -523,9 +518,7 @@ int daBakubaku_c::func_ov032_02111830()
                 mFlags = 3; /* profile clip bits 1|2 */
                 mBodyClsn.flags &= ~kCcCharMove;
                 mHeadClsn.flags &= ~kCcCharMove;
-                _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(
-                    &mModelAnim, (BCA_File *)data_ov032_02113a50.filePtr,
-                    0, 0x1000, 0);
+                mModelAnim.SetAnim((BCA_File *)data_ov032_02113a50.filePtr, 0, 0x1000, 0);
                 func_ov032_02111ff4((State *)&data_ov032_02113a8c);
                 return 1;
             }
@@ -591,8 +584,7 @@ int daBakubaku_c::func_ov032_02111620()
             mChaseCooldown = 0x64;
             mAngTarget = mAngleY;
             mFlags = 3;
-            _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(
-                &mModelAnim, (BCA_File *)data_ov032_02113a50.filePtr, 0, 0x1000, 0);
+            mModelAnim.SetAnim((BCA_File *)data_ov032_02113a50.filePtr, 0, 0x1000, 0);
             func_ov032_02111ff4((State *)&data_ov032_02113a8c);
         }
     } else {

@@ -10,7 +10,7 @@
 
 /* fwd */
 struct dCc_c;
-struct ModelAnim;
+struct dExtAnmModel_c;
 struct Player;
 struct Vector3_16;
 struct dBgCh_Actr;
@@ -106,7 +106,7 @@ struct dEnemyBase_c : dActor_c {
        constructor and inlines it into every subclass that has one, turning a
        single `bl _ZN12dEnemyBase_cC2Ev` into the whole dActor_c/fBase_c vtable-store
        chain written out in place. The ROM calls it at 0x020aed98. Same
-       reasoning as the note on Model(); see include/Model.h. */
+       reasoning as the note on dExtSimpleModel_c(); see include/dExtSimpleModel_c.h. */
     dEnemyBase_c();
 
     virtual ~dEnemyBase_c();                   /* slots 0 (D1), 1 (D0) */
@@ -153,7 +153,7 @@ struct dEnemyBase_c : dActor_c {
        second parameter is the dCc_c the caller was handed, passed as raw
        bytes because that class has no header here. */
     void SpawnMegaCharParticles(dActor_c &other_, char *p_);
-    int UpdateKillByInvincibleChar(dBgCh_Actr &clsn_, ModelAnim &anim_, unsigned int flags_);
+    int UpdateKillByInvincibleChar(dBgCh_Actr &clsn_, dExtAnmModel_c &anim_, unsigned int flags_);
     /* RESOLVED 2026-08-27. Both halves of the old PROVISIONAL note held up, and
        both are now fixed in config rather than carried as a caveat here.
 

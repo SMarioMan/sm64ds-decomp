@@ -91,9 +91,12 @@ extern int data_ov091_02135138[];
 void func_ov091_02132ff4(char *self); /* hover */
 void func_ov091_02132e98(char *self); /* rest */
 void func_ov091_02132e64(char *self); /* recover */
-void *_ZN8Particle6System9NewSimpleEj5Fix12IiES2_S2_(unsigned int id, int x, int y, int z);
+namespace Particle {
+struct System {
+    static void *NewSimple(unsigned int id, int x, int y, int z);
+};
+}
 void func_02012694(unsigned int id, const Vector3 *pos);
-int _ZN10dBgActor_c13IsClsnInRangeE5Fix12IiES1_(void *self, int radius, int yOffset);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -201,8 +204,7 @@ int daDsn_c::Behavior()
     }
     UpdateModelPosAndRotY();
     func_ov091_02133098(); /* drop shadow */
-    if (_ZN10dBgActor_c13IsClsnInRangeE5Fix12IiES1_(this, 0, 0) != 0 ||
-        func_ov091_02132dc0() != 0) /* Yoshi egg within mClipRadius */
+    if (IsClsnInRange(0, 0) != 0 || func_ov091_02132dc0() != 0) /* Yoshi egg within mClipRadius */
         UpdateClsnPosAndRot();
     return 1;
 }
@@ -220,7 +222,7 @@ void daDsn_c::OnHitByMegaChar(Player &player)
     poofPos.y = mPosY;
     poofPos.z = mPosZ;
     poofPos.y += OnAimedAtWithEgg();
-    _ZN8Particle6System9NewSimpleEj5Fix12IiES2_S2_(0x48, poofPos.x, poofPos.y, poofPos.z);
+    Particle::System::NewSimple(0x48, poofPos.x, poofPos.y, poofPos.z);
     Vector3 poofPosCopy;
     poofPosCopy.x = poofPos.x;
     poofPosCopy.y = poofPos.y;

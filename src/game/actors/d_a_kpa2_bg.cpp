@@ -150,7 +150,7 @@ s32 daKpa2Bg_c::Behavior()
 // @symbol _ZN10daKpa2Bg_c13InitResourcesEv
 int daKpa2Bg_c::InitResources()
 {
-    mModel2.SetFile((BMD_File *)Model::LoadFile(daKpa2Bg_c_ModelFile), 1, -1);
+    mModel2.SetFile((BMD_File *)dExtSimpleModel_c::LoadFile(daKpa2Bg_c_ModelFile), 1, -1);
     func_ov060_02117a64();
     _ZN10dBgW_KcMbg7SetFileEP8KCL_FileRK9Matrix4x35Fix12IiEsR10CLPS_Block(
         &mMovingMeshCollider2,
@@ -167,7 +167,7 @@ int daKpa2Bg_c::InitResources()
 
 /* `new daKpa2Bg_c` is the whole sequence the loose factory spelled by hand:
  * fBase_c::operator new(0x570), dBgActor_c's base constructor, the vptr store,
- * then the Model and dBgW_KcMbg member constructors. */
+ * then the dExtSimpleModel_c and dBgW_KcMbg member constructors. */
 // @symbol daKpa2Bg_c_classInit
 extern "C" daKpa2Bg_c *daKpa2Bg_c_classInit(void)
 {

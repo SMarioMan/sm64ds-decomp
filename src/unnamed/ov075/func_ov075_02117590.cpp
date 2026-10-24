@@ -3,15 +3,13 @@
 typedef int Fix12;
 struct OamAttr;
 struct OAM {
-    static int Render(bool, OamAttr*, int, int, int, int, Fix12, OamAttr*, int, int);
+    static void Render(bool, OamAttr *, int, int, int, int, int, int, int, int);
     static void RenderSub(OamAttr*, int, int);
 };
 /* Signature deliberately copied from the local declaration above: the
    ROM name carries by-value class parameters (e.g. Fix12<int>), which
    mwccarm passes differently at the call site, so declaring the true
    types breaks the byte match. See notes/mwccarm-codegen.md 6az. */
-extern "C" int _ZN3OAM6RenderEbP7OamAttriiii5Fix12IiES3_ii(bool, OamAttr*, int, int, int, int, Fix12, OamAttr*, int, int);
-
 extern "C" int func_0200f0bc(void);
 extern int* data_ov075_0211c9cc[];
 extern short data_ov075_0211b5d4[];
@@ -21,7 +19,7 @@ extern "C" void func_ov075_02117590(char* c)
 {
     int* tbl = data_ov075_0211c9cc[func_0200f0bc()];
     OamAttr *attr = (OamAttr *)tbl[((dScEntry_c *)c)->mStepWork[0]];
-    _ZN3OAM6RenderEbP7OamAttriiii5Fix12IiES3_ii(false, attr, 0x80, 0x60, -1, -1, 0x1000, (OamAttr*)0x1000, 0, -1);
+    OAM::Render(false, attr, 0x80, 0x60, -1, -1, 0x1000, 0x1000, 0, -1);
 
     int a1, a2;
     unsigned char idx = ((dScEntry_c *)c)->mSelectedIcon;

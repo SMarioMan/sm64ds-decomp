@@ -31,7 +31,7 @@
  */
 
 /* daObjC0Water_c.h FIRST: it pulls in dBgActor_c.h, which must reach
-   common.h ahead of Model.h or the wrong Matrix4x3 spelling wins. */
+   common.h ahead of dExtSimpleModel_c.h or the wrong Matrix4x3 spelling wins. */
 #include "daObjC0Water_c.h"
 #include "SharedFilePtr.h"
 #include "dMap_c.h"
@@ -89,7 +89,7 @@ extern "C" daObjC0Water_c *daObjC0Water_c_classInit()
 // @symbol _ZN14daObjC0Water_c13InitResourcesEv
 int daObjC0Water_c::InitResources()
 {
-    Model::LoadFile(data_ov012_021124d0);
+    dExtSimpleModel_c::LoadFile(data_ov012_021124d0);
     dBgW_Kc::LoadFile(data_ov012_021124c8);
     mModel.SetFile((BMD_File *)data_ov012_021124d0.filePtr, 1, 0x14);
     TextureTransformer::Prepare(*(BMD_File *)data_ov012_021124d0.filePtr, data_ov012_02111c24);

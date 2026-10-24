@@ -114,7 +114,7 @@ int daObjWc_Mizu_c::InitResources()
     void *m;
     void *k;
 
-    m = Model::LoadFile(daObjWc_Obj07_c_ModelFile);
+    m = dExtSimpleModel_c::LoadFile(daObjWc_Obj07_c_ModelFile);
     mModel.SetFile((BMD_File *)m, 1, -1);
     TextureTransformer::Prepare(*(BMD_File *)daObjWc_Obj07_c_ModelFile.filePtr,
                                 data_ov029_02112fb8);

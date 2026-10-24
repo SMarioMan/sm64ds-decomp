@@ -12,7 +12,7 @@
  *
  * KAIDAN, BOOKSHELF, MERRYGOROUND, and TERESAPIT all construct the ROM-proven
  * daTrsTrap_c class: each allocates 852 = 0x354, runs dActor_c's C2, stores
- * _ZTV11daTrsTrap_c, and constructs the Model and dBgW_KcMbg members -- which
+ * _ZTV11daTrsTrap_c, and constructs the dExtSimpleModel_c and dBgW_KcMbg members -- which
  * is what proves four spawn profiles of one class and not four classes. The
  * synthesized ctor from `return new` reproduces that sequence exactly, so the
  * hand-rolled operator-new/C2/vtable-store spelling is gone.

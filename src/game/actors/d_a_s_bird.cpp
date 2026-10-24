@@ -15,7 +15,7 @@
  * This TU does not.
  *
  * deslop leftovers:
- * - ModelAnim::SetAnim / DropShadowRadHeight 6az: this TU passes Fix12<int>
+ * - dExtAnmModel_c::SetAnim / DropShadowRadHeight 6az: this TU passes Fix12<int>
  *   by value; the header method form size-DIFFs.
  * - cstd::atan2 6az (Fix12<int> by value) in func_ov009_02111234.
  * - Vec3_Asr / Vec3_Sub / Vec3_HorzLen / LenVec3 / ApproachLinear: no shared
@@ -40,7 +40,7 @@
  * - RandomIntInternal stays unsigned: signed % 400 changed codegen.
  * - S14: g_profile_SBIRD stays outside the licensed .text.
  * - common.h for Vector3_16 (Spawn rotation); included after the class
- *   header so ModelAnim's Matrix4x3 spelling wins.
+ *   header so dExtAnmModel_c's Matrix4x3 spelling wins.
  */
 
 #include "daSBird_c.h"
@@ -114,9 +114,7 @@ extern int func_0201267c(unsigned int a, void *b);
  * called through the state table. */
 extern void func_ov009_0211145c(daSBird_c *bird);
 
-/* ModelAnim::SetAnim -- wall 6az. */
-void _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(
-    ModelAnim *self, BCA_File *animFile, int flags, int speed, u32 startFrame);
+/* dExtAnmModel_c::SetAnim -- wall 6az. */
 
 /* dActor_c::DropShadowRadHeight -- wall 6az. */
 int _ZN8dActor_c19DropShadowRadHeightER17dExtShadowModel_cR9Matrix4x35Fix12IiES5_j(
@@ -134,11 +132,10 @@ extern "C" daSBird_c *daSBird_c_classInit()
 // @symbol _ZN9daSBird_c13InitResourcesEv
 s32 daSBird_c::InitResources()
 {
-    BMD_File *modelFile = (BMD_File *)Model::LoadFile(data_ov009_02113c20);
+    BMD_File *modelFile = (BMD_File *)dExtSimpleModel_c::LoadFile(data_ov009_02113c20);
     mModelAnim.SetFile(modelFile, 1, 1);
     BCA_File *animFile = (BCA_File *)dExtFrameCtrl_c::LoadFile(data_ov009_02113c28);
-    _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(
-        &mModelAnim, animFile, 0, 0x1000, 0);
+    mModelAnim.SetAnim((BCA_File *)animFile, 0, 0x1000, 0);
     mShadowModel.InitCylinder();
     {
         int *p60 = &mPosY;

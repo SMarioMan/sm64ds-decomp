@@ -2,6 +2,15 @@
 #include "dScEntry_c.h"
 #include "types.h"
 
+namespace G2S {
+void *GetBG2ScrPtr(void);
+}
+
+namespace GX {
+void LoadBGPltt(const void *p, u32 a, u32 b);
+void LoadOBJPltt(const void *p, u32 a, u32 b);
+}
+
 extern dScEntry_c::StepSet data_ov075_0211d888;
 
 extern "C" {
@@ -12,14 +21,14 @@ enum func_ov075_02116ad4_AssetId {
 
 extern int func_0203d9b4(void);
 extern void func_0200f13c(void);
-extern void *_ZN3G2S12GetBG2ScrPtrEv(void);
+
 extern u32 LoadCompressedFileAt(int fileID, void *target);
 extern int func_0200f0bc(void);
 extern void DecompressLZ16(void *src, int dst);
 extern void *LoadFile(int handle);
-extern void _ZN2GX11LoadOBJPlttEPKvjj(const void *p, u32 a, u32 b);
+
 extern void Deallocate(void *ptr);
-extern void _ZN2GX10LoadBGPlttEPKvjj(const void *p, u32 a, u32 b);
+
 extern int func_0203da3c(void);
 extern void func_02030aa4(int arg);
 extern void func_ov075_02116e00(void *p);
@@ -37,18 +46,19 @@ int func_ov075_02116ad4(void *arg) {
     if (scene->param1 != 0 || func_0203d9b4() != 0) {
         func_0200f13c();
         if (func_0203d9b4() != 0) {
-            LoadCompressedFileAt(ASSET_D_2D_BATTLE_FRAMEWORK_GAMESTART_P_NSC_BIN, _ZN3G2S12GetBG2ScrPtrEv());
+            LoadCompressedFileAt(ASSET_D_2D_BATTLE_FRAMEWORK_GAMESTART_P_NSC_BIN,
+                                 G2S::GetBG2ScrPtr());
         }
         DecompressLZ16(data_0208a0e4[func_0200f0bc()], 0x6600000);
     }
     LoadCompressedFileAt(data_ov075_0211c9a4[func_0200f0bc()], (void *)0x6400000);
 
     tmp = LoadFile(0x8412);
-    _ZN2GX11LoadOBJPlttEPKvjj(tmp, 0, 0xc0);
+    GX::LoadOBJPltt(tmp, 0, 0xc0);
     Deallocate(tmp);
 
     tmp = LoadFile(0x980b);
-    _ZN2GX10LoadBGPlttEPKvjj(tmp, 0, 0xc0);
+    GX::LoadBGPltt(tmp, 0, 0xc0);
     Deallocate(tmp);
 
     scene->mStepDelay = 0;

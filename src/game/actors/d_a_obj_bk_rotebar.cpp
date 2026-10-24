@@ -9,6 +9,9 @@
  * daObjBk_Rotebar_c, BK_ROTEBAR registry). Retail does not store
  * that spelling.
  *
+ * S41: RTTI daObjBk_Rotebar_c; D1 0x02112944 size 0x44, D0 0x02112988 size 0x58;
+ * inline dtor in daObjBk_Rotebar_c.h declared first emits D1 then D0, no D2.
+ *
  * deslop
  * Leftover: dBgW_KcMbg::SetFile and dBgActor_c::IsClsnInRange stay
  *   mangled in this TU -- both take Fix12<int> by value (wall 6az);
@@ -66,7 +69,6 @@ unsigned char DecIfAbove0_Byte(unsigned char *p);
 void func_020393a4(dBgW *bgw, int range);
 void func_020393d4(dBgW *bgw, void *fn);
 
-int _ZN10dBgActor_c13IsClsnInRangeE5Fix12IiES1_(dBgActor_c *self, int a, int b);
 void _ZN10dBgW_KcMbg7SetFileEP8KCL_FileRK9Matrix4x35Fix12IiEsR10CLPS_Block(
     dBgW_KcMbg *self, KCL_File *kcl, const Matrix4x3 *mtx, int scale,
     s16 angleY, CLPS_Block *clps);
@@ -81,7 +83,7 @@ extern "C" daObjBk_Rotebar_c *daObjBk_Rotebar_c_classInit()
 // @symbol _ZN17daObjBk_Rotebar_c13InitResourcesEv
 s32 daObjBk_Rotebar_c::InitResources()
 {
-    mModel.SetFile((BMD_File *)Model::LoadFile(data_ov015_02114a8c), 1, -1);
+    mModel.SetFile((BMD_File *)dExtSimpleModel_c::LoadFile(data_ov015_02114a8c), 1, -1);
     UpdateModelPosAndRotY();
     UpdateClsnPosAndRot();
 
@@ -108,7 +110,7 @@ s32 daObjBk_Rotebar_c::Behavior()
 
     UpdateModelPosAndRotY();
     func_020393a4(&mMeshCollider, 0x320000);
-    if (_ZN10dBgActor_c13IsClsnInRangeE5Fix12IiES1_(this, 0x320000, 0))
+    if (IsClsnInRange(0x320000, 0))
         UpdateClsnPosAndRot();
 
     return 1;
@@ -132,8 +134,6 @@ s32 daObjBk_Rotebar_c::CleanupResources()
     return 1;
 
 /* -------------------------------------------------------------------------- */
-/* ROM ordinal 1 -- _ZN17daObjBk_Rotebar_cD0Ev, 0x02112988, size 0x58        */
-/* ROM ordinal 0 -- _ZN17daObjBk_Rotebar_cD1Ev, 0x02112944, size 0x44        */
 /* -------------------------------------------------------------------------- */
 // @symbol _ZN17daObjBk_Rotebar_cD1Ev
 // @symbol _ZN17daObjBk_Rotebar_cD0Ev

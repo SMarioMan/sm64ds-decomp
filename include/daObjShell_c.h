@@ -2,7 +2,7 @@
 #define DAOBJSHELL_C_H
 
 #include "types.h"
-#include "ModelAnim.h"
+#include "dExtAnmModel_c.h"
 #include "dCcAc_c.h"
 
 #ifdef __cplusplus
@@ -23,12 +23,12 @@ extern "C" void *_ZN7fBase_cnwEj(unsigned size);
  * table's address point: 31 slots, the same extent as dActor_c, with 0, 3, 6,
  * 9, 16 and 17 the only overrides.
  *
- * daObjShell_c_classInit constructs dActor_c, then ModelAnim and dCcAc_c at +0xd4 and
+ * daObjShell_c_classInit constructs dActor_c, then dExtAnmModel_c and dCcAc_c at +0xd4 and
  * +0x138. D1/D0 destroy the same subobjects in reverse, independently pinning
  * both the inheritance and owned-member layout. */
 struct daObjShell_c : dActor_c {
     u8 pad_0d0[0x4];         /* 0x0d0 */
-    ModelAnim mModelAnim;     /* 0x0d4 */
+    dExtAnmModel_c mModelAnim; /* 0x0d4 */
     dCcAc_c mdCcAc_c;         /* 0x138 */
     u8 mState;                /* 0x16c: 0 shut, 1 lunging */
     u8 pad_16d[0x1];
@@ -40,7 +40,7 @@ struct daObjShell_c : dActor_c {
      * and no leaf D2. Written out of line in the translation unit instead, the
      * same two bodies come out D0-before-D1 and the isolation step rejects the
      * object. Every instruction in both is compiler-generated: this class's
-     * vptr store, then dCcAc_c at 0x138 and ModelAnim at 0x0d4 in reverse
+     * vptr store, then dCcAc_c at 0x138 and dExtAnmModel_c at 0x0d4 in reverse
      * construction order, then the dActor_c base; D0 additionally returns the
      * object to the actor heap. */
     virtual ~daObjShell_c() {}   /* slots 16, 17 */
@@ -51,7 +51,7 @@ struct daObjShell_c : dActor_c {
     virtual int Render();           /* slot 9 */
 
     /* Rebuilds the model's world matrix from the facing angle and position
-       (position >> 3), the way every ModelAnim actor in this overlay poses
+       (position >> 3), the way every dExtAnmModel_c actor in this overlay poses
        its model. Called once, from InitResources. ROM name unrecovered. */
     void func_ov064_0211a9b4();
 
@@ -78,7 +78,7 @@ struct daObjShell_c {
        Behavior takes its address, which is what pins it. */
     s32 mCamSpacePosX;            /* 0x074 */
     u8  pad_078[0x5c];
-    ModelAnim mModelAnim;            /* 0x0d4 */
+    dExtAnmModel_c mModelAnim; /* 0x0d4 */
     dCcAc_c mdCcAc_c;         /* 0x138 */
     u8  mState;            /* 0x16c */
     u8  pad_16d[0x1];

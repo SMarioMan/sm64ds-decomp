@@ -48,7 +48,7 @@
  */
 
 /* daObjC0_Switch_c.h FIRST: it pulls in dBgActor_c.h, which must reach
-   common.h ahead of Model.h or the wrong Matrix4x3 spelling wins. */
+   common.h ahead of dExtSimpleModel_c.h or the wrong Matrix4x3 spelling wins. */
 /* Runtime asset handles resolved through the overlay 0 file table. */
 enum d_a_obj_c0_switch_AssetId {
     ASSET_C0_SWITCH_BMD = 0x05a9,
@@ -81,7 +81,6 @@ extern int data_ov012_02111cd0[];
 extern int data_0209caa0[];
 
 /* dBgActor_c::IsClsnInRange(Fix12<int>, Fix12<int>) -- wall 6az on Behavior. */
-int _ZN10dBgActor_c13IsClsnInRangeE5Fix12IiES1_(void *self, int a, int b);
 /* dBgW_KcMbg::SetFile -- wall 6az on InitResources. */
 void _ZN10dBgW_KcMbg7SetFileEP8KCL_FileRK9Matrix4x35Fix12IiEsR10CLPS_Block(
     dBgW_KcMbg *self, KCL_File *file, const Matrix4x3 *mat, int scale,
@@ -114,7 +113,7 @@ extern "C" daObjC0_Switch_c *daObjC0_Switch_c_classInit()
 /* daObjC0_Switch_c::InitResources -- vtable slot 0, ov012 0x02111370.
  *
  * mModel/mMeshCollider/mClsnMat/mAngleY are dBgActor_c's/dActor_c's own named
- * fields. Model::LoadFile, ModelBase::SetFile, dBgW_Kc::LoadFile,
+ * fields. dExtSimpleModel_c::LoadFile, dExtModel_c::SetFile, dBgW_Kc::LoadFile,
  * UpdateModelPosAndRotY and UpdateClsnPosAndRot are real method calls.
  * dBgW_KcMbg::SetFile stays mangled -- it takes Fix12<int> BY VALUE
  * (mwccarm-codegen.md 6az).
@@ -124,7 +123,7 @@ extern "C" daObjC0_Switch_c *daObjC0_Switch_c_classInit()
  * OnGroundPounded), so this one starts sunk and pre-flagged. */
 int daObjC0_Switch_c::InitResources()
 {
-    void *mdl = Model::LoadFile(data_ov012_021124a8);
+    void *mdl = dExtSimpleModel_c::LoadFile(data_ov012_021124a8);
     mModel.SetFile((BMD_File *)mdl, 1, -1);
     if (data_0209caa0[2] & 0x80000) {
         mPosY -= 0x64000;
@@ -144,7 +143,7 @@ int daObjC0_Switch_c::InitResources()
 // @symbol _ZN16daObjC0_Switch_c8BehaviorEv
 s32 daObjC0_Switch_c::Behavior()
 {
-    _ZN10dBgActor_c13IsClsnInRangeE5Fix12IiES1_(this, 0, 0);
+    IsClsnInRange(0, 0);
     return 1;
 }
 

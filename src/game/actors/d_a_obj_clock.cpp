@@ -31,7 +31,7 @@
 #include "SpawnInfo.h"
 #include "SharedFilePtr.h"
 
-/* Model handles construct through func_02017acc and destroy through
+/* dExtSimpleModel_c handles construct through func_02017acc and destroy through
  * func_02017ab4. The manifest aliases those undefined members onto the ROM
  * symbols. */
 struct ClockModelFilePtr : SharedFilePtr {
@@ -115,7 +115,8 @@ int daObjClock_c::InitResources()
         mHandIndex = 0;
     else
         mHandIndex = 1;
-    mModel.SetFile((BMD_File *)Model::LoadFile(*data_ov013_021116b0[mHandIndex]), 1, -1);
+    mModel.SetFile((BMD_File *)dExtSimpleModel_c::LoadFile(*data_ov013_021116b0[mHandIndex]), 1,
+                   -1);
     func_ov013_02111430();
     return 1;
 }

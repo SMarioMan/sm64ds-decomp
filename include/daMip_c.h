@@ -14,14 +14,14 @@
  *
  *     0x110 dCcAc_c         0x34    -> 0x144
  *     0x144 dBgCh_Actr               0x1bc   -> 0x300
- *     0x300 ModelAnim                  0x64    -> 0x364
+ *     0x300 dExtAnmModel_c                  0x64    -> 0x364
  *     0x368 dExtShadowModel_c                0x28    -> 0x390
  *     0x3c0 dExtShadowModel_c                0x28    -> 0x3e8
  *
  * Typing them absorbed markers that were their insides:
- *   - unk_308 = ModelAnim.data.modelFile
- *   - unk_30c = ModelAnim.data.materials
- *   - unk_35c = ModelAnim.speed
+ *   - unk_308 = dExtAnmModel_c.data.modelFile
+ *   - unk_30c = dExtAnmModel_c.data.materials
+ *   - unk_35c = dExtAnmModel_c.speed
  *
  * SIZE IS THE ROM'S OWN: `daMip_c_classInit` calls
  * `fBase_c::operator new(1140)` -- 0x474 -- and stores this class's
@@ -39,7 +39,7 @@
  */
 
 #include "dEnemyBase_c.h"
-#include "ModelAnim.h"
+#include "dExtAnmModel_c.h"
 #include "dCcAc_c.h"
 #include "dExtShadowModel_c.h"
 #include "dBgCh_Actr.h"
@@ -49,7 +49,7 @@ extern "C" void *_ZN7fBase_cnwEj(unsigned size);
 struct daMip_c : dEnemyBase_c {
     dCcAc_c           mdCcAc_c;   /* 0x110 */
     dBgCh_Actr                 mWithMeshClsn;         /* 0x144 */
-    ModelAnim                    mModelAnim;            /* 0x300 */
+    dExtAnmModel_c mModelAnim;                        /* 0x300 */
     /* The current animation-state descriptor. Behavior compares it by ADDRESS
        against four file-scope ov085 objects (0213068c / 021306ac / 021306bc /
        021306dc) and reads a pointer-to-member sequence out of it at +0x08, so it

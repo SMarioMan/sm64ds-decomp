@@ -30,7 +30,7 @@
 #include "Sound.h"
 #include "SharedFilePtr.h"
 #include "daObjSwitch_c.h"
-#include "Model.h"
+#include "dExtSimpleModel_c.h"
 #include "Event.h"
 #include "daObjBlockItemTag_c.h"
 
@@ -53,7 +53,7 @@ struct RawVector3 {
     int x, y, z;
 };
 
-/* Model handles construct through func_02017acc and destroy through
+/* dExtSimpleModel_c handles construct through func_02017acc and destroy through
  * func_02017ab4. Collision handles construct through func_02017b4c and
  * destroy through SharedFilePtr_Destruct_Clsn. The manifest aliases those
  * undefined members onto the ROM symbols. */
@@ -68,14 +68,17 @@ struct daObjBlockLClsnFile : SharedFilePtr {
 };
 
 extern "C" {
-void _ZN8Particle6System9NewSimpleEj5Fix12IiES2_S2_( u32 id, Fix12i x, Fix12i y, Fix12i z);
+namespace Particle {
+struct System {
+    static void NewSimple(u32 id, Fix12i x, Fix12i y, Fix12i z);
+};
+}
 void _ZN8dActor_c10SpawnCoinsERK7Vector3j5Fix12IiEs( void *self, const Vector3 &pos, u32 count, s32 speed, s16 delay);
 extern BigBrickBlockFileRow data_ov002_02108ab0[];
 extern BigBrickBlockFileRow data_ov002_02108ab4[];
 extern Vector3 data_ov002_021089e0;
 void func_020393a4(dBgW_KcMbg *p, int v);
 void func_02039394(dBgW_KcMbg *p, int v);
-void _ZN10dBgActor_c21IsClsnInRangeOnScreenE5Fix12IiES1_(void *self, int a, int b);
 extern ClpsRow data_ov002_02108ab8[];         /* CLPS blocks,       0xc stride */
 extern s8 data_0209f2f8;              /* current level */
 extern u8 data_0209f220;
@@ -103,7 +106,7 @@ static inline int IsActorID(dActor_c *actor, int id) {
 /* ONE definition, TWO ROM functions. Two vtable stores and three destructor
  * calls, every one a consequence of `struct daObjBlockL_c : dBgActor_c`: its
  * own vptr, then dBgActor_c's -- inlined, because dBgActor_c's destructor is
- * defined in its class body -- then dBgActor_c's Model and dBgW_KcMbg, then
+ * defined in its class body -- then dBgActor_c's dExtSimpleModel_c and dBgW_KcMbg, then
  * dActor_c. This class adds no member with a destructor of its own. D0
  * additionally returns the object to the actor heap through the inline
  * operator delete, which is why nothing below mentions a heap. With deferred
@@ -304,7 +307,7 @@ void daObjBlockL_c::Kill()
     if (IsActorID(this, 0x2e)) {
         kind = 0x48;
     }
-    _ZN8Particle6System9NewSimpleEj5Fix12IiES2_S2_(kind, pos.x, pos.y, pos.z);
+    Particle::System::NewSimple(kind, pos.x, pos.y, pos.z);
 
     dustPos.x = pos.x;
     dustPos.y = pos.y;
@@ -384,7 +387,7 @@ int daObjBlockL_c::Behavior()
         } else {
             func_020393a4(&mMeshCollider, 0x15e000);
             func_02039394(&mMeshCollider, 0x64000);
-            _ZN10dBgActor_c21IsClsnInRangeOnScreenE5Fix12IiES1_(this, 0x150000, 0);
+            IsClsnInRangeOnScreen(0x150000, 0);
         }
 
         mPrevEventBit = Event::GetBit(mEventID);
@@ -397,7 +400,7 @@ int daObjBlockL_c::Behavior()
         }
         func_020393a4(&mMeshCollider, v1);
         func_02039394(&mMeshCollider, v5);
-        _ZN10dBgActor_c21IsClsnInRangeOnScreenE5Fix12IiES1_(this, 0x600000, 0);
+        IsClsnInRangeOnScreen(0x600000, 0);
     }
     return 1;
 }
@@ -435,7 +438,8 @@ int daObjBlockL_c::InitResources()
     case 0x2e: mVariant = 2; break;
     }
 
-    mModel.SetFile((BMD_File *)Model::LoadFile(*data_ov002_02108ab0[mVariant].file), 1, -1);
+    mModel.SetFile((BMD_File *)dExtSimpleModel_c::LoadFile(*data_ov002_02108ab0[mVariant].file), 1,
+                   -1);
     UpdateModelPosAndRotY();
     UpdateClsnPosAndRot();
 

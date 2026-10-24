@@ -25,7 +25,7 @@
 #ifdef __cplusplus
 
 #include "dEnemyBase_c.h"
-#include "ModelAnim.h"
+#include "dExtAnmModel_c.h"
 #include "dCcAcPos_c.h"
 #include "dBgCh_Actr.h"
 
@@ -36,7 +36,7 @@ typedef int (PukuStateC::*PukuStatePMF)();
 struct daPukupuku_c : dEnemyBase_c {
     dCcAcPos_c mdCcAcPos_c;/* 0x110 */
     dBgCh_Actr mWithMeshClsn;       /* 0x150 */
-    ModelAnim mModelAnim;             /* 0x30c */
+    dExtAnmModel_c mModelAnim;      /* 0x30c */
     /* The current state record: enter PMF at +0, main PMF at +8.
        func_ov090_021332e8 installs it and calls enter; Behavior calls main. */
     PukuStatePMF *mState;               /* 0x370 */

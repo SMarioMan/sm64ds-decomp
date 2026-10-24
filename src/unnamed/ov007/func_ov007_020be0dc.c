@@ -1,5 +1,5 @@
 #include "types.h"
-#include "ModelBase.h"
+#include "dExtModel_c.h"
 
 /* Names as in func_ov007_020bc02c and func_ov007_020b257c, only the slots
  * this file reads. */

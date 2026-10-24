@@ -6,7 +6,7 @@
 #ifdef __cplusplus
 
 #include "PathLift.h"
-#include "ModelAnim.h"
+#include "dExtAnmModel_c.h"
 
 /* Rainbow Ride flying carpet (ov036 FLYING_CARPET 130). RTTI
  * _ZTI15daObjRcCarpet_c at ov036:0x02113f4c names this class;
@@ -14,15 +14,15 @@
  * base is dPathLiftActor_c (_ZTI at ov002:0x0210af0c).
  *
  * SIZE 0x4c0, the literal daObjRcCarpet_c_classInit passes to
- * fBase_c::operator new. dPathLiftActor_c ends at 0x450; ModelAnim
+ * fBase_c::operator new. dPathLiftActor_c ends at 0x450; dExtAnmModel_c
  * at 0x450 is this class's only constructed member (D1 calls
- * _ZN9ModelAnimD1Ev once, then inlines the base teardown).
+ * _ZN14dExtAnmModel_cD1Ev once, then inlines the base teardown).
  *
  * mRideDipY (0x4bc) + 4 = 0x4c0. pad_4b4 is unwitnessed in this TU.
  */
 
 struct daObjRcCarpet_c : dPathLiftActor_c {
-    ModelAnim mModelAnim;      /* 0x450 */
+    dExtAnmModel_c mModelAnim; /* 0x450 */
     u8  pad_4b4[0x8];
     /* How far the carpet sags under a rider: Behavior eases it toward
        -0x14000 (20 units down) at 0x5000 a frame while mAfterClsnRan is

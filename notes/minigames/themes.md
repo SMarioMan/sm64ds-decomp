@@ -43,10 +43,10 @@ A pass must not change a single emitted byte or relocation target.
    - Proven: `dScMgMemory2_c`'s factory, and the factories of `dScMgBomroom_c`, `dScMgCurling_c`, `dScMgPachinko_c`, `dScMgPanel_c` and `dScMgTeresa_c`, once one-function `d_s_mg_*.cpp` files and now each folded into its class's TU under `src/game/actors/`, and the one-function factory in `src/minigames/d_s_mg_curling2.cpp`. The form is C++, so the file is a `.cpp` that starts with `//cpp`. rombuild picks the language from `//cpp`, so the rename from `.c` changed no byte.
    - Measured negative where the factory constructs a member that the header keeps as raw bytes, so the implicit constructor never calls it. Sizes are the `new` form against the ROM:
      - Coin: 0x34 against 0x48, without `func_0203b9b4(this + 0x51c4, 1)`. An inline class constructor making that call, tried in a scratch copy of the header, matches.
-     - 3DEsp: 0x50 against 0x90, without the two `Model`, the `dMg3DEspModel_c` and the `TextureTransformer` constructors.
+     - 3DEsp: 0x50 against 0x90, without the two `dExtSimpleModel_c`, the `dMg3DEspModel_c` and the `TextureTransformer` constructors.
      - Flower: 0x50 against 0x94, without the `__cxa_vec_ctor` for `mArray` and without `FlowerFace_Construct`.
      - Slot3: 0x50 against 0x60, without `Mascot_Construct`.
-     - Roulette: 0x4c against 0xac, without the table, racer-array and two `Model` constructors.
+     - Roulette: 0x4c against 0xac, without the table, racer-array and two `dExtSimpleModel_c` constructors.
      - Slot1: 0x58 against 0x88, without `SlotBlink_Clear` (twice) and `SlotLamp_Clear`.
    - Measured negative for Snowball: 0x60 against 0x34. The ROM calls the out-of-line constructor `dScMgSnowball_c_Construct`; with none declared, `new` inlines one. Declaring `dScMgSnowball_c();` out of line matches the bytes, but the link then needs that address named as the C1.
    - Unresolved for `dScMgSlot1_c`: its [class header](../../include/dScMgSlot1_c.h) records allocation/code-generation constraints. The absence of a standalone C1 alone does not rule out an inlined constructor.
@@ -83,7 +83,7 @@ A pass must not change a single emitted byte or relocation target.
     - Status: untested. It would change every consumer.
 11. **Hand-rolled vtable views.**
     - Readable form: a real virtual call, such as `StartRound(-1)`.
-    - Proven in `dScMgTrampoline2_c`, `dScMgCup_c` and `dScMg3DEsp_c` (`StartRound(-1)` in `InitResources`, `Model::Render(0)` in `Render`).
+    - Proven in `dScMgTrampoline2_c`, `dScMgCup_c` and `dScMg3DEsp_c` (`StartRound(-1)` in `InitResources`, `dExtSimpleModel_c::Render(0)` in `Render`).
     - Proven in the ov004 runtime: `GraphCallback0`-`3`, `OnGraphCallback2`, the menu functions, the OAM sprite wrappers, `Mg_DrawTally` and `Mg_CallStartRound` in `d_s_mg_base.cpp` (the 27- and 29-slot stand-in views are gone, and so is the private header that held the 27-slot one), and `dMgState_c`'s scene slots 18-20 and `dFader_c` slots.
 12. **The sine table `data_02082214`.** It holds interleaved fx16 sine and cosine pairs [ROM].
     - Readable form: a named table or accessor. [GUESS] It is NitroSDK's `FX_SinCosTable_`.

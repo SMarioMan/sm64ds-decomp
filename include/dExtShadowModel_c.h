@@ -3,11 +3,11 @@
 
 #include "types.h"
 #include "BMD_File.h"
-#include "ModelBase.h"
+#include "dExtModel_c.h"
 #include "math/Matrix.h"
 #include "math/Fix12.h"
 
-/* ModelBase sibling for drop shadows, vtable _ZTV17dExtShadowModel_c at
+/* dExtModel_c sibling for drop shadows, vtable _ZTV17dExtShadowModel_c at
  * 0x0208e868:
  *
  *   slot 0  0x02015ff8  ~dExtShadowModel_c (D1)
@@ -19,14 +19,14 @@
  * the destructor unlinks, RenderAll walks it and CleanAll empties it.
  *
  * THE DESTRUCTOR IS DECLARED FIRST AND D1 IS A REAL METHOD -- the
- * key-function arrangement from include/ModelBase.h, and the objisolate
+ * key-function arrangement from include/dExtModel_c.h, and the objisolate
  * exemption to it recorded there. That matters more than usual here, because
  * D1 carries the unlink logic and is now the only place it is written.
  * D0 and D1 are both retained from that real destructor definition, so the
- * compiler owns their vptr reset, ModelBase teardown and deleting-wrapper call.
+ * compiler owns their vptr reset, dExtModel_c teardown and deleting-wrapper call.
  * The ROM has no separately enrolled D2 symbol for this class.
  *
- * LAYOUT evidence: C1 calls ModelBase::C2, stores the vptr, zeroes mat,
+ * LAYOUT evidence: C1 calls dExtModel_c::C2, stores the vptr, zeroes mat,
  * prev and next; InitModel fills mat/scale/opacity and links; the D1
  * unlink pins prev at 0x20 and next at 0x24.
  *
@@ -44,7 +44,7 @@
 
 #ifdef __cplusplus
 
-struct dExtShadowModel_c : ModelBase {
+struct dExtShadowModel_c : dExtModel_c {
     ModelComponents *data;     /* 0x08 - pool entry from func_02016e70 */
     Matrix4x3 *mat;            /* 0x0c */
     Vector3 scale;             /* 0x10 */
@@ -55,8 +55,8 @@ struct dExtShadowModel_c : ModelBase {
     dExtShadowModel_c *prev;         /* 0x20 */
     dExtShadowModel_c *next;         /* 0x24 */
 
-    /* DECLARED, NEVER DEFINED HERE -- same reasoning as Model (include/Model.h)
-       and ModelBase: undeclared, the compiler synthesises this constructor and
+    /* DECLARED, NEVER DEFINED HERE -- same reasoning as dExtSimpleModel_c (include/dExtSimpleModel_c.h)
+       and dExtModel_c: undeclared, the compiler synthesises this constructor and
        INLINES it into every holder; the ROM calls _ZN17dExtShadowModel_cC1Ev
        (0x02016068) out of line instead. */
     dExtShadowModel_c();
@@ -64,8 +64,8 @@ struct dExtShadowModel_c : ModelBase {
     /* --- vtable, in ROM order. Do not reorder. --- */
     /* The destructor pair spelled as two plain virtuals on the host, plus the
        non-virtual destructor declaration the src/ definition needs; the whole
-       ruling is in include/ModelBase.h. Overrides take their base's slots, so
-       these carry the SAME TWO NAMES ModelBase declares. */
+       ruling is in include/dExtModel_c.h. Overrides take their base's slots, so
+       these carry the SAME TWO NAMES dExtModel_c declares. */
 #ifdef _MSC_VER
     virtual void Destructor1();                       /* slot 0 (D1) */
     virtual void Destructor0();                       /* slot 1 (D0) */
@@ -79,7 +79,7 @@ struct dExtShadowModel_c : ModelBase {
     void InitModel(Matrix4x3 *m, Fix12<int> sx, Fix12<int> sy, Fix12<int> sz,
                    u32 opacity);   /* defined as a free function, see above */
     /* RETURNS int, not void: 0x02015ebc ends in `bx ip`, a tail call, so the
-       callee's r0 is this function's. Same evidence as ModelBase::SetFile. */
+       callee's r0 is this function's. Same evidence as dExtModel_c::SetFile. */
     int InitCylinder();
     /* int for the same reason, and by the same evidence: 0x02015ed8 also ends in
        `bx ip`, so SetFile's r0 flows straight out. daYegg_c::InitResources and

@@ -1,7 +1,11 @@
 //cpp
 #include "types.h"
+
+namespace CP15 {
+void InvalidateDataCache(u32 addr, u32 sz);
+}
 extern "C" int WM_GetSystemWork(void);
-extern "C" void _ZN4CP1519InvalidateDataCacheEjj(u32 addr, u32 sz);
+
 extern "C" void MultiCopyHalf(const void *src, void *dst, u32 count);
 
 /* NitroSDK data sharing, the child's port receive callback: WM_StartDataSharing
@@ -84,7 +88,7 @@ extern "C" void func_02062aa4(char *c)
             if (r4 > 0x100)
                 r4 = 0x100;
         }
-        _ZN4CP1519InvalidateDataCacheEjj((u32)&h->status->aid, 2);
+        CP15::InvalidateDataCache((u32)&h->status->aid, 2);
         if (r4 < 4)
             return;
         src = cb->data;

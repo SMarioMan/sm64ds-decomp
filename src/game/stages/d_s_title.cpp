@@ -100,7 +100,6 @@ extern u8 data_0209d45c[];
 extern u8 data_0208ee44[];
 extern u8 data_0209ee90[];
 extern void func_02012790(int idx);
-extern void _ZN5Sound22StopLoadedMusic_Layer1Ej(u32 a);
 extern u16 DecIfAbove0_Short(u16 *p);
 extern void Enable3dEngines(void);
 extern void MultiStore16(unsigned short val, char *dst, int nbytes);
@@ -291,10 +290,10 @@ s32 dScTitle_c::Behavior() {
         t = sTitleLevelEntries[i].levelID;
         if (t == -1 || IsTouchStarted()) {
             dScene_c::StartSceneFade(5, 0, 0);
-            _ZN5Sound22StopLoadedMusic_Layer1Ej(0x3c);
+            Sound::StopLoadedMusic_Layer1(0x3c);
         } else if (t == -2) {
             dScene_c::StartSceneFade(6, 0, 0);
-            _ZN5Sound22StopLoadedMusic_Layer1Ej(0x3c);
+            Sound::StopLoadedMusic_Layer1(0x3c);
         } else {
             data_0209f2d8 = 0;
             LoadLevelNoReturn(t, sTitleLevelEntries[i].entranceID, 1, 0);

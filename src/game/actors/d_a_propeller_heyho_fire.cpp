@@ -269,7 +269,7 @@ int daPropeller_Heyho_Fire_c::Behavior()
 // @symbol _ZN24daPropeller_Heyho_Fire_c13InitResourcesEv
 int daPropeller_Heyho_Fire_c::InitResources()
 {
-    BMD_File *file = (BMD_File *)Model::LoadFile(data_ov065_0211d610);
+    BMD_File *file = (BMD_File *)dExtSimpleModel_c::LoadFile(data_ov065_0211d610);
     if (mModel.SetFile(file, 1, -1) == 0) return 0;
     unk_358 = param1 & 0xff;
     if (unk_358 > 1) unk_358 = 0;

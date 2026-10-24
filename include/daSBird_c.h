@@ -1,7 +1,7 @@
 #ifndef DASBIRD_C_H
 #define DASBIRD_C_H
 
-#include "ModelAnim.h"
+#include "dExtAnmModel_c.h"
 #include "dExtShadowModel_c.h"
 #include "dActor_c.h"
 
@@ -11,7 +11,7 @@
  * SBIRD. Historical aliases: Bird, Bird_Spawn. SIZE 0x184 is the literal
  * daSBird_c_classInit passes to operator new.
  *
- * Factory constructs ModelAnim at 0xd4 and dExtShadowModel_c at 0x138; D1 tears
+ * Factory constructs dExtAnmModel_c at 0xd4 and dExtShadowModel_c at 0x138; D1 tears
  * those down before ~dActor_c. dActor_c ends at 0xd0; pad_0d0 is the 4-byte
  * gap before mModelAnim.
  *
@@ -27,7 +27,7 @@
  */
 struct daSBird_c : dActor_c {
     u8          pad_0d0[0x4];
-    ModelAnim   mModelAnim;      /* 0x0d4 */
+    dExtAnmModel_c mModelAnim;         /* 0x0d4 */
     dExtShadowModel_c mShadowModel;    /* 0x138 */
     Vector3     mTargetPos;      /* 0x160 */
     s16         mTargetPitch;    /* 0x16c */

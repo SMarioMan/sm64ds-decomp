@@ -31,7 +31,7 @@ namespace Event { s32 GetBit(u32 bit); }
 struct KCL_File;
 struct CLPS_Block;
 
-/* Model handles construct through func_02017acc and destroy through
+/* dExtSimpleModel_c handles construct through func_02017acc and destroy through
  * func_02017ab4; collision handles construct through func_02017b4c and
  * destroy through SharedFilePtr_Destruct_Clsn. The manifest aliases those
  * undefined members onto the ROM symbols. */
@@ -52,7 +52,6 @@ extern CLPS_Block data_ov032_02112f98;
 
 /* dBgActor_c::IsClsnInRange takes two Fix12<int> by value. A real member
  * call homes those arguments to the stack under mwccarm 2004/b56 (wall 6az). */
-int _ZN10dBgActor_c13IsClsnInRangeE5Fix12IiES1_(void *self, int a, int b);
 
 /* dBgW_KcMbg::SetFile likewise takes Fix12<int> by value. A real member
  * call on this TU's InitResources DIFFs. */
@@ -77,7 +76,7 @@ extern "C" daObjTdFuta_c *daObjTdFuta_c_classInit()
 // @symbol _ZN13daObjTdFuta_c13InitResourcesEv
 s32 daObjTdFuta_c::InitResources()
 {
-    mModel.SetFile((BMD_File *)Model::LoadFile(data_ov032_02113ad4), 1, -1);
+    mModel.SetFile((BMD_File *)dExtSimpleModel_c::LoadFile(data_ov032_02113ad4), 1, -1);
     UpdateModelPosAndRotY();
     UpdateClsnPosAndRot();
 
@@ -92,7 +91,7 @@ s32 daObjTdFuta_c::InitResources()
 // @symbol _ZN13daObjTdFuta_c8BehaviorEv
 s32 daObjTdFuta_c::Behavior()
 {
-    _ZN10dBgActor_c13IsClsnInRangeE5Fix12IiES1_(this, 0, 0);
+    IsClsnInRange(0, 0);
     return 1;
 }
 
@@ -128,7 +127,7 @@ s32 daObjTdFuta_c::CleanupResources()
  *
  * Both bodies are short because the chain is short and this class adds no
  * member of its own: this class's vptr store, then dBgActor_c's -- inlined,
- * which destroys the Model at 0xd4 and the dBgW_KcMbg at 0x124 -- then
+ * which destroys the dExtSimpleModel_c at 0xd4 and the dBgW_KcMbg at 0x124 -- then
  * dActor_c. */
 
 /* File-scope objects, in __sinit_d_a_obj_td_futa.cpp construction order:

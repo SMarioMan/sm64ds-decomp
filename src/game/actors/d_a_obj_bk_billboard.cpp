@@ -3,7 +3,7 @@
  * Whomp's Fortress pole billboard.
  *
  * Scenery model on a pole. Direct base is dActor_c; the owned
- * member is Model at 0xd4, which closes the class on the factory's
+ * member is dExtSimpleModel_c at 0xd4, which closes the class on the factory's
  * literal 0x124.
  *
  * daObjBkBillboard_c_classInit is reconstructed (RTTI
@@ -15,7 +15,7 @@
  * Leftover: func_ov015_02111214 keeps its C-ABI cartridge name; it is
  *   not a vtable slot.
  * Leftover: pad_0d0[4] is unread in this TU. dActor_c is 0xd0 and
- *   Model needs no more than 4-byte alignment, so those four bytes
+ *   dExtSimpleModel_c needs no more than 4-byte alignment, so those four bytes
  *   are an unknown field, not alignment of mModel.
  * Leftover: inline destructor (out-of-line emits D0 before D1).
  */
@@ -50,7 +50,7 @@ extern "C" daObjBkBillboard_c *daObjBkBillboard_c_classInit()
 // @symbol _ZN18daObjBkBillboard_c13InitResourcesEv
 s32 daObjBkBillboard_c::InitResources()
 {
-    void *file = Model::LoadFile(gBkBillbordModelFile);
+    void *file = dExtSimpleModel_c::LoadFile(gBkBillbordModelFile);
     mModel.SetFile((BMD_File *)file, 1, -1);
     func_ov015_02111214(this);
     return 1;

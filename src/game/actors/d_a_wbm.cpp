@@ -74,7 +74,7 @@ s32 fdiv(s32 numerator, s32 denominator);
 }
 
 extern "C" {
-/* Model files: the fragment's, which the other variants load too. */
+/* dExtSimpleModel_c files: the fragment's, which the other variants load too. */
 extern SharedFilePtr data_ov002_0210da38;
 /* The five fragments' launch angles. */
 extern u16 data_ov098_0213bf90[];
@@ -101,7 +101,11 @@ void _ZN8dActor_c19DropShadowRadHeightER17dExtShadowModel_cR9Matrix4x35Fix12IiES
     s32 depth, u8 opacity);
 int _ZN6Player4HurtERK7Vector3j5Fix12IiEjjj(Player *self, const Vector3 *from,
     u32 a, s32 b, u8 c, u8 d, u8 e);
-void *_ZN8Particle6System9NewSimpleEj5Fix12IiES2_S2_(u32 id, s32 x, s32 y, s32 z);
+namespace Particle {
+struct System {
+    static void *NewSimple(u32 id, s32 x, s32 y, s32 z);
+};
+}
 }
 
 /* The bomb's file-scope SharedFilePtr object, spelled through the same
@@ -154,14 +158,14 @@ int daWbm_c::InitResources()
 
     if (mVariant == 2)
     {
-        bmd = (BMD_File *)Model::LoadFile(data_ov002_0210da38);
+        bmd = (BMD_File *)dExtSimpleModel_c::LoadFile(data_ov002_0210da38);
         if (mModel.SetFile(bmd, 1, 0x16) == 0)
             return 0;
     }
     else
     {
-        Model::LoadFile(data_ov002_0210da38);
-        bmd = (BMD_File *)Model::LoadFile(data_ov098_0213c91c);
+        dExtSimpleModel_c::LoadFile(data_ov002_0210da38);
+        bmd = (BMD_File *)dExtSimpleModel_c::LoadFile(data_ov098_0213c91c);
         if (mModel.SetFile(bmd, 1, 0x16) == 0)
             return 0;
     }
@@ -416,8 +420,8 @@ int daWbm_c::func_ov098_0213b6e0()
                 pos.z = mPosZ;
                 _ZN6Player4HurtERK7Vector3j5Fix12IiEjjj((Player *)other, &pos, 1, 0xc000, 1, 0, 1);
                 if (mVariant == 1) {
-                    _ZN8Particle6System9NewSimpleEj5Fix12IiES2_S2_(0x1c, mPosX, mPosY, mPosZ);
-                    _ZN8Particle6System9NewSimpleEj5Fix12IiES2_S2_(0x1d, mPosX, mPosY, mPosZ);
+                    Particle::System::NewSimple(0x1c, mPosX, mPosY, mPosZ);
+                    Particle::System::NewSimple(0x1d, mPosX, mPosY, mPosZ);
                     Burst();
                     return 1;
                 }

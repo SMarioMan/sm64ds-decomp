@@ -32,7 +32,7 @@ enum d_s_mg_jump2_AssetId {
 };
 
 #include "dScMgJump2_c.h"
-#include "Model.h"
+#include "dExtSimpleModel_c.h"
 #include "SharedFilePtr.h"
 #include "types.h"
 #include "decl_common.h"
@@ -193,7 +193,7 @@ void *_ZN11dScMgBase_cC2Ev(void *p);
 void __cxa_vec_ctor(void *base, unsigned int count, unsigned int stride, void (*ctor)(void *),
                     void (*dtor)(void *));
 void _ZN8Particle10SysTrackerC1Ev(void *p);
-void *_ZN5ModelC1Ev(void *p);
+void *_ZN17dExtSimpleModel_cC1Ev(void *p);
 extern char _ZTV14dScMgD3DBase_c[];
 dMgJump3DMario_c *_ZN16dMgJump3DMario_cD1Ev(dMgJump3DMario_c *object);
 dMgJump3DMario_c *_ZN16dMgJump3DMario_cC1Ev(dMgJump3DMario_c *object);
@@ -235,7 +235,7 @@ void *dScMgJump2_c_classInit() {
         __cxa_vec_ctor(raw + 0x5234, 6, 0xf0, (void (*)(void *))Heyho_Construct,
                        (void (*)(void *))Heyho_Destruct);
         __cxa_vec_ctor(raw + 0x57d4, 0x10, 0x24, Jump2Popup_ElemCtor, Jump2Popup_ElemDtor);
-        _ZN5ModelC1Ev(raw + 0x5a14);
+        _ZN17dExtSimpleModel_cC1Ev(raw + 0x5a14);
     }
     return raw;
 }
@@ -309,11 +309,11 @@ s32 dScMgJump2_c::InitResources() {
         return 0;
 
     sJump2BackFile = &sJump2Back02ModelFile;
-    bmdFile = Model::LoadFile(*(SharedFilePtr *)&sJump2Back02ModelFile);
+    bmdFile = dExtSimpleModel_c::LoadFile(*(SharedFilePtr *)&sJump2Back02ModelFile);
 
-    if (((Model *)mModel)->SetFile((BMD_File *)bmdFile, 1, -1) == 0) {
+    if (((dExtSimpleModel_c *)mModel)->SetFile((BMD_File *)bmdFile, 1, -1) == 0) {
         Matrix4x3_FromTranslation(&data_020a0e68, 0, 0, 0);
-        *(struct M48 *)&((Model *)mModel)->mat4x3 = *(struct M48 *)&data_020a0e68;
+        *(struct M48 *)&((dExtSimpleModel_c *)mModel)->mat4x3 = *(struct M48 *)&data_020a0e68;
         return 0;
     }
 
@@ -523,8 +523,8 @@ void Jump2_SetLights(void) {
 
 // @symbol _ZN12dScMgJump2_c6RenderEv
 /* Slot 9. mModel is raw bytes in the header (the destructor has to destroy
- * it before the arrays), so it is cast to Model here. The component block
- * at mModel + 8 is reached by offset: naming it through Model changes the
+ * it before the arrays), so it is cast to dExtSimpleModel_c here. The component block
+ * at mModel + 8 is reached by offset: naming it through dExtSimpleModel_c changes the
  * code. */
 // Consumed runtime-material prefix; this is not the BMD file record.
 struct MaterialScrollView {
@@ -543,7 +543,7 @@ s32 dScMgJump2_c::Render() {
     Jump2Popup_DrawAll();
     Jump2_SetLights();
     Matrix4x3_FromTranslation(&data_020a0e68, 0, 0xffead000, -0xa0000);
-    *(struct M48 *)&((Model *)mModel)->mat4x3 = *(struct M48 *)&data_020a0e68;
+    *(struct M48 *)&((dExtSimpleModel_c *)mModel)->mat4x3 = *(struct M48 *)&data_020a0e68;
 
     scale = *(struct S3 *)&sJump2RenderScale;
 
@@ -554,7 +554,7 @@ s32 dScMgJump2_c::Render() {
     }
     material->textureOffsetT = mTextureOffsetT;
     {
-        Model *model = (Model *)mModel;
+        dExtSimpleModel_c *model = (dExtSimpleModel_c *)mModel;
         model->Render((Vector3 *)&scale);
     }
 

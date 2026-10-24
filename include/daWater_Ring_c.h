@@ -14,7 +14,7 @@
  *
  *     0x110 dCcAcPos_c  0x40    -> 0x150
  *     0x150 dBgCh_Actr               0x1bc   -> 0x30c
- *     0x30c Model                      0x50    -> 0x35c
+ *     0x30c dExtSimpleModel_c                      0x50    -> 0x35c
  *     0x35c TextureTransformer         0x14    -> 0x370
  *
  * Typing them absorbed markers that were their insides:
@@ -31,7 +31,7 @@
  */
 
 #include "dEnemyBase_c.h"
-#include "Model.h"
+#include "dExtSimpleModel_c.h"
 #include "dCcAcPos_c.h"
 #include "TextureTransformer.h"
 #include "dBgCh_Actr.h"
@@ -48,7 +48,7 @@ struct daWater_Ring_c : dEnemyBase_c {
 
     dCcAcPos_c    mdCcAcPos_c; /* 0x110 */
     dBgCh_Actr                 mWithMeshClsn;         /* 0x150 */
-    Model                        mModel;                /* 0x30c */
+    dExtSimpleModel_c mModel;                         /* 0x30c */
     TextureTransformer           mTextureTransformer;   /* 0x35c */
     const State                 *mState;                /* 0x370 */
     /* Phase accumulators: each frame adds 0x1000 / 0x800, and the high bits

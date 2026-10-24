@@ -116,6 +116,7 @@ public:
     static OamAttr S_CAM_ZOOM_BUTTON_PRESSED;
     static void RenderSub(OamAttr *attr, int x, int y, int a, int b);
     static void Render(bool vis, OamAttr *attr, int x, int y, int a, int b, Matrix2x2 *m);
+    static void Render(bool, OamAttr *, int, int, int, int, int, int, int, int);
 };
 
 namespace GX {
@@ -136,8 +137,8 @@ extern struct OamAttr data_ov002_0210c6c0;
 /* ov001's OAM::NUMBERS, not ov000's -- ov000 shares this load window with ov002 and
 * so can never be the module this reaches. Sits with OAM::TIME and OAM::MINUTES above. */
 extern struct OamAttr *_ZN3OAM7NUMBERSE[];
-extern void _ZN3OAM6RenderEbP7OamAttriiii5Fix12IiES3_ii(int sub, struct OamAttr *attr, int x, int y,
-                                                        int a, int b, int sx, int sy, int c, int d);
+extern void OamRender10_d_meter(int sub, struct OamAttr *attr, int x, int y, int a, int b, int sx,
+                                int sy, int c, int d);
 extern volatile unsigned short data_ov002_0210c208[];
 extern unsigned char data_0209f250;
 extern unsigned char data_ov002_02111178;
@@ -714,23 +715,17 @@ void dMeter_c::RenderHealthMeter() {
         return;
 
     if (GetOwnerLanguage() == 5) {
-        _ZN3OAM6RenderEbP7OamAttriiii5Fix12IiES3_ii(0, data_ov002_0210c254[data_ov002_0211117c[0]],
-                                                    0x80, mHealthMeterY, -1, 1, 0x1000, 0x1000, 0,
-                                                    -1);
-        _ZN3OAM6RenderEbP7OamAttriiii5Fix12IiES3_ii(0, &data_ov002_0210d5d0, 0x80, mHealthMeterY,
-                                                    -1, 1, 0x1000, 0x1000, 0, -1);
+        OAM::Render(0, data_ov002_0210c254[data_ov002_0211117c[0]], 0x80, mHealthMeterY, -1, 1,
+                    0x1000, 0x1000, 0, -1);
+        OAM::Render(0, &data_ov002_0210d5d0, 0x80, mHealthMeterY, -1, 1, 0x1000, 0x1000, 0, -1);
     } else if (GetOwnerLanguage() == 4 || GetOwnerLanguage() == 2) {
-        _ZN3OAM6RenderEbP7OamAttriiii5Fix12IiES3_ii(0, data_ov002_0210c278[data_ov002_0211117c[0]],
-                                                    0x80, mHealthMeterY, -1, 1, 0x1000, 0x1000, 0,
-                                                    -1);
-        _ZN3OAM6RenderEbP7OamAttriiii5Fix12IiES3_ii(0, &data_ov002_0210d4f0, 0x80, mHealthMeterY,
-                                                    -1, 1, 0x1000, 0x1000, 0, -1);
+        OAM::Render(0, data_ov002_0210c278[data_ov002_0211117c[0]], 0x80, mHealthMeterY, -1, 1,
+                    0x1000, 0x1000, 0, -1);
+        OAM::Render(0, &data_ov002_0210d4f0, 0x80, mHealthMeterY, -1, 1, 0x1000, 0x1000, 0, -1);
     } else {
-        _ZN3OAM6RenderEbP7OamAttriiii5Fix12IiES3_ii(0, data_ov002_0210c230[data_ov002_0211117c[0]],
-                                                    0x80, mHealthMeterY, -1, 1, 0x1000, 0x1000, 0,
-                                                    -1);
-        _ZN3OAM6RenderEbP7OamAttriiii5Fix12IiES3_ii(0, &data_ov002_0210c690, 0x80, mHealthMeterY,
-                                                    -1, 1, 0x1000, 0x1000, 0, -1);
+        OAM::Render(0, data_ov002_0210c230[data_ov002_0211117c[0]], 0x80, mHealthMeterY, -1, 1,
+                    0x1000, 0x1000, 0, -1);
+        OAM::Render(0, &data_ov002_0210c690, 0x80, mHealthMeterY, -1, 1, 0x1000, 0x1000, 0, -1);
     }
 
     GX::LoadOBJPltt(&data_ov002_0210c310[data_ov002_0210c29c[data_ov002_0211117c[0]]], 0x60, 0x20);
@@ -801,20 +796,15 @@ void dMeter_c::RenderVsTimer() {
 
     if ((unsigned char)(data_0209f2c4 | data_0209f20c | data_0209f294) == 0) {
         if (GetOwnerLanguage() == 5) {
-            _ZN3OAM6RenderEbP7OamAttriiii5Fix12IiES3_ii(0, &data_ov002_0210d290, 0x84, 9, -1, -1,
-                                                        0x1000, 0x1000, 0, -1);
+            OAM::Render(0, &data_ov002_0210d290, 0x84, 9, -1, -1, 0x1000, 0x1000, 0, -1);
         } else if (GetOwnerLanguage() == 4) {
-            _ZN3OAM6RenderEbP7OamAttriiii5Fix12IiES3_ii(0, &data_ov002_0210d2c0, 0x84, 9, -1, -1,
-                                                        0x1000, 0x1000, 0, -1);
+            OAM::Render(0, &data_ov002_0210d2c0, 0x84, 9, -1, -1, 0x1000, 0x1000, 0, -1);
         } else if (GetOwnerLanguage() == 3) {
-            _ZN3OAM6RenderEbP7OamAttriiii5Fix12IiES3_ii(0, &data_ov002_0210d300, 0x84, 9, -1, -1,
-                                                        0x1000, 0x1000, 0, -1);
+            OAM::Render(0, &data_ov002_0210d300, 0x84, 9, -1, -1, 0x1000, 0x1000, 0, -1);
         } else if (GetOwnerLanguage() == 2) {
-            _ZN3OAM6RenderEbP7OamAttriiii5Fix12IiES3_ii(0, &data_ov002_0210d338, 0x84, 9, -1, -1,
-                                                        0x1000, 0x1000, 0, -1);
+            OAM::Render(0, &data_ov002_0210d338, 0x84, 9, -1, -1, 0x1000, 0x1000, 0, -1);
         } else {
-            _ZN3OAM6RenderEbP7OamAttriiii5Fix12IiES3_ii(0, &_ZN3OAM7VS_TIMEE, 0x84, 9, -1, -1,
-                                                        0x1000, 0x1000, 0, -1);
+            OAM::Render(0, &_ZN3OAM7VS_TIMEE, 0x84, 9, -1, -1, 0x1000, 0x1000, 0, -1);
         }
     }
 
@@ -835,20 +825,15 @@ void dMeter_c::RenderVsTimer() {
         }
     } else {
         if (GetOwnerLanguage() == 5) {
-            _ZN3OAM6RenderEbP7OamAttriiii5Fix12IiES3_ii(0, &data_ov002_0210d2a0, 0x80, mVsTimerY,
-                                                        -1, -1, 0x1000, 0x1000, 0, -1);
+            OAM::Render(0, &data_ov002_0210d2a0, 0x80, mVsTimerY, -1, -1, 0x1000, 0x1000, 0, -1);
         } else if (GetOwnerLanguage() == 4) {
-            _ZN3OAM6RenderEbP7OamAttriiii5Fix12IiES3_ii(0, &data_ov002_0210d2d0, 0x80, mVsTimerY,
-                                                        -1, -1, 0x1000, 0x1000, 0, -1);
+            OAM::Render(0, &data_ov002_0210d2d0, 0x80, mVsTimerY, -1, -1, 0x1000, 0x1000, 0, -1);
         } else if (GetOwnerLanguage() == 3) {
-            _ZN3OAM6RenderEbP7OamAttriiii5Fix12IiES3_ii(0, &data_ov002_0210d308, 0x80, mVsTimerY,
-                                                        -1, -1, 0x1000, 0x1000, 0, -1);
+            OAM::Render(0, &data_ov002_0210d308, 0x80, mVsTimerY, -1, -1, 0x1000, 0x1000, 0, -1);
         } else if (GetOwnerLanguage() == 2) {
-            _ZN3OAM6RenderEbP7OamAttriiii5Fix12IiES3_ii(0, &data_ov002_0210d348, 0x80, mVsTimerY,
-                                                        -1, -1, 0x1000, 0x1000, 0, -1);
+            OAM::Render(0, &data_ov002_0210d348, 0x80, mVsTimerY, -1, -1, 0x1000, 0x1000, 0, -1);
         } else {
-            _ZN3OAM6RenderEbP7OamAttriiii5Fix12IiES3_ii(0, &_ZN3OAM10VS_TIME_UPE, 0x80, mVsTimerY,
-                                                        -1, -1, 0x1000, 0x1000, 0, -1);
+            OAM::Render(0, &_ZN3OAM10VS_TIME_UPE, 0x80, mVsTimerY, -1, -1, 0x1000, 0x1000, 0, -1);
         }
     }
 }
@@ -1087,8 +1072,8 @@ void dMeter_c::RenderLifeCount() {
     unsigned char state = data_ov002_02111178;
 
     if (state >= 3 && state < 6) {
-        _ZN3OAM6RenderEbP7OamAttriiii5Fix12IiES3_ii(0, _ZN3OAM10LIFE_ICONSE[player->mCharacter],
-                                                    mLifeCountX, 0xa, -1, 1, 0x1000, 0x1000, 0, -1);
+        OAM::Render(0, _ZN3OAM10LIFE_ICONSE[player->mCharacter], mLifeCountX, 0xa, -1, 1, 0x1000,
+                    0x1000, 0, -1);
         OAM::Render(false, &_ZN3OAM5TIMESE, mLifeCountX + 0x10, 0xa, -1, 1, 0);
         CalculateDigits((unsigned short)data_0209f2f4);
         int x = mLifeCountX + 0x18;
@@ -1168,20 +1153,16 @@ void dMeter_c::RenderTimeTimer() {
 
     if (min / 10 != 0) {
         if (GetOwnerLanguage() == 5 || GetOwnerLanguage() == 4 || GetOwnerLanguage() == 2) {
-            _ZN3OAM6RenderEbP7OamAttriiii5Fix12IiES3_ii(0, &data_ov002_0210ce80, 0xa4, 0x1e, -1, 1,
-                                                        0x1000, 0x1000, 0, -1);
+            OAM::Render(0, &data_ov002_0210ce80, 0xa4, 0x1e, -1, 1, 0x1000, 0x1000, 0, -1);
         } else {
-            _ZN3OAM6RenderEbP7OamAttriiii5Fix12IiES3_ii(0, &_ZN3OAM4TIMEE, 0xa4, 0x1e, -1, 1,
-                                                        0x1000, 0x1000, 0, -1);
+            OAM::Render(0, &_ZN3OAM4TIMEE, 0xa4, 0x1e, -1, 1, 0x1000, 0x1000, 0, -1);
         }
         OAM::Render(false, _ZN3OAM7NUMBERSE[min / 10], 0xb8, 0x16, -1, 1, 0);
     } else {
         if (GetOwnerLanguage() == 5 || GetOwnerLanguage() == 4 || GetOwnerLanguage() == 2) {
-            _ZN3OAM6RenderEbP7OamAttriiii5Fix12IiES3_ii(0, &data_ov002_0210ce80, 0xac, 0x1e, -1, 1,
-                                                        0x1000, 0x1000, 0, -1);
+            OAM::Render(0, &data_ov002_0210ce80, 0xac, 0x1e, -1, 1, 0x1000, 0x1000, 0, -1);
         } else {
-            _ZN3OAM6RenderEbP7OamAttriiii5Fix12IiES3_ii(0, &_ZN3OAM4TIMEE, 0xac, 0x1e, -1, 1,
-                                                        0x1000, 0x1000, 0, -1);
+            OAM::Render(0, &_ZN3OAM4TIMEE, 0xac, 0x1e, -1, 1, 0x1000, 0x1000, 0, -1);
         }
     }
 

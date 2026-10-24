@@ -13,7 +13,7 @@
  *     0x110 dCcAc_c         0x34   -> 0x144
  *     0x144 dCcAcPos_c  0x40   -> 0x184
  *     0x184 dBgCh_Actr               0x1bc  -> 0x340
- *     0x340 ModelAnim                  0x64   -> 0x3a4
+ *     0x340 dExtAnmModel_c                  0x64   -> 0x3a4
  *     0x3a4 dExtShadowModel_c                0x28   -> 0x3cc
  *
  * Typing them absorbed these markers, which were a member's insides:
@@ -35,8 +35,8 @@
  */
 
 #include "dEnemyBase_c.h"
-#include "Model.h"
-#include "ModelAnim.h"
+#include "dExtSimpleModel_c.h"
+#include "dExtAnmModel_c.h"
 #include "dCcAc_c.h"
 #include "dCcAcPos_c.h"
 #include "dExtShadowModel_c.h"
@@ -75,7 +75,7 @@ struct daPopoi_c : dEnemyBase_c {
     dCcAc_c           mdCcAc_c;   /* 0x110 */
     dCcAcPos_c    mdCcAcPos_c; /* 0x144 */
     dBgCh_Actr                 mWithMeshClsn;         /* 0x184 */
-    ModelAnim                    mModelAnim;            /* 0x340 */
+    dExtAnmModel_c mModelAnim;                        /* 0x340 */
     dExtShadowModel_c                  mShadowModel;          /* 0x3a4 */
     u8  pad_3cc[0x30];                                   /* 0x3cc -- no function here touches it */
     /* The current state's record; see the table above. Installed by

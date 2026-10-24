@@ -33,14 +33,15 @@
 #include "daCoin_c.h"
 #include "SpawnInfo.h"
 #include "SharedFilePtr.h"
-#include "Model.h"
+#include "dExtSimpleModel_c.h"
 #include "Player.h"
 #include "daStar_c.h"
 #include "daStarBase_c.h"
 #include "daObjBlockL_c.h"
 #include "SurfaceInfo.h"
-#include "ModelBase.h"
+#include "dExtModel_c.h"
 #include "dBgCh_Actr.h"
+#include "Sound.h"
 
 /* Views of daObjBC_Switch_c.h and daObjFl_Coin_c.h, same member names and
    offsets: including either header renumbers this TU's @NNN labels. */
@@ -99,7 +100,6 @@ extern s8 NumRedCoins(void);
 extern unsigned int func_02012790(unsigned int a);
 extern void func_02012694(unsigned int id, const Vector3 *v);
 extern int SurfaceInfo_TestFlag0x20(void* p);
-extern void _ZN5Sound9PlayBank3EjRK7Vector3(unsigned int id, const Vector3 &pos);
 extern void _ZN8Particle6System12NewBigSplashE5Fix12IiES2_S2_(int a, int b, int c);
 extern short _ZN8dActor_c12ReflectAngleE5Fix12IiES1_s(void*, int, int, short);
 extern void _ZN8dActor_c19DropShadowRadHeightER17dExtShadowModel_cR9Matrix4x35Fix12IiES5_j(
@@ -400,9 +400,9 @@ void daCoin_c::func_ov002_020b16c4(Player *player)
     mDisappearTimer = 0;
     KillAndTrackInDeathTable();
     if (player->mIsUnderwater != 0)
-        _ZN5Sound9PlayBank3EjRK7Vector3(0x12, mCamSpacePos);
+        Sound::PlayBank3(0x12, mCamSpacePos);
     else
-        _ZN5Sound9PlayBank3EjRK7Vector3(0x11, mCamSpacePos);
+        Sound::PlayBank3(0x11, mCamSpacePos);
 
     filter = mSpawnFilter;
     if (filter != 0 && filter <= 7) {
@@ -456,9 +456,9 @@ void daCoin_c::func_ov002_020b1884(Player *player)
     mDisappearTimer = 0;
     KillAndTrackInDeathTable();
     if (player->mIsUnderwater)
-        _ZN5Sound9PlayBank3EjRK7Vector3(0x12, mCamSpacePos);
+        Sound::PlayBank3(0x12, mCamSpacePos);
     else
-        _ZN5Sound9PlayBank3EjRK7Vector3(0x11, mCamSpacePos);
+        Sound::PlayBank3(0x11, mCamSpacePos);
     GiveCoins(player->mPlayerNo, 1);
     player->Heal(0x100);
 }
@@ -579,7 +579,7 @@ void daCoin_c::func_ov002_020b1ad4()
     }
     if (mWithMeshClsn.JustHitGround()) {
         if (SurfaceInfo_TestFlag0x20((char *)mWithMeshClsn.GetFloorResult() + 4) == 0) {
-            _ZN5Sound9PlayBank3EjRK7Vector3(0x52, mCamSpacePos);
+            Sound::PlayBank3(0x52, mCamSpacePos);
             mVertSpeed = 0x19000;
         }
     }
@@ -600,7 +600,7 @@ void daCoin_c::func_ov002_020b1bfc()
     if (!mWithMeshClsn.JustHitGround()) return;
     if (SurfaceInfo_TestFlag0x20((char *)mWithMeshClsn.GetFloorResult() + 4) != 0)
         return;
-    _ZN5Sound9PlayBank3EjRK7Vector3(0x52, mCamSpacePos);
+    Sound::PlayBank3(0x52, mCamSpacePos);
     if (mHorzSpeed == 0) {
         mHorzSpeed = 0x13000;
         mDisappearTimer = 0x12c;
@@ -646,7 +646,7 @@ void daCoin_c::func_ov002_020b1cc0()
         if (isFlCoin != 0) {
             if (mPosY <= flCoin->mPosY) {
                 mPosY = flCoin->mPosY;
-                _ZN5Sound9PlayBank3EjRK7Vector3(0x52, mCamSpacePos);
+                Sound::PlayBank3(0x52, mCamSpacePos);
                 bits = (CoinFlagBits *)((int)&mCoinFlags);
                 bits->bounces++;
                 bounces = ((CoinFlagBits *)&mCoinFlags)->bounces;
@@ -678,7 +678,7 @@ void daCoin_c::func_ov002_020b1cc0()
         if (SurfaceInfo_TestFlag0x20((char *)mWithMeshClsn.GetFloorResult() + 4) == 0) {
             if (mDisappearTimer > 0xf000)
                 mDisappearTimer = 0xf;
-            _ZN5Sound9PlayBank3EjRK7Vector3(0x52, mCamSpacePos);
+            Sound::PlayBank3(0x52, mCamSpacePos);
             bits = (CoinFlagBits *)((int)&mCoinFlags);
             bits->bounces++;
             bounces = ((CoinFlagBits *)&mCoinFlags)->bounces;
@@ -778,11 +778,11 @@ void daCoin_c::func_ov002_020b2150()
     }
 }
 
-/* Particle::System::NewSimple takes its coordinates as Fix12<int>, which this
- * tree still spells as a plain s32, so the call is reached through its mangled
- * name. The declaration must carry C linkage: a C++-linkage prototype of that
- * identifier mangles a second time and names a symbol nothing defines. */
-extern "C" void *_ZN8Particle6System9NewSimpleEj5Fix12IiES2_S2_(unsigned int id, Fix12i x, Fix12i y, Fix12i z);
+namespace Particle {
+struct System {
+    static void *NewSimple(unsigned int id, Fix12i x, Fix12i y, Fix12i z);
+};
+}
 
 // @symbol _ZN8daCoin_c16CleanupResourcesEv
 s32 daCoin_c::CleanupResources()
@@ -814,7 +814,7 @@ s32 daCoin_c::CleanupResources()
         }
     }
     if (mDisappearTimer != 0) return 1;
-    _ZN8Particle6System9NewSimpleEj5Fix12IiES2_S2_(0xd2, mPosX, mPosY + 0x28000, mPosZ);
+    Particle::System::NewSimple(0xd2, mPosX, mPosY + 0x28000, mPosZ);
     return 1;
 }
 
@@ -852,7 +852,7 @@ int daCoin_c::Behavior()
 
     if ((unsigned int)(mCoinFlags << 0x1e) >> 0x1f) {
         mCoinFlags &= ~2;
-        _ZN5Sound9PlayBank3EjRK7Vector3(0x30, mCamSpacePos);
+        Sound::PlayBank3(0x30, mCamSpacePos);
     }
     if ((int)(actorID == 0x122) != 0) {
         if ((unsigned int)(mCoinFlags << 0x1f) >> 0x1f)
@@ -992,7 +992,7 @@ common:;
         isRed = (isRed == 0x121);
         if (isRed) {
             mSpawnFilter = (u8)((param1 >> 4) & 7);
-            Model::LoadFile(*(SharedFilePtr *)&data_ov002_0210d9a8);
+            dExtSimpleModel_c::LoadFile(*(SharedFilePtr *)&data_ov002_0210d9a8);
             mCoinType = COIN_RED;
             if (SublevelToLevel(data_0209f2f8) == 0x13 ||
                 mSpawnFilter == data_0209f220) {
@@ -1028,8 +1028,8 @@ common:;
             return 0;
         }
     } else {
-        Model::LoadFile(*(SharedFilePtr *)data_ov002_020ff06c[type]);
-        Model::LoadFile(*(SharedFilePtr *)data_ov002_020ff060[mCoinType]);
+        dExtSimpleModel_c::LoadFile(*(SharedFilePtr *)data_ov002_020ff06c[type]);
+        dExtSimpleModel_c::LoadFile(*(SharedFilePtr *)data_ov002_020ff060[mCoinType]);
         if (mCommonModel1.SetFile((BMD_File *)data_ov002_020ff06c[mCoinType]->bmd, 1, 1) == 0) {
             return 0;
         }

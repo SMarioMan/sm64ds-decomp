@@ -6,7 +6,7 @@
 // leftovers:
 // - func_ov085_02129f8c stays a free function taking char *. The cartridge
 //   does not name it, and it is the one body here that is not a method.
-// - ModelAnim::SetAnim stays mangled. The ModelAnim and dExtFrameCtrl_c
+// - dExtAnmModel_c::SetAnim stays mangled. The dExtAnmModel_c and dExtFrameCtrl_c
 //   views are reached by cast because both take Fix12<int> by value.
 // - Offsets 0xa4 and 0xac are dActor_c's mSpeedX and mSpeedZ. Offset 0xe8
 //   sits inside the model's ModelComponents and is still read through words[].
@@ -26,8 +26,8 @@ bool ApproachLinear(short &value, short target, short step);
 struct BMD_File;
 struct Vector3_16;
 
-/* ModelAnim's fourth virtual slot, reached through a four-slot stand-in.
- * Behavior calls it on the ModelAnim at +0xd4; the real declaration lives
+/* dExtAnmModel_c's fourth virtual slot, reached through a four-slot stand-in.
+ * Behavior calls it on the dExtAnmModel_c at +0xd4; the real declaration lives
  * with that class, and this file only needs the dispatch. */
 struct PeachAnimSlots {
     virtual int g0();
@@ -65,7 +65,6 @@ extern void _ZN7dCcAc_c4InitEP8dActor_c5Fix12IiES3_jj(
     void *self, dActor_c *a, int b, int c, unsigned int d, unsigned int e);
 
 /* model / animation */
-extern int _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(char *self, void *bca, int frame, int speed, unsigned int flags);
 
 /* ov085 statics. data_ov085_0212f280 and data_ov085_021304f4 keep
  * include/decl_common.h's spelling, so this file adds no new reading of
@@ -91,7 +90,7 @@ extern daPeach_c::StateEntry data_ov085_0213055c[];
  *
  * There is nothing to write. The vptr store and the four member destructor
  * calls -- dBgCh_Actr at 0x194, dCcAc_c at 0x160, dExtShadowModel_c at 0x138,
- * ModelAnim at 0xd4 -- and then dActor_c's own step are every one a
+ * dExtAnmModel_c at 0xd4 -- and then dActor_c's own step are every one a
  * consequence of `struct daPeach_c : dActor_c` and the members that
  * declaration types. D0's deallocation is the inline operator delete reached
  * through fBase_c, which is why nothing here mentions a heap.
@@ -219,7 +218,7 @@ int daPeach_c::InitState0()
 // @symbol _ZN9daPeach_c6State0Ev
 int daPeach_c::State0()
 {
-    _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj((char *)&mModelAnim, data_ov085_021304ec[1], 0, 0x1000, 0);
+    mModelAnim.SetAnim((BCA_File *)data_ov085_021304ec[1], 0, 0x1000, 0);
     ((dExtFrameCtrl_c *)&mModelAnim)->SetFlags(0x40000000);
     mHorzSpeed = 0x4000;
     mVertSpeed = 0xa000;
@@ -236,7 +235,7 @@ int daPeach_c::State2()
 // @symbol _ZN9daPeach_c10InitState2Ev
 int daPeach_c::InitState2()
 {
-    _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj((char *)&mModelAnim, (void *)data_ov085_021304e4[1], 0, 0x1000, 0);
+    mModelAnim.SetAnim((BCA_File *)((void *)data_ov085_021304e4[1]), 0, 0x1000, 0);
     mHorzSpeed = 0x4000;
     mStateValue = 3;
     return 1;
@@ -256,7 +255,7 @@ int daPeach_c::InitState4()
 // @symbol _ZN9daPeach_c6State1Ev
 int daPeach_c::State1()
 {
-    _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj((char *)&mModelAnim, (void *)data_ov085_021304c4[1], 0, 0x1000, 0);
+    mModelAnim.SetAnim((BCA_File *)((void *)data_ov085_021304c4[1]), 0, 0x1000, 0);
     mHorzSpeed = 0x1800;
     mStateValue = 2;
     return 1;
@@ -295,7 +294,7 @@ int daPeach_c::State3()
 // @symbol _ZN9daPeach_c10InitState1Ev
 int daPeach_c::InitState1()
 {
-    _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj((char *)&mModelAnim, data_ov085_021304d4[1], 0, 0x1000, 0);
+    mModelAnim.SetAnim((BCA_File *)data_ov085_021304d4[1], 0, 0x1000, 0);
     ((dExtFrameCtrl_c *)&mModelAnim)->currFrame = 0;
     ((dExtFrameCtrl_c *)&mModelAnim)->Advance();
     mTalkState = 1;
@@ -326,7 +325,7 @@ int daPeach_c::InitState3()
 // @symbol _ZN9daPeach_c6State4Ev
 int daPeach_c::State4()
 {
-    _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj((char *)&mModelAnim, (void *)data_ov085_021304bc[1], 0, 0x1000, 0);
+    mModelAnim.SetAnim((BCA_File *)((void *)data_ov085_021304bc[1]), 0, 0x1000, 0);
     mStateValue = 0;
     return 1;
 }
@@ -376,10 +375,10 @@ void daPeach_c::OnPendingDestroy()
 }
 
 // @symbol _ZN9daPeach_c6RenderEv
-/* Qualified Model::Render. ModelAnim overrides the slot. */
+/* Qualified dExtSimpleModel_c::Render. dExtAnmModel_c overrides the slot. */
 int daPeach_c::Render()
 {
-    mModelAnim.Model::Render(0);
+    mModelAnim.dExtSimpleModel_c::Render(0);
     return 1;
 }
 
@@ -405,8 +404,8 @@ int daPeach_c::Behavior()
  * pointer type, it is not an int. */
 int daPeach_c::InitResources()
 {
-    void *f = Model::LoadFile(*(SharedFilePtr *)&data_ov085_021304f4);
-    ((ModelBase *)&mModelAnim)->SetFile((BMD_File *)f, 1, -1);
+    void *f = dExtSimpleModel_c::LoadFile(*(SharedFilePtr *)&data_ov085_021304f4);
+    ((dExtModel_c *)&mModelAnim)->SetFile((BMD_File *)f, 1, -1);
     for (int i = 0; i < 7; i++)
         dExtFrameCtrl_c::LoadFile(*(SharedFilePtr *)data_ov085_0212f280[i]);
     if (mShadowModel.InitCylinder() == 0)

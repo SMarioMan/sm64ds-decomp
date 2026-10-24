@@ -2,7 +2,7 @@
 #define DAOBJKB1BILLBOARD_C_H
 
 #include "types.h"
-#include "Model.h"
+#include "dExtSimpleModel_c.h"
 #include "dActor_c.h"
 
 extern "C" void *_ZN7fBase_cnwEj(unsigned size);
@@ -11,12 +11,12 @@ extern "C" void *_ZN7fBase_cnwEj(unsigned size);
  *
  * ROM-proven class identity: _ZTI19daObjKb1Billboard_c and
  * _ZTS19daObjKb1Billboard_c at ov044:0x021115bc/0x021115c8. Direct dActor_c
- * subclass. Factory allocates 0x124: dActor_c 0xd0, four-byte gap, Model at
+ * subclass. Factory allocates 0x124: dActor_c 0xd0, four-byte gap, dExtSimpleModel_c at
  * 0xd4.
  */
 struct daObjKb1Billboard_c : dActor_c {
     u8    pad_0d0[0x4];
-    Model mModel;          /* 0x0d4 */
+    dExtSimpleModel_c mModel; /* 0x0d4 */
 
     /* InitResources is the first out-of-line virtual/key function. The inline
      * destructor lets mwccarm emit the retail D1/D0 pair and class RTTI/vtable. */

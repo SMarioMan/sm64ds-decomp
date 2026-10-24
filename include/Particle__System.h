@@ -13,6 +13,9 @@ struct Vector3_16f { s16 x, y, z; };
 
 namespace Particle {
 
+/* System::New's last parameter. The name is what the linker symbol encodes. */
+struct Callback;
+
 /* The list element's exact source type and member spellings are not
  * RTTI-backed. The water callbacks prove the intrusive link and the two
  * ASR-3 position vectors below; the names are descriptive. */
@@ -70,6 +73,9 @@ struct System {
     Flags flags;                   /* 0x74 */
 
     static System *FromUniqueID(u32 uniqueID);
+    /* Unnamed parameters: a name here numbers @NNN in every includer. */
+    static void *NewSimple(u32, Fix12i, Fix12i, Fix12i);
+    static int New(u32, u32, Fix12i, Fix12i, Fix12i, const Vector3_16f *, Callback *);
 };
 
 #ifndef SM64DS_PLATFORM_PC

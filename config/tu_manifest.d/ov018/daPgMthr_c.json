@@ -342,7 +342,7 @@
     "tubuild create warning (RESOLVED): CONFLICT: extern declaration 'func_ov018_02111a48' differs between the legacy file that used to hold func_ov018_02111e28 and the one that held func_ov018_02112234; kept the first, the other is commented out for review",
     "tubuild create warning (RESOLVED): CONFLICT: extern declaration 'func_ov018_02111bf0' differs between the legacy file that used to hold func_ov018_02111e28 and the one that held func_ov018_02112234; kept the first, the other is commented out for review",
     "tubuild create warning (RESOLVED): CONFLICT: extern declaration 'func_0201267c' differs between the legacy file that used to hold func_ov018_02111e28 and the one that held func_ov018_02112234; kept the first, the other is commented out for review",
-    "tubuild create warning (RESOLVED): CONFLICT: extern declaration '_ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj' differs between the legacy file that used to hold func_ov018_02111f1c and the one that held func_ov018_021122ec; kept the first, the other is commented out for review",
+    "tubuild create warning (RESOLVED): CONFLICT: extern declaration '_ZN14dExtAnmModel_c7SetAnimEP8BCA_Filei5Fix12IiEj' differs between the legacy file that used to hold func_ov018_02111f1c and the one that held func_ov018_021122ec; kept the first, the other is commented out for review",
     "tubuild create warning (RESOLVED): CONFLICT: extern declaration '_ZN15TextureSequence7SetFileER8BTP_Filei5Fix12IiEj' differs between the legacy file that used to hold func_ov018_02111f1c and the one that held func_ov018_021122ec; kept the first, the other is commented out for review",
     "tubuild create warning (RESOLVED): CONFLICT: extern declaration 'func_ov018_02111d28' differs between the legacy file that used to hold _ZN10daPgMthr_c8BehaviorEv and the one that held _ZN10daPgMthr_c13InitResourcesEv; kept the first, the other is commented out for review",
     "tubuild create warning (RESOLVED): CONFLICT: local declaration ('struct', 'dActor_c') differs between the legacy file that used to hold func_ov018_021118fc and the one that held func_ov018_02111d28; kept the first, the other is commented out for review -- resolved by deleting BOTH shadow declarations and including the real include/dActor_c.h, which the promoted TU does via daPgMthr_c.h. The shadow spelling named the actor id field `kind`; the real header calls it `actorID` at 0x00c.",
@@ -1253,57 +1253,57 @@
   ],
   "defined_symbol_renames": [
     {
-      "from": "@838",
+      "from": "@834",
       "to": "@826",
       "evidence": "compiler temp; the types.h Vector3 ctors shift this TU's per-TU @NNN uniquifier, so mwcc emits it under this name now; licensed under the existing pin"
     },
     {
-      "from": "@839",
+      "from": "@835",
       "to": "@733",
       "evidence": "compiler temp; the types.h Vector3 ctors shift this TU's per-TU @NNN uniquifier, so mwcc emits it under this name now; licensed under the existing pin"
     },
     {
-      "from": "@840",
+      "from": "@836",
       "to": "@828",
       "evidence": "compiler temp; the types.h Vector3 ctors shift this TU's per-TU @NNN uniquifier, so mwcc emits it under this name now; licensed under the existing pin"
     },
     {
-      "from": "@841",
+      "from": "@837",
       "to": "@734",
       "evidence": "compiler temp; the types.h Vector3 ctors shift this TU's per-TU @NNN uniquifier, so mwcc emits it under this name now; licensed under the existing pin"
     },
     {
-      "from": "@842",
+      "from": "@838",
       "to": "@830",
       "evidence": "compiler temp; the types.h Vector3 ctors shift this TU's per-TU @NNN uniquifier, so mwcc emits it under this name now; licensed under the existing pin"
     },
     {
-      "from": "@844",
+      "from": "@840",
       "to": "@832",
       "evidence": "compiler temp; the types.h Vector3 ctors shift this TU's per-TU @NNN uniquifier, so mwcc emits it under this name now; licensed under the existing pin"
     },
     {
-      "from": "@846",
+      "from": "@842",
       "to": "@728",
       "evidence": "compiler temp; the types.h Vector3 ctors shift this TU's per-TU @NNN uniquifier, so mwcc emits it under this name now; licensed under the existing pin"
     },
     {
-      "from": "@848",
+      "from": "@844",
       "to": "@729",
       "evidence": "compiler temp; the types.h Vector3 ctors shift this TU's per-TU @NNN uniquifier, so mwcc emits it under this name now; licensed under the existing pin"
     },
     {
-      "from": "@850",
+      "from": "@846",
       "to": "@730",
       "evidence": "compiler temp; the types.h Vector3 ctors shift this TU's per-TU @NNN uniquifier, so mwcc emits it under this name now; licensed under the existing pin"
     },
     {
-      "from": "@852",
+      "from": "@848",
       "to": "@731",
       "evidence": "compiler temp; the types.h Vector3 ctors shift this TU's per-TU @NNN uniquifier, so mwcc emits it under this name now; licensed under the existing pin"
     },
     {
-      "from": "@854",
+      "from": "@850",
       "to": "@732",
       "evidence": "compiler temp; the types.h Vector3 ctors shift this TU's per-TU @NNN uniquifier, so mwcc emits it under this name now; licensed under the existing pin"
     }

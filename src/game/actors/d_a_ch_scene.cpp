@@ -238,9 +238,6 @@ void func_ov002_020b0a0c(daChScene_c *self)
     }
 }
 }
-/* -------------------------------------------------------------------------- */
-/* ROM ordinal 1 -- _ZN11daChScene_cD0Ev, 0x020b09d4, size 0x38 */
-/* -------------------------------------------------------------------------- */
 // @symbol _ZN11daChScene_cD0Ev
 /* recovered: real C++ deleting destructor -- the compiler emits the whole body
  *
@@ -257,9 +254,6 @@ void func_ov002_020b0a0c(daChScene_c *self)
  * exactly D1 then D0 and no D2 -- the ROM's shape -- so both variants are
  * licensed functions of this TU and neither needs a deadstrip policy row. */
 
-/* -------------------------------------------------------------------------- */
-/* ROM ordinal 0 -- _ZN11daChScene_cD1Ev, 0x020b09b0, size 0x24 */
-/* -------------------------------------------------------------------------- */
 // @symbol _ZN11daChScene_cD1Ev
 /* recovered: real C++ destructor -- the compiler emits the whole body
  *

@@ -1,40 +1,40 @@
-#ifndef MODELANIM_H
-#define MODELANIM_H
+#ifndef DEXTANMMODEL_C_H
+#define DEXTANMMODEL_C_H
 
 #include "types.h"
 #include "BMD_File.h"
-#include "ModelBase.h"
-#include "Model.h"
+#include "dExtModel_c.h"
+#include "dExtSimpleModel_c.h"
 #include "dExtFrameCtrl_c.h"
 #include "math/Matrix.h"
 #include "math/Fix12.h"
 
-/* The first multiply-inheriting class in the tree: ModelAnim derives from
- * Model AND dExtFrameCtrl_c. The dExtFrameCtrl_c base sits at +0x50, which is exactly
- * sizeof(Model), and the ROM's _ZThn80_ thunks (80 decimal = 0x50) adjust
+/* The first multiply-inheriting class in the tree: dExtAnmModel_c derives from
+ * dExtSimpleModel_c AND dExtFrameCtrl_c. The dExtFrameCtrl_c base sits at +0x50, which is exactly
+ * sizeof(dExtSimpleModel_c), and the ROM's _ZThn80_ thunks (80 decimal = 0x50) adjust
  * this from the dExtFrameCtrl_c view back to the object start.
  *
- * Primary vtable _ZTV9ModelAnim at 0x0208e980:
+ * Primary vtable _ZTV14dExtAnmModel_c at 0x0208e980:
  *
- *   slot 0  0x0201691c  ~ModelAnim (D1)
- *   slot 1  0x020168d8  ~ModelAnim (D0)
- *   slot 2  0x02016bf8  Model::DoSetFile   -- INHERITED, deliberately not
+ *   slot 0  0x0201691c  ~dExtAnmModel_c (D1)
+ *   slot 1  0x020168d8  ~dExtAnmModel_c (D0)
+ *   slot 2  0x02016bf8  dExtSimpleModel_c::DoSetFile   -- INHERITED, deliberately not
  *                                             redeclared here
  *   slot 3  0x0201686c  UpdateVerts
  *   slot 4  0x0201682c  Virtual10(Matrix4x3 &)
  *   slot 5  0x020167f8  Render(Vector3 const *)
  *   slot 6  0x020167c4  Virtual18(u32, Vector3 const *)
  *
- * Secondary (dExtFrameCtrl_c-in-ModelAnim) vtable at +0x24 of the primary,
+ * Secondary (dExtFrameCtrl_c-in-dExtAnmModel_c) vtable at +0x24 of the primary,
  * VTable_Animation_ModelAnimThunk: [_ZThn80_ D1, _ZThn80_ D0, null] -- the
  * inherited slot stays null.
  *
- * CORRECTION. That null slot used to be read here as "ModelAnim is abstract,
+ * CORRECTION. That null slot used to be read here as "dExtAnmModel_c is abstract,
  * which is why only its C2 is ever called from derived constructors and no
  * code instantiates one directly." The ROM refutes it, and not subtly: the
  * COMPLETE-OBJECT structors exist as symbols --
  *
- *   _ZN9ModelAnimC1Ev  0x02016958      _ZN9ModelAnimD1Ev  0x0201691c
+ *   _ZN14dExtAnmModel_cC1Ev  0x02016958      _ZN14dExtAnmModel_cD1Ev  0x0201691c
  *
  * -- and are called from 103 and 131 source files respectively. A compiler
  * emits C1/D1 only for a type something actually creates; a class that can
@@ -43,7 +43,7 @@
  * which is what an embedded member looks like, and they are relocations the
  * ROM build checks -- not prose.
  *
- * So a ModelAnim IS instantiated, overwhelmingly as a member subobject. The
+ * So a dExtAnmModel_c IS instantiated, overwhelmingly as a member subobject. The
  * null slot means one inherited virtual is never called, not that the class
  * cannot be built: it cannot mean abstract while C1 exists and 103 files
  * call it.
@@ -51,71 +51,75 @@
  * THE DESTRUCTOR IS DECLARED FIRST AND NEVER DEFINED AS A METHOD. Both
  * vtables AND the two thunks are emitted with the key function, so the
  * structors staying C files is what keeps all of them ROM-supplied. See
- * include/ModelBase.h.
+ * include/dExtModel_c.h.
  *
- * LAYOUT: Model 0x00..0x50, dExtFrameCtrl_c 0x50..0x60 (its vptr at +0x50), the
+ * LAYOUT: dExtSimpleModel_c 0x00..0x50, dExtFrameCtrl_c 0x50..0x60 (its vptr at +0x50), the
  * BCA file pointer at 0x60. Pinned by C2 (both ctor calls, both vptr
  * stores, zeroes +0x60), D2 (both vptr restores, both base D2 calls) and
  * SetAnim/UpdateVerts reading +0x60.
  *
- * SetAnim's definition is still a mangled free function, but NOT because of
- * wall 6az. Measured 2026-10-22: `void ModelAnim::SetAnim(BCA_File *, int,
- * Fix12i, u16)` reproduces 0x02016748/0x5c exactly as a real method, under the
- * scalar mangling _ZN9ModelAnim7SetAnimEP8BCA_Fileiit. The class-typed spelling
- * costs +0x18 because the body reads `speed` in both branches -- so what blocks
- * the method is the `5Fix12IiE` WE PUT IN THE NAME, not the compiler. Retail
- * reads the argument straight out of r3 (`mov r4, r3`). Renaming is a campaign
- * (801 references, 114 files, symbols.txt, ~30 manifests); see
- * notes/mwccarm-codegen.md section 6az, MEASURED 2026-10-22.
+ * SetAnim IS A REAL METHOD, and its symbol is _ZN14dExtAnmModel_c7SetAnimEP8BCA_Fileiit.
+ * It used to be a mangled extern "C" free function taking an explicit `thiz`,
+ * on the grounds that wall 6az forbade the method form. That was wrong: the
+ * wall was the NAME. The old symbol spelled a by-value `Fix12<int>` that we
+ * invented -- the cartridge carries no mangled names at all -- and the
+ * class-typed parameter is what cost +0x18, because the body reads `speed` in
+ * both branches. Retail reads the argument straight out of r3 (`mov r4, r3`),
+ * so the honest parameter is the scalar Fix12i and the honest startFrame is the
+ * u16 the body already loads with `ldrh`. Under that spelling the method
+ * reproduces 0x02016748/0x5c exactly. See notes/mwccarm-codegen.md section 6az,
+ * MEASURED 2026-10-22.
+ *
+ * Two call sites could not follow: d_a_ots.cpp tail-forwards the result as an
+ * int, and one Player.cpp body passes a non-constant startFrame. Each keeps a
+ * scalar `local extern:` with its reason.
  */
 
 #ifdef __cplusplus
 
 extern "C" void _ZN6Memory16operator_delete2EPv(void *);
 
-struct ModelAnim : Model, dExtFrameCtrl_c {
+struct dExtAnmModel_c : dExtSimpleModel_c, dExtFrameCtrl_c {
     BCA_File *file;            /* 0x60 */
 
     /* --- primary vtable order. Do not reorder. --- */
-    virtual ~ModelAnim();                                 /* slots 0 (D1), 1 (D0) */
+    virtual ~dExtAnmModel_c();                            /* slots 0 (D1), 1 (D0) */
     virtual void UpdateVerts();                           /* slot 3 */
     virtual void Virtual10(Matrix4x3 &mat);               /* slot 4 */
     virtual void Render(const Vector3 *scale);            /* slot 5 */
     virtual void Virtual18(u32 mat, const Vector3 *scale);/* slot 6 */
 
-    /* DECLARED, defined out of line in src/engine/model/ModelAnim.cpp as real C++
+    /* DECLARED, defined out of line in src/engine/model/d_ext_anm_model.cpp as real C++
      * -- complete-object context for every ROM caller (103 of them), hence C1.
      * Body is the single store file = 0; both base steps and both vptr stores
      * are synthesised (notes/ctor-migration.md section 6). The C2 sibling each
      * TU emits is stripped by objisolate; its enrolled home stays the
-     * hand-written _ZN9ModelAnimC2Ev.c (section 1). */
+     * hand-written _ZN14dExtAnmModel_cC2Ev.c (section 1). */
 
     /* --- non-virtual --- */
-    ModelAnim();
-    /* Free function; the NAME blocks the method, not 6az -- see above. */
-    void SetAnim(BCA_File *animFile, int flags, Fix12<int> speed, u32 startFrame);
-    void Copy(const ModelAnim &src, char *newFile);
+    dExtAnmModel_c();
+    void SetAnim(BCA_File *animFile, int flags, Fix12i speed, u16 startFrame);
+    void Copy(const dExtAnmModel_c &src, char *newFile);
 
-    /* ITS OWN, TO RESOLVE AN AMBIGUITY MULTIPLE INHERITANCE CREATES. ModelAnim
-       derives from Model (so ModelBase) and from dExtFrameCtrl_c, and both bases
+    /* ITS OWN, TO RESOLVE AN AMBIGUITY MULTIPLE INHERITANCE CREATES. dExtAnmModel_c
+       derives from dExtSimpleModel_c (so dExtModel_c) and from dExtFrameCtrl_c, and both bases
        declare operator delete, so an inherited one is "ambiguous access to
-       name found: ModelBase::operator delete and dExtFrameCtrl_c::operator delete".
+       name found: dExtModel_c::operator delete and dExtFrameCtrl_c::operator delete".
        Declaring it here picks the same deallocator both bases name, and also
        satisfies the rule in include/dActor_c.h that mwcc only inlines the member
        when it is in the class or its immediate base. */
     void operator delete(void *ptr) { _ZN6Memory16operator_delete2EPv(ptr); }
-
 };
 
 #ifndef SM64DS_PLATFORM_PC
 /* ROM layout under mwccarm; host ABI divergence is tracked separately. */
-typedef char ModelAnim_size_must_be_0x64[sizeof(ModelAnim) == 0x64 ? 1 : -1];
+typedef char dExtAnmModel_c_size_must_be_0x64[sizeof(dExtAnmModel_c) == 0x64 ? 1 : -1];
 #endif
 
 #else
 
 /* The same object for C translation units, both vptrs written out. */
-struct ModelAnim {
+struct dExtAnmModel_c {
     void **vtable;                     /* 0x00 */
     struct BMD_File *modelFile;        /* 0x04 */
     struct ModelComponents data;       /* 0x08 */
@@ -128,10 +132,10 @@ struct ModelAnim {
     struct BCA_File *file;             /* 0x60 */
 };
 
-/* So an object header declaring a ModelAnim member reads the same in both modes: C++
+/* So an object header declaring a dExtAnmModel_c member reads the same in both modes: C++
  * gets the class, C gets the flat stand-in above, and neither needs `struct`. */
-typedef struct ModelAnim ModelAnim;
+typedef struct dExtAnmModel_c dExtAnmModel_c;
 
 #endif /* __cplusplus */
 
-#endif /* MODELANIM_H */
+#endif /* DEXTANMMODEL_C_H */

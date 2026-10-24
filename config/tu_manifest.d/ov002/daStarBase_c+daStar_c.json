@@ -833,7 +833,7 @@
     "tubuild create warning: CONFLICT: extern declaration '_ZN9dCamera_c6SetPosERK7Vector3' differs between the legacy file that used to hold func_ov002_020e763c and the one that held func_ov002_020e7934; kept the first, the other is commented out for review",
     "tubuild create warning: CONFLICT: extern declaration 'Vec3_Dist' differs between the legacy file that used to hold func_ov002_020e700c and the one that held func_ov002_020e7934; kept the first, the other is commented out for review",
     "tubuild create warning: CONFLICT: extern declaration '_ZN8Particle6System3NewEjj5Fix12IiES2_S2_PK11Vector3_16fPNS_8CallbackE' differs between the legacy file that used to hold func_ov002_020e7f2c and the one that held func_ov002_020e7fcc; kept the first, the other is commented out for review",
-    "tubuild create warning: CONFLICT: extern declaration '_ZN8Particle6System9NewSimpleEj5Fix12IiES2_S2_' differs between the legacy file that used to hold _ZN12daStarBase_c7CollectEv and the one that held func_ov002_020e7fcc; kept the first, the other is commented out for review",
+    "tubuild create warning: CONFLICT: extern declaration 'Particle::System::NewSimple' differs between the legacy file that used to hold _ZN12daStarBase_c7CollectEv and the one that held func_ov002_020e7fcc; kept the first, the other is commented out for review",
     "tubuild create warning: CONFLICT: extern declaration '_ZN15dExtFrameCtrl_c8FinishedEv' differs between the legacy file that used to hold func_ov002_020e7fcc and the one that held func_ov002_020e8098; kept the first, the other is commented out for review",
     "tubuild create warning: CONFLICT: extern declaration 'func_ov002_020e8244' differs between the legacy file that used to hold func_ov002_020e7fcc and the one that held func_ov002_020e8098; kept the first, the other is commented out for review",
     "tubuild create warning: CONFLICT: extern declaration '_ZN8Particle6System3NewEjj5Fix12IiES2_S2_PK11Vector3_16fPNS_8CallbackE' differs between the legacy file that used to hold func_ov002_020e7f2c and the one that held func_ov002_020e8098; kept the first, the other is commented out for review",
@@ -932,7 +932,7 @@
     "tubuild create warning: CONFLICT: extern declaration 'data_0209b454' differs between the legacy file that used to hold func_ov002_020e7104 and the one that held _ZN8daStar_c8BehaviorEv; kept the first, the other is commented out for review",
     "tubuild create warning: CONFLICT: extern declaration '_ZN10dCcAcPos_c4InitEP8dActor_cRK7Vector35Fix12IiES6_jj' differs between the legacy file that used to hold func_ov002_020e6edc and the one that held _ZN12daStarBase_c13InitResourcesEv; kept the first, the other is commented out for review",
     "tubuild create warning: CONFLICT: extern declaration '_ZN8dActor_c5SpawnEjjRK7Vector3PK10Vector3_16as' differs between the legacy file that used to hold _ZN12daStarBase_c27SpawnRedCoinStarIfNecessaryEv and the one that held _ZN12daStarBase_c13InitResourcesEv; kept the first, the other is commented out for review",
-    "tubuild create warning: CONFLICT: extern declaration '_ZN5Model8LoadFileER13SharedFilePtr' differs between the legacy file that used to hold LoadSilverStarAndNumber and the one that held _ZN12daStarBase_c13InitResourcesEv; kept the first, the other is commented out for review",
+    "tubuild create warning: CONFLICT: extern declaration '_ZN17dExtSimpleModel_c8LoadFileER13SharedFilePtr' differs between the legacy file that used to hold LoadSilverStarAndNumber and the one that held _ZN12daStarBase_c13InitResourcesEv; kept the first, the other is commented out for review",
     "tubuild create warning: CONFLICT: extern declaration 'IsStarCollectedInCurLevel' differs between the legacy file that used to hold _ZN8daStar_c13AddStarMarkerEv and the one that held _ZN12daStarBase_c13InitResourcesEv; kept the first, the other is commented out for review",
     "tubuild create warning: CONFLICT: extern declaration '_ZN7fBase_c18MarkForDestructionEv' differs between the legacy file that used to hold func_ov002_020e8618 and the one that held _ZN12daStarBase_c13InitResourcesEv; kept the first, the other is commented out for review",
     "tubuild create warning: CONFLICT: extern declaration 'data_ov002_0210d9a8' differs between the legacy file that used to hold _ZN12daStarBase_c16CleanupResourcesEv and the one that held _ZN12daStarBase_c13InitResourcesEv; kept the first, the other is commented out for review",
@@ -946,9 +946,9 @@
     "tubuild create warning: CONFLICT: extern declaration 'data_ov002_02110934' differs between the legacy file that used to hold _ZN8daStar_c16CleanupResourcesEv and the one that held _ZN8daStar_c13InitResourcesEv; kept the first, the other is commented out for review",
     "tubuild create warning: CONFLICT: extern declaration 'data_ov002_02110944' differs between the legacy file that used to hold _ZN8daStar_c16CleanupResourcesEv and the one that held _ZN8daStar_c13InitResourcesEv; kept the first, the other is commented out for review",
     "tubuild create warning: CONFLICT: extern declaration 'data_ov002_02110964' differs between the legacy file that used to hold _ZN8daStar_c16CleanupResourcesEv and the one that held _ZN8daStar_c13InitResourcesEv; kept the first, the other is commented out for review",
-    "tubuild create warning: CONFLICT: extern declaration '_ZN9ModelBase7SetFileEP8BMD_Fileii' differs between the legacy file that used to hold _ZN12daStarBase_c13InitResourcesEv and the one that held _ZN8daStar_c13InitResourcesEv; kept the first, the other is commented out for review",
+    "tubuild create warning: CONFLICT: extern declaration '_ZN11dExtModel_c7SetFileEP8BMD_Fileii' differs between the legacy file that used to hold _ZN12daStarBase_c13InitResourcesEv and the one that held _ZN8daStar_c13InitResourcesEv; kept the first, the other is commented out for review",
     "tubuild create warning: CONFLICT: extern declaration 'SublevelToLevel' differs between the legacy file that used to hold func_ov002_020e8ef0 and the one that held _ZN8daStar_c13InitResourcesEv; kept the first, the other is commented out for review",
-    "tubuild create warning: CONFLICT: extern declaration '_ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj' differs between the legacy file that used to hold func_ov002_020e6edc and the one that held _ZN8daStar_c13InitResourcesEv; kept the first, the other is commented out for review",
+    "tubuild create warning (RESOLVED): CONFLICT: extern declaration '_ZN14dExtAnmModel_c7SetAnimEP8BCA_Filei5Fix12IiEj' differs between the legacy file that used to hold func_ov002_020e6edc and the one that held _ZN8daStar_c13InitResourcesEv; kept the first, the other is commented out for review",
     "tubuild create warning: CONFLICT: extern declaration '_ZN17dExtShadowModel_c12InitCylinderEv' differs between the legacy file that used to hold _ZN12daStarBase_c13InitResourcesEv and the one that held _ZN8daStar_c13InitResourcesEv; kept the first, the other is commented out for review",
     "tubuild create warning: CONFLICT: extern declaration '_ZN10dCcAcPos_c4InitEP8dActor_cRK7Vector35Fix12IiES6_jj' differs between the legacy file that used to hold func_ov002_020e6edc and the one that held _ZN8daStar_c13InitResourcesEv; kept the first, the other is commented out for review",
     "tubuild create warning: CONFLICT: extern declaration '_ZN8dActor_c5SpawnEjjRK7Vector3PK10Vector3_16as' differs between the legacy file that used to hold _ZN12daStarBase_c27SpawnRedCoinStarIfNecessaryEv and the one that held _ZN8daStar_c13InitResourcesEv; kept the first, the other is commented out for review",
@@ -2392,117 +2392,117 @@
   ],
   "defined_symbol_renames": [
     {
-      "from": "@2228",
+      "from": "@2222",
       "to": "@2223",
       "evidence": "compiler temp; the types.h Vector3 ctors and main's sinit folds shift this TU's per-TU @NNN uniquifier, so mwcc emits it as @2237 now; licensed under the existing pin @2223"
     },
     {
-      "from": "@2229",
+      "from": "@2223",
       "to": "@2224",
       "evidence": "compiler temp; the types.h Vector3 ctors and main's sinit folds shift this TU's per-TU @NNN uniquifier, so mwcc emits it as @2238 now; licensed under the existing pin @2224"
     },
     {
-      "from": "@2230",
+      "from": "@2224",
       "to": "@2225",
       "evidence": "compiler temp; the types.h Vector3 ctors and main's sinit folds shift this TU's per-TU @NNN uniquifier, so mwcc emits it as @2239 now; licensed under the existing pin @2225"
     },
     {
-      "from": "@2231",
+      "from": "@2225",
       "to": "@2226",
       "evidence": "compiler temp; the types.h Vector3 ctors and main's sinit folds shift this TU's per-TU @NNN uniquifier, so mwcc emits it as @2240 now; licensed under the existing pin @2226"
     },
     {
-      "from": "@2232",
+      "from": "@2226",
       "to": "@2227",
       "evidence": "compiler temp; the types.h Vector3 ctors and main's sinit folds shift this TU's per-TU @NNN uniquifier, so mwcc emits it as @2241 now; licensed under the existing pin @2227"
     },
     {
-      "from": "@2233",
+      "from": "@2227",
       "to": "@2228",
       "evidence": "compiler temp; the types.h Vector3 ctors and main's sinit folds shift this TU's per-TU @NNN uniquifier, so mwcc emits it as @2242 now; licensed under the existing pin @2228"
     },
     {
-      "from": "@2234",
+      "from": "@2228",
       "to": "@2229",
       "evidence": "compiler temp; the types.h Vector3 ctors and main's sinit folds shift this TU's per-TU @NNN uniquifier, so mwcc emits it as @2243 now; licensed under the existing pin @2229"
     },
     {
-      "from": "@2235",
+      "from": "@2229",
       "to": "@2230",
       "evidence": "compiler temp; the types.h Vector3 ctors and main's sinit folds shift this TU's per-TU @NNN uniquifier, so mwcc emits it as @2244 now; licensed under the existing pin @2230"
     },
     {
-      "from": "@2236",
+      "from": "@2230",
       "to": "@2231",
       "evidence": "compiler temp; the types.h Vector3 ctors and main's sinit folds shift this TU's per-TU @NNN uniquifier, so mwcc emits it as @2245 now; licensed under the existing pin @2231"
     },
     {
-      "from": "@2238",
+      "from": "@2232",
       "to": "@2233",
       "evidence": "compiler temp; the types.h Vector3 ctors and main's sinit folds shift this TU's per-TU @NNN uniquifier, so mwcc emits it as @2247 now; licensed under the existing pin @2233"
     },
     {
-      "from": "@2240",
+      "from": "@2234",
       "to": "@2235",
       "evidence": "compiler temp; the types.h Vector3 ctors and main's sinit folds shift this TU's per-TU @NNN uniquifier, so mwcc emits it as @2249 now; licensed under the existing pin @2235"
     },
     {
-      "from": "@2242",
+      "from": "@2236",
       "to": "@59",
       "evidence": "compiler temp renamed under the pin this row claims; include/types.h's added Vector3 ctors shift this TU's per-TU @NNN uniquifier, so mwccarm emits it under this name now"
     },
     {
-      "from": "@2244",
+      "from": "@2238",
       "to": "@58",
       "evidence": "compiler temp renamed under the pin this row claims; include/types.h's added Vector3 ctors shift this TU's per-TU @NNN uniquifier, so mwccarm emits it under this name now"
     },
     {
-      "from": "@2246",
+      "from": "@2240",
       "to": "@24",
       "evidence": "compiler temp renamed under the pin this row claims; include/types.h's added Vector3 ctors shift this TU's per-TU @NNN uniquifier, so mwccarm emits it under this name now"
     },
     {
-      "from": "@2248",
+      "from": "@2242",
       "to": "@57",
       "evidence": "compiler temp renamed under the pin this row claims; include/types.h's added Vector3 ctors shift this TU's per-TU @NNN uniquifier, so mwccarm emits it under this name now"
     },
     {
-      "from": "@2250",
+      "from": "@2244",
       "to": "@23",
       "evidence": "compiler temp renamed under the pin this row claims; include/types.h's added Vector3 ctors shift this TU's per-TU @NNN uniquifier, so mwccarm emits it under this name now"
     },
     {
-      "from": "@2252",
+      "from": "@2246",
       "to": "@28",
       "evidence": "compiler temp renamed under the pin this row claims; include/types.h's added Vector3 ctors shift this TU's per-TU @NNN uniquifier, so mwccarm emits it under this name now"
     },
     {
-      "from": "@2254",
+      "from": "@2248",
       "to": "@31",
       "evidence": "compiler temp renamed under the pin this row claims; include/types.h's added Vector3 ctors shift this TU's per-TU @NNN uniquifier, so mwccarm emits it under this name now"
     },
     {
-      "from": "@2256",
+      "from": "@2250",
       "to": "@56",
       "evidence": "compiler temp renamed under the pin this row claims; include/types.h's added Vector3 ctors shift this TU's per-TU @NNN uniquifier, so mwccarm emits it under this name now"
     },
     {
-      "from": "@2258",
+      "from": "@2252",
       "to": "@32",
       "evidence": "compiler temp renamed under the pin this row claims; include/types.h's added Vector3 ctors shift this TU's per-TU @NNN uniquifier, so mwccarm emits it under this name now"
     },
     {
-      "from": "@2260",
+      "from": "@2254",
       "to": "@22",
       "evidence": "compiler temp renamed under the pin this row claims; include/types.h's added Vector3 ctors shift this TU's per-TU @NNN uniquifier, so mwccarm emits it under this name now"
     },
     {
-      "from": "@2262",
+      "from": "@2256",
       "to": "@27",
       "evidence": "compiler temp renamed under the pin this row claims; include/types.h's added Vector3 ctors shift this TU's per-TU @NNN uniquifier, so mwccarm emits it under this name now"
     },
     {
-      "from": "@2264",
+      "from": "@2258",
       "to": "@29",
       "evidence": "compiler temp renamed under the pin this row claims; include/types.h's added Vector3 ctors shift this TU's per-TU @NNN uniquifier, so mwccarm emits it under this name now"
     }

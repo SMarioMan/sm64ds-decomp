@@ -16,7 +16,7 @@
  *   duplicate of the arm9 copy. Spare4 in TrmpLine_Build emits
  *   another, deadstripped as compiler-only output.
  * - TrmpLine and TrmpItem describe the known named members. Remaining
- *   raw fields preserve partial reconstruction of these records. Model
+ *   raw fields preserve partial reconstruction of these records. dExtSimpleModel_c
  *   and texture-animation operations use their real headers.
  */
 
@@ -35,7 +35,7 @@
 #pragma defer_codegen off
 
 extern int ApproachLinear(int &, int, int);
-#include "Model.h"
+#include "dExtSimpleModel_c.h"
 #include "TextureTransformer.h"
 #include "SharedFilePtr.h"
 
@@ -943,11 +943,11 @@ extern "C" void TrmpItem_UpdateMatrix(char *self) {
     Matrix4x3_FromTranslation(&data_020a0e68, TRMPITEM(self)->mPos.x, TRMPITEM(self)->mPos.y,
                               TRMPITEM(self)->mPos.z);
     MulMat4x3Mat4x3(&rotation, &data_020a0e68, &data_020a0e68);
-    ((Model *)TRMPITEM(self)->mModel)->mat4x3 = data_020a0e68;
+    ((dExtSimpleModel_c *)TRMPITEM(self)->mModel)->mat4x3 = data_020a0e68;
     ((TextureTransformer *)TRMPITEM(self)->mTexAnim)
-        ->Update(((Model *)TRMPITEM(self)->mModel)->data);
-    ((Model *)TRMPITEM(self)->mModel)->ApplyOpacity(TRMPITEM(self)->mAlpha, 0);
-    ((Model *)TRMPITEM(self)->mModel)->Render(&TRMPITEM(self)->mScale);
+        ->Update(((dExtSimpleModel_c *)TRMPITEM(self)->mModel)->data);
+    ((dExtSimpleModel_c *)TRMPITEM(self)->mModel)->ApplyOpacity(TRMPITEM(self)->mAlpha, 0);
+    ((dExtSimpleModel_c *)TRMPITEM(self)->mModel)->Render(&TRMPITEM(self)->mScale);
 }
 }
 
@@ -1100,12 +1100,15 @@ extern BTA_File sTrmpItemTextureAnim;
 }
 
 extern "C" void TrmpItem_Load(char *c) {
-    ((Model *)TRMPITEM(c)->mModels[0])->SetFile((BMD_File *)sTrmpItemRingAModelFile.filePtr, 1, -1);
-    ((Model *)TRMPITEM(c)->mModels[1])->SetFile((BMD_File *)sTrmpItemRingBModelFile.filePtr, 1, -1);
-    ((Model *)TRMPITEM(c)->mModels[2])->SetFile((BMD_File *)sTrmpItemRingCModelFile.filePtr, 1, -1);
-    ((Model *)TRMPITEM(c)->mModels[0])->SetPolygonID(1);
-    ((Model *)TRMPITEM(c)->mModels[1])->SetPolygonID(2);
-    ((Model *)TRMPITEM(c)->mModels[2])->SetPolygonID(3);
+    ((dExtSimpleModel_c *)TRMPITEM(c)->mModels[0])
+        ->SetFile((BMD_File *)sTrmpItemRingAModelFile.filePtr, 1, -1);
+    ((dExtSimpleModel_c *)TRMPITEM(c)->mModels[1])
+        ->SetFile((BMD_File *)sTrmpItemRingBModelFile.filePtr, 1, -1);
+    ((dExtSimpleModel_c *)TRMPITEM(c)->mModels[2])
+        ->SetFile((BMD_File *)sTrmpItemRingCModelFile.filePtr, 1, -1);
+    ((dExtSimpleModel_c *)TRMPITEM(c)->mModels[0])->SetPolygonID(1);
+    ((dExtSimpleModel_c *)TRMPITEM(c)->mModels[1])->SetPolygonID(2);
+    ((dExtSimpleModel_c *)TRMPITEM(c)->mModels[2])->SetPolygonID(3);
     TextureTransformer::Prepare(*(BMD_File *)sTrmpItemRingAModelFile.filePtr, sTrmpItemTextureAnim);
     _ZN18TextureTransformer7SetFileER8BTA_Filei5Fix12IiEj(
         (TextureTransformer *)TRMPITEM(c)->mTexAnim, sTrmpItemTextureAnim, 0, 0x1000, 0);
@@ -1238,9 +1241,9 @@ extern int sTrmpItemCount[];
 extern "C" void TrmpItem_LoadAll(char *items, int count) {
     int itemIndex;
     int itemOffset;
-    Model::LoadFile(sTrmpItemRingAModelFile);
-    Model::LoadFile(sTrmpItemRingBModelFile);
-    Model::LoadFile(sTrmpItemRingCModelFile);
+    dExtSimpleModel_c::LoadFile(sTrmpItemRingAModelFile);
+    dExtSimpleModel_c::LoadFile(sTrmpItemRingBModelFile);
+    dExtSimpleModel_c::LoadFile(sTrmpItemRingCModelFile);
     sTrmpItems[0] = items;
     sTrmpItemCount[0] = count;
     itemIndex = 0;
@@ -2368,7 +2371,7 @@ extern void *sTrmpLinePlttAddr;
 }
 // @symbol TrmpLine_LoadTextures
 extern "C" void TrmpLine_LoadTextures(void) {
-    sTrmpLineTexAddr = (void *)Model::LoadTextureToVram(sTrmpLineTex, 0x400);
+    sTrmpLineTexAddr = (void *)dExtSimpleModel_c::LoadTextureToVram(sTrmpLineTex, 0x400);
     sTrmpLinePlttAddr = (void *)func_02045a50(sTrmpLinePltt, 0x20);
 }
 }

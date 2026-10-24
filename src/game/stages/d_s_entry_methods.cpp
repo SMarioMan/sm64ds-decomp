@@ -189,10 +189,9 @@ extern dScEntry_c::StepSet data_ov075_0211d7f8;
 extern struct OamAttr data_ov075_0211cba4[];
 
 // local extern: the Fix12-by-value overload retains its measured scalar ABI bridge.
-extern "C" void _ZN3OAM6RenderEbP7OamAttriiii5Fix12IiES3_ii(int sub, struct OamAttr *data, s32 x,
-                                                            s32 y, s32 palette, s32 priority,
-                                                            s32 scaleX, s32 scaleY, s32 rotation,
-                                                            s32 mode);
+extern "C" void OamRender10_d_s_entry_methods(int sub, struct OamAttr *data, s32 x, s32 y,
+                                              s32 palette, s32 priority, s32 scaleX, s32 scaleY,
+                                              s32 rotation, s32 mode);
 
 // @symbol _ZN10dScEntry_c18UpdateMatchLoadingEv
 void dScEntry_c::UpdateMatchLoading() {
@@ -260,8 +259,7 @@ void dScEntry_c::EnterMatchLoading() {
 
 // @symbol _ZN10dScEntry_c23RenderCourseSelectTitleEv
 void dScEntry_c::RenderCourseSelectTitle() {
-    _ZN3OAM6RenderEbP7OamAttriiii5Fix12IiES3_ii(0, data_ov075_0211cba4, 0x80, 0x20, -1, -1, 0x1000,
-                                                0x1000, 0, -1);
+    OAM::Render(0, data_ov075_0211cba4, 0x80, 0x20, -1, -1, 0x1000, 0x1000, 0, -1);
 }
 
 // @symbol _ZN10dScEntry_c18UpdateCourseSelectEv

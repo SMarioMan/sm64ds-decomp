@@ -2,7 +2,7 @@
 #define DAOBJWC_OBJ03_C_H
 
 #include "dActor_c.h"
-#include "Model.h"
+#include "dExtSimpleModel_c.h"
 #include "dCcAc_c.h"
 
 extern "C" void *_ZN7fBase_cnwEj(unsigned size);
@@ -13,7 +13,7 @@ extern "C" void *_ZN7fBase_cnwEj(unsigned size);
  * spelling. The project's earlier coined name, WaterDiamond, survives only in
  * the rename ledger.
  *
- * The factory allocates 0x160 bytes. dActor_c ends at 0xd0; Model sits at
+ * The factory allocates 0x160 bytes. dActor_c ends at 0xd0; dExtSimpleModel_c sits at
  * 0x0d4 and dCcAc_c at 0x124, the same gap dBgActor_c uses, independently
  * proven by both destructor variants destroying those members in reverse
  * order before chaining to dActor_c.
@@ -31,7 +31,7 @@ extern "C" void *_ZN7fBase_cnwEj(unsigned size);
  */
 struct daObjWc_Obj03_c : dActor_c {
     u8      pad_0d0[0x4];
-    Model   mModel;             /* 0x0d4 */
+    dExtSimpleModel_c mModel;   /* 0x0d4 */
     dCcAc_c mCylinder;          /* 0x0124 */
     u32     mWaterID;           /* 0x0158 -- unique ID of actor 0x65 */
     u8      mWaterParam;        /* 0x015c -- selects the matching WDW water */

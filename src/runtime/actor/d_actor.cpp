@@ -83,7 +83,7 @@
 #include "daFPknBall_c.h"
 #include "daObjNumber_c.h"
 #include "daCoin_c.h"
-#include "Model.h"
+#include "dExtSimpleModel_c.h"
 #include "SharedFilePtr.h"
 #include "dClipper.h"
 #include "nitro/fx/fx.h"
@@ -106,8 +106,6 @@ extern void *data_020a4bb8;
 /* local extern: no header declares it. Game mode; 2 pushes the clip distance. */
 extern unsigned char data_0209f2d8;
 /* Defined below as extern "C". Fix12-by-value, so it is not a method. */
-void _ZN8dActor_c9SetRangesE5Fix12IiES1_S1_S1_(dActor_c *self, s32 clipOffsetY, s32 clipRadius,
-                                               s32 clipDistance, s32 farDistance);
 }
 
 #ifdef _MSC_VER
@@ -165,8 +163,7 @@ dActor_c::dActor_c() : mActorListNode(this) {
                 clipDistance = info->clipDistance + 0x7d0000;
             else
                 clipDistance = info->clipDistance;
-            _ZN8dActor_c9SetRangesE5Fix12IiES1_S1_S1_(this, info->clipOffsetY, info->clipRadius,
-                                                      clipDistance, farDistance);
+            SetRanges(info->clipOffsetY, info->clipRadius, clipDistance, farDistance);
         }
     }
     /* Unreachable. Vector3s's empty destructor inlines at a direct call, but
@@ -432,18 +429,17 @@ dActor_c *dActor_c::Spawn(u32 actorID, u32 spawnParam, const Vector3 &pos,
 }
 
 /* -------------------------------------------------------------------------- */
-// @symbol _ZN8dActor_c9SetRangesE5Fix12IiES1_S1_S1_
-/* ROM ordinal 77 -- _ZN8dActor_c9SetRangesE5Fix12IiES1_S1_S1_
+// @symbol _ZN8dActor_c9SetRangesEiiii
+/* ROM ordinal 77 -- _ZN8dActor_c9SetRangesEiiii
  * 0x02010e08  size 0x24 */
-/* Fix12<int> by value: defined by its symbol, see the header. The three
-   ranges are stored at 1/8 scale, the scale BeforeBehavior projects into. */
-extern "C" void _ZN8dActor_c9SetRangesE5Fix12IiES1_S1_S1_(dActor_c *self, s32 clipOffsetY,
-                                                          s32 clipRadius, s32 clipDistance,
-                                                          s32 farDistance) {
-    self->mClipOffsetY = clipOffsetY;
-    self->mClipRadius = clipRadius >> 3;
-    self->mClipDistance = clipDistance >> 3;
-    self->mFarDistance = farDistance >> 3;
+/* The three ranges are stored at 1/8 scale, the scale BeforeBehavior projects
+   into. */
+void dActor_c::SetRanges(Fix12i clipOffsetY, Fix12i clipRadius, Fix12i clipDistance,
+                         Fix12i farDistance) {
+    mClipOffsetY = clipOffsetY;
+    mClipRadius = clipRadius >> 3;
+    mClipDistance = clipDistance >> 3;
+    mFarDistance = farDistance >> 3;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -916,18 +912,15 @@ bool dActor_c::IsPlayerInRange(s32 maxDist)
 }
 
 /* -------------------------------------------------------------------------- */
-// @symbol _ZN8dActor_c15IsPlayerInRangeE5Fix12IiES1_S1_i
-/* ROM ordinal 55 -- _ZN8dActor_c15IsPlayerInRangeE5Fix12IiES1_S1_i
+// @symbol _ZN8dActor_c15IsPlayerInRangeEiiii
+/* ROM ordinal 55 -- _ZN8dActor_c15IsPlayerInRangeEiiii
  * 0x02010498  size 0x44 */
-/* Fix12<int> by value: defined by its symbol. */
-extern "C" int _ZN8dActor_c15IsPlayerInRangeE5Fix12IiES1_S1_i(dActor_c *self, Fix12i posX,
-                                                              Fix12i posY, Fix12i posZ,
-                                                              int maxDist) {
+bool dActor_c::IsPlayerInRange(Fix12i posX, Fix12i posY, Fix12i posZ, s32 maxDist) {
     Vector3 pos;
     pos.x = posX;
     pos.y = posY;
     pos.z = posZ;
-    Player *closest = self->ClosestPlayer();
+    Player *closest = ClosestPlayer();
     return Vec3_Dist(&pos, &closest->mPos) < (maxDist << 12);
 }
 
@@ -1061,7 +1054,7 @@ Matrix4x3 *dActor_c::UpdateCarry(Player &player, const Vector3 &vec)
     t.z = 0;
     /* Bone 14 of the body model, carried into world space by the model's
        own matrix; only its translation survives. */
-    Model *body = (Model *)func_ov002_020e496c(&player);
+    dExtSimpleModel_c *body = (dExtSimpleModel_c *)func_ov002_020e496c(&player);
     Matrix4x3 *bones = body->data.transforms;
     data_020a0e68 = body->mat4x3;
     MulMat4x3Mat4x3(&bones[14], &data_020a0e68, &data_020a0e68);
@@ -1334,8 +1327,8 @@ extern SharedFilePtr data_ov002_0210d9c8; /* 0x0210d9c8 */
 }
 extern "C" void LoadBlueCoinModel(void)
 {
-    Model::LoadFile(data_ov002_0210da00);
-    Model::LoadFile(data_ov002_0210d9c8);
+    dExtSimpleModel_c::LoadFile(data_ov002_0210da00);
+    dExtSimpleModel_c::LoadFile(data_ov002_0210d9c8);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -1368,12 +1361,16 @@ void dActor_c::PoofDust()
 extern "C" {
 /* local extern: Particle::System::NewSimple takes Fix12<int> by value, so it
    is called by its symbol (the Fix12 wall). */
-extern int _ZN8Particle6System9NewSimpleEj5Fix12IiES2_S2_(unsigned int id, int x, int y, int z);
+namespace Particle {
+struct System {
+    static int NewSimple(unsigned int id, int x, int y, int z);
+};
+}
 }
 void dActor_c::PoofDustAt(const Vector3 &pos)
 {
-    _ZN8Particle6System9NewSimpleEj5Fix12IiES2_S2_(0x122, pos.x, pos.y, pos.z);
-    _ZN8Particle6System9NewSimpleEj5Fix12IiES2_S2_(0x123, pos.x, pos.y, pos.z);
+    Particle::System::NewSimple(0x122, pos.x, pos.y, pos.z);
+    Particle::System::NewSimple(0x123, pos.x, pos.y, pos.z);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -1395,9 +1392,9 @@ void dActor_c::TriplePoofDust()
  * 0x0200fd74  size 0x54 */
 void dActor_c::TriplePoofDustAt(const Vector3 &pos)
 {
-    _ZN8Particle6System9NewSimpleEj5Fix12IiES2_S2_(0x124, pos.x, pos.y, pos.z);
-    _ZN8Particle6System9NewSimpleEj5Fix12IiES2_S2_(0x125, pos.x, pos.y, pos.z);
-    _ZN8Particle6System9NewSimpleEj5Fix12IiES2_S2_(0x126, pos.x, pos.y, pos.z);
+    Particle::System::NewSimple(0x124, pos.x, pos.y, pos.z);
+    Particle::System::NewSimple(0x125, pos.x, pos.y, pos.z);
+    Particle::System::NewSimple(0x126, pos.x, pos.y, pos.z);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -1419,8 +1416,8 @@ void dActor_c::SmallPoofDust()
  * 0x0200fd04  size 0x3c */
 void dActor_c::DisappearPoofDustAt(const Vector3 &pos)
 {
-    _ZN8Particle6System9NewSimpleEj5Fix12IiES2_S2_(0x127, pos.x, pos.y, pos.z);
-    _ZN8Particle6System9NewSimpleEj5Fix12IiES2_S2_(0x128, pos.x, pos.y, pos.z);
+    Particle::System::NewSimple(0x127, pos.x, pos.y, pos.z);
+    Particle::System::NewSimple(0x128, pos.x, pos.y, pos.z);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -1456,7 +1453,7 @@ extern "C" int func_0200fc44(int actor, Vector3 *pos, int doRaycast) {
             pos->y = rc.clsnY;
     }
     pos->y += 0x19000;
-    return _ZN8Particle6System9NewSimpleEj5Fix12IiES2_S2_(0xb3, pos->x, pos->y, pos->z);
+    return Particle::System::NewSimple(0xb3, pos->x, pos->y, pos->z);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -1487,7 +1484,7 @@ void dActor_c::HugeLandingDustAt(Vector3 &pos, bool doRaycast) {
             pos.y = rc.clsnY;
     }
     pos.y += 0x28000;
-    _ZN8Particle6System9NewSimpleEj5Fix12IiES2_S2_(0xb2, pos.x, pos.y, pos.z);
+    Particle::System::NewSimple(0xb2, pos.x, pos.y, pos.z);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -1517,7 +1514,7 @@ void dActor_c::LandingDustAt(Vector3 &pos, bool doRaycast) {
             pos.y = rc.clsnY;
     }
     pos.y += 0x5a000;
-    _ZN8Particle6System9NewSimpleEj5Fix12IiES2_S2_(0xb1, pos.x, pos.y, pos.z);
+    Particle::System::NewSimple(0xb1, pos.x, pos.y, pos.z);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -1551,7 +1548,7 @@ extern "C" int func_0200fa04(int actor, Vector3 *pos, int doRaycast) {
             pos->y = rc.clsnY;
     }
     pos->y += 0x78000;
-    return _ZN8Particle6System9NewSimpleEj5Fix12IiES2_S2_(0x1b, pos->x, pos->y, pos->z);
+    return Particle::System::NewSimple(0x1b, pos->x, pos->y, pos->z);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -1700,18 +1697,16 @@ extern "C" void func_0200f760(dActor_c *actor, dCc_c *clsn) {
 }
 
 /* -------------------------------------------------------------------------- */
-// @symbol _ZN8dActor_c22IsTooFarAwayFromPlayerE5Fix12IiE
-/* ROM ordinal 1 -- _ZN8dActor_c22IsTooFarAwayFromPlayerE5Fix12IiE
+// @symbol _ZN8dActor_c22IsTooFarAwayFromPlayerEi
+/* ROM ordinal 1 -- _ZN8dActor_c22IsTooFarAwayFromPlayerEi
  * 0x0200f70c  size 0x54 */
-/* Fix12<int> by value: defined by its symbol. True only while the actor is
-   off screen (mFlags 0x08), nothing forces it to think, and the closest
-   player is at least threshold away. */
-extern "C" int _ZN8dActor_c22IsTooFarAwayFromPlayerE5Fix12IiE(dActor_c *self, int threshold)
-{
+/* True only while the actor is off screen (mFlags 0x08), nothing forces it to
+   think, and the closest player is at least threshold away. */
+int dActor_c::IsTooFarAwayFromPlayer(Fix12i threshold) {
     if (data_0209fc68 == 0) {
-        int offScreen = (self->mFlags & 8) != 0;
+        int offScreen = (mFlags & 8) != 0;
         if (offScreen != 0) {
-            if (self->DistToCPlayer() >= threshold)
+            if (DistToCPlayer() >= threshold)
                 return 1;
         }
     }

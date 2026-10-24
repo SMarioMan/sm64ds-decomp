@@ -1933,6 +1933,7 @@ int Mg_CopySpriteList(Item* src, Item* dst, int add)
 struct OamAttr; struct Matrix2x2;
 namespace OAM {
 void Render(bool draw, OamAttr *obj, int px, int py, int pal, int prio, Matrix2x2 *mtx);
+void Render(bool, OamAttr *, int, int, int, int, int, int, int, int);
 void RenderSub(OamAttr *data, s32 x, s32 y, s32 palette, s32 priority);
 }
 
@@ -1959,7 +1960,7 @@ struct D3DBaseView : dScMgBase_c {
 namespace s20af68c {
 extern "C" {
 extern "C" {
-void _ZN3OAM6RenderEbP7OamAttriiii5Fix12IiES3_ii(int, OamAttr*, s32, s32, int, int, int, int, int, int);
+void OamRender10_d_s_mg_base_a(int, OamAttr *, s32, s32, int, int, int, int, int, int);
 void Hud_RenderSprite(void *attr, int x, int y, int palette, int priority) {
     dScMgBase_c *scene = gMgScene;
     if (scene == 0)
@@ -1968,8 +1969,7 @@ void Hud_RenderSprite(void *attr, int x, int y, int palette, int priority) {
         if (scene->GetDisplayMode() == 2) {
             if (((D3DBaseView *)gMgScene)->mDrawSubScreen != 0)
                 return;
-            _ZN3OAM6RenderEbP7OamAttriiii5Fix12IiES3_ii(0, (OamAttr *)attr, x, y, palette, priority,
-                                                        0x1000, 0x1000, 0, -1);
+            OAM::Render(0, (OamAttr *)attr, x, y, palette, priority, 0x1000, 0x1000, 0, -1);
             return;
         }
     }
@@ -2051,7 +2051,7 @@ void Mg_RenderSubSpriteMtx(void *a, int b, int c, void *m) {
 namespace s20afa20 {
 extern "C" {
 extern "C" {
-void _ZN3OAM6RenderEbP7OamAttriiii5Fix12IiES3_ii(int, OamAttr*, s32, s32, int, int, int, int, int, int);
+void OamRender10_d_s_mg_base_a(int, OamAttr *, s32, s32, int, int, int, int, int, int);
 
 extern "C" void RenderOamMainScreen(int oam, int x, int y, int palette, int priority) {
     dScMgBase_c *scene = gMgScene;
@@ -2061,13 +2061,11 @@ extern "C" void RenderOamMainScreen(int oam, int x, int y, int palette, int prio
         if (scene->GetDisplayMode() == 2) {
             if (((D3DBaseView *)gMgScene)->mDrawSubScreen != 1)
                 return;
-            _ZN3OAM6RenderEbP7OamAttriiii5Fix12IiES3_ii(0, (OamAttr *)oam, x, y, palette, priority,
-                                                        0x1000, 0x1000, 0, -1);
+            OAM::Render(0, (OamAttr *)oam, x, y, palette, priority, 0x1000, 0x1000, 0, -1);
             return;
         }
     }
-    _ZN3OAM6RenderEbP7OamAttriiii5Fix12IiES3_ii(0, (OamAttr *)oam, x, y, palette, priority, 0x1000,
-                                                0x1000, 0, -1);
+    OAM::Render(0, (OamAttr *)oam, x, y, palette, priority, 0x1000, 0x1000, 0, -1);
 }
 }
 }
@@ -2144,7 +2142,7 @@ namespace s20afdd0 {
 extern "C" {
 extern "C" {
 extern int sMgTopScreenYOffset;
-int _ZN3OAM6RenderEbP7OamAttriiii5Fix12IiES3_ii(int, void*, int, int, int, int, int, int, int, int);
+int OamRender10_d_s_mg_base_b(int, void *, int, int, int, int, int, int, int, int);
 void Mg_RenderSpriteBoth(void *a0, int a1, int a2, int a3, int a4) {
     dScMgBase_c *scene = gMgScene;
     if (scene == 0)
@@ -2152,17 +2150,16 @@ void Mg_RenderSpriteBoth(void *a0, int a1, int a2, int a3, int a4) {
     if (scene->mMenuOpen == 0) {
         if (scene->GetDisplayMode() == 2) {
             if (((D3DBaseView *)gMgScene)->mDrawSubScreen == 1) {
-                _ZN3OAM6RenderEbP7OamAttriiii5Fix12IiES3_ii(
-                    0, a0, a1, a2 + 0xc0 + sMgTopScreenYOffset, a3, a4, 0x1000, 0x1000, 0, -1);
+                OAM::Render(0, (OamAttr *)a0, a1, a2 + 0xc0 + sMgTopScreenYOffset, a3, a4, 0x1000,
+                            0x1000, 0, -1);
                 return;
             }
-            _ZN3OAM6RenderEbP7OamAttriiii5Fix12IiES3_ii(0, a0, a1, a2, a3, a4, 0x1000, 0x1000, 0,
-                                                        -1);
+            OAM::Render(0, (OamAttr *)a0, a1, a2, a3, a4, 0x1000, 0x1000, 0, -1);
             return;
         }
     }
-    _ZN3OAM6RenderEbP7OamAttriiii5Fix12IiES3_ii(0, a0, a1, a2 + 0xc0 + sMgTopScreenYOffset, a3, a4,
-                                                0x1000, 0x1000, 0, -1);
+    OAM::Render(0, (OamAttr *)a0, a1, a2 + 0xc0 + sMgTopScreenYOffset, a3, a4, 0x1000, 0x1000, 0,
+                -1);
     OAM::RenderSub((OamAttr *)a0, a1, a2, a3, a4);
 }
 }

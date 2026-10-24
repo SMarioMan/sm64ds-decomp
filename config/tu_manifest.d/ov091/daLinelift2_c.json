@@ -301,19 +301,24 @@
   ],
   "defined_symbol_renames": [
     {
-      "from": "@506",
+      "from": "@503",
       "to": "@511",
       "evidence": "mwcc numbers this registration node @492 per TU and other overlays already define global @492 symbols, so the scratch link would multiply-define it"
     },
     {
-      "from": "@507",
+      "from": "@504",
       "to": "@510",
       "evidence": "mwcc numbers this registration node @493 per TU and ov100 already defines a global @493 at 0x0214834c, so the scratch link would multiply-define it"
     },
     {
-      "from": "@509",
+      "from": "@506",
       "to": "@512",
       "evidence": "mwcc numbers this registration node @495 per TU and ov100 already defines a global @495 at 0x0214835c, so the scratch link would multiply-define it"
+    },
+    {
+      "from": "@505",
+      "to": "@508",
+      "evidence": "mwcc numbered this registration node @508 to match the ROM name until #4296 deleted the TU's named-parameter local externs; it now emits @505, so the ROM name is restored by rename"
     }
   ],
   "relocations": [

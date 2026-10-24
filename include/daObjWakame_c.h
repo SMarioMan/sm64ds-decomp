@@ -12,7 +12,7 @@
 
 #include "types.h"
 #include "dActor_c.h"
-#include "ModelAnim.h"
+#include "dExtAnmModel_c.h"
 
 extern "C" void *_ZN7fBase_cnwEj(unsigned size);
 
@@ -26,23 +26,23 @@ extern "C" void *_ZN7fBase_cnwEj(unsigned size);
  *   fBase_c::operator new. The factory then runs dActor_c's constructor, stores
  *   the vptr, and constructs ONE member, at this+0xd4.
  *
- *   THE MEMBER CLOSES ON IT. include/ModelAnim.h asserts sizeof(ModelAnim) ==
+ *   THE MEMBER CLOSES ON IT. include/dExtAnmModel_c.h asserts sizeof(dExtAnmModel_c) ==
  *   0x64, and 0xd4 + 0x64 = 0x138 exactly. Two independent numbers -- a factory
  *   literal in ov002 and a size assert on an arm9 class -- meet with nothing
  *   left over, so there is no room for a trailing field this header has missed.
  *
  * THE MEMBER'S OFFSET HAS FOUR WITNESSES, all of them code that runs:
- *   - the factory calls _ZN9ModelAnimC1Ev on this+0xd4;
- *   - ~daObjWakame_c calls _ZN9ModelAnimD1Ev on this+0xd4 (see below);
+ *   - the factory calls _ZN14dExtAnmModel_cC1Ev on this+0xd4;
+ *   - ~daObjWakame_c calls _ZN14dExtAnmModel_cD1Ev on this+0xd4 (see below);
  *   - Render loads a vptr from this+0xd4 and dispatches slot 5 through it,
- *     which is Model::Render -- so +0xd4 is a polymorphic object, not bytes;
+ *     which is dExtSimpleModel_c::Render -- so +0xd4 is a polymorphic object, not bytes;
  *   - Behavior calls dExtFrameCtrl_c::Advance (arm9 0x02015c3c) on this+0x124, and
- *     0x124 - 0xd4 = 0x50, which include/ModelAnim.h pins as exactly where the
- *     dExtFrameCtrl_c base sits inside a ModelAnim. The second base lands where the
+ *     0x124 - 0xd4 = 0x50, which include/dExtAnmModel_c.h pins as exactly where the
+ *     dExtFrameCtrl_c base sits inside a dExtAnmModel_c. The second base lands where the
  *     class says it should.
  *
  * unk_0d0 IS AN UNKNOWN FIELD, NOT ALIGNMENT. dActor_c asserts its own size
- * at 0xd0 and ModelAnim needs no more than 4-byte alignment, so those four
+ * at 0xd0 and dExtAnmModel_c needs no more than 4-byte alignment, so those four
  * bytes are a gap the ROM leaves and nothing in this TU reads or writes.
  *
  * THE VTABLE was diffed slot by slot against _ZTV8dActor_c (arm9 0x0208e3a4).
@@ -57,7 +57,7 @@ extern "C" void *_ZN7fBase_cnwEj(unsigned size);
  */
 struct daObjWakame_c : dActor_c {
     u32       unk_0d0;                  /* 0x0d0 -- not accessed by this TU */
-    ModelAnim mModelAnim;               /* 0x0d4 -- model and its animation */
+    dExtAnmModel_c mModelAnim;          /* 0x0d4 -- model and its animation */
 
     /* All four are overrides of fBase_c/dActor_c, not new members -- see the
        vtable diff above. `virtual` is redundant to the compiler and costs no
@@ -93,7 +93,7 @@ struct daObjWakame_c : dActor_c {
 
        THE BODY IS EMPTY, WHICH IS NOT THE SAME AS THE DESTRUCTOR BEING EMPTY.
        D1 at 0x020bc414 is 0x30 bytes and disassembles to `push {r4,lr} / mov r4,
-       r0 / ldr r1,[pc] / add r0,r4,#0xd4 / str r1,[r4] / bl _ZN9ModelAnimD1Ev /
+       r0 / ldr r1,[pc] / add r0,r4,#0xd4 / str r1,[r4] / bl _ZN14dExtAnmModel_cD1Ev /
        mov r0,r4 / bl _ZN8dActor_cD2Ev / mov r0,r4 / pop / bx lr`: one vptr store,
        then the member destroyed, then the tail into the base destructor. All
        three are things the compiler emits for an empty body -- the member call

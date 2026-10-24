@@ -22,10 +22,10 @@
  *   int[12] -- a Matrix4x3 assignment scalarizes. Vector3 overlays on
  *   mCamSpacePosX / mScaleX / mPosX stand in where no member exists at
  *   those addresses. SetRanges, dCcAcPos_c::Init, dBgCh_Actr::Init,
- *   ModelAnim::SetAnim, TextureSequence::SetFile,
- *   TextureTransformer::SetFile, DropShadowRadHeight and
- *   Particle::System::NewSimple stay mangled extern "C" spellings -- they
- *   take Fix12<int> by value (notes/mwccarm-codegen.md 6az).
+ *   dExtAnmModel_c::SetAnim, TextureSequence::SetFile,
+ *   TextureTransformer::SetFile and DropShadowRadHeight stay mangled
+ *   extern "C" spellings -- they take Fix12<int> by value
+ *   (notes/mwccarm-codegen.md 6az).
  *   UpdateDefeatedState calls the interworking veneer
  *   dBgCh_Actr_UpdateDiscreteNoLava_veneer (0x02038420), not the method
  *   body at 0x02037024. The data_ov070_* resource handles and the PMF
@@ -113,7 +113,6 @@ struct dActor_c;
 struct Vector3;
 struct Vector3_16;
 
-extern "C" void _ZN8dActor_c9SetRangesE5Fix12IiES1_S1_S1_(dActor_c *self, int a, int b, int c, int d);
 extern "C" void _ZN10dCcAcPos_c4InitEP8dActor_cRK7Vector35Fix12IiES6_jj(void *self, dActor_c *a, Vector3 const &b, int c, int d, unsigned int e, unsigned int f);
 extern "C" void _ZN10dBgCh_Actr4InitEP8dActor_c5Fix12IiES3_P10Vector3_16S5_(void *self, dActor_c *a, int b, int c, Vector3_16 *d, Vector3_16 *e);
 
@@ -127,9 +126,9 @@ struct BrqMatrixWords { int words[12]; };
 int daBrq_c::InitResources()
 {
     BMD_File *bmd;
-    bmd = (BMD_File *)Model::LoadFile(data_ov070_021235fc);
+    bmd = (BMD_File *)dExtSimpleModel_c::LoadFile(data_ov070_021235fc);
     mModelAnim.SetFile(bmd, 1, 1);
-    bmd = (BMD_File *)Model::LoadFile(data_ov070_02123604);
+    bmd = (BMD_File *)dExtSimpleModel_c::LoadFile(data_ov070_02123604);
     mModel.SetFile(bmd, 1, 1);
 
     int i;
@@ -148,9 +147,9 @@ int daBrq_c::InitResources()
         return 0;
 
     if ((unsigned char)((param1 >> 1) & 1)) {
-        _ZN8dActor_c9SetRangesE5Fix12IiES1_S1_S1_(this, 0, 0x20d000, 0x1000000, 0xa28000);
+        SetRanges(0, 0x20d000, 0x1000000, 0xa28000);
     } else {
-        _ZN8dActor_c9SetRangesE5Fix12IiES1_S1_S1_(this, 0, 0x2c1000, 0x1000000, 0xa28000);
+        SetRanges(0, 0x2c1000, 0x1000000, 0xa28000);
     }
 
     _ZN10dCcAcPos_c4InitEP8dActor_cRK7Vector35Fix12IiES6_jj(&mdCcAcPos_c, this, data_ov070_0212365c, 0x2d000, 0x50000, 0x200002, 0x8000);
@@ -238,13 +237,10 @@ void daBrq_c::UpdateState()
     (this->**handler)();
 }
 
-extern "C" void _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(
-    ModelAnim *model, BCA_File *file, int flags, int speed, u32 startFrame);
 // @symbol _ZN7daBrq_c18EnterCooldownStateEv
 s32 daBrq_c::EnterCooldownState()
 {
-    _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(
-        &mModelAnim, (BCA_File *)data_ov070_0212360c.filePtr, 0x40000000, 0x1000, 0);
+    mModelAnim.SetAnim((BCA_File *)data_ov070_0212360c.filePtr, 0x40000000, 0x1000, 0);
     mStateTimer = 0x3c;
     mState = 0;
     return 1;
@@ -265,7 +261,7 @@ s32 daBrq_c::UpdateCooldownState()
 
 typedef int Fix12i;
 struct BCA_File; struct BTP_File; struct BTA_File;
-/* (ModelAnim/TextureSequence/TextureTransformer: real header types in scope) */
+/* (dExtAnmModel_c/TextureSequence/TextureTransformer: real header types in scope) */
 
 extern "C" unsigned int _ZN15TextureSequence7SetFileER8BTP_Filei5Fix12IiEj(
     TextureSequence*, BTP_File&, int, Fix12i, unsigned int);
@@ -277,8 +273,7 @@ extern BTA_File data_ov070_021231f4;
 // @symbol _ZN7daBrq_c16EnterActiveStateEv
 s32 daBrq_c::EnterActiveState()
 {
-    _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(
-        &mModelAnim, (BCA_File *)data_ov070_021235f4.filePtr, 0, 0x1000, 0);
+    mModelAnim.SetAnim((BCA_File *)data_ov070_021235f4.filePtr, 0, 0x1000, 0);
     mModelAnim.speed = 0x1000;
     _ZN15TextureSequence7SetFileER8BTP_Filei5Fix12IiEj(
         &mTextureSequence, *(BTP_File *)data_ov070_021235ec.filePtr, 0, 0x1000, 0);
@@ -369,8 +364,11 @@ s32 daBrq_c::UpdateActiveState()
 namespace Sound {
 void PlayBank0(u32 soundId, const Vector3 &pos);
 }
-extern "C" void _ZN8Particle6System9NewSimpleEj5Fix12IiES2_S2_(
-    u32 effectId, s32 x, s32 y, s32 z);
+namespace Particle {
+struct System {
+    static void NewSimple(u32 effectId, s32 x, s32 y, s32 z);
+};
+}
 
 // @symbol _ZN7daBrq_c18EnterDefeatedStateEv
 s32 daBrq_c::EnterDefeatedState()
@@ -385,12 +383,9 @@ s32 daBrq_c::EnterDefeatedState()
     mHorzSpeed = 0xa000;
     mVertSpeed = 0x28000;
     mStateTimer = 0x2d;
-    _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(
-        &mModelAnim, (BCA_File *)data_ov070_0212360c.filePtr, 0x40000000, 0x1000, 0);
-    _ZN8Particle6System9NewSimpleEj5Fix12IiES2_S2_(
-        0x43, mPosX, mPosY, mPosZ);
-    _ZN8Particle6System9NewSimpleEj5Fix12IiES2_S2_(
-        0x44, mPosX, mPosY, mPosZ);
+    mModelAnim.SetAnim((BCA_File *)data_ov070_0212360c.filePtr, 0x40000000, 0x1000, 0);
+    Particle::System::NewSimple(0x43, mPosX, mPosY, mPosZ);
+    Particle::System::NewSimple(0x44, mPosX, mPosY, mPosZ);
     mState = 2;
     return 1;
 }

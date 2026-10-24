@@ -15,7 +15,7 @@
  * alias QuestionSwitch_Spawn.
  *
  * deslop
- * Leftover: ModelAnim::SetAnim and dBgW_KcMbg::SetFile stay mangled in this
+ * Leftover: dExtAnmModel_c::SetAnim and dBgW_KcMbg::SetFile stay mangled in this
  *   TU -- both take Fix12<int> by value (wall 6az); a method call homes the
  *   argument and size-DIFFs InitResources.
  * Leftover: Sound::PlaySub and Particle::System::NewSimple stay mangled --
@@ -70,8 +70,6 @@ static inline int IsOffScreen(dActor_c *actor) {
 /* SetAnim / SetFile / PlaySub / NewSimple are measured Fix12-by-value seams
  * (wall 6az). func_020393c4 is the dBgW+0x1c store; naming belongs with dBgW. */
 extern "C" {
-extern void _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(
-    ModelAnim *model, BCA_File *file, s32 mode, Fix12i speed, u32 flags);
 extern void _ZN10dBgW_KcMbg7SetFileEP8KCL_FileRK9Matrix4x35Fix12IiEsR10CLPS_Block(
     dBgW_KcMbg *collider, KCL_File *file, Matrix4x3 *matrix,
     Fix12i scale, s16 angleY, CLPS_Block *clps);
@@ -81,8 +79,11 @@ extern u16 DecIfAbove0_Short(u16 *value);
 extern u8 DecIfAbove0_Byte(u8 *value);
 extern void _ZN5Sound7PlaySubEjjj5Fix12IiEb(
     u32 bank, u32 soundID, u32 param, Fix12i volume, bool loop);
-extern void _ZN8Particle6System9NewSimpleEj5Fix12IiES2_S2_(
-    u32 effectID, Fix12i x, Fix12i y, Fix12i z);
+namespace Particle {
+struct System {
+    static void NewSimple(u32 effectID, Fix12i x, Fix12i y, Fix12i z);
+};
+}
 
 extern void Vec3_Asr(void *destination, const void *source, s32 shift);
 extern void Matrix4x3_FromTranslation(
@@ -166,12 +167,11 @@ s32 daObjHatenaSwitch_c::InitResources()
 {
     void *file;
 
-    file = Model::LoadFile(data_ov002_0210dd60);
+    file = dExtSimpleModel_c::LoadFile(data_ov002_0210dd60);
     mModelAnim.SetFile((BMD_File *)file, 1, -1);
 
     file = dExtFrameCtrl_c::LoadFile(data_ov002_0210dd68);
-    _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(
-        &mModelAnim, (BCA_File *)file, 0, 0x1000, 0);
+    mModelAnim.SetAnim((BCA_File *)file, 0, 0x1000, 0);
     mModelAnim.SetFlags(0x40000000);
     mModelAnim.speed = 0x1000;
     UpdateModelTransform();
@@ -273,15 +273,11 @@ s32 daObjHatenaSwitch_c::Behavior()
                     position.x = x;
                     position.y = y;
                     position.z = z;
-                    _ZN8Particle6System9NewSimpleEj5Fix12IiES2_S2_(
-                        0x6d, x, y, z);
-                    _ZN8Particle6System9NewSimpleEj5Fix12IiES2_S2_(
-                        0x6e, position.x, position.y, position.z);
-                    _ZN8Particle6System9NewSimpleEj5Fix12IiES2_S2_(
-                        0x6f, position.x, position.y, position.z);
+                    Particle::System::NewSimple(0x6d, x, y, z);
+                    Particle::System::NewSimple(0x6e, position.x, position.y, position.z);
+                    Particle::System::NewSimple(0x6f, position.x, position.y, position.z);
                 }
-                _ZN8Particle6System9NewSimpleEj5Fix12IiES2_S2_(
-                    0x70, mPosX, mPosY, mPosZ);
+                Particle::System::NewSimple(0x70, mPosX, mPosY, mPosZ);
                 mTalking = 1;
             }
         } else if (pressed == 0) {

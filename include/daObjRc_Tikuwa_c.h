@@ -15,7 +15,7 @@
  * BASE: dBgActor_c, direct -- the record's third word is _ZTI10dBgActor_c at
  * ov002 0x021089ec. The destructor stores this class's vtable, then
  * dBgActor_c's -- inlined -- then destroys the dBgW_KcMbg at 0x124 and the
- * Model at 0xd4 before chaining to dActor_c. Those two members belong to
+ * dExtSimpleModel_c at 0xd4 before chaining to dActor_c. Those two members belong to
  * dBgActor_c and are inherited.
  *
  * MEMBERS: the dBgCh_Actr at 0x320 is named by the class's own D1/D0 calling

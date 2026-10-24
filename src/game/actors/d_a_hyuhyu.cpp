@@ -1,4 +1,11 @@
 //cpp
+struct Vector3_16f;
+namespace Particle {
+struct Callback;
+struct System {
+    static int New(unsigned, unsigned, int, int, int, const ::Vector3_16f *, Callback *);
+};
+}
 /**
  * Fwoosh, the cloud that blows (profile HYUHYU).
  *
@@ -30,7 +37,7 @@
  * records mState points at.
  *
  * leftovers:
- * - dCcAc_c::Init, dBgCh_Actr::Init, ModelAnim::SetAnim and
+ * - dCcAc_c::Init, dBgCh_Actr::Init, dExtAnmModel_c::SetAnim and
  *   Particle::System::New stay mangled: each takes Fix12<int> by value
  *   (notes/mwccarm-codegen.md 6az).
  * - data_ov091_02135674 / 0213567c / 02135684 are this overlay's BMD and
@@ -86,12 +93,10 @@ void MulVec3Mat4x3(Vector3 *v, Matrix4x3 *m, Vector3 *res);
 
 void _ZN7dCcAc_c4InitEP8dActor_c5Fix12IiES3_jj(
     dCcAc_c *self, dActor_c *actor, int radius, int height, u32 flags, u32 vulnFlags);
-void _ZN10dBgCh_Actr4InitEP8dActor_c5Fix12IiES3_P10Vector3_16S5_(
-    dBgCh_Actr *self, dActor_c *actor, int radius, int height, Vector3_16 *a, Vector3_16 *b);
-void _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(
-    ModelAnim *self, BCA_File *file, int flags, int speed, u16 startFrame);
-int _ZN8Particle6System3NewEjj5Fix12IiES2_S2_PK11Vector3_16fPNS_8CallbackE(
-    u32 slot, u32 effect, int x, int y, int z, const Vector3_16 *rot, void *cb);
+void _ZN10dBgCh_Actr4InitEP8dActor_c5Fix12IiES3_P10Vector3_16S5_(dBgCh_Actr *self, dActor_c *actor,
+                                                                 int radius, int height,
+                                                                 Vector3_16 *a, Vector3_16 *b);
+int d_a_hyuhyuNewHold(u32 slot, u32 effect, int x, int y, int z, const Vector3_16 *rot, void *cb);
 }
 
 /* File-scope resource handles: the ctor/dtor are the ROM's SharedFilePtr
@@ -145,7 +150,7 @@ daHyuhyu_c_State data_ov091_021356c0 = { data_ov091_02135344, data_ov091_0213533
 
 // @symbol daHyuhyu_c_classInit
 /* The dEnemyBase_c C2, the vptr store and the dCcAc_c / dBgCh_Actr /
-   ModelAnim C1s at 0x110 / 0x144 / 0x300 all fall out of the one `new`. */
+   dExtAnmModel_c C1s at 0x110 / 0x144 / 0x300 all fall out of the one `new`. */
 extern "C" daHyuhyu_c *daHyuhyu_c_classInit()
 {
     return new daHyuhyu_c();
@@ -185,10 +190,10 @@ int daHyuhyu_c::InitResources()
     }
     _ZN7dCcAc_c4InitEP8dActor_c5Fix12IiES3_jj(&mdCcAc_c, this, 0x64000, 0x64000, 0x200002, 0x4a010);
     mFlags = 0x10000000;
-    Model::LoadFile(data_ov002_0210da40);
-    Model::LoadFile(data_ov002_0210d9a0);
-    Model::LoadFile(data_ov002_0210d9c0);
-    mModelAnim.SetFile((BMD_File *)Model::LoadFile(data_ov091_02135674), 1, -1);
+    dExtSimpleModel_c::LoadFile(data_ov002_0210da40);
+    dExtSimpleModel_c::LoadFile(data_ov002_0210d9a0);
+    dExtSimpleModel_c::LoadFile(data_ov002_0210d9c0);
+    mModelAnim.SetFile((BMD_File *)dExtSimpleModel_c::LoadFile(data_ov091_02135674), 1, -1);
     dExtFrameCtrl_c::LoadFile(data_ov091_0213567c);
     dExtFrameCtrl_c::LoadFile(data_ov091_02135684);
     mModelAnim.speed = 0x1000;
@@ -300,8 +305,7 @@ int daHyuhyu_c::func_ov091_02134044(daHyuhyu_c_State *state)
 /* Cloud, waiting: enter. Loop the wait animation. */
 int daHyuhyu_c::func_ov091_0213400c()
 {
-    _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(
-        &this->mModelAnim, (BCA_File *)data_ov091_02135684.filePtr, 0, 0x1000, 0);
+    this->mModelAnim.SetAnim((BCA_File *)data_ov091_02135684.filePtr, 0, 0x1000, 0);
     return 1;
 }
 
@@ -335,8 +339,7 @@ int daHyuhyu_c::func_ov091_02133f60()
 /* Cloud, blowing: enter. Play the blow animation once. */
 int daHyuhyu_c::func_ov091_02133f24()
 {
-    _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(
-        &this->mModelAnim, (BCA_File *)data_ov091_0213567c.filePtr, 0x40000000, 0x1000, 0);
+    this->mModelAnim.SetAnim((BCA_File *)data_ov091_0213567c.filePtr, 0x40000000, 0x1000, 0);
     return 1;
 }
 
@@ -368,10 +371,10 @@ int daHyuhyu_c::func_ov091_02133d30()
 
         pos.y = pos.y + 0x28000;
 
-        this->mGustParticle = _ZN8Particle6System3NewEjj5Fix12IiES2_S2_PK11Vector3_16fPNS_8CallbackE(
-            this->mGustParticle, 0x72, pos.x, pos.y, pos.z, &rot, 0);
-        this->mGustParticle2 = _ZN8Particle6System3NewEjj5Fix12IiES2_S2_PK11Vector3_16fPNS_8CallbackE(
-            this->mGustParticle2, 0x73, pos.x, pos.y, pos.z, &rot, 0);
+        this->mGustParticle = Particle::System::New(this->mGustParticle, 0x72, pos.x, pos.y, pos.z,
+                                                    (const Vector3_16f *)(&rot), 0);
+        this->mGustParticle2 = Particle::System::New(this->mGustParticle2, 0x73, pos.x, pos.y,
+                                                     pos.z, (const Vector3_16f *)(&rot), 0);
 
         if (!((u16)(this->mModelAnim.currFrame >> 12) & 1)) {
             gust = dActor_c::Spawn(0xe7, 1, this->mPos, 0, this->mAreaId, -1);

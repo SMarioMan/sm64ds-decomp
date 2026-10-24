@@ -5,7 +5,7 @@
  * No fields. InitResources / CleanupResources hand this overlay's
  * model and collision files to daObjFallBlock_c's shared ov098
  * helpers.
- * daObjFallBlock_c_InitResources loads slot 0 with Model::LoadFile,
+ * daObjFallBlock_c_InitResources loads slot 0 with dExtSimpleModel_c::LoadFile,
  * slot 1 with dBgW_Kc::LoadFile, slot 2 as CLPS into SetFile. ov015
  * sinit constructs those SharedFilePtrs as file IDs 1423 / 1424.
  *

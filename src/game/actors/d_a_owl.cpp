@@ -31,7 +31,7 @@
  * _ZN7fBase_cnwEj(1016) allocator the loose factory called by hand, and
  * daOwl_c has no user-declared constructor, so the inherited dEnemyBase_c
  * ctor plus the vtable store plus the four member subobjects in field order
- * (dCcAcPos_c, dBgCh_Actr, ModelAnim, dExtShadowModel_c) come from the implicit
+ * (dCcAcPos_c, dBgCh_Actr, dExtAnmModel_c, dExtShadowModel_c) come from the implicit
  * default constructor with zero mangled calls.
  *
  * The fourteen address-named functions whose first parameter was the owl are
@@ -44,9 +44,9 @@
  * Leftover: func_ov094_02136024 stores mPos into `d` and then overwrites all
  *   three fields. Dropping those three stores shrank the method from ROM
  *   0x12c to object 0x114. The stores stay.
- * Leftover: ModelAnim::SetAnim, dCcAcPos_c::Init, dBgCh_Actr::Init and
+ * Leftover: dExtAnmModel_c::SetAnim, dCcAcPos_c::Init, dBgCh_Actr::Init and
  *   dActor_c::DropShadowRadHeight take Fix12<int> by value, so they stay
- *   mangled calls. Sound::PlayLong and dBgCh_Actr::Unk_0203589c have no member
+ *   mangled calls. dBgCh_Actr::Unk_0203589c has no member
  *   declaration in a shared header.
  * Leftover: unk_3e8 is scratch that each state uses differently (fade phase,
  *   sound latch, bobbing phase). It stays unnamed.
@@ -113,7 +113,7 @@ extern OwlState data_ov094_02136b60;
 extern OwlState data_ov094_02136b70;
 
 /* decl_common.h includes common.h, so Matrix4x3 is the flat s32 m[12]
- * spelling. math/Matrix.h (via daOwl_c.h -> ModelAnim.h) stands down. */
+ * spelling. math/Matrix.h (via daOwl_c.h -> dExtAnmModel_c.h) stands down. */
 typedef char Matrix4x3_size_must_be_0x30[sizeof(Matrix4x3) == 0x30 ? 1 : -1];
 
 struct OwlVec {
@@ -144,8 +144,13 @@ enum {
 /* mStateTimer is s16 but every read in the ROM is an unsigned halfword load. */
 #define OWL_TIMER(o)        (*(u16 *)&(o)->mStateTimer)
 
-/* Whole animation frame of the ModelAnim, as the ROM extracts it. */
+/* Whole animation frame of the dExtAnmModel_c, as the ROM extracts it. */
 #define OWL_FRAME(o)        ((u16)((o)->mModelAnim.currFrame >> 12))
+
+namespace Sound {
+/* local extern: including Sound.h renumbers @NNN. */
+int PlayLong(u32, u32, u32, const Vector3 &, s16);
+}
 
 extern "C" {
 extern signed char data_0209f2f8;
@@ -156,8 +161,8 @@ extern Matrix4x3 data_020a0e68;
 
 int func_ov002_020df840(void *a, void *b, void *d);
 void _Z14ApproachLinearR7Vector3RKS_5Fix12IiE(Vector3 *a, const Vector3 *b, Fix12i f);
-int _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(void *self, void *bca, int a, int fix, unsigned int b);
-int _ZN5Sound8PlayLongEjjjRK7Vector3s(unsigned int a, unsigned int b, unsigned int cc, void *pos, unsigned int d);
+void d_a_owlPlayLongHold(unsigned int a, unsigned int b, unsigned int cc, void *pos,
+                         unsigned int d);
 int func_ov002_020df7f4(void *c);
 int func_ov002_020df7ac(void *thiz);
 void _ZN10dBgCh_Actr12Unk_0203589cEv(void *self);
@@ -196,7 +201,7 @@ static inline int IsPlayerActor(dActor_c *actor) {
 // @symbol _ZN7daOwl_cD1Ev
 // @symbol _ZN7daOwl_cD0Ev
 /* The whole body is compiler-emitted: one vptr store, then dExtShadowModel_c
- * (0x370), ModelAnim (0x30c), dBgCh_Actr (0x150) and dCcAcPos_c (0x110) in
+ * (0x370), dExtAnmModel_c (0x30c), dBgCh_Actr (0x150) and dCcAcPos_c (0x110) in
  * reverse declaration order, then dEnemyBase_c::~dEnemyBase_c. D1 is the
  * evidence for the header's four member types; D0 adds dEnemyBase_c's inline
  * operator delete. */
@@ -282,8 +287,7 @@ int daOwl_c::func_ov094_0213598c()
     unk_3e8 = 0;
     mStateTimer = 0;
     mAnimSpeed = 0x2000;
-    _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(&mModelAnim, data_ov094_02136af8.filePtr, 0, 0x1000,
-                                                0);
+    mModelAnim.SetAnim((BCA_File *)data_ov094_02136af8.filePtr, 0, 0x1000, 0);
     return 1;
 }
 
@@ -297,13 +301,12 @@ int daOwl_c::func_ov094_021359d8()
     Player *rider;
 
     if (OWL_TIMER(this) == 1) {
-        _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(&mModelAnim, data_ov094_02136ae8.filePtr, 0,
-                                                    0x1000, 0);
+        mModelAnim.SetAnim((BCA_File *)data_ov094_02136ae8.filePtr, 0, 0x1000, 0);
         mAnimSpeed = 0x1000;
     }
 
     if (OWL_TIMER(this) == 0) {
-        mSoundHandle = _ZN5Sound8PlayLongEjjjRK7Vector3s(mSoundHandle, 3, 0x18c, &mCamSpacePosX, 0);
+        mSoundHandle = Sound::PlayLong(mSoundHandle, 3, 0x18c, *(Vector3 *)&mCamSpacePosX, 0);
     }
 
     if (OWL_TIMER(this) != 0) {
@@ -319,8 +322,7 @@ int daOwl_c::func_ov094_021359d8()
     rider = mRider;
     if (rider != 0 && func_ov002_020df7f4(rider) == 1) {
         OWL_TIMER(this) = 0xa;
-        _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(&mModelAnim, data_ov094_02136af8.filePtr, 0,
-                                                    0x1000, 0);
+        mModelAnim.SetAnim((BCA_File *)data_ov094_02136af8.filePtr, 0, 0x1000, 0);
     }
 
     ApproachAngle(&mPrevAngleX, 0, 0xa, 0x200, 0x100);
@@ -354,8 +356,7 @@ int daOwl_c::func_ov094_02135bd4()
 {
     mStateTimer = 0x1e;
     unk_3e8 = 0;
-    _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(&mModelAnim, data_ov094_02136af8.filePtr, 0, 0x1000,
-                                                0);
+    mModelAnim.SetAnim((BCA_File *)data_ov094_02136af8.filePtr, 0, 0x1000, 0);
     mAnimSpeed = 0x2000;
     return 1;
 }
@@ -429,8 +430,7 @@ int daOwl_c::func_ov094_02135c28()
  * 50..113 frame wander timer. */
 int daOwl_c::func_ov094_02135e64()
 {
-    _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(&mModelAnim, data_ov094_02136af0.filePtr, 0, 0x1000,
-                                                0);
+    mModelAnim.SetAnim((BCA_File *)data_ov094_02136af0.filePtr, 0, 0x1000, 0);
     mWanderAngleY = (short)((RandomIntInternal(data_0209e650) >> 8) << 0xc);
     mStateTimer = (short)(((RandomIntInternal(data_0209e650) >> 8) & 0x3f) + 0x32);
     mAnimSpeed = 0x1000;
@@ -473,8 +473,7 @@ int daOwl_c::func_ov094_02135fe0()
     mSpeedX = 0;
     mVertSpeed = 0;
     mSpeedZ = 0;
-    _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(&mModelAnim, data_ov094_02136af0.filePtr, 0, 0x1000,
-                                                0);
+    mModelAnim.SetAnim((BCA_File *)data_ov094_02136af0.filePtr, 0, 0x1000, 0);
     return 1;
 }
 
@@ -527,8 +526,7 @@ int daOwl_c::func_ov094_02136024()
 /* Enter of the dormant state: animation data_ov094_02136af0[1]. */
 int daOwl_c::func_ov094_02136150()
 {
-    _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(&mModelAnim, data_ov094_02136af0.filePtr, 0, 0x1000,
-                                                0);
+    mModelAnim.SetAnim((BCA_File *)data_ov094_02136af0.filePtr, 0, 0x1000, 0);
     return 1;
 }
 
@@ -683,7 +681,7 @@ int daOwl_c::InitResources()
     int v0[3];
     void *f;
 
-    f = Model::LoadFile(data_ov094_02136ae0);
+    f = dExtSimpleModel_c::LoadFile(data_ov094_02136ae0);
     mModelAnim.SetFile((BMD_File *)f, 1, -1);
     mShadowModel.InitCylinder();
     dExtFrameCtrl_c::LoadFile(data_ov094_02136af8);

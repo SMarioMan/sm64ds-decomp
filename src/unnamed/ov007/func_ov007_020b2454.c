@@ -1,6 +1,6 @@
 #include "types.h"
 #include "nitro/fx/fx.h"
-#include "ModelBase.h"
+#include "dExtModel_c.h"
 /* AddVec3 still defines its vector as its own struct Vec3;
    declared as defined, the call casts. */
 struct Vec3;

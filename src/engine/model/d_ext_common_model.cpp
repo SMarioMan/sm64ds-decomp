@@ -1,8 +1,8 @@
 //cpp
 /* Common-model renderer (arm9 .text 0x0201609c..0x02016254): dExtCommonModel_c, the
- * ModelBase sibling whose rendering state is a POINTER into a pooled
+ * dExtModel_c sibling whose rendering state is a POINTER into a pooled
  * ModelComponents block (func_02016e70) rather than an in-place struct --
- * that is the whole difference from Model. DoSetFile takes its components
+ * that is the whole difference from dExtSimpleModel_c. DoSetFile takes its components
  * from the pool, ORs material flags through Func_020160AC, and tags the
  * model's polygon ID through SetPolygonID.
  * mwccarm emits .text in reverse source order, so the definitions below run
@@ -29,7 +29,7 @@
 /* common.h comes first so this TU sees the flat Matrix4x3 { s32 m[12]; }
  * spelling: the ctor's mat4x3 = IDENTITY_MATRIX4X3 copy block-moves twelve
  * words under it, where the structured spelling scalarizes and lands +0x1c
- * bytes long. Same recipe as Model's constructor. */
+ * bytes long. Same recipe as dExtSimpleModel_c's constructor. */
 #include "common.h"
 #include "dExtCommonModel_c.h"
 
@@ -40,7 +40,7 @@
 #pragma RTTI off
 
 extern "C" {
-extern Matrix4x3 data_0209b3ec;      /* the camera-space matrix Model::Render uses */
+extern Matrix4x3 data_0209b3ec; /* the camera-space matrix dExtSimpleModel_c::Render uses */
 ModelComponents *func_02016e70(BMD_File *file);
 void func_02046008(ModelComponents *data, u32 id);
 void MulMat4x3Mat4x3(const Matrix4x3 *m1, const Matrix4x3 *m0, Matrix4x3 *mF);
@@ -54,8 +54,8 @@ dExtCommonModel_c::dExtCommonModel_c() : data(0)
 }
 
 // @symbol _ZN17dExtCommonModel_cD1Ev
-/* An empty body; the vtable store at the top and the ModelBase subobject
- * call at the bottom are what `struct dExtCommonModel_c : ModelBase` and
+/* An empty body; the vtable store at the top and the dExtModel_c subobject
+ * call at the bottom are what `struct dExtCommonModel_c : dExtModel_c` and
  * `virtual ~dExtCommonModel_c()` already mean, and the compiler emits them around
  * it. Neither member has a destructor, so the ROM's 0x24 bytes are exactly
  * that. D0 is generated from the same body plus the class operator delete. */

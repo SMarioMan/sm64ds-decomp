@@ -41,7 +41,7 @@ enum dScMgRoulette_c_AssetId {
 #include "common.h"
 #include "types.h"
 #include "dScMgRoulette_c.h"
-#include "Model.h"
+#include "dExtSimpleModel_c.h"
 #include "decl_common.h"
 #include "PlayerInput.h"
 #include "nitro/fx/fx.h"
@@ -86,8 +86,8 @@ struct RouletteBoardView {
     PMF pmf;              /* 0x00, RouletteBoard_StateSpin, then StateSlow */
     BMD_File *firstFile;  /* 0x08, file 0x21d, the wheel */
     BMD_File *secondFile; /* 0x0c, file 0x21e, the ball */
-    Model model;          /* 0x10, the wheel; turned by boardAngle */
-    Model ball;           /* 0x60, placed each frame from radius and orbitAngle */
+    dExtSimpleModel_c model; /* 0x10, the wheel; turned by boardAngle */
+    dExtSimpleModel_c ball;  /* 0x60, placed each frame from radius and orbitAngle */
     s32 radius;           /* 0xb0, Fix12 ball distance; 0x4200 at the spin */
     s32 radiusVel;        /* 0xb4, added to radius each frame */
     s32 spinSpeed;        /* 0xb8, Fix12 ball speed; 0 once the ball rests */
@@ -1262,8 +1262,8 @@ int RouletteBoard_LoadModels(char *slider) {
     RouletteBoardView *board = (RouletteBoardView *)slider;
     board->firstFile = (BMD_File *)Ov004_LoadFile(0x21d);
     board->secondFile = (BMD_File *)Ov004_LoadFile(0x21e);
-    Model::UpdateFileOffsets(*board->firstFile);
-    Model::UpdateFileOffsets(*board->secondFile);
+    dExtSimpleModel_c::UpdateFileOffsets(*board->firstFile);
+    dExtSimpleModel_c::UpdateFileOffsets(*board->secondFile);
     if (board->model.SetFile(board->firstFile, 1, -1) == 0)
         return 0;
     if (board->ball.SetFile(board->secondFile, 1, -1) == 0)

@@ -8,7 +8,7 @@
  * The three-word file table is defined in this TU. Retail .data
  * order is descriptor, type-name, profile, vtable.
  * func_ov002_020b6244 loads slot 0 with
- * Model::LoadFile, slot 1 with dBgW_Kc::LoadFile, slot 2 as CLPS
+ * dExtSimpleModel_c::LoadFile, slot 1 with dBgW_Kc::LoadFile, slot 2 as CLPS
  * into SetFile. This TU's static initializer constructs those
  * SharedFilePtrs as file IDs 1631 / 1632.
  *

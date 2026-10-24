@@ -34,14 +34,14 @@ extern "C" void _ZN12dEnemyBase_cD2Ev(void *);
 
 // @symbol _ZN11dCapEnemy_cD0Ev
 /* The deleting destructor: store this vtable, destroy the members in reverse
- * declaration order (CapIcon at 0x164, Model at 0x114), chain to
+ * declaration order (CapIcon at 0x164, dExtSimpleModel_c at 0x114), chain to
  * dEnemyBase_c's base-object destructor, then hand the object back to the
  * actor heap. */
 extern "C" dCapEnemy_c *_ZN11dCapEnemy_cD0Ev(dCapEnemy_c *self)
 {
     *(int *)self = (int)_ZTV11dCapEnemy_c;
     _ZN10dCapIcon_cD1Ev(&self->mCapIcon);
-    _ZN5ModelD1Ev(&self->mModel);
+    _ZN17dExtSimpleModel_cD1Ev(&self->mModel);
     _ZN12dEnemyBase_cD2Ev(self);
     _ZN6Memory10DeallocateEPvPN5mHeap6Heap_tE(self, data_020a0eac);
     return self;
@@ -55,7 +55,7 @@ extern "C" dCapEnemy_c *_ZN11dCapEnemy_cD2Ev(dCapEnemy_c *self)
 {
     *(int *)self = (int)_ZTV11dCapEnemy_c;
     _ZN10dCapIcon_cD1Ev(&self->mCapIcon);
-    _ZN5ModelD1Ev(&self->mModel);
+    _ZN17dExtSimpleModel_cD1Ev(&self->mModel);
     _ZN12dEnemyBase_cD2Ev(self);
     return self;
 }

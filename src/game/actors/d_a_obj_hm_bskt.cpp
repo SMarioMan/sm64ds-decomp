@@ -64,8 +64,6 @@ extern CLPS_Block data_ov030_02114ee4;
 
 int func_ov030_0211124c(char *c, char *mc);
 
-int _ZN10dBgActor_c21IsClsnInRangeOnScreenE5Fix12IiES1_(
-    dBgActor_c *self, s32 range, s32 offsetY);
 void _ZN10dBgW_KcMbg7SetFileEP8KCL_FileRK9Matrix4x35Fix12IiEsR10CLPS_Block(
     dBgW_KcMbg *self, KCL_File *file, const Matrix4x3 *mat,
     Fix12i scale, s16 angle, CLPS_Block *clps);
@@ -74,8 +72,11 @@ void _ZN10dBgCh_Actr4InitEP8dActor_c5Fix12IiES3_P10Vector3_16S5_(
     Vector3_16 *a, Vector3_16 *b);
 
 void dBgCh_Actr_UpdateContinuous_Veneer(void *);
-void _ZN8Particle6System9NewSimpleEj5Fix12IiES2_S2_(
-    unsigned int, int, int, int);
+namespace Particle {
+struct System {
+    static void NewSimple(unsigned int, int, int, int);
+};
+}
 }
 
 // @symbol daObjHmBskt_c_classInit
@@ -87,7 +88,7 @@ extern "C" daObjHmBskt_c *daObjHmBskt_c_classInit()
 // @symbol _ZN13daObjHmBskt_c13InitResourcesEv
 s32 daObjHmBskt_c::InitResources()
 {
-    BMD_File *modelFile = (BMD_File *)Model::LoadFile(data_ov030_02115c88);
+    BMD_File *modelFile = (BMD_File *)dExtSimpleModel_c::LoadFile(data_ov030_02115c88);
     mModel.SetFile(modelFile, 1, -1);
 
     mVertAccel = 0;
@@ -124,7 +125,7 @@ s32 daObjHmBskt_c::Behavior()
     volatile int dummy[4];
     (void)&dummy;
 
-    _ZN10dBgActor_c21IsClsnInRangeOnScreenE5Fix12IiES1_(this, 0, 0);
+    IsClsnInRangeOnScreen(0, 0);
     mAngleY = mAngleY + mHorzSpeed;
 
     if (mVertAccel != 0) {
@@ -177,8 +178,8 @@ extern "C" int func_ov030_0211124c(char *c, char *mc)
     int py = self->mPosY + 0x96000;
     Vector3 p(px, py, pz);
     dActor_c::Spawn(0xb2, (unsigned char)(self->param1 & 0xf) | 0x20, p, 0, self->mAreaId, -1);
-    _ZN8Particle6System9NewSimpleEj5Fix12IiES2_S2_(0xb, self->mPosX, self->mPosY, self->mPosZ);
-    _ZN8Particle6System9NewSimpleEj5Fix12IiES2_S2_(0xd, self->mPosX, self->mPosY, self->mPosZ);
+    Particle::System::NewSimple(0xb, self->mPosX, self->mPosY, self->mPosZ);
+    Particle::System::NewSimple(0xd, self->mPosX, self->mPosY, self->mPosZ);
     self->MarkForDestruction();
 }
 

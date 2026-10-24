@@ -966,42 +966,42 @@
   ],
   "defined_symbol_renames": [
     {
-      "from": "@1536",
+      "from": "@1531",
       "to": "@1530",
       "evidence": "Compiler-generated PMF descriptor name for the three real-interface Source rewrite; raw8-byte body and relocation/section coordinate match prior @1562 and retained licensed @1530. No function alias, new metadata, or deadstrip policy introduced."
     },
     {
-      "from": "@1548",
+      "from": "@1543",
       "to": "@1542",
       "evidence": "Compiler-generated PMF descriptor name for the three real-interface Source rewrite; raw8-byte body and relocation/section coordinate match prior @1574 and retained licensed @1542. No function alias, new metadata, or deadstrip policy introduced."
     },
     {
-      "from": "@1546",
+      "from": "@1541",
       "to": "@1540",
       "evidence": "Compiler-generated PMF descriptor name for the three real-interface Source rewrite; raw8-byte body and relocation/section coordinate match prior @1572 and retained licensed @1540. No function alias, new metadata, or deadstrip policy introduced."
     },
     {
-      "from": "@1544",
+      "from": "@1539",
       "to": "@1538",
       "evidence": "Compiler-generated PMF descriptor name for the three real-interface Source rewrite; raw8-byte body and relocation/section coordinate match prior @1570 and retained licensed @1538. No function alias, new metadata, or deadstrip policy introduced."
     },
     {
-      "from": "@1538",
+      "from": "@1533",
       "to": "@1532",
       "evidence": "Compiler-generated PMF descriptor name for the three real-interface Source rewrite; raw8-byte body and relocation/section coordinate match prior @1564 and retained licensed @1532. No function alias, new metadata, or deadstrip policy introduced."
     },
     {
-      "from": "@1534",
+      "from": "@1529",
       "to": "@1528",
       "evidence": "Compiler-generated PMF descriptor name for the three real-interface Source rewrite; raw8-byte body and relocation/section coordinate match prior @1560 and retained licensed @1528. No function alias, new metadata, or deadstrip policy introduced."
     },
     {
-      "from": "@1540",
+      "from": "@1535",
       "to": "@1534",
       "evidence": "Compiler-generated PMF descriptor name for the three real-interface Source rewrite; raw8-byte body and relocation/section coordinate match prior @1566 and retained licensed @1534. No function alias, new metadata, or deadstrip policy introduced."
     },
     {
-      "from": "@1542",
+      "from": "@1537",
       "to": "@1536",
       "evidence": "Compiler-generated PMF descriptor name for the three real-interface Source rewrite; raw8-byte body and relocation/section coordinate match prior @1568 and retained licensed @1536. No function alias, new metadata, or deadstrip policy introduced."
     }

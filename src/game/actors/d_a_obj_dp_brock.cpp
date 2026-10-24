@@ -65,10 +65,11 @@ extern BrockCollisionFilePtr data_ov025_02113ab0;
 extern CLPS_Block data_ov025_02112ce8;
 
 void Matrix4x3_FromRotationY(void *m, int angleY);
-void _ZN10dBgW_KcMbg7SetFileEP8KCL_FileRK9Matrix4x35Fix12IiEsR10CLPS_Block(
-    dBgW_KcMbg *self, KCL_File *file, const Matrix4x3 *mat, int scale,
-    s16 angleY, CLPS_Block *clps);
-int _ZN10dBgActor_c13IsClsnInRangeE5Fix12IiES1_(void *self, int a, int b);
+void _ZN10dBgW_KcMbg7SetFileEP8KCL_FileRK9Matrix4x35Fix12IiEsR10CLPS_Block(dBgW_KcMbg *self,
+                                                                           KCL_File *file,
+                                                                           const Matrix4x3 *mat,
+                                                                           int scale, s16 angleY,
+                                                                           CLPS_Block *clps);
 void func_020393d4(int *p, int v);
 }
 
@@ -91,7 +92,7 @@ enum {
  * Historical alias: PyramidStep_Spawn.
  *
  * Every instruction here falls out of the one `new`: operator new(932), the
- * out-of-line dBgActor_c base constructor, this class's vptr and the Model
+ * out-of-line dBgActor_c base constructor, this class's vptr and the dExtSimpleModel_c
  * constructor for mStepModel all come from the implicit constructor the
  * `new` inlines, and the null check is the one `new` itself emits. */
 extern "C" daObjDpBrock_c *daObjDpBrock_c_classInit()
@@ -102,7 +103,7 @@ extern "C" daObjDpBrock_c *daObjDpBrock_c_classInit()
 // @symbol _ZN14daObjDpBrock_c13InitResourcesEv
 int daObjDpBrock_c::InitResources()
 {
-    mStepModel.SetFile((BMD_File *)Model::LoadFile(data_ov025_02113ab8), 1, -1);
+    mStepModel.SetFile((BMD_File *)dExtSimpleModel_c::LoadFile(data_ov025_02113ab8), 1, -1);
     UpdateStepModelPosAndRotY();
     UpdateStepClsnPosAndRot();
     _ZN10dBgW_KcMbg7SetFileEP8KCL_FileRK9Matrix4x35Fix12IiEsR10CLPS_Block(
@@ -154,7 +155,7 @@ int daObjDpBrock_c::Behavior()
     mStateTimer++;
     mPosY += mVertSpeed;
     UpdateStepModelPosAndRotY();
-    if (_ZN10dBgActor_c13IsClsnInRangeE5Fix12IiES1_(this, 0, 0))
+    if (IsClsnInRange(0, 0))
         UpdateStepClsnPosAndRot();
     return 1;
 }

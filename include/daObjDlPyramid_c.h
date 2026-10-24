@@ -6,7 +6,7 @@
 
 /* Derives from dBgActor_c: the destructor stores this class's vtable, then
  * dBgActor_c's -- inlined -- then destroys the dBgW_KcMbg at 0x124 and
- * the Model at 0xd4 before chaining to dActor_c. All three belong to dBgActor_c.
+ * the dExtSimpleModel_c at 0xd4 before chaining to dActor_c. All three belong to dBgActor_c.
  * Everything this header used to restate below 0x31e was dActor_c's and
  * dBgActor_c's, and is inherited now.
  *
@@ -15,15 +15,15 @@
  */
 
 #include "dBgActor_c.h"
-#include "Model.h"
+#include "dExtSimpleModel_c.h"
 
 extern "C" void *_ZN7fBase_cnwEj(unsigned size);
 
 struct daObjDlPyramid_c : dBgActor_c {
     u8  pad_31e[0x2];
     /* The class's own model. NOT "mModel": dBgActor_c's inherited
-       Model at 0xd4 already owns that name. */
-    Model mTopModel;                 /* 0x320 */
+       dExtSimpleModel_c at 0xd4 already owns that name. */
+    dExtSimpleModel_c mTopModel; /* 0x320 */
     /* The collider's own matrix: InitResources passes it as the
        `const Matrix4x3 &' argument of dBgW_KcMbg::SetFile, and the per-frame
        collider update rebuilds it from the yaw and the actor position.

@@ -16,10 +16,10 @@
  * BASE: dBgActor_c, direct, at offset zero -- the record's third word is
  * _ZTI10dBgActor_c at ov002 0x021089ec.
  *
- * MEMBERS: the factories construct a Model at 0x320 and a dExtShadowModel_c at
+ * MEMBERS: the factories construct a dExtSimpleModel_c at 0x320 and a dExtShadowModel_c at
  * 0x380; D1/D0 destroy them in reverse (_ZN17dExtShadowModel_cD1Ev at +0x380,
- * _ZN5ModelD1Ev at +0x320) before dBgActor_c's inlined destructor takes down
- * its dBgW_KcMbg (0x124) and Model (0xd4).
+ * _ZN17dExtSimpleModel_cD1Ev at +0x320) before dBgActor_c's inlined destructor takes down
+ * its dBgW_KcMbg (0x124) and dExtSimpleModel_c (0xd4).
  *
  * SIZE 0x3d8: both daObjCtRotateBlock_c_classInit_CT_MECHA01 (historical
  * alias TtcRotatingCube_Spawn) and daObjCtRotateBlock_c_classInit_CT_MECHA02
@@ -32,7 +32,7 @@
  * slots 0, 3, 6, 9, 16 and 17 differ, exactly the overrides declared here.
  */
 struct daObjCtRotateBlock_c : dBgActor_c {
-    Model mRotatingModel;      /* 0x320 the part that turns */
+    dExtSimpleModel_c mRotatingModel; /* 0x320 the part that turns */
     s32 mOffsetY;              /* 0x370 hop added to mPosY */
     u16 mWaitTimer;            /* 0x374 DecIfAbove0_Short countdown */
     u8 mState;                 /* 0x376 0 wait, 1 hop, 2 turn */

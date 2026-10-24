@@ -232,8 +232,7 @@ int daObjC1_Trap_c::InitResources()
     }
 
     mIsSpawner = 0;
-    mDoorModel.SetFile(
-        (BMD_File *)Model::LoadFile(data_ov010_02112d08), 1, -1);
+    mDoorModel.SetFile((BMD_File *)dExtSimpleModel_c::LoadFile(data_ov010_02112d08), 1, -1);
     UpdateModelTransform();
     UpdateCollisionTransform();
     _ZN10dBgW_KcMbg7SetFileEP8KCL_FileRK9Matrix4x35Fix12IiEsR10CLPS_Block(

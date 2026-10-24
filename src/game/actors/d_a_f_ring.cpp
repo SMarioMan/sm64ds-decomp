@@ -7,7 +7,7 @@
  * under defer_codegen off. daFRing_c_classInit is last. Was BowserShockwaves.
  */
 /* leftovers:
- * - ModelAnim::SetAnim, TextureSequence::SetFile, MaterialChanger::SetFile
+ * - dExtAnmModel_c::SetAnim, TextureSequence::SetFile, MaterialChanger::SetFile
  *   and TextureTransformer::SetFile stay mangled. Each takes Fix12<int> by
  *   value; the member spelling spills the 0x1000 and InitResources stops
  *   matching.
@@ -65,7 +65,6 @@ Fix12i Vec3_HorzDist(const Vector3 *a, const Vector3 *b);
 void Matrix4x3_FromTranslation(void *m, int x, int y, int z);
 /* Leftover: these four take Fix12<int> by value, so they stay mangled; the
  * member spelling spills the 0x1000 and InitResources stops matching. */
-void _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(ModelAnim *self, BCA_File *file, int flags, int speed, unsigned int start);
 void _ZN15TextureSequence7SetFileER8BTP_Filei5Fix12IiEj(TextureSequence *self, BTP_File *file, int flags, int speed, unsigned int start);
 void _ZN15MaterialChanger7SetFileER8BMA_Filei5Fix12IiEj(MaterialChanger *self, BMA_File *file, int flags, int speed, unsigned int start);
 void _ZN18TextureTransformer7SetFileER8BTA_Filei5Fix12IiEj(TextureTransformer *self, BTA_File *file, int flags, int speed, unsigned int start);
@@ -138,7 +137,8 @@ s32 daFRing_c::Behavior()
 // @symbol _ZN9daFRing_c13InitResourcesEv
 s32 daFRing_c::InitResources()
 {
-    mModelAnim1.SetFile((BMD_File *)Model::LoadFile(*(SharedFilePtr *)&data_ov060_0211b208), 1, 0x13);
+    mModelAnim1.SetFile(
+        (BMD_File *)dExtSimpleModel_c::LoadFile(*(SharedFilePtr *)&data_ov060_0211b208), 1, 0x13);
     mModelAnim2.SetFile((BMD_File *)data_ov060_0211b208.filePtr, 1, 0x13);
 
     dExtFrameCtrl_c::LoadFile(*(SharedFilePtr *)&data_ov060_0211b1f8);
@@ -147,10 +147,8 @@ s32 daFRing_c::InitResources()
     func_02016b24(&mModelAnim1, 0x4000);
     func_02016b24(&mModelAnim2, 0x4000);
 
-    _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(
-        &mModelAnim1, (BCA_File *)data_ov060_0211b1f8.filePtr, 0x40000000, 0x1000, 0);
-    _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(
-        &mModelAnim2, (BCA_File *)data_ov060_0211b1f8.filePtr, 0x40000000, 0x1000, 0);
+    mModelAnim1.SetAnim((BCA_File *)data_ov060_0211b1f8.filePtr, 0x40000000, 0x1000, 0);
+    mModelAnim2.SetAnim((BCA_File *)data_ov060_0211b1f8.filePtr, 0x40000000, 0x1000, 0);
 
     TextureSequence::Prepare(*(BMD_File *)data_ov060_0211b208.filePtr,
                              *(BTP_File *)data_ov060_0211b200.filePtr);

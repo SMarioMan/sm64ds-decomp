@@ -5,7 +5,7 @@
 
 #ifdef __cplusplus
 #include "dActor_c.h"
-#include "Model.h"
+#include "dExtSimpleModel_c.h"
 #endif
 
 /* The swinging pendulum inside the clock painting -- a leaf dActor_c child at
@@ -71,14 +71,14 @@
  * implicit `this`; the ROM bytes still match at 106/106.
  *
  * SIZE. daObjClockHuriko_c_classInit asks fBase_c::operator new for 296 =
- * 0x128 bytes. dActor_c is 0xd0 (include/dActor_c.h) and Model is 0x50
- * (include/Model.h), so the embedded Model runs 0xd4..0x124 (the same
+ * 0x128 bytes. dActor_c is 0xd0 (include/dActor_c.h) and dExtSimpleModel_c is 0x50
+ * (include/dExtSimpleModel_c.h), so the embedded dExtSimpleModel_c runs 0xd4..0x124 (the same
  * 4-byte alignment pad include/dBgActor_c.h and include/daDoor_c.h both take
- * before their own Model/ModelAnim members). That leaves exactly
+ * before their own dExtSimpleModel_c/dExtAnmModel_c members). That leaves exactly
  * 0x124..0x127 (4 bytes) as this class's own storage -- one s16, mAngSpeed,
  * plus 2 bytes of trailing padding. Same offset, daObjClock_c.h's sibling
  * field (`mHandIndex`, u8) confirms the shape -- one small scalar right
- * after the embedded Model.
+ * after the embedded dExtSimpleModel_c.
  *
  * Field NAMES are placeholders and cannot change codegen. Offsets and widths
  * are observed.
@@ -94,9 +94,9 @@ extern "C" void *_ZN7fBase_cnwEj(unsigned size);
 
 struct daObjClockHuriko_c : dActor_c {
     u8  pad_0d0[0x4];
-    /* Named by the implicit constructor's _ZN5ModelC1Ev call at +0xd4 -- a
+    /* Named by the implicit constructor's _ZN17dExtSimpleModel_cC1Ev call at +0xd4 -- a
        relocation the ROM build checks. */
-    Model mModel;             /* 0x0d4 */
+    dExtSimpleModel_c mModel; /* 0x0d4 */
 
     s16 mAngSpeed;               /* 0x124 -- swing speed, see SIZE above */
     u8  pad_126[0x2];

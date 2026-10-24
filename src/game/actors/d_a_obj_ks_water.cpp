@@ -48,7 +48,7 @@ struct BTA_File;
 struct KCL_File;
 struct CLPS_Block;
 
-/* Model handles construct through func_02017acc and destroy through
+/* dExtSimpleModel_c handles construct through func_02017acc and destroy through
  * func_02017ab4; collision handles construct through func_02017b4c and
  * destroy through SharedFilePtr_Destruct_Clsn. The manifest aliases those
  * undefined members onto the ROM symbols. */
@@ -98,7 +98,7 @@ extern "C" daObjKsWater_c *daObjKsWater_c_classInit()
 // @symbol _ZN14daObjKsWater_c13InitResourcesEv
 int daObjKsWater_c::InitResources()
 {
-    mModel.SetFile((BMD_File *)Model::LoadFile(data_ov017_02111c88), 1, -1);
+    mModel.SetFile((BMD_File *)dExtSimpleModel_c::LoadFile(data_ov017_02111c88), 1, -1);
     TextureTransformer::Prepare(*(BMD_File *)data_ov017_02111c88.filePtr, data_ov017_02111a60);
     /* 6az: header SetFile takes Fix12<int> by value. */
     _ZN18TextureTransformer7SetFileER8BTA_Filei5Fix12IiEj(

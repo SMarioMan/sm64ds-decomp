@@ -6,7 +6,7 @@
  *
  * leftovers: unk_08..unk_14 stay placeholders -- nothing in the tree reads
  * what they point at (SetAnim only needs numFrames, spelled the way
- * ModelAnim.cpp and BlendModelAnim.cpp already type it).
+ * d_ext_anm_model.cpp and d_ext_blend_anm_model.cpp already type it).
  */
 #include "dExtFrameCtrl_c.h"
 

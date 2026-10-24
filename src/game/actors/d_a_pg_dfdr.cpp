@@ -15,7 +15,7 @@
  * RTTI names this class daPgDfdr_c; the debug table names PENGUIN_DEFENDER.
  *
  * deslop leftovers:
- * - ModelAnim::SetAnim as a method homes Fix12<int> (str, add, ldm; +12
+ * - dExtAnmModel_c::SetAnim as a method homes Fix12<int> (str, add, ldm; +12
  *   bytes per call). func_ov027_02111ca8 0x54 -> 0x60. func_ov027_02111b2c
  *   0x11c -> 0x134 (+24, two calls). The scalar extern "C" stays.
  * - TextureSequence::SetFile and dBgW_KcMbg::SetFile home one Fix12<int>
@@ -76,11 +76,10 @@ int DecIfAbove0_Byte(void *p);
 void func_0201267c(int id, char *pos);
 /* Stores dBgW::beforeClsnCallback (p[6]). dBgW.h has no setter. */
 void func_020393d4(int *collider, int callback);
-void _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(void *self, void *file, int flags, int speed, unsigned startFrame);
 void _ZN15TextureSequence7SetFileER8BTP_Filei5Fix12IiEj(void *self, void *file, int flags, int speed, unsigned startFrame);
 void _ZN10dBgW_KcMbg7SetFileEP8KCL_FileRK9Matrix4x35Fix12IiEsR10CLPS_Block(void *self, void *kcl, void *mat, int scale, short angY, void *clps);
-void _ZN7dCcAc_c4InitEP8dActor_c5Fix12IiES3_jj(void *self, void *actor, int radius, int height, unsigned flags, unsigned vuln);
-void _ZN10dBgActor_c21IsClsnInRangeOnScreenE5Fix12IiES1_(void *self, int x, int z);
+void _ZN7dCcAc_c4InitEP8dActor_c5Fix12IiES3_jj(void *self, void *actor, int radius, int height,
+                                               unsigned flags, unsigned vuln);
 
 void func_ov027_02111994(daPgDfdr_c *self);
 void func_ov027_02111b2c(daPgDfdr_c *self);
@@ -155,7 +154,7 @@ s32 daPgDfdr_c::InitResources()
     void *file;
     Vector3 pos;
 
-    file = Model::LoadFile(*(SharedFilePtr *)&data_ov027_02113c7c);
+    file = dExtSimpleModel_c::LoadFile(*(SharedFilePtr *)&data_ov027_02113c7c);
     mModelAnim.SetFile((BMD_File *)file, 1, -1);
 
     for (i = 0; i < 3; i++)
@@ -203,7 +202,7 @@ s32 daPgDfdr_c::InitResources()
 // @symbol _ZN10daPgDfdr_c8BehaviorEv
 s32 daPgDfdr_c::Behavior()
 {
-    _ZN10dBgActor_c21IsClsnInRangeOnScreenE5Fix12IiES1_(this, 0, 0);
+    IsClsnInRangeOnScreen(0, 0);
     func_ov027_02111cfc();
     if (ClosestPlayer()->IsInsideOfCannon()) {
         mFlags &= ~kSkipRender;
@@ -275,8 +274,7 @@ void daPgDfdr_c::func_ov027_02111cfc()
 /* State 0 enter: pause-and-turn clip, 20 frames, unk_3d0 = 0. */
 extern "C" int func_ov027_02111ca8(daPgDfdr_c *self)
 {
-    _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(&self->mModelAnim, data_ov027_02113c84.filePtr, 0,
-                                                0x1000, 0);
+    self->mModelAnim.SetAnim((BCA_File *)data_ov027_02113c84.filePtr, 0, 0x1000, 0);
     self->mModelAnim.speed = 0x1000;
     self->mTimer = 20;
     self->unk_3d0 = 0;
@@ -306,12 +304,10 @@ extern "C" void func_ov027_02111b2c(daPgDfdr_c *self)
     self->mHorzSpeed = data_ov027_02113a1c[self->mStepIndex].speed;
     self->mPrevAngleY = data_ov027_02113a1c[self->mStepIndex].startHeading;
     if (data_ov027_02113a1c[self->mStepIndex].startHeading != data_ov027_02113a1c[self->mStepIndex].endHeading) {
-        _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(&self->mModelAnim, data_ov027_02113c8c.filePtr,
-                                                    0, 0x1000, 0);
+        self->mModelAnim.SetAnim((BCA_File *)data_ov027_02113c8c.filePtr, 0, 0x1000, 0);
         self->mModelAnim.speed = 0x1000;
     } else {
-        _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(&self->mModelAnim, data_ov027_02113c74.filePtr,
-                                                    0, 0x1000, 0);
+        self->mModelAnim.SetAnim((BCA_File *)data_ov027_02113c74.filePtr, 0, 0x1000, 0);
         self->mModelAnim.speed = FX_MUL(data_ov027_02113a1c[self->mStepIndex].speed, 0x5000);
     }
     self->unk_3d0 = 1;
@@ -368,8 +364,8 @@ int daPgDfdr_c::func_ov027_02111a28()
 }
 
 // @symbol func_ov027_02111994
-/* Model matrix from mAngleY plus position >> 3; collider copy keeps the
-   full position. Flat Matrix4x3 (common.h before Model.h) is the 12-word copy. */
+/* dExtSimpleModel_c matrix from mAngleY plus position >> 3; collider copy keeps the
+   full position. Flat Matrix4x3 (common.h before dExtSimpleModel_c.h) is the 12-word copy. */
 extern "C" void func_ov027_02111994(daPgDfdr_c *self)
 {
     Matrix4x3_FromRotationY(&self->mModelAnim.mat4x3, self->mAngleY);
@@ -392,8 +388,8 @@ extern "C" void func_ov027_02111994(daPgDfdr_c *self)
 /* this file's header for why. One vtable store and three member teardowns     */
 /* come out of that one empty body: its own vptr, then -- in reverse           */
 /* declaration order -- dCcAc_c at +0x398, TextureSequence at +0x384 and       */
-/* ModelAnim at +0x320, then dBgActor_c's own teardown inlined (its destructor */
-/* is defined in its class body too), which is dBgW_KcMbg at +0x124 and Model  */
+/* dExtAnmModel_c at +0x320, then dBgActor_c's own teardown inlined (its destructor */
+/* is defined in its class body too), which is dBgW_KcMbg at +0x124 and dExtSimpleModel_c  */
 /* at +0x0d4, then dActor_c. D0 is that plus the inherited inline `operator    */
 /* delete` found by ordinary lookup on dActor_c two levels up; slot 17 is the  */
 /* deleting variant.                                                          */

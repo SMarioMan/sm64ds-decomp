@@ -93,7 +93,8 @@ def test_scaffold_output_passes_the_source_style_patterns():
         pytest.skip("needs extracted/ and build/rtti.json (python tools/rtti_extract.py)")
     import re
     import class_scaffold as CS
-    for name, kw in (("daBar_c", {}), ("dExtAnm2Model_c", {"exclude_lifecycle": True})):
+    for name, kw in (("daBar_c", {}), ("dExtAnm2Model_c", {"exclude_lifecycle": True}),
+                     ("dCcAc_c", {})):
         plan, _entry = CS.build_plan(name, out=str(REPO / "build" / "scaffold" / "_test"), **kw)
         for path, text in plan["files"].items():
             if path.endswith(".json"):
@@ -102,9 +103,13 @@ def test_scaffold_output_passes_the_source_style_patterns():
             assert not re.search(r"\)\s*\n\{", text), path
         tu_text = next(t for p, t in plan["files"].items() if p.endswith(".cpp"))
         assert "notes/cpp-class-form.md" in tu_text
+        # dExtAnm2Model_c::Func_020162C4 moved off the by-value Fix12 mangling
+        # (#4311), so its scaffold carries the scalar symbol and no wall note;
+        # dCcAc_c::Init still takes a Fix12<int> by value and must get one.
         if name == "dExtAnm2Model_c":
-            tu = next(t for p, t in plan["files"].items() if p.endswith(".cpp"))
-            assert "WALL 6az" in tu and "_ZN10ModelAnim213Func_020162C4Ejiit" in tu
+            assert "_ZN15dExtAnm2Model_c13Func_020162C4Ejiit" in tu_text
+        if name == "dCcAc_c":
+            assert "WALL 6az" in tu_text
 
 
 @pytest.mark.parametrize("param", ["R5Fix12IiE", "RK5Fix12IiE", "P5Fix12IiE"])

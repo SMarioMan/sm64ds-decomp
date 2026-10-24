@@ -1,4 +1,11 @@
 //cpp
+struct Vector3_16f;
+namespace Particle {
+struct Callback;
+struct System {
+    static int New(unsigned, unsigned, int, int, int, const ::Vector3_16f *, Callback *);
+};
+}
 /* Dire, Dire Docks whirlpool (WATER_TATUMAKI). A player who comes within
  * 300 of the centre is caught and swung down the funnel; once they pass the
  * centre, KillPlayer runs once. Anyone merely inside 1100 is pulled inward,
@@ -31,7 +38,7 @@
  *   copies twelve words with one three-pass ldm/stm.
  * - InitResources: TextureTransformer::SetFile with a Fix12<int> temporary
  *   is 0xd8 against ROM 0xd0 and adds a 4-byte .rodata word.
- *   ModelAnim::SetAnim the same way is 0xdc against ROM 0xd0, also with
+ *   dExtAnmModel_c::SetAnim the same way is 0xdc against ROM 0xd0, also with
  *   a 4-byte .rodata word. The int spellings of the mangled symbols match.
  * - Behavior: Particle::System::New(mParticleID, 0x139, mPosX,
  *   mPosY + 0x384000, mPosZ, 0, 0) is 0xc8 against ROM 0xe0. The ROM
@@ -120,17 +127,17 @@ extern void KillPlayer(void);
 /* Scratch matrix. The helpers below write it; the model copy reads it back. */
 extern Matrix4x3 data_020a0e68;
 /* Fix12<int> by value. The int parameter is the matching call. */
-extern int _ZN8Particle6System3NewEjj5Fix12IiES2_S2_PK11Vector3_16fPNS_8CallbackE(
-    unsigned int uniqueID, unsigned int effectID, int x, int y, int z, void *dir, void *callback);
+extern int d_a_water_tatumakiNewHold(unsigned int uniqueID, unsigned int effectID, int x, int y,
+                                     int z, void *dir, void *callback);
 extern int _Z14ApproachLinearR7Vector3RKS_5Fix12IiE(Vector3 &value, const Vector3 &target, int step);
-extern void _ZN18TextureTransformer7SetFileER8BTA_Filei5Fix12IiEj(TextureTransformer *self, BTA_File &file, int flags, int speed, u32 startFrame);
-extern void _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(ModelAnim *self, BCA_File *file, int flags, int speed, u32 startFrame);
+extern void _ZN18TextureTransformer7SetFileER8BTA_Filei5Fix12IiEj(TextureTransformer *self,
+                                                                  BTA_File &file, int flags,
+                                                                  int speed, u32 startFrame);
 }
 
-#define Particle_System_New _ZN8Particle6System3NewEjj5Fix12IiES2_S2_PK11Vector3_16fPNS_8CallbackE
+#define Particle_System_New Particle::System::New
 #define ApproachLinearVec _Z14ApproachLinearR7Vector3RKS_5Fix12IiE
 #define TextureTransformer_SetFile _ZN18TextureTransformer7SetFileER8BTA_Filei5Fix12IiEj
-#define ModelAnim_SetAnim _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj
 
 void ApproachLinear2(s16 &value, s16 target, s16 step);
 void ApproachLinear(int &value, int target, int step);
@@ -374,7 +381,7 @@ int daWater_Tatumaki_c::Behavior()
 // @symbol _ZN18daWater_Tatumaki_c13InitResourcesEv
 int daWater_Tatumaki_c::InitResources()
 {
-    BMD_File *model = (BMD_File *)Model::LoadFile(gWaterTatumakiModelFile);
+    BMD_File *model = (BMD_File *)dExtSimpleModel_c::LoadFile(gWaterTatumakiModelFile);
     mModelAnim.SetFile(model, 1, -1);
 
     dExtFrameCtrl_c::LoadFile(gWaterTatumakiAnimationFile);
@@ -390,8 +397,7 @@ int daWater_Tatumaki_c::InitResources()
     mCenter.z = mPosZ;
     mCenter.y -= kFunnelDepth;
 
-    ModelAnim_SetAnim(&mModelAnim, (BCA_File *)gWaterTatumakiAnimationFile.filePtr, 0, kAnimSpeed,
-                      0);
+    mModelAnim.SetAnim((BCA_File *)gWaterTatumakiAnimationFile.filePtr, 0, kAnimSpeed, 0);
 
     func_ov026_02111ee0(this, STATE_SPIN);
     return 1;

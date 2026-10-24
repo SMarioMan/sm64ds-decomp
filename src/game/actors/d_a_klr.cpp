@@ -1,4 +1,8 @@
 //cpp
+namespace Particle {
+struct Callback;
+}
+struct Vector3_16f;
 /**
  * Bullet Bill (profile KILLER), fired by daObjBkKillerdai_c.
  *
@@ -52,9 +56,13 @@ void func_02012694(u32 id, const Vector3 *pos);
 void func_0201267c(u32 id, const Vector3 *pos);
 void Vec3_Add(Vector3 *out, const Vector3 *a, const Vector3 *b);
 
-void *_ZN8Particle6System9NewSimpleEj5Fix12IiES2_S2_(u32 id, int x, int y, int z);
-int _ZN8Particle6System3NewEjj5Fix12IiES2_S2_PK11Vector3_16fPNS_8CallbackE(
-    u32 uniqueID, u32 effectID, int x, int y, int z, void *dir, void *callback);
+namespace Particle {
+struct System {
+    static void *NewSimple(u32 id, int x, int y, int z);
+    static int New(unsigned, unsigned, int, int, int, const ::Vector3_16f *, Callback *);
+};
+}
+int d_a_klrNewHold(u32 uniqueID, u32 effectID, int x, int y, int z, void *dir, void *callback);
 void _ZN8dActor_c19DropShadowRadHeightER17dExtShadowModel_cR9Matrix4x35Fix12IiES5_j(
     dActor_c *self, dExtShadowModel_c *shadow, Matrix4x3 *mtx, int radius, int depth,
     u8 opacity);
@@ -95,8 +103,8 @@ extern "C" daKlr_c *daKlr_c_classInit()
 // @symbol _ZN7daKlr_c13InitResourcesEv
 s32 daKlr_c::InitResources()
 {
-    Model::LoadFile(data_ov079_02128300);
-    Model::LoadFile(data_ov079_021282f0);
+    dExtSimpleModel_c::LoadFile(data_ov079_02128300);
+    dExtSimpleModel_c::LoadFile(data_ov079_021282f0);
     if (mModel.SetFile((BMD_File *)data_ov079_02128300.filePtr, 1, -1) == 0)
         return 0;
     if (mModel2.SetFile((BMD_File *)data_ov079_021282f0.filePtr, 1, -1) == 0)
@@ -137,7 +145,7 @@ s32 daKlr_c::Behavior()
         flags = mCylClsn.hitFlags;
         if (flags & 0x10) {
             ((Player *)FindWithID(id))->IncMegaKillCount();
-            _ZN8Particle6System9NewSimpleEj5Fix12IiES2_S2_(kBurstParticle, mPosX, mPosY, mPosZ);
+            Particle::System::NewSimple(kBurstParticle, mPosX, mPosY, mPosZ);
             MarkForDestruction();
             func_02012694(0x78, &mCamSpacePos);
         } else if (flags & 0x3c0) {
@@ -227,8 +235,8 @@ void daKlr_c::func_ov079_0212682c()
     this->mHorzSpeed = -0x1e000;
     this->UpdatePosWithHorzSpeedAndAng();
     Vec3_Add(&nose, &this->mPos, (Vector3 *)&this->mSpeedX);
-    this->mSmokeTrailID = _ZN8Particle6System3NewEjj5Fix12IiES2_S2_PK11Vector3_16fPNS_8CallbackE(
-        this->mSmokeTrailID, kSmokeParticle, nose.x, nose.y, nose.z, 0, 0);
+    this->mSmokeTrailID =
+        Particle::System::New(this->mSmokeTrailID, kSmokeParticle, nose.x, nose.y, nose.z, 0, 0);
     this->mHorzSpeed = 0x1e000;
     if (this->DistToCPlayer() > 0x12c000)
         ApproachLinear(this->mPrevAngleY, this->HorzAngleToCPlayer(), 0x200);
@@ -258,7 +266,7 @@ void daKlr_c::func_ov079_0212682c()
         this->PoofDust();
     } else {
         func_02012694(0x78, &this->mCamSpacePos);
-        _ZN8Particle6System9NewSimpleEj5Fix12IiES2_S2_(kBurstParticle, nose.x, nose.y, nose.z);
+        Particle::System::NewSimple(kBurstParticle, nose.x, nose.y, nose.z);
     }
     this->MarkForDestruction();
 }
@@ -275,7 +283,7 @@ void daKlr_c::func_ov079_02126794()
     this->mPosY += 0x14000;
     if ((u16)this->mStateTimer <= 90)
         return;
-    _ZN8Particle6System9NewSimpleEj5Fix12IiES2_S2_(kBurstParticle, this->mPosX, this->mPosY, this->mPosZ);
+    Particle::System::NewSimple(kBurstParticle, this->mPosX, this->mPosY, this->mPosZ);
     func_02012694(0x78, &this->mCamSpacePos);
     this->MarkForDestruction();
 }

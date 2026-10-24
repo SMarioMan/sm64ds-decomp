@@ -18,7 +18,7 @@
  *   store of UpdatePosWithTransform into beforeClsnCallback, are each
  *   0x254 against 0x258. func_020393c4 and func_020393d4 stay.
  * - InitResources: probePos.y = mPosY - 0x14000 is 0x254 against 0x258.
- * - InitResources: Model::LoadFile's return in place of filePtr differs
+ * - InitResources: dExtSimpleModel_c::LoadFile's return in place of filePtr differs
  *   by 20 words.
  * - OnMainMeshRide: copying mTargetRotation in a loop is 0x100 against
  *   0x104.
@@ -201,9 +201,9 @@ void daObjCvNewsLift_c::OnPlatform3Ride(dActor_c *player)
 // @symbol _ZN17daObjCvNewsLift_c13InitResourcesEv
 s32 daObjCvNewsLift_c::InitResources()
 {
-    Model::LoadFile(*(SharedFilePtr *)data_ov021_021149a0);
+    dExtSimpleModel_c::LoadFile(*(SharedFilePtr *)data_ov021_021149a0);
     dBgW_Kc::LoadFile(*(SharedFilePtr *)data_ov021_021149a8);
-    Model::LoadFile(*(SharedFilePtr *)data_ov021_021149b0);
+    dExtSimpleModel_c::LoadFile(*(SharedFilePtr *)data_ov021_021149b0);
     dBgW_Kc::LoadFile(*(SharedFilePtr *)data_ov021_021149b8);
 
     mModel.SetFile((BMD_File *)((SharedFilePtr *)data_ov021_021149a0)->filePtr, 1, -1);

@@ -29,7 +29,7 @@ struct PgBbyMtx {
 };
 
 /* Descriptive local types and object names, not recovered source spellings.
- * Model and animation handles use different veneers. */
+ * dExtSimpleModel_c and animation handles use different veneers. */
 struct PgBbyModelFile : SharedFilePtr {
     PgBbyModelFile(u32 fileID);
     ~PgBbyModelFile();
@@ -45,10 +45,9 @@ typedef char PgBbyAnimationFile_size_must_be_0x08[sizeof(PgBbyAnimationFile) == 
 
 extern "C" {
 /* Fix12<int> by-value walls (notes/mwccarm-codegen.md 6az). */
-int _ZN8dActor_c22IsTooFarAwayFromPlayerE5Fix12IiE(void *self, int dist);
 void _ZN7dCcAc_c4InitEP8dActor_c5Fix12IiES3_jj(void *thiz, void *actor, int r, int h, unsigned int a, unsigned int b);
-void _ZN10dBgCh_Actr4InitEP8dActor_c5Fix12IiES3_P10Vector3_16S5_(void *thiz, void *actor, int r, int h, void *v, int b);
-void _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(void *anim, void *file, int flags, int speed, unsigned int start);
+void _ZN10dBgCh_Actr4InitEP8dActor_c5Fix12IiES3_P10Vector3_16S5_(void *thiz, void *actor, int r,
+                                                                 int h, void *v, int b);
 void _ZN8dActor_c19DropShadowRadHeightER17dExtShadowModel_cR9Matrix4x35Fix12IiES5_j(
     void *self, void *shadow, void *mtx, int radius, int height, unsigned int flags);
 
@@ -94,7 +93,7 @@ void daPgBby_c::OnTurnIntoEgg(Player &player)
 // @symbol _ZN9daPgBby_c13InitResourcesEv
 s32 daPgBby_c::InitResources()
 {
-    BMD_File *f = (BMD_File *)Model::LoadFile(gPenguinBabyModelFile);
+    BMD_File *f = (BMD_File *)dExtSimpleModel_c::LoadFile(gPenguinBabyModelFile);
     mModelAnim.SetFile(f, 1, -1);
     int i;
     for (i = 0; i < 5; i++) {
@@ -121,7 +120,7 @@ s32 daPgBby_c::InitResources()
 // @symbol _ZN9daPgBby_c8BehaviorEv
 s32 daPgBby_c::Behavior()
 {
-    if (_ZN8dActor_c22IsTooFarAwayFromPlayerE5Fix12IiE(this, 0x7d0000) && mWithMeshClsn.IsOnGround()) {
+    if (IsTooFarAwayFromPlayer(0x7d0000) && mWithMeshClsn.IsOnGround()) {
         func_ov072_02120d04();
     } else {
         if (mMother == 0)
@@ -191,8 +190,7 @@ void daPgBby_c::func_ov072_02121cdc()
 int daPgBby_c::func_ov072_02121c94()
 {
     mSubState = 0;
-    _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(
-        &mModelAnim, (BCA_File *)gPenguinBabyWaitAnimationFile.filePtr, 0, 0x1000, 0);
+    mModelAnim.SetAnim((BCA_File *)gPenguinBabyWaitAnimationFile.filePtr, 0, 0x1000, 0);
     mStateId = 0;
     return 1;
 }
@@ -242,11 +240,9 @@ int daPgBby_c::func_ov072_02121a84()
         break;
     }
     if (mHorzSpeed != 0) {
-        _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(
-            &mModelAnim, (BCA_File *)gPenguinBabyWalkAnimationFile.filePtr, 0, 0x1000, 0);
+        mModelAnim.SetAnim((BCA_File *)gPenguinBabyWalkAnimationFile.filePtr, 0, 0x1000, 0);
     } else {
-        _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(
-            &mModelAnim, (BCA_File *)gPenguinBabyWaitAnimationFile.filePtr, 0, 0x1000, 0);
+        mModelAnim.SetAnim((BCA_File *)gPenguinBabyWaitAnimationFile.filePtr, 0, 0x1000, 0);
     }
     mModelAnim.speed = 0x1000;
     mModelAnim.Advance();
@@ -273,8 +269,7 @@ int daPgBby_c::func_ov072_02121a28()
 {
     mHorzSpeed = 0x19000;
     mVertSpeed = 0xc000;
-    _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(
-        &mModelAnim, (BCA_File *)gPenguinBabyDiveAnimationFile.filePtr, 0x40000000, 0x1000, 0);
+    mModelAnim.SetAnim((BCA_File *)gPenguinBabyDiveAnimationFile.filePtr, 0x40000000, 0x1000, 0);
     mSubState = 0;
     mStateId = 1;
     return 1;
@@ -287,8 +282,7 @@ int daPgBby_c::func_ov072_021218dc()
     switch (mSubState) {
     case 0:
         if (mModelAnim.Finished()) {
-            _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(
-                &mModelAnim, (BCA_File *)gPenguinBabySlideAnimationFile.filePtr, 0, 0x1000, 0);
+            mModelAnim.SetAnim((BCA_File *)gPenguinBabySlideAnimationFile.filePtr, 0, 0x1000, 0);
             mModelAnim.speed = 0x1000;
             mSubState++;
         }
@@ -296,9 +290,8 @@ int daPgBby_c::func_ov072_021218dc()
     case 1:
         mHorzSpeed -= 0x3000;
         if (mHorzSpeed < 0) {
-            _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(
-                &mModelAnim, (BCA_File *)gPenguinBabyStandUpAnimationFile.filePtr, 0x40000000,
-                0x1000, 0);
+            mModelAnim.SetAnim((BCA_File *)gPenguinBabyStandUpAnimationFile.filePtr, 0x40000000,
+                               0x1000, 0);
             mHorzSpeed = 0;
             mSubState++;
         }
@@ -323,8 +316,7 @@ int daPgBby_c::func_ov072_021218dc()
 /* State 2, enter: picked up. */
 int daPgBby_c::func_ov072_02121890()
 {
-    _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(
-        &mModelAnim, (BCA_File *)gPenguinBabyWaitAnimationFile.filePtr, 0, 0x1000, 0);
+    mModelAnim.SetAnim((BCA_File *)gPenguinBabyWaitAnimationFile.filePtr, 0, 0x1000, 0);
     mModelAnim.speed = 0x1000;
     mStateId = 2;
     return 1;
@@ -374,8 +366,7 @@ animate:
 /* State 3, enter. */
 int daPgBby_c::func_ov072_02121758()
 {
-    _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(
-        &mModelAnim, (BCA_File *)gPenguinBabyWalkAnimationFile.filePtr, 0, 0x1000, 0);
+    mModelAnim.SetAnim((BCA_File *)gPenguinBabyWalkAnimationFile.filePtr, 0, 0x1000, 0);
     mModelAnim.speed = 0x1000;
     mHorzSpeed = 0x5000;
     mStateId = 3;

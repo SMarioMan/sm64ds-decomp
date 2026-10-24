@@ -1,4 +1,9 @@
 //cpp
+namespace Particle {
+struct System {
+    static void *NewSimple(unsigned, int, int, int);
+};
+}
 /* dMg3DHeyhoObjAdapter_c translation unit, ov006 0x020c4048..0x020c6f8c, text only: the class's
    base constructor (its vtable and RTTI stay at their ROM homes in the module's unowned .data)
    plus 49 Heyho-minigame helper functions (see config/tu_manifest.d/ov006/dMg3DHeyhoObjAdapter_c.json).
@@ -11,12 +16,19 @@
      record they operate on (0xf0 stride) is laid out in include/Heyho.h and read
      through the HEYHO() cast; the per-file typedef/extern universes disagree, so
      the helpers keep their char* parameters rather than a shared typed one.
-   - _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj keeps scalar parameter spellings:
-     it takes Fix12<int> by value and a natural typed declaration homes the
-     arguments differently under mwccarm (the Fix12 wall, notes/mwccarm-codegen.md 6az).
-   - _ZN9ModelAnimC1Ev/_ZN9ModelAnimD1Ev/_ZN7Vector3D1Ev and
-     __register_global_object are ctor/dtor/atexit ABI calls, spelled as free
-     functions because the bodies are the compiler's own sinit glue.
+   - Heyho::mModelAnim is a real dExtAnmModel_c, so its SetFile/SetAnim/Render/
+     Advance calls, its mat4x3 store and Heyho_Destruct's destructor call are
+     member calls (the helpers that used to reach the matrix and the frame
+     controller as separate byte views were reading inside that one object).
+   - Heyho_Construct still calls _ZN14dExtAnmModel_cC1Ev by name. C++ has no way to
+     run a constructor on existing storage short of placement new, and
+     `new (&HEYHO(t)->mModelAnim) dExtAnmModel_c` adds the null check placement new
+     requires (adds/beq): 0x20 against the ROM's 0x1c (MEASURED 2026-10-23).
+     The real shape is a Heyho constructor, which waits on the record getting
+     a class.
+   - _ZN7Vector3D1Ev and __register_global_object are dtor/atexit ABI calls,
+     spelled as free functions because the bodies are the compiler's own sinit
+     glue.
    - Volatile and long-long launders (e.g. Heyho_SeparateAll's (long long)(int)
      cast) are codegen-pinned; Heyho_MotionHover's const view is kept only for
      the TU's @NNN numbering. The inline comments at each site say what the
@@ -54,11 +66,11 @@ struct HeyhoAdapterAnimationFileHandle : SharedFilePtr {
 /* ---- Heyho_Construct ---- */
 namespace n020c6f70 {
 extern "C" {
-extern void *_ZN9ModelAnimC1Ev(void *object);
+extern void *_ZN14dExtAnmModel_cC1Ev(void *object);
 
 int Heyho_Construct(char *t)
 {
-    _ZN9ModelAnimC1Ev(HEYHO(t)->mModelAnim);
+    _ZN14dExtAnmModel_cC1Ev(&HEYHO(t)->mModelAnim);
     return (int)t;
 }
 
@@ -68,13 +80,12 @@ int Heyho_Construct(char *t)
 /* ---- Heyho_Destruct ---- */
 namespace n020c6f3c {
 extern "C" {
-extern int _ZN9ModelAnimD1Ev(void*);
 extern HeyhoAdapterModelFilePtr gMgPHeyhoMiniModelFile;
 extern HeyhoAdapterAnimationFileHandle gMgPHeyhoWaitAnimFile;
 int Heyho_Destruct(int *c) {
     gMgPHeyhoMiniModelFile.Release();
     gMgPHeyhoWaitAnimFile.Release();
-    _ZN9ModelAnimD1Ev(HEYHO(c)->mModelAnim);
+    HEYHO(c)->mModelAnim.dExtAnmModel_c::~dExtAnmModel_c();
     return (int)c;
 }
 }
@@ -93,14 +104,7 @@ struct fBaseView {
     u16 actorID; /* 0x0c */
 };
 namespace n020c6e4c {
-/* Signature deliberately copied from the local declaration above: the
-   ROM name carries by-value class parameters (e.g. Fix12<int>), which
-   mwccarm passes differently at the call site, so declaring the true
-   types breaks the byte match. See notes/mwccarm-codegen.md 6az. */
-extern "C" int _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(void *, BCA_File *f, int a, int b,
-                                                           unsigned int u);
-
-extern "C" void func_02016acc(Model *m, unsigned int a);
+extern "C" void func_02016acc(dExtSimpleModel_c *m, unsigned int a);
 extern "C" void func_02016b24(char *m, int a);
 extern "C" void func_02016a14(char *m, int a);
 extern "C" void func_02016a04(char *m, int a);
@@ -108,18 +112,18 @@ extern "C" void Heyho_UpdateMatrix(char *c);
 extern "C" void Heyho_SetIdle(char *p);
 
 extern "C" int Heyho_LoadResources(char *c) {
-    BMD_File *m = (BMD_File *)Model::LoadFile(gMgPHeyhoMiniModelFile);
+    BMD_File *m = (BMD_File *)dExtSimpleModel_c::LoadFile(gMgPHeyhoMiniModelFile);
     BCA_File *a = (BCA_File *)dExtFrameCtrl_c::LoadFile(gMgPHeyhoWaitAnimFile);
-    if (((ModelBase *)HEYHO(c)->mModelAnim)->SetFile(m, 1, -1) == 0) {
+    if (HEYHO(c)->mModelAnim.SetFile(m, 1, -1) == 0) {
         return 0;
     }
-    _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj((ModelAnim *)HEYHO(c)->mModelAnim, a, 0, 0x800, 0);
-    func_02016acc((Model *)HEYHO(c)->mModelAnim, 1u);
-    func_02016b24((char *)HEYHO(c)->mModelAnim, 2);
+    HEYHO(c)->mModelAnim.SetAnim(a, 0, 0x800, 0);
+    func_02016acc(&HEYHO(c)->mModelAnim, 1u);
+    func_02016b24((char *)&HEYHO(c)->mModelAnim, 2);
     int b = (((fBaseView *)data_0209f5c0)->actorID == 0x175);
     if (b != 0) {
-        func_02016a14((char *)HEYHO(c)->mModelAnim, 0x7fff);
-        func_02016a04((char *)HEYHO(c)->mModelAnim, 0x7d40);
+        func_02016a14((char *)&HEYHO(c)->mModelAnim, 0x7fff);
+        func_02016a04((char *)&HEYHO(c)->mModelAnim, 0x7d40);
     }
     Heyho_UpdateMatrix(c);
     Heyho_SetIdle(c);
@@ -1518,7 +1522,7 @@ void Heyho_MotionHitSpin(char *c) {
 namespace n020c4d3c {
 extern "C" {
 typedef int Fix12;
-extern void* _ZN8Particle6System9NewSimpleEj5Fix12IiES2_S2_(unsigned int id, Fix12 x, Fix12 y, Fix12 z);
+extern void *d_mg3d_heyho_obj_adapterNewSimpleHold(unsigned int id, Fix12 x, Fix12 y, Fix12 z);
 extern void _Z14ApproachLinearRiii(int* p, int a, int b);
 extern void Camera_ProjectToScreen(void* a, void* b, int* c, int* d);
 extern int Mg_GetTopScreenYOffset(void);
@@ -1546,10 +1550,10 @@ void Heyho_Settle(char* c)
     int v0, v1;
     int t;
 
-    a = _ZN8Particle6System9NewSimpleEj5Fix12IiES2_S2_(
-        0x122, HEYHO(c)->mPos.x << 3, HEYHO(c)->mPos.y << 3, HEYHO(c)->mPos.z << 3);
-    b = _ZN8Particle6System9NewSimpleEj5Fix12IiES2_S2_(
-        0x123, HEYHO(c)->mPos.x << 3, HEYHO(c)->mPos.y << 3, HEYHO(c)->mPos.z << 3);
+    a = Particle::System::NewSimple(0x122, HEYHO(c)->mPos.x << 3, HEYHO(c)->mPos.y << 3,
+                                    HEYHO(c)->mPos.z << 3);
+    b = Particle::System::NewSimple(0x123, HEYHO(c)->mPos.x << 3, HEYHO(c)->mPos.y << 3,
+                                    HEYHO(c)->mPos.z << 3);
     t = (int)(HEYHO(c)->mSize << 0x1c) >> 0x10;
     /* Both stores go through a; the cartridge never sets b's scale. */
     if (a)
@@ -1601,8 +1605,6 @@ void Heyho_StateIdle(void)
 /* ---- Heyho_Update ---- */
 namespace n020c4cd8 {
 extern "C" {
-/* local extern: byte-proved alias spelling for a call by mangled name on a member subobject, as in the original one-function source */
-void _ZN15dExtFrameCtrl_c7AdvanceEv(void *);
 void Heyho_UpdateMatrix(void *c);
 }
 struct Foo {
@@ -1611,7 +1613,7 @@ struct Foo {
 };
 extern "C" void Heyho_Update(struct Foo *c){
   (c->*(c->pmf))();
-  _ZN15dExtFrameCtrl_c7AdvanceEv(HEYHO(c)->mFrameCtrl);
+  HEYHO(c)->mModelAnim.Advance();
   Heyho_UpdateMatrix(c);
 }
 
@@ -1622,14 +1624,6 @@ namespace n020c4c54 {
 // @symbol Heyho_Draw
 
 extern "C" void Vec3_MulScalar(Vector3 *res, Vector3 *v, int scalar);
-struct Sub {
-    virtual void v0();
-    virtual void v1();
-    virtual void v2();
-    virtual void v3();
-    virtual void v4();
-    virtual void m5(Vector3 *p);
-};
 extern "C" void Heyho_Draw(int this_) {
     Vector3 v;
     int *p = HEYHO(this_)->mMotion;
@@ -1641,8 +1635,7 @@ extern "C" void Heyho_Draw(int this_) {
             return;
     }
     Vec3_MulScalar(&v, &HEYHO(this_)->mScale, HEYHO(this_)->mSize);
-    Sub *s = (Sub *)HEYHO(this_)->mModelAnim;
-    s->m5(&v);
+    HEYHO(this_)->mModelAnim.Render(&v);
 }
 
 }
@@ -1657,7 +1650,7 @@ extern void Matrix4x3_ApplyInPlaceToRotationY(struct Matrix4x3* m, short angY);
 void Heyho_UpdateMatrix(char* c) {
     Matrix4x3_FromTranslation(&data_020a0e68, HEYHO(c)->mPos.x, HEYHO(c)->mPos.y, HEYHO(c)->mPos.z);
     Matrix4x3_ApplyInPlaceToRotationY(&data_020a0e68, HEYHO(c)->mLean);
-    *(struct Matrix4x3 *)HEYHO(c)->mMatrix = data_020a0e68;
+    HEYHO(c)->mModelAnim.mat4x3 = data_020a0e68;
 }
 
 }

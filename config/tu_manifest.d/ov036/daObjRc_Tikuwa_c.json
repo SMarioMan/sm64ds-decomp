@@ -638,12 +638,12 @@
   ],
   "defined_symbol_renames": [
     {
-      "from": "@585",
+      "from": "@582",
       "to": "@150",
       "evidence": "compiler temporary; mwcc numbers it @571 per TU and ov100 daDoor_c (on main) also defines a global @571, so the scratch link collides"
     },
     {
-      "from": "@586",
+      "from": "@583",
       "to": "@151",
       "evidence": "compiler temporary; mwcc numbers it @572 per TU and ov073 daObjEwbIce_c (this batch) also defines a global @572, so the scratch link collides"
     }

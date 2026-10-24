@@ -240,6 +240,16 @@ struct dActor_c : dBase_c {
     s16  HorzAngleToCPlayer();
     s16  HorzAngleToFPlayer();
     s16  HorzAngleToCPlayerOrAng();
+    /* Both took a by-value Fix12<int> in their old mangled names; measured
+       2026-10-23, the honest parameter is the scalar Fix12i and both reproduce
+       as real methods (0x02010e08/0x24 and 0x0200f70c/0x54).
+       notes/mwccarm-codegen.md 6az. Parameters are unnamed on purpose: a
+       named class-scope parameter consumes an @NNN number in every consumer.
+       SetRanges(clipOffsetY, clipRadius, clipDistance, farDistance);
+       IsTooFarAwayFromPlayer(threshold). */
+    void SetRanges(Fix12i, Fix12i, Fix12i, Fix12i);
+    int IsTooFarAwayFromPlayer(Fix12i);
+
     bool IsPlayerInRange(s32 maxDist);
     bool IsPlayerInRange(const Vector3 &pos, s32 maxDist);
 
@@ -334,8 +344,7 @@ struct dActor_c : dBase_c {
        stack, costing +0x14. See notes/mwccarm-codegen.md 6az. */
     void SpawnFireball(const Vector3 &pos, const Vector3_16 *rot, Fix12<int> horzSpeed,
                        Fix12<int> targetSpeed, u32 param1);
-    bool IsPlayerInRange(Fix12<int> posX, Fix12<int> posY, Fix12<int> posZ,
-                          s32 maxDist);
+    bool IsPlayerInRange(Fix12i posX, Fix12i posY, Fix12i posZ, s32 maxDist);
     void DropShadowScaleXYZ(dExtShadowModel_c &, Matrix4x3 &matrix, Fix12<int> scaleX,
                             Fix12<int> scaleY, Fix12<int> scaleZ, u32 opacity);
     s16  ReflectAngle(Fix12<int> normalX, Fix12<int> normalZ, s16 angToReflect);

@@ -12,7 +12,7 @@
  *   linkcheck NO-REPOs classInit: dPathLiftActor_c has no out-of-line
  *   ctor, so the inlined vptr store is `_ZTV16dPathLiftActor_c[2]`
  *   (addend 8) against the ROM's `data_ov002_0210af70` address point.
- * Leftover: ModelAnim::SetAnim and dBgW_KcMbg::SetFile stay mangled
+ * Leftover: dExtAnmModel_c::SetAnim and dBgW_KcMbg::SetFile stay mangled
  *   -- both take Fix12<int> by value (wall 6az); a method call homes
  *   the argument and size-DIFFs InitResources.
  * Leftover: dBgActor_c::IsClsnInRange stays mangled -- header method
@@ -81,24 +81,19 @@ FlyingCarpetResources data_ov036_02113f58 = {
 };
 
 extern void *_ZN10dBgActor_cC2Ev(dBgActor_c *actor);
-extern void *_ZN5ModelC1Ev(Model *model);
-extern void _ZN5ModelD1Ev(Model *model);
+extern void *_ZN17dExtSimpleModel_cC1Ev(dExtSimpleModel_c *model);
+/* local extern: __cxa_vec_ctor needs D1 by address; only two scene headers declare it */
+extern void _ZN17dExtSimpleModel_cD1Ev(dExtSimpleModel_c *model);
 extern void *_ZN7PathPtrC1Ev(PathPtr *path);
-extern void *_ZN9ModelAnimC1Ev(ModelAnim *model);
-extern void __cxa_vec_ctor(
-    Model *models, int count, int size, void *ctor, void *dtor);
+extern void *_ZN14dExtAnmModel_cC1Ev(dExtAnmModel_c *model);
+extern void __cxa_vec_ctor(dExtSimpleModel_c *models, int count, int size, void *ctor, void *dtor);
 extern int _ZTV15daObjRcCarpet_c[];
 extern int data_ov002_0210af70[];
 
-extern int _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(
-    ModelAnim *model, BCA_File *file, int flags, Fix12i speed,
-    unsigned int startFrame);
 extern int _ZN10dBgW_KcMbg7SetFileEP8KCL_FileRK9Matrix4x35Fix12IiEsR10CLPS_Block(
     dBgW_KcMbg *collider, KCL_File *file, const Matrix4x3 *matrix,
     Fix12i scale, s16 angle, CLPS_Block *clps);
 extern void func_020393d4(dBgW *collider, void *callback);
-extern void _ZN10dBgActor_c13IsClsnInRangeE5Fix12IiES1_(
-    dBgActor_c *actor, Fix12i low, Fix12i high);
 extern void Matrix4x3_FromRotationXYZExt(
     Matrix4x3 *matrix, s16 x, s16 y, s16 z);
 }
@@ -116,12 +111,11 @@ extern "C" daObjRcCarpet_c *daObjRcCarpet_c_classInit()
     if (actor) {
         _ZN10dBgActor_cC2Ev(actor);
         *(int *)actor = (int)data_ov002_0210af70;
-        __cxa_vec_ctor(
-            actor->mModels, 3, sizeof(Model),
-            (void *)_ZN5ModelC1Ev, (void *)_ZN5ModelD1Ev);
+        __cxa_vec_ctor(actor->mModels, 3, sizeof(dExtSimpleModel_c),
+                       (void *)_ZN17dExtSimpleModel_cC1Ev, (void *)_ZN17dExtSimpleModel_cD1Ev);
         _ZN7PathPtrC1Ev(&actor->mPath);
         *(int *)actor = (int)&_ZTV15daObjRcCarpet_c[2];
-        _ZN9ModelAnimC1Ev(&actor->mModelAnim);
+        _ZN14dExtAnmModel_cC1Ev(&actor->mModelAnim);
     }
     return actor;
 }
@@ -140,12 +134,11 @@ extern "C" SpawnInfo<daObjRcCarpet_c> g_profile_RC_CARPET = {
 // @symbol _ZN15daObjRcCarpet_c13InitResourcesEv
 int daObjRcCarpet_c::InitResources()
 {
-    Model::LoadFile(data_ov002_0210d9f0);
-    void *modelFile = Model::LoadFile(*data_ov036_02113f58.model);
+    dExtSimpleModel_c::LoadFile(data_ov002_0210d9f0);
+    void *modelFile = dExtSimpleModel_c::LoadFile(*data_ov036_02113f58.model);
     mModelAnim.SetFile((BMD_File *)modelFile, 1, -1);
     dExtFrameCtrl_c::LoadFile(gRcCarpetWaitAnimationFile);
-    _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(
-        &mModelAnim, (BCA_File *)gRcCarpetWaitAnimationFile.filePtr, 0, 0x1000, 0);
+    mModelAnim.SetAnim((BCA_File *)gRcCarpetWaitAnimationFile.filePtr, 0, 0x1000, 0);
     func_ov036_021122c0(this);
     UpdateClsnPosAndRot();
     KCL_File *collisionFile =
@@ -173,7 +166,7 @@ int daObjRcCarpet_c::Behavior()
     mModelAnim.Advance();
     func_ov036_021122c0(this);
     func_ov036_0211224c(this);
-    _ZN10dBgActor_c13IsClsnInRangeE5Fix12IiES1_(this, 0, 0);
+    IsClsnInRange(0, 0);
     return 1;
 }
 

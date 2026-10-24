@@ -12,7 +12,7 @@
 #include "types.h"
 #include "dEnemyBase_c.h"
 #include "CapIcon.h"
-#include "ModelAnim.h"
+#include "dExtAnmModel_c.h"
 #include "dCcAc_c.h"
 #include "dExtShadowModel_c.h"
 #include "dBgCh_Actr.h"
@@ -23,7 +23,7 @@ extern "C" void *_ZN7fBase_cnwEj(unsigned size);
  *
  *   daObjMarioCap_c_classInit (ov002) allocates 0x410, calls _ZN12dEnemyBase_cC2Ev, stores
  *   _ZTV15daObjMarioCap_c, then constructs dCcAc_c 0x110, dBgCh_Actr 0x144,
- *   ModelAnim 0x300, dExtShadowModel_c 0x364 and the CapIcon at 0x3d0.
+ *   dExtAnmModel_c 0x300, dExtShadowModel_c 0x364 and the CapIcon at 0x3d0.
  *
  *   _ZN15daObjMarioCap_cD1Ev tears the same five down in exactly the reverse order and
  *   chains to _ZN12dEnemyBase_cD2Ev.
@@ -45,7 +45,7 @@ extern "C" void *_ZN7fBase_cnwEj(unsigned size);
 struct daObjMarioCap_c : dEnemyBase_c {
     dCcAc_c  mdCcAc_c;    /* 0x110 */
     dBgCh_Actr        mWithMeshClsn;          /* 0x144 */
-    ModelAnim           mModelAnim;             /* 0x300 */
+    dExtAnmModel_c mModelAnim;                /* 0x300 */
     dExtShadowModel_c         mShadowModel;           /* 0x364 */
     /* Drop-shadow matrix: UpdateMatrix rebuilds it on the frames the shadow is drawn (rotation
        about Y, translation = position / 8) for DropShadowRadHeight. */
@@ -135,7 +135,7 @@ struct daObjMarioCap_c : dEnemyBase_c {
        D0 at 0x020b6f68 and carries no D2, which is exactly what mwccarm 2004
        emits for an inline destructor; an out-of-line one emits D2/D0/D1 in the
        wrong order plus a homeless D2. The typed member list below makes the
-       empty body own the dCapIcon_c, dExtShadowModel_c, ModelAnim, dBgCh_Actr and
+       empty body own the dCapIcon_c, dExtShadowModel_c, dExtAnmModel_c, dBgCh_Actr and
        dCcAc_c teardowns and the chain into _ZN12dEnemyBase_cD2Ev.
 
        With the destructor inline, OnYoshiTryEat becomes the first out-of-line

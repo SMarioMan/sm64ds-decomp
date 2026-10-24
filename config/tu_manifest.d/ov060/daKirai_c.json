@@ -9,7 +9,7 @@
     "HISTORY: contiguous linker run: 0x2118438..0x2118cbc, 15 function(s), from build/tu_map.json (tools/tu_map.py)",
     "class label(s): daKirai_c",
     "module sinit corroboration: 6 sinit(s) / 6 .ctor entries, sinit_vs_tu=ok, corroborated=False (module-wide, NOT narrowed to this one TU -- see notes/tu-reconstruction-pilot-report.md sec 2 for the by-hand narrowing step)",
-    "CLASSINIT TAIL FOLD (2026-10-09): daKirai_c_classInit (0x02118cbc..0x02118cfc) abuts this TU's .text end with no gap and is now inside it, appended last under the file-level #pragma defer_codegen off and spelled `return new daKirai_c;` (operator new 0x1b0, dActor_c base ctor, _ZTV9daKirai_c vptr store, Model and dCcAcPos_c member ctors -- the retired shard's hand-spelled sequence). It builds only this class, for the KIRAI profile; the unit is 0x02118438..0x02118cfc, bounded above by src/game/actors/d_a_f_ring.cpp, which starts exactly at 0x02118cfc."
+    "CLASSINIT TAIL FOLD (2026-10-09): daKirai_c_classInit (0x02118cbc..0x02118cfc) abuts this TU's .text end with no gap and is now inside it, appended last under the file-level #pragma defer_codegen off and spelled `return new daKirai_c;` (operator new 0x1b0, dActor_c base ctor, _ZTV9daKirai_c vptr store, dExtSimpleModel_c and dCcAcPos_c member ctors -- the retired shard's hand-spelled sequence). It builds only this class, for the KIRAI profile; the unit is 0x02118438..0x02118cfc, bounded above by src/game/actors/d_a_f_ring.cpp, which starts exactly at 0x02118cfc."
   ],
   "sections": [
     {
@@ -188,7 +188,7 @@
       "address": "0x0211b1c4",
       "size": "0x8",
       "binding": "STB_GLOBAL",
-      "evidence": "model resource handle constructed with file ID 0x382; Model::LoadFile consumes it in InitResources and CleanupResources releases it"
+      "evidence": "model resource handle constructed with file ID 0x382; dExtSimpleModel_c::LoadFile consumes it in InitResources and CleanupResources releases it"
     },
     {
       "symbol": "@705",

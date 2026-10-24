@@ -101,7 +101,7 @@
       "size": "0x34",
       "name": "Render",
       "symbol": "_ZN16daObjCtMecha04_c6RenderEv",
-      "note": "Own ov065 target. Updates the TextureTransformer at 0x0320 against model components at 0x00dc, then invokes the Model virtual render entry."
+      "note": "Own ov065 target. Updates the TextureTransformer at 0x0320 against model components at 0x00dc, then invokes the dExtSimpleModel_c virtual render entry."
     },
     {
       "slot": 16,
@@ -109,7 +109,7 @@
       "size": "0x54",
       "name": "~daObjCtMecha04_c (D1)",
       "symbol": "_ZN16daObjCtMecha04_cD1Ev",
-      "note": "Own ov065 target. Restores this vptr, destroys ShadowModel at 0x0334 then TextureTransformer at 0x0320, restores the dBgActor_c vptr, destroys dBgW_KcMbg at 0x0124 and Model at 0x00d4, then calls dActor_c D2."
+      "note": "Own ov065 target. Restores this vptr, destroys ShadowModel at 0x0334 then TextureTransformer at 0x0320, restores the dBgActor_c vptr, destroys dBgW_KcMbg at 0x0124 and dExtSimpleModel_c at 0x00d4, then calls dActor_c D2."
     },
     {
       "slot": 17,

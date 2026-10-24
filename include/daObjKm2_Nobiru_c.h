@@ -2,7 +2,7 @@
 #define DAOBJKM2_NOBIRU_C_H
 
 #include "dActor_c.h"
-#include "Model.h"
+#include "dExtSimpleModel_c.h"
 #include "dBgW_KcMbgSclY.h"
 
 /* daObjKm2_Nobiru_c: the stretching platform (registry profile KM2_NOBIRU).
@@ -23,7 +23,7 @@ struct daObjKm2_Nobiru_c : dActor_c {
     u8 mPad0d0[0x4];                    /* 0x0d0 */
     u8 mGrowing;                        /* 0x0d4 */
     u8 mPad0d5[0x3];                    /* 0x0d5 */
-    Model mModel;                       /* 0x0d8 */
+    dExtSimpleModel_c mModel;           /* 0x0d8 */
     Matrix4x3 mColliderTransform;       /* 0x128 */
     dBgW_KcMbgSclY mCollider;           /* 0x158 */
 

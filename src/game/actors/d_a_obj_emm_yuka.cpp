@@ -51,7 +51,6 @@ struct EmmYukaCollisionFilePtr : SharedFilePtr {
 extern "C" {
 extern EmmYukaFiles data_ov052_021125a0;
 void func_020393d4(int *bg, int cb);
-int _ZN10dBgActor_c13IsClsnInRangeE5Fix12IiES1_(dBgActor_c *self, int range, int b);
 void _ZN10dBgW_KcMbg7SetFileEP8KCL_FileRK9Matrix4x35Fix12IiEsR10CLPS_Block(
     dBgW_KcMbg *self, KCL_File *kcl, const Matrix4x3 *mtx, int scale,
     s16 angleY, CLPS_Block *clps);
@@ -148,14 +147,14 @@ int daObjEmmYuka_c::Behavior()
     }
     UpdateModelPosAndRotY();
     UpdateClsnPosAndRot();
-    _ZN10dBgActor_c13IsClsnInRangeE5Fix12IiES1_(this, 0x320000, 0);
+    IsClsnInRange(0x320000, 0);
     return 1;
 }
 
 // @symbol _ZN14daObjEmmYuka_c13InitResourcesEv
 int daObjEmmYuka_c::InitResources()
 {
-    mModel.SetFile((BMD_File *)Model::LoadFile(*data_ov052_021125a0.model), 1, -1);
+    mModel.SetFile((BMD_File *)dExtSimpleModel_c::LoadFile(*data_ov052_021125a0.model), 1, -1);
     UpdateModelPosAndRotY();
     UpdateClsnPosAndRot();
     _ZN10dBgW_KcMbg7SetFileEP8KCL_FileRK9Matrix4x35Fix12IiEsR10CLPS_Block(

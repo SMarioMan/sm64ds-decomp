@@ -1,6 +1,6 @@
 #include "types.h"
 #include "nitro/fx/fx.h"
-#include "ModelBase.h"
+#include "dExtModel_c.h"
 
 extern int func_020538b8(int a, int b);
 extern void *func_ov007_020b7690(int i);

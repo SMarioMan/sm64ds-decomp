@@ -3,7 +3,7 @@
 
 #include "types.h"
 #include "dBgW_KcMbg.h"
-#include "Model.h"
+#include "dExtSimpleModel_c.h"
 
 #ifdef __cplusplus
 
@@ -27,7 +27,7 @@ extern "C" void *_ZN7fBase_cnwEj(unsigned size);
  * stores `_ZTV7daDgr_c`. No dedicated `daDgr_c()` body exists in the ROM.
  *
  * MEMBERS. dBgActor_c ends at 0x320; daDgr_c adds 0x14 more bytes and destructs
- * none of them (func_ov025_021111a0 tears down only dBgActor_c's own Model and
+ * none of them (func_ov025_021111a0 tears down only dBgActor_c's own dExtSimpleModel_c and
  * dBgW_KcMbg, then chains to dActor_c -- nothing at 0x320 or later).
  * That means everything from 0x320 to 0x334 is POD, read from InitResources
  * (func_ov025_021117dc) and Behavior (func_ov025_021113f0):
@@ -88,7 +88,7 @@ struct daDgr_c : dBgActor_c {
      * class body; the out-of-line form emits D2, D0, D1 plus a homeless D2 and
      * fails linkcheck's ROM-ascending .text audit. The body is empty because
      * this class owns no member with a destructor of its own -- the compiler
-     * emits the two vtable stores and dBgActor_c's Model / dBgW_KcMbg
+     * emits the two vtable stores and dBgActor_c's dExtSimpleModel_c / dBgW_KcMbg
      * teardowns from the base clause alone.
      *
      * (This header previously declared it out of line, reasoning by analogy

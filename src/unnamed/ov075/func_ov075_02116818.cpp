@@ -2,17 +2,27 @@
 #include "dScEntry_c.h"
 #include "types.h"
 
+namespace G2 {
+void *GetBG1ScrPtr(void);
+void *GetBG2CharPtr(void);
+void *GetBG2ScrPtr(void);
+}
+
+namespace GX {
+void LoadBGPltt(const void *p, u32 a, u32 b);
+void LoadOBJPltt(const void *p, u32 a, u32 b);
+}
+
+namespace GXS {
+void LoadOBJPltt(const void *p, u32 a, u32 b);
+}
+
 extern dScEntry_c::StepSet data_ov075_0211d7e0;
 
 extern "C" {
 
-extern void *_ZN2G213GetBG2CharPtrEv(void);
-extern void *_ZN2G212GetBG1ScrPtrEv(void);
-extern void *_ZN2G212GetBG2ScrPtrEv(void);
 extern u32 LoadCompressedFileAt(int fileID, void *target);
-extern void _ZN2GX10LoadBGPlttEPKvjj(const void *p, u32 a, u32 b);
-extern void _ZN2GX11LoadOBJPlttEPKvjj(const void *p, u32 a, u32 b);
-extern void _ZN3GXS11LoadOBJPlttEPKvjj(const void *p, u32 a, u32 b);
+
 extern void *LoadFile(int handle);
 extern void Deallocate(void *ptr);
 extern int func_0200f0bc(void);
@@ -52,9 +62,9 @@ int func_ov075_02116818(char *c)
     *(volatile u16 *)0x400000a = (u16)((*(volatile u16 *)0x400000a & 0x43) | 0x208);
     *(volatile u16 *)0x400000a = (u16)(*(volatile u16 *)0x400000a & ~0x40);
 
-    LoadCompressedFileAt(0x8413, _ZN2G213GetBG2CharPtrEv());
+    LoadCompressedFileAt(0x8413, G2::GetBG2CharPtr());
     tmp = LoadFile(0x8414);
-    _ZN2GX10LoadBGPlttEPKvjj(tmp, 0, 0x1c0);
+    GX::LoadBGPltt(tmp, 0, 0x1c0);
     Deallocate(tmp);
 
     n = data_0209fc50;
@@ -68,8 +78,8 @@ int func_ov075_02116818(char *c)
         id0 = 0x8410;
         id1 = 0x8411;
     }
-    LoadCompressedFileAt(id0, _ZN2G212GetBG1ScrPtrEv());
-    LoadCompressedFileAt(id1, _ZN2G212GetBG2ScrPtrEv());
+    LoadCompressedFileAt(id0, G2::GetBG1ScrPtr());
+    LoadCompressedFileAt(id1, G2::GetBG2ScrPtr());
 
     i = 0;
     if (n > 0) {
@@ -82,7 +92,7 @@ int func_ov075_02116818(char *c)
 
     LoadCompressedFileAt(data_ov075_0211c990[func_0200f0bc()], (void *)0x6400000);
     tmp = LoadFile(0x8415);
-    _ZN2GX11LoadOBJPlttEPKvjj(tmp, 0, 0x140);
+    GX::LoadOBJPltt(tmp, 0, 0x140);
     Deallocate(tmp);
 
     *(volatile u16 *)0x400000a = (u16)((*(volatile u16 *)0x400000a & ~3) | 2);
@@ -91,7 +101,7 @@ int func_ov075_02116818(char *c)
     LoadCompressedFileAt(0x8402, sub);
     LoadCompressedFileAt(data_ov075_0211c97c[func_0200f0bc()], (char *)sub + 0x6000);
     tmp = LoadFile(0x8403);
-    _ZN3GXS11LoadOBJPlttEPKvjj(tmp, 0, 0x200);
+    GXS::LoadOBJPltt(tmp, 0, 0x200);
     Deallocate(tmp);
 
     func_ov075_021165b0(c);

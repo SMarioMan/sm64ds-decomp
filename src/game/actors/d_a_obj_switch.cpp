@@ -44,7 +44,7 @@ namespace cstd { Fix12i fdiv(Fix12i numerator, Fix12i denominator); }
 
 namespace Event { int ClearBit(unsigned int bit); void SetBit(unsigned int bit); }
 
-/* Model handles construct through func_02017acc and destroy through
+/* dExtSimpleModel_c handles construct through func_02017acc and destroy through
  * func_02017ab4; collision handles construct through func_02017b4c and destroy
  * through SharedFilePtr_Destruct_Clsn. The manifest aliases those undefined
  * members onto the ROM symbols. */
@@ -71,7 +71,6 @@ extern "C" {
     // local extern: Sound.h/dBgActor_c.h declare the members, but Fix12<int>
     // by value through the member call changes codegen under 2004/b56.
     int _ZN5Sound17ChangeMusicVolumeEj5Fix12IiE(unsigned int id, int volume);
-    int _ZN10dBgActor_c13IsClsnInRangeE5Fix12IiES1_(dBgActor_c *self, int a, int b);
     // local extern: the actual free definition accepts a scalar scale. The
     // genuine member call changes InitResources under 2004/b56; see the
     // committed experiment.
@@ -168,7 +167,7 @@ int daObjSwitch_c::InitResources()
                 mStarID = 0;
             mTimeLimit = (param1 >> 8) & 0xff;
             LoadSilverStarAndNumber();
-            Model::LoadFile(data_ov002_0211092c);
+            dExtSimpleModel_c::LoadFile(data_ov002_0211092c);
             mResourceIdx = 1;
         } else {
             mSwitchType = param1 & 3;
@@ -180,7 +179,7 @@ int daObjSwitch_c::InitResources()
     }
 
     idx = mResourceIdx;
-    f = Model::LoadFile(*data_ov002_021098e8[idx].model);
+    f = dExtSimpleModel_c::LoadFile(*data_ov002_021098e8[idx].model);
     mModel.SetFile((BMD_File *)f, 1, -1);
     UpdateModelPosAndRotY();
     func_ov002_020b9f80();
@@ -242,7 +241,7 @@ int daObjSwitch_c::Behavior()
         if (id344 == 0) {
             func_ov002_020ba01c(2, 3, 0x333, 0x1000);
             UpdateModelPosAndRotY();
-            if (_ZN10dBgActor_c13IsClsnInRangeE5Fix12IiES1_(this, 0, 0) != 0) {
+            if (IsClsnInRange(0, 0) != 0) {
                 func_ov002_020b9f80();
             }
             return 1;
@@ -259,7 +258,7 @@ int daObjSwitch_c::Behavior()
     }
     func_ov002_020ba520();
     UpdateModelPosAndRotY();
-    if (_ZN10dBgActor_c13IsClsnInRangeE5Fix12IiES1_(this, 0, 0) != 0) {
+    if (IsClsnInRange(0, 0) != 0) {
         func_ov002_020b9f80();
     }
 

@@ -23,6 +23,12 @@
 #include "PlayerInput.h"
 #include "Message.h"
 
+namespace G2S {
+u32 GetBG0CharPtr(void);
+u32 GetBG0ScrPtr(void);
+u32 GetBG1CharPtr(void);
+}
+
 struct OamAttr;
 
 extern "C" {
@@ -92,9 +98,6 @@ extern int data_0209325c;
 extern int data_020937bc;
 extern int data_02093d7c;
 
-extern u32 _ZN3G2S13GetBG0CharPtrEv(void);
-extern u32 _ZN3G2S12GetBG0ScrPtrEv(void);
-extern u32 _ZN3G2S13GetBG1CharPtrEv(void);
 extern void *_ZN2G212GetBG2ScrPtrEv(void);
 extern void *_ZN2G213GetBG2CharPtrEv(void);
 extern void *_ZN2G212GetBG3ScrPtrEv(void);
@@ -109,7 +112,11 @@ extern void func_020318a4(int a);
 extern void func_020319fc(int n);
 /* local extern: Fix12 wall -- the by-value Fix12<int> form cannot be spelled
    from a header; the literal name keeps the def's own scalar params. */
-extern void _ZN3OAM6RenderEbP7OamAttriiii5Fix12IiES3_ii(int sub, struct OamAttr *attr_, int xOff, int yOff, int palette, int priority, int scaleX, int scaleY, int rotation, int mode);
+extern void OamRender10_Message3(int sub, struct OamAttr *attr_, int xOff, int yOff, int palette,
+                                 int priority, int scaleX, int scaleY, int rotation, int mode);
+struct OAM {
+    static void Render(bool, OamAttr *, int, int, int, int, int, int, int, int);
+};
 /* local extern: byte-forced spelling -- the definition is
    (volatile u16*, u16, s16); u16/s16 parameters would emit an explicit narrow
    the ROM lacks. */
@@ -154,7 +161,7 @@ extern "C" void func_02031b84(int c)
   else
     if (sh == 1)
   {
-    ip = (int *) (((char *) _ZN3G2S13GetBG1CharPtrEv()) + (((c & 0x1f) + ((c & 0xe0) << 1)) << 5));
+      ip = (int *)(((char *)G2S::GetBG1CharPtr()) + (((c & 0x1f) + ((c & 0xe0) << 1)) << 5));
   }
   else
   {
@@ -494,9 +501,11 @@ extern "C" void func_020326ac(void)
             int r5 = data_0209fcf4[data_0209fcd0] * 9 + data_0209fc6c + 0xC;
             int r4 = data_0209fce0 + (data_0209fc80 * 0x10) + 0xE;
             if (data_020a0db0 & (0x10 / data_0208ee44)) {
-                _ZN3OAM6RenderEbP7OamAttriiii5Fix12IiES3_ii(0, (struct OamAttr *)&data_ov002_0210c3a8, r5, r4, -1, -1, 0x1000, 0x1000, 0, -1);
+                OAM::Render(0, (struct OamAttr *)&data_ov002_0210c3a8, r5, r4, -1, -1, 0x1000,
+                            0x1000, 0, -1);
             } else {
-                _ZN3OAM6RenderEbP7OamAttriiii5Fix12IiES3_ii(0, (struct OamAttr *)&data_ov002_0210c3a0, r5, r4, -1, -1, 0x1000, 0x1000, 0, -1);
+                OAM::Render(0, (struct OamAttr *)&data_ov002_0210c3a0, r5, r4, -1, -1, 0x1000,
+                            0x1000, 0, -1);
             }
             return;
         }
@@ -521,9 +530,11 @@ extern "C" void func_020326ac(void)
             int r5 = data_0209fc6c + 0xC;
             int r4 = data_0209fce0 + (data_0209fcf4[data_0209fcd0] * 0x10) + 0xE;
             if (data_020a0db0 & (0x10 / data_0208ee44)) {
-                _ZN3OAM6RenderEbP7OamAttriiii5Fix12IiES3_ii(0, (struct OamAttr *)&data_ov002_0210c3a8, r5, r4, -1, -1, 0x1000, 0x1000, 0, -1);
+                OAM::Render(0, (struct OamAttr *)&data_ov002_0210c3a8, r5, r4, -1, -1, 0x1000,
+                            0x1000, 0, -1);
             } else {
-                _ZN3OAM6RenderEbP7OamAttriiii5Fix12IiES3_ii(0, (struct OamAttr *)&data_ov002_0210c3a0, r5, r4, -1, -1, 0x1000, 0x1000, 0, -1);
+                OAM::Render(0, (struct OamAttr *)&data_ov002_0210c3a0, r5, r4, -1, -1, 0x1000,
+                            0x1000, 0, -1);
             }
             return;
         }
@@ -596,9 +607,11 @@ extern "C" void func_020326ac(void)
             int r5 = data_0209fc6c + 0xC;
             int r4 = data_0209fce0 + (data_0209fcf4[data_0209fcd0] * 0x10) + 0xE;
             if (data_020a0db0 & (0x10 / data_0208ee44)) {
-                _ZN3OAM6RenderEbP7OamAttriiii5Fix12IiES3_ii(0, (struct OamAttr *)&data_ov002_0210c3a8, r5, r4, -1, -1, 0x1000, 0x1000, 0, -1);
+                OAM::Render(0, (struct OamAttr *)&data_ov002_0210c3a8, r5, r4, -1, -1, 0x1000,
+                            0x1000, 0, -1);
             } else {
-                _ZN3OAM6RenderEbP7OamAttriiii5Fix12IiES3_ii(0, (struct OamAttr *)&data_ov002_0210c3a0, r5, r4, -1, -1, 0x1000, 0x1000, 0, -1);
+                OAM::Render(0, (struct OamAttr *)&data_ov002_0210c3a0, r5, r4, -1, -1, 0x1000,
+                            0x1000, 0, -1);
             }
             return;
         }
@@ -620,9 +633,11 @@ extern "C" void func_020326ac(void)
                 return;
             }
             if (data_0209fcd4 != 0) {
-                _ZN3OAM6RenderEbP7OamAttriiii5Fix12IiES3_ii(0, (struct OamAttr *)&data_ov002_0210c390, r5, r4, -1, -1, 0x1000, 0x1000, 0, -1);
+                OAM::Render(0, (struct OamAttr *)&data_ov002_0210c390, r5, r4, -1, -1, 0x1000,
+                            0x1000, 0, -1);
             } else {
-                _ZN3OAM6RenderEbP7OamAttriiii5Fix12IiES3_ii(0, (struct OamAttr *)&data_ov002_0210c398, r5, r4, -1, -1, 0x1000, 0x1000, 0, -1);
+                OAM::Render(0, (struct OamAttr *)&data_ov002_0210c398, r5, r4, -1, -1, 0x1000,
+                            0x1000, 0, -1);
             }
             return;
         }
@@ -758,11 +773,11 @@ extern "C" void func_020331fc(int a0, int a1, int a2)
     data_0209fc84 = a2;
 
     {
-        int cp = _ZN3G2S13GetBG0CharPtrEv() + 0x4000;
+        int cp = G2S::GetBG0CharPtr() + 0x4000;
         li = 0;
         MultiStore_Int(li, (int*)(cp + (data_0209fc78 << 5)), 0x800);
     }
-    scr = (short *)(_ZN3G2S12GetBG0ScrPtrEv() + a0 * 2);
+    scr = (short *)(G2S::GetBG0ScrPtr() + a0 * 2);
     func_02031028(1);
 
     old = data_0209fc88;
@@ -817,10 +832,10 @@ extern "C" void func_02033390(int sub)
     } else {
         volatile u16 fill;
         volatile s32 v;
-        int *dst = (int*)((int)_ZN3G2S13GetBG0CharPtrEv() + 0x4000);
+        int *dst = (int *)((int)G2S::GetBG0CharPtr() + 0x4000);
         v = 0;
         MultiStore_Int(v, dst, 0x2000);
-        MultiStore16(fill = 0x2ff, (char*)_ZN3G2S12GetBG0ScrPtrEv(), 0x800);
+        MultiStore16(fill = 0x2ff, (char *)G2S::GetBG0ScrPtr(), 0x800);
     }
 }
 
@@ -859,7 +874,7 @@ extern "C" void func_02033464(int arg0, int arg1, int arg2)
         x = (arg0 * 2 + 8) << 0x15;
         data_0209fc94 = 1;
         t = x >> 16;
-        d = (char*)(_ZN3G2S12GetBG0ScrPtrEv() + (((x >> 16) & 0xffe0) << 1));
+        d = (char *)(G2S::GetBG0ScrPtr() + (((x >> 16) & 0xffe0) << 1));
         sv0 = 0x2ff;
         MultiStore16(sv0, d, 0x80);
         if (arg1 < 0)
@@ -881,12 +896,12 @@ extern "C" void func_02033464(int arg0, int arg1, int arg2)
         }
         data_0209fc78 = (u8)(arg0 * 0x18 + data_0209fcdc);
         {
-            int cp = _ZN3G2S13GetBG0CharPtrEv() + 0x4000;
+            int cp = G2S::GetBG0CharPtr() + 0x4000;
             int *dst = (int*)(cp + (data_0209fc78 << 5));
             li8 = 0;
             MultiStore_Int(li8, dst, 0x300);
         }
-        base = (volatile u16*)(_ZN3G2S12GetBG0ScrPtrEv() + ((t + (data_0209fc7c >> 3)) << 1));
+        base = (volatile u16 *)(G2S::GetBG0ScrPtr() + ((t + (data_0209fc7c >> 3)) << 1));
         { u32 ch = data_0209fc78;
         x = ch + 0x200;
         v1 = ch + 0x20c; }
@@ -959,12 +974,12 @@ extern "C" void func_020337ec(void)
     data_0209fc94 = 1;
     data_0209fc78 = 0;
     {
-        int *dst = (int *)(_ZN3G2S13GetBG0CharPtrEv() + 0x4000);
+        int *dst = (int *)(G2S::GetBG0CharPtr() + 0x4000);
         z = 0;
         MultiStore_Int(z, dst, 0x2000);
     }
     {
-        char *dst = (char *)_ZN3G2S12GetBG0ScrPtrEv();
+        char *dst = (char *)G2S::GetBG0ScrPtr();
         v = 0x2ff;
         MultiStore16(v, dst, 0x800);
     }
@@ -989,18 +1004,18 @@ extern "C" void func_020338b0(int a, int b, short c, int d) {
     switch (data_0209fce8) {
     case 0x13:
     case 0x15:
-        p = _ZN3G2S13GetBG0CharPtrEv() + 0x4000;
+        p = G2S::GetBG0CharPtr() + 0x4000;
         li0 = 0;
         MultiStore_Int(li0, (int*)p, 0x3000);
-        s = _ZN3G2S12GetBG0ScrPtrEv();
+        s = G2S::GetBG0ScrPtr();
         ls0 = 0x37f;
         MultiStore16(ls0, (char*)s, 0x800);
         break;
     default:
-        p = _ZN3G2S13GetBG0CharPtrEv() + 0x4000;
+        p = G2S::GetBG0CharPtr() + 0x4000;
         li1 = 0;
         MultiStore_Int(li1, (int*)p, 0x2000);
-        s = _ZN3G2S12GetBG0ScrPtrEv();
+        s = G2S::GetBG0ScrPtr();
         ls1 = 0x2ff;
         MultiStore16(ls1, (char*)s, 0x800);
         break;
@@ -1020,10 +1035,10 @@ void Message::DisplayVsExitText(unsigned short n)
     data_0209fc94 = 1;
     data_0209fc78 = 0;
     data_0209fcdc = 0;
-    p = _ZN3G2S13GetBG0CharPtrEv() + 0x4000;
+    p = G2S::GetBG0CharPtr() + 0x4000;
     li = 0;
     MultiStore_Int(li, (int*)p, 0x2000);
-    s = _ZN3G2S12GetBG0ScrPtrEv();
+    s = G2S::GetBG0ScrPtr();
     ls = 0x2ff;
     MultiStore16(ls, (char*)s, 0x800);
     func_020341a8(0x100, 0x20);
@@ -1048,10 +1063,10 @@ extern "C" void func_02033ae0(int arg)
     volatile int li;
     volatile unsigned short ls;
     int p, s;
-    p = _ZN3G2S13GetBG0CharPtrEv() + 0x4000;
+    p = G2S::GetBG0CharPtr() + 0x4000;
     li = 0;
     MultiStore_Int(li, (int*)p, 0x2000);
-    s = _ZN3G2S12GetBG0ScrPtrEv();
+    s = G2S::GetBG0ScrPtr();
     ls = 0x2ff;
     MultiStore16(ls, (char*)s, 0x800);
     func_02033a80(arg);
@@ -1088,13 +1103,13 @@ extern "C" void func_02033bb8(int param0)
     data_0209fcdc = 0;
 
     {
-        int cp = _ZN3G2S13GetBG0CharPtrEv() + 0x4000;
+        int cp = G2S::GetBG0CharPtr() + 0x4000;
         li = 0;
         MultiStore_Int(li, (int*)cp, 0x2000);
     }
 
     {
-        int sp2 = _ZN3G2S12GetBG0ScrPtrEv();
+        int sp2 = G2S::GetBG0ScrPtr();
         sv = 0x2ff;
         MultiStore16(sv, (char*)sp2, 0x800);
     }
@@ -1191,12 +1206,12 @@ extern "C" void func_02033e50(int p0, int p1)
             data_0209fc7c = 0xc;
             n = ((data_0209fc88 + 0x13) >> 3) & 0xff;
             {
-                int cp = _ZN3G2S13GetBG0CharPtrEv() + 0x4000;
+                int cp = G2S::GetBG0CharPtr() + 0x4000;
                 li = 0;
                 MultiStore_Int(li, (int*)(cp + (data_0209fc78 << 6)), n << 6);
             }
             {
-                short *scr = (short*)(_ZN3G2S12GetBG0ScrPtrEv() + p0 * 2);
+                short *scr = (short *)(G2S::GetBG0ScrPtr() + p0 * 2);
                 i = 0;
                 if (n > 0) {
                     int v1 = (data_0209fc78 << 1) + 0x200;
@@ -1219,13 +1234,13 @@ extern "C" void func_02033e50(int p0, int p1)
             volatile int li;
             data_0209fc7c = (unsigned char)((p1 - data_0209fc88) >> 1);
             {
-                int cp = _ZN3G2S13GetBG0CharPtrEv() + 0x4000;
+                int cp = G2S::GetBG0CharPtr() + 0x4000;
                 li = 0;
                 MultiStore_Int(li, (int*)(cp + (data_0209fc78 << 6)), n << 6);
             }
             {
                 int v1, v2;
-                short *scr = (short*)(_ZN3G2S12GetBG0ScrPtrEv() + p0 * 2);
+                short *scr = (short *)(G2S::GetBG0ScrPtr() + p0 * 2);
                 i = 0;
                 if (n > 0) {
                     v1 = (data_0209fc78 << 1) + 0x200;
@@ -1285,12 +1300,12 @@ extern "C" void func_020341a8(int a0, int a1) {
     data_0209fc88 = oldc + data_0209fc7c;
     n = ((data_0209fc88 + 7) / 8) << 6;
     {
-        int p = _ZN3G2S13GetBG0CharPtrEv() + 0x4000 + (data_0209fc78 << 5);
+        int p = G2S::GetBG0CharPtr() + 0x4000 + (data_0209fc78 << 5);
         li = 0;
         MultiStore_Int(li, (int*)p, n);
     }
     {
-        int sp0 = _ZN3G2S12GetBG0ScrPtrEv() + a0 * 2;
+        int sp0 = G2S::GetBG0ScrPtr() + a0 * 2;
         scr = (short*)(sp0 + ((unsigned short)((a1 - ((oldc + 7) / 8)) >> 1)) * 2);
     }
     for (i = 0; i < (data_0209fc88 + 7) / 8; i++) {
@@ -1310,10 +1325,10 @@ void Message::DisplayPauseTextVS(unsigned short n)
     data_0209fce8 = n;
     data_0209fc78 = 0;
     data_0209fc94 = 1;
-    p = _ZN3G2S13GetBG0CharPtrEv() + 0x4000;
+    p = G2S::GetBG0CharPtr() + 0x4000;
     li = 0;
     MultiStore_Int(li, (int*)p, 0x2000);
-    s = _ZN3G2S12GetBG0ScrPtrEv();
+    s = G2S::GetBG0ScrPtr();
     ls = 0x2ff;
     MultiStore16(ls, (char*)s, 0x800);
     func_020341a8(0xc0, 0x20);
@@ -1332,10 +1347,10 @@ extern "C" void func_02034414(unsigned short n) {
     func_02034504();
     data_0209fc94 = 1;
     data_0209fc78 = 0;
-    p = _ZN3G2S13GetBG0CharPtrEv() + 0x4000;
+    p = G2S::GetBG0CharPtr() + 0x4000;
     li = 0;
     MultiStore_Int(li, (int*)p, 0x2000);
-    s = _ZN3G2S12GetBG0ScrPtrEv();
+    s = G2S::GetBG0ScrPtr();
     ls = 0x2ff;
     MultiStore16(ls, (char*)s, 0x800);
     data_0209fce8 = n;

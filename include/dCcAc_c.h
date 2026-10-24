@@ -20,7 +20,7 @@
  * stores this vtable, then nulls the owner.
  *
  * THE DESTRUCTOR IS DECLARED FIRST AND D1 IS A REAL METHOD -- see
- * include/ModelBase.h for the key-function rule and the objisolate exemption
+ * include/dExtModel_c.h for the key-function rule and the objisolate exemption
  * to it. One ~dCcAc_c() in src/engine/collision/d_cc_ac.cpp emits the ROM's
  * D2, D0 and D1 copies.
  *

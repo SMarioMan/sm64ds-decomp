@@ -82,9 +82,8 @@ extern void AddVec3(Vector3 *a, Vector3 *b, Vector3 *c);
 extern u16 DecIfAbove0_Short(u16 *p);
 extern int RandomIntInternal(int *seed);
 extern void _ZN8dActor_c18DropShadowScaleXYZER17dExtShadowModel_cR9Matrix4x35Fix12IiES5_S5_j(
-    dActor_c *actor, dExtShadowModel_c *shadow, Matrix4x3 *matrix,
-    int scaleX, int scaleY, int scaleZ, u32 opacity);
-extern int _ZN10dBgActor_c13IsClsnInRangeE5Fix12IiES1_(void *self, int a, int b);
+    dActor_c *actor, dExtShadowModel_c *shadow, Matrix4x3 *matrix, int scaleX, int scaleY,
+    int scaleZ, u32 opacity);
 extern void _ZN10dBgW_KcMbg7SetFileEP8KCL_FileRK9Matrix4x35Fix12IiEsR10CLPS_Block(
     dBgW_KcMbg *thisp, KCL_File *kcl, const Matrix4x3 &mtx, int fix, short s,
     CLPS_Block &clps);
@@ -112,7 +111,7 @@ int daObjCtMecha03_c::InitResources()
     void *bmd;
     void *kcl;
 
-    bmd = Model::LoadFile(data_ov065_0211d88c);
+    bmd = dExtSimpleModel_c::LoadFile(data_ov065_0211d88c);
     mModel.SetFile((BMD_File *)bmd, 1, -1);
     mShadowModel.InitCuboid();
 
@@ -183,7 +182,7 @@ int daObjCtMecha03_c::Behavior()
 
     func_ov065_0211a114();
     func_ov065_02119fe8();
-    if (_ZN10dBgActor_c13IsClsnInRangeE5Fix12IiES1_(this, 0x300000, -0x200000) != 0)
+    if (IsClsnInRange(0x300000, -0x200000) != 0)
         UpdateClsnPosAndRot();
     return 1;
 }

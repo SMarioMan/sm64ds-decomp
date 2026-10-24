@@ -3,7 +3,7 @@
  * _ZTV10daUdlift_c.
  *
  * The destructor proves the hierarchy: it swaps the vptr from daUdlift_c to
- * dBgActor_c, destroys dBgActor_c's dBgW_KcMbg and Model members and chains
+ * dBgActor_c, destroys dBgActor_c's dBgW_KcMbg and dExtSimpleModel_c members and chains
  * to dActor_c. In C++ that is all implied by the base, so the source
  * destructor is empty.
  *

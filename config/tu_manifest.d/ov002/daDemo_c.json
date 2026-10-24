@@ -9,7 +9,7 @@
     "HISTORY: contiguous linker run: 0x20f1f70..0x20f8808, 145 function(s), from build/tu_map.json (tools/tu_map.py)",
     "class label(s): CutsceneObject, daDemo_c",
     "module sinit corroboration: 26 sinit(s) / 26 .ctor entries, sinit_vs_tu=ok, corroborated=False (module-wide, NOT narrowed to this one TU -- see notes/tu-reconstruction-pilot-report.md sec 2 for the by-hand narrowing step)",
-    "CLASSINIT TAIL FOLD (2026-10-09): daDemo_c_classInit (0x30, 0x020f8808), the one-function source right of this run, abuts its .text end with no gap and is now inside it. The factory allocates sizeof(daDemo_c) (0x104), runs dActor_c's base ctor and stores _ZTV8daDemo_c; it is written last in the file because the TU sets #pragma defer_codegen off. THUNK TAIL FOLD: the two _ZThn80_ anmModel_c thunks (0x020f8838..0x020f8858) are the copies this TU already emitted for the dExtFrameCtrl_c base at +0x50. They sort after the vtables, so they close .text and the run is 0x020f1f70..0x020f8858. The nested bases stay the cartridge RTTI spellings; their vague-linkage _ZTI/_ZTS copies stay canonical imports of the arm9 records, and this TU emits no homeless _ZTI. The nested vtables remain deadstrip-data at their configured homes."
+    "CLASSINIT TAIL FOLD (2026-10-09): daDemo_c_classInit (0x30, 0x020f8808), the one-function source right of this run, abuts its .text end with no gap and is now inside it. The factory allocates sizeof(daDemo_c) (0x104), runs dActor_c's base ctor and stores _ZTV8daDemo_c; it is written last in the file because the TU sets #pragma defer_codegen off. THUNK TAIL FOLD: the two _ZThn80_ anmModel_c thunks (0x020f8838..0x020f8858) are the copies this TU already emitted for the dExtFrameCtrl_c base at +0x50. They sort after the vtables, so they close .text and the run is 0x020f1f70..0x020f8858. The nested bases are the arm9 model classes; their vague-linkage _ZTI/_ZTS copies stay canonical imports of the arm9 records, and this TU emits no homeless _ZTI. The nested vtables remain deadstrip-data at their configured homes."
   ],
   "sections": [
     {
@@ -1106,7 +1106,7 @@
     "tubuild create warning: CONFLICT: extern declaration '_ZN6Memory16operator_delete2EPv' differs between the legacy file that used to hold func_ov002_020f23d0 and the one that held func_ov002_020f5f60; kept the first, the other is commented out for review",
     "tubuild create warning: CONFLICT: extern declaration 'data_0209d454' differs between the legacy file that used to hold func_ov002_020f1fcc and the one that held func_ov002_020f5fe4; kept the first, the other is commented out for review",
     "tubuild create warning: CONFLICT: extern declaration '_ZN6Memory16operator_delete2EPv' differs between the legacy file that used to hold func_ov002_020f23d0 and the one that held func_ov002_020f63a0; kept the first, the other is commented out for review",
-    "tubuild create warning: CONFLICT: extern declaration '_Znwj' differs between the legacy file that used to hold func_ov002_020f2630 and the one that held func_ov002_020f6448; kept the first, the other is commented out for review",
+    "tubuild create warning (RESOLVED): CONFLICT: extern declaration '_Znwj' differs between the legacy file that used to hold func_ov002_020f2630 and the one that held func_ov002_020f6448; kept the first, the other is commented out for review",
     "tubuild create warning: CONFLICT: extern declaration '_ZN15dExtFrameCtrl_c7AdvanceEv' differs between the legacy file that used to hold func_ov002_020f64ac and the one that held func_ov002_020f65ec; kept the first, the other is commented out for review",
     "tubuild create warning: CONFLICT: extern declaration 'ReadUnalignedShort' differs between the legacy file that used to hold func_ov002_020f6b4c and the one that held func_ov002_020f6bc0; kept the first, the other is commented out for review",
     "tubuild create warning: CONFLICT: extern declaration 'func_ov002_020f6514' differs between the legacy file that used to hold func_ov002_020f64ac and the one that held func_ov002_020f6c34; kept the first, the other is commented out for review",
@@ -1140,7 +1140,7 @@
     "tubuild create warning: CONFLICT: extern declaration 'Vec3_HorzAngle' differs between the legacy file that used to hold func_ov002_020f6b4c and the one that held func_ov002_020f7bb8; kept the first, the other is commented out for review",
     "tubuild create warning: CONFLICT: extern declaration '_ZN4cstd5atan2E5Fix12IiES1_' differs between the legacy file that used to hold func_ov002_020f3ba0 and the one that held func_ov002_020f7bb8; kept the first, the other is commented out for review",
     "tubuild create warning: CONFLICT: extern declaration 'data_0209b41c' differs between the legacy file that used to hold func_ov002_020f6c60 and the one that held _ZN8daDemo_c6RenderEv; kept the first, the other is commented out for review",
-    "tubuild create warning: CONFLICT: extern declaration '_Znwj' differs between the legacy file that used to hold func_ov002_020f2630 and the one that held _ZN8daDemo_c13InitResourcesEv; kept the first, the other is commented out for review",
+    "tubuild create warning (RESOLVED): CONFLICT: extern declaration '_Znwj' differs between the legacy file that used to hold func_ov002_020f2630 and the one that held _ZN8daDemo_c13InitResourcesEv; kept the first, the other is commented out for review",
     "tubuild create warning: CONFLICT: local declaration ('struct', 'Obj') differs between the legacy file that used to hold func_ov002_020f2210 and the one that held func_ov002_020f237c; kept the first, the other is commented out for review",
     "tubuild create warning: CONFLICT: local declaration ('struct', 'Obj') differs between the legacy file that used to hold func_ov002_020f2210 and the one that held func_ov002_020f2e30; kept the first, the other is commented out for review",
     "tubuild create warning: CONFLICT: local declaration ('struct', 'E') differs between the legacy file that used to hold func_ov002_020f378c and the one that held func_ov002_020f5678; kept the first, the other is commented out for review",
@@ -1395,7 +1395,7 @@
       "disposition": "deadstrip-data",
       "canonical_module": "ov002",
       "canonical_address": "0x0210babc",
-      "reason": "vmi_class typeinfo for anmModel_c (bases ModelAnim + virtual param_c). Cartridge copy at ov002:0x0210babc."
+      "reason": "vmi_class typeinfo for anmModel_c (bases dExtAnmModel_c + virtual param_c). Cartridge copy at ov002:0x0210babc."
     },
     {
       "symbol": "_ZTSN8daDemo_c10anmModel_cE",
@@ -1409,7 +1409,7 @@
       "disposition": "deadstrip-data",
       "canonical_module": "ov002",
       "canonical_address": "0x0210bafc",
-      "reason": "vmi_class typeinfo for simpleModel_c (bases Model + virtual param_c). Cartridge copy at ov002:0x0210bafc."
+      "reason": "vmi_class typeinfo for simpleModel_c (bases dExtSimpleModel_c + virtual param_c). Cartridge copy at ov002:0x0210bafc."
     },
     {
       "symbol": "_ZTSN8daDemo_c13simpleModel_cE",
@@ -1569,7 +1569,7 @@
       "size": "0xe",
       "canonical_module": "arm9",
       "canonical_address": "0x0208e7ac",
-      "reason": "vague-linkage copy emitted under the cartridge spelling (daDemo_c.h declares the base as dExtModel_c); canonical definition is owned by arm9.",
+      "reason": "vague-linkage copy of the dExtModel_c typeinfo, emitted because daDemo_c's nested classes derive from it; canonical definition is owned by arm9.",
       "relocations": []
     },
     {
@@ -1580,7 +1580,7 @@
       "size": "0x8",
       "canonical_module": "arm9",
       "canonical_address": "0x0208e73c",
-      "reason": "vague-linkage copy emitted under the cartridge spelling (daDemo_c.h declares the base as dExtModel_c); canonical definition is owned by arm9.",
+      "reason": "vague-linkage copy of the dExtModel_c typeinfo, emitted because daDemo_c's nested classes derive from it; canonical definition is owned by arm9.",
       "relocations": [
         {
           "offset": 0,
@@ -1610,7 +1610,7 @@
       "size": "0x12",
       "canonical_module": "arm9",
       "canonical_address": "0x0208e84c",
-      "reason": "vague-linkage copy emitted under the cartridge spelling (daDemo_c.h declares the base as dExtFrameCtrl_c); canonical definition is owned by arm9.",
+      "reason": "vague-linkage copy of the dExtFrameCtrl_c typeinfo, emitted because daDemo_c's nested classes derive from it; canonical definition is owned by arm9.",
       "relocations": []
     },
     {
@@ -1621,7 +1621,7 @@
       "size": "0x8",
       "canonical_module": "arm9",
       "canonical_address": "0x0208e744",
-      "reason": "vague-linkage copy emitted under the cartridge spelling (daDemo_c.h declares the base as dExtFrameCtrl_c); canonical definition is owned by arm9.",
+      "reason": "vague-linkage copy of the dExtFrameCtrl_c typeinfo, emitted because daDemo_c's nested classes derive from it; canonical definition is owned by arm9.",
       "relocations": [
         {
           "offset": 0,
@@ -1651,7 +1651,7 @@
       "size": "0x14",
       "canonical_module": "arm9",
       "canonical_address": "0x0208e8c4",
-      "reason": "vague-linkage copy emitted under the cartridge spelling (daDemo_c.h declares the base as dExtSimpleModel_c); canonical definition is owned by arm9.",
+      "reason": "vague-linkage copy of the dExtSimpleModel_c typeinfo, emitted because daDemo_c's nested classes derive from it; canonical definition is owned by arm9.",
       "relocations": []
     },
     {
@@ -1662,7 +1662,7 @@
       "size": "0xc",
       "canonical_module": "arm9",
       "canonical_address": "0x0208e794",
-      "reason": "vague-linkage copy emitted under the cartridge spelling (daDemo_c.h declares the base as dExtSimpleModel_c); canonical definition is owned by arm9.",
+      "reason": "vague-linkage copy of the dExtSimpleModel_c typeinfo, emitted because daDemo_c's nested classes derive from it; canonical definition is owned by arm9.",
       "relocations": [
         {
           "offset": 0,
@@ -1701,7 +1701,7 @@
       "size": "0x11",
       "canonical_module": "arm9",
       "canonical_address": "0x0208e7fc",
-      "reason": "vague-linkage copy emitted under the cartridge spelling (daDemo_c.h declares the base as dExtAnmModel_c); canonical definition is owned by arm9.",
+      "reason": "vague-linkage copy of the dExtAnmModel_c typeinfo, emitted because daDemo_c's nested classes derive from it; canonical definition is owned by arm9.",
       "relocations": []
     },
     {
@@ -1712,7 +1712,7 @@
       "size": "0x20",
       "canonical_module": "arm9",
       "canonical_address": "0x0208e924",
-      "reason": "vague-linkage copy emitted under the cartridge spelling (daDemo_c.h declares the base as dExtAnmModel_c); canonical definition is owned by arm9.",
+      "reason": "vague-linkage copy of the dExtAnmModel_c typeinfo, emitted because daDemo_c's nested classes derive from it; canonical definition is owned by arm9.",
       "relocations": [
         {
           "offset": 0,
@@ -1760,76 +1760,6 @@
       "canonical_module": "ov002",
       "canonical_address": "0x0210bcc4",
       "evidence": "anmModel_c vtable import; secondary vptr references carry nonzero addends, so the import must resolve through a non-_ZTV configured name to stay addend-exact under the preamble-normalizing intact path; daDemo_anmModel_vtbl names the same address and preserves every linked byte."
-    },
-    {
-      "symbol": "_ZN14dExtAnmModel_cD2Ev",
-      "canonical_symbol": "_ZN9ModelAnimD2Ev",
-      "canonical_module": "arm9",
-      "canonical_address": "0x201689c",
-      "evidence": "daDemo_c.h declares the nested classes' bases under the cartridge RTTI spelling (notes/model-rtti-names.md); the emitted member name resolves to the same function the project spelling configures."
-    },
-    {
-      "symbol": "_ZN17dExtSimpleModel_cD2Ev",
-      "canonical_symbol": "_ZN5ModelD2Ev",
-      "canonical_module": "arm9",
-      "canonical_address": "0x2016ca8",
-      "evidence": "daDemo_c.h declares the nested classes' bases under the cartridge RTTI spelling (notes/model-rtti-names.md); the emitted member name resolves to the same function the project spelling configures."
-    },
-    {
-      "symbol": "_ZN14dExtAnmModel_c11UpdateVertsEv",
-      "canonical_symbol": "_ZN9ModelAnim11UpdateVertsEv",
-      "canonical_module": "arm9",
-      "canonical_address": "0x201686c",
-      "evidence": "daDemo_c.h declares the nested classes' bases under the cartridge RTTI spelling (notes/model-rtti-names.md); the emitted member name resolves to the same function the project spelling configures."
-    },
-    {
-      "symbol": "_ZN14dExtAnmModel_c9Virtual10ER9Matrix4x3",
-      "canonical_symbol": "_ZN9ModelAnim9Virtual10ER9Matrix4x3",
-      "canonical_module": "arm9",
-      "canonical_address": "0x201682c",
-      "evidence": "daDemo_c.h declares the nested classes' bases under the cartridge RTTI spelling (notes/model-rtti-names.md); the emitted member name resolves to the same function the project spelling configures."
-    },
-    {
-      "symbol": "_ZN14dExtAnmModel_c6RenderEPK7Vector3",
-      "canonical_symbol": "_ZN9ModelAnim6RenderEPK7Vector3",
-      "canonical_module": "arm9",
-      "canonical_address": "0x20167f8",
-      "evidence": "daDemo_c.h declares the nested classes' bases under the cartridge RTTI spelling (notes/model-rtti-names.md); the emitted member name resolves to the same function the project spelling configures."
-    },
-    {
-      "symbol": "_ZN14dExtAnmModel_c9Virtual18EjPK7Vector3",
-      "canonical_symbol": "_ZN9ModelAnim9Virtual18EjPK7Vector3",
-      "canonical_module": "arm9",
-      "canonical_address": "0x20167c4",
-      "evidence": "daDemo_c.h declares the nested classes' bases under the cartridge RTTI spelling (notes/model-rtti-names.md); the emitted member name resolves to the same function the project spelling configures."
-    },
-    {
-      "symbol": "_ZN17dExtSimpleModel_c9DoSetFileEPcii",
-      "canonical_symbol": "_ZN5Model9DoSetFileEPcii",
-      "canonical_module": "arm9",
-      "canonical_address": "0x2016bf8",
-      "evidence": "daDemo_c.h declares the nested classes' bases under the cartridge RTTI spelling (notes/model-rtti-names.md); the emitted member name resolves to the same function the project spelling configures."
-    },
-    {
-      "symbol": "_ZN17dExtSimpleModel_c11UpdateVertsEv",
-      "canonical_symbol": "_ZN5Model11UpdateVertsEv",
-      "canonical_module": "arm9",
-      "canonical_address": "0x2016c98",
-      "evidence": "daDemo_c.h declares the nested classes' bases under the cartridge RTTI spelling (notes/model-rtti-names.md); the emitted member name resolves to the same function the project spelling configures."
-    },
-    {
-      "symbol": "_ZN17dExtSimpleModel_c9Virtual10ER9Matrix4x3",
-      "canonical_symbol": "_ZN5Model9Virtual10ER9Matrix4x3",
-      "canonical_module": "arm9",
-      "canonical_address": "0x2016bb8",
-      "evidence": "daDemo_c.h declares the nested classes' bases under the cartridge RTTI spelling (notes/model-rtti-names.md); the emitted member name resolves to the same function the project spelling configures."
-    },
-    {
-      "symbol": "_ZN17dExtSimpleModel_c6RenderEPK7Vector3",
-      "canonical_symbol": "_ZN5Model6RenderEPK7Vector3",
-      "canonical_module": "arm9",
-      "canonical_address": "0x2016b78",
-      "evidence": "daDemo_c.h declares the nested classes' bases under the cartridge RTTI spelling (notes/model-rtti-names.md); the emitted member name resolves to the same function the project spelling configures."
     }
   ],
   "production_mode": "intact-object",

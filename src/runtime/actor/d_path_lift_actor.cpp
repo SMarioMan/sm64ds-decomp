@@ -411,7 +411,7 @@ void dPathLiftActor_c::RenderPathModels()
     if (Param12ModeIs1() == 0) return;
     if (mState == 2) return;
     int i = 0;
-    Model* model = mModels;
+    dExtSimpleModel_c *model = mModels;
     do {
         RawVector3 local = *(RawVector3 *)&data_ov002_0210af00;
         model->Render((Vector3 *)&local);

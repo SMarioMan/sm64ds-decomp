@@ -4,7 +4,7 @@
  *
  * No fields. InitResources / CleanupResources hand this overlay's
  * model and collision files to daObjKuruma_c's shared ov002 helpers.
- * func_ov002_020b6958 loads slot 0 with Model::LoadFile, slot 1 with
+ * func_ov002_020b6958 loads slot 0 with dExtSimpleModel_c::LoadFile, slot 1 with
  * dBgW_Kc::LoadFile, slot 2 as CLPS into SetFile. This TU's static
  * initializer constructs those SharedFilePtrs as file IDs 1663 / 1664.
  *

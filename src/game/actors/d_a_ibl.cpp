@@ -42,7 +42,7 @@
 #include "SharedFilePtr.h"
 #include "decl_dBgCh_Actr.h"
 #include "Player.h"
-#include "Model.h"
+#include "dExtSimpleModel_c.h"
 #include "dActor_c.h"
 #include "dBgCh_Actr.h"
 #include "dCc_c.h"
@@ -89,14 +89,23 @@ struct VtEntry {
 };
 typedef void (*FnPtr)(void *);
 
+namespace Sound {
+/* local extern: including Sound.h renumbers @NNN. */
+int PlayLong(u32, u32, u32, const Vector3 &, s16);
+}
+
 extern "C" {
 /* Defined below. */
 
 void _ZN12dEnemyBase_c20KillByInvincibleCharERK10Vector3_16R6Player5Fix12IiE(void *c, Vector3_16 *s, void *a, int z);
-void _ZN8Particle6System9NewSimpleEj5Fix12IiES2_S2_(u32 id, int x, int y, int z);
+namespace Particle {
+struct System {
+    static void NewSimple(u32 id, int x, int y, int z);
+};
+}
 int func_02012694(int a, void *p);
 void _ZN5Sound9PlayBank0EjRK7Vector3(u32 id, void *pos);
-int _ZN5Sound8PlayLongEjjjRK7Vector3s(u32 a, u32 b, u32 c, void *v, u32 d);
+void d_a_iblPlayLongHold(u32 a, u32 b, u32 c, void *v, u32 d);
 /* local extern: retain the matched scalar ABI for the by-value Fix12 argument.
    Return and flag widths agree with the current Player definition. */
 int _ZN6Player4HurtERK7Vector3j5Fix12IiEjjj(Player *p, void *pos, u32 a, int b, u8 d, u8 e, u8 f);
@@ -198,8 +207,7 @@ void daIbl_c::func_ov100_02141fb0()
     }
     if ((fl & daIbl_HIT_ATTACK) != 0) {
         if (a->param1 == 2) {
-            _ZN8Particle6System9NewSimpleEj5Fix12IiES2_S2_(
-                daIbl_PTCL_BREAK, mPosX, mPosY, mPosZ);
+            Particle::System::NewSimple(daIbl_PTCL_BREAK, mPosX, mPosY, mPosZ);
             PoofDust();
             MarkForDestruction();
             func_02012694(daIbl_SND_BREAK, &mCamSpacePosX);
@@ -422,8 +430,7 @@ int daIbl_c::func_ov100_021424c0()
     if (r != 0) {
         if (r != 2)
             return r;
-        _ZN8Particle6System9NewSimpleEj5Fix12IiES2_S2_(daIbl_PTCL_BREAK, mPosX,
-                                                       mPosY, mPosZ);
+        Particle::System::NewSimple(daIbl_PTCL_BREAK, mPosX, mPosY, mPosZ);
         return func_02012694(daIbl_SND_BREAK, &mCamSpacePosX);
     }
 
@@ -463,8 +470,8 @@ int daIbl_c::func_ov100_021424c0()
                     mVertSpeed = (int)(-vy + ((u32)-vy >> 31)) >> 1;
                 mRollSoundHandle = 0;
             } else {
-                mRollSoundHandle = _ZN5Sound8PlayLongEjjjRK7Vector3s(mRollSoundHandle,
-                                                                       3, daIbl_SND_ROLL, &mCamSpacePosX, 0);
+                mRollSoundHandle = Sound::PlayLong(mRollSoundHandle, 3, daIbl_SND_ROLL,
+                                                   *(Vector3 *)&mCamSpacePosX, 0);
             }
             if (mHorzSpeed >= 0x23000) {
                 mHorzSpeed = 0x23000;
@@ -505,8 +512,7 @@ void daIbl_c::func_ov100_0214272c()
         if (r != 2)
             return;
 
-        _ZN8Particle6System9NewSimpleEj5Fix12IiES2_S2_(
-            daIbl_PTCL_BREAK, mPosX, mPosY, mPosZ);
+        Particle::System::NewSimple(daIbl_PTCL_BREAK, mPosX, mPosY, mPosZ);
         func_02012694(daIbl_SND_BREAK, &mCamSpacePosX);
         return;
     }
@@ -519,11 +525,7 @@ void daIbl_c::func_ov100_0214272c()
             goto ground;
     }
 
-    _ZN8Particle6System9NewSimpleEj5Fix12IiES2_S2_(
-        daIbl_PTCL_BREAK,
-        mPosX,
-        *(volatile int *)&mPosY,
-        mPosZ);
+    Particle::System::NewSimple(daIbl_PTCL_BREAK, mPosX, *(volatile int *)&mPosY, mPosZ);
     func_02012694(daIbl_SND_BREAK, &mCamSpacePosX);
     TriplePoofDust();
     MarkForDestruction();
@@ -551,8 +553,7 @@ ground:
                 mVertSpeed = mVertSpeed * -3 / 2;
         } else {
             mRollSoundHandle =
-                _ZN5Sound8PlayLongEjjjRK7Vector3s(
-                    mRollSoundHandle, 3, daIbl_SND_ROLL, &mCamSpacePosX, 0);
+                Sound::PlayLong(mRollSoundHandle, 3, daIbl_SND_ROLL, *(Vector3 *)&mCamSpacePosX, 0);
         }
     }
 
@@ -596,7 +597,7 @@ void daIbl_c::func_ov100_02142918()
     if (r != 0) {
         if (r != 2)
             return;
-        _ZN8Particle6System9NewSimpleEj5Fix12IiES2_S2_(daIbl_PTCL_BREAK, mPosX, mPosY, mPosZ);
+        Particle::System::NewSimple(daIbl_PTCL_BREAK, mPosX, mPosY, mPosZ);
         func_02012694(daIbl_SND_BREAK, &mCamSpacePosX);
         return;
     }
@@ -645,7 +646,8 @@ void daIbl_c::func_ov100_02142918()
         goto Lend;
     }
 
-    mRollSoundHandle = _ZN5Sound8PlayLongEjjjRK7Vector3s(mRollSoundHandle, 3, daIbl_SND_ROLL, &mCamSpacePosX, 0);
+    mRollSoundHandle =
+        Sound::PlayLong(mRollSoundHandle, 3, daIbl_SND_ROLL, *(Vector3 *)&mCamSpacePosX, 0);
 
 Lend: {
     int nv = mVertSpeed + mVertAccel;
@@ -792,7 +794,8 @@ int daIbl_c::InitResources()
     int kind;
     int d;
 
-    mModel.SetFile((BMD_File *)Model::LoadFile(*(SharedFilePtr *)&data_ov100_02148668), 1, -1);
+    mModel.SetFile((BMD_File *)dExtSimpleModel_c::LoadFile(*(SharedFilePtr *)&data_ov100_02148668),
+                   1, -1);
     if (mShadowModel.InitCylinder() == 0)
         return 0;
     mVertAccel = -0x4000;

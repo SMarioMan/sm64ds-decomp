@@ -1,4 +1,11 @@
 //cpp
+struct Vector3_16f;
+namespace Particle {
+struct Callback;
+struct System {
+    static int New(unsigned, unsigned, int, int, int, const ::Vector3_16f *, Callback *);
+};
+}
 /* The cannon (CANNON profile), ov098 .text 0x0213a900..0x0213b47c,
  * thirteen functions.
  *
@@ -112,9 +119,7 @@ void _ZN7dCcAc_c4InitEP8dActor_c5Fix12IiES3_jj(dCcAc_c *self, dActor_c *actor,
     int radius, int height, u32 flags, u32 vulnFlags);
 void _ZN8dActor_c10EarthquakeERK7Vector35Fix12IiE(dActor_c *self,
     const Vector3 *pos, int magnitude);
-int _ZN8Particle6System3NewEjj5Fix12IiES2_S2_PK11Vector3_16fPNS_8CallbackE(
-    u32 slot, u32 id, int x, int y, int z, const Vector3_16 *rot, void *cb);
-
+int d_a_cnnNewHold(u32 slot, u32 id, int x, int y, int z, const Vector3_16 *rot, void *cb);
 }
 
 /* The cannon's file-scope SharedFilePtr object, spelled through the same
@@ -131,7 +136,7 @@ struct CnnModelFilePtr : SharedFilePtr {
  * The model handle and the state table's four member pointers, in
  * static-initializer order: the initializer constructs the handle, registers
  * its destructor, then copies the pointers from .data. InitResources feeds
- * the model to Model::LoadFile.
+ * the model to dExtSimpleModel_c::LoadFile.
  * ------------------------------------------------------------------------ */
 // @symbol __sinit_d_a_cnn.cpp
 CnnModelFilePtr data_ov098_0213c8e8(ASSET_HOUDAI_BMD);
@@ -168,7 +173,7 @@ extern "C" daCnn_c *daCnn_c_classInit()
 // @symbol _ZN7daCnn_c13InitResourcesEv
 int daCnn_c::InitResources()
 {
-    BMD_File *file = (BMD_File *)Model::LoadFile(data_ov098_0213c8e8);
+    BMD_File *file = (BMD_File *)dExtSimpleModel_c::LoadFile(data_ov098_0213c8e8);
     mModel.SetFile(file, 1, -1);
     mBarrelRestY = ((CnnBone *)mModel.data.bones)[1].transY;
     mVariant = param1 & 3;
@@ -199,8 +204,8 @@ int daCnn_c::InitResources()
             &mdCcAc_c, this, 0x50000, 0x12c000, 0x800004, 0);
     }
 
-    Model::LoadFile(data_ov098_0213c91c);
-    Model::LoadFile(data_ov002_0210da38);
+    dExtSimpleModel_c::LoadFile(data_ov098_0213c91c);
+    dExtSimpleModel_c::LoadFile(data_ov002_0210da38);
     return 1;
 }
 
@@ -377,10 +382,10 @@ void daCnn_c::func_ov098_0213ade8()
         rot.x = (u16)data_02082214[((u16)mPrevAngleY >> 4) * 2];
         rot.z = (u16)data_02082214[((u16)mPrevAngleY >> 4) * 2 + 1];
 
-        _ZN8Particle6System3NewEjj5Fix12IiES2_S2_PK11Vector3_16fPNS_8CallbackE(
-            0, 7, mMuzzlePosX, mMuzzlePosY, mMuzzlePosZ, &rot, 0);
-        _ZN8Particle6System3NewEjj5Fix12IiES2_S2_PK11Vector3_16fPNS_8CallbackE(
-            0, 8, mMuzzlePosX, mMuzzlePosY, mMuzzlePosZ, &rot, 0);
+        Particle::System::New(0, 7, mMuzzlePosX, mMuzzlePosY, mMuzzlePosZ,
+                              (const Vector3_16f *)(&rot), 0);
+        Particle::System::New(0, 8, mMuzzlePosX, mMuzzlePosY, mMuzzlePosZ,
+                              (const Vector3_16f *)(&rot), 0);
 
         Sound::PlayBank3(0xd4, mCamSpacePos);
         mRecoilSpeed = -0x1800;

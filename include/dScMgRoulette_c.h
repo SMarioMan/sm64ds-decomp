@@ -23,15 +23,15 @@
 extern "C" int  Dealer_Destruct(char *t); /* decl_common.h's own signature */
 extern "C" void __cxa_vec_cleanup(void *base, int count, int stride, void *dtor);
 extern "C" void Roulette_Nothing(void);
-extern "C" void _ZN5ModelD1Ev(void *);
+extern "C" void _ZN17dExtSimpleModel_cD1Ev(void *);
 
 struct dScMgRoulette_c : dScMgSingle3DBase_c {
     /* Inline and declared first: see the file banner. The four explicit calls
        are the ROM's own order -- mModel2, mModel1, mArray, mDealer -- which
        typed members could not reproduce. */
     virtual ~dScMgRoulette_c() {
-        _ZN5ModelD1Ev(mModel2);
-        _ZN5ModelD1Ev(mModel1);
+        _ZN17dExtSimpleModel_cD1Ev(mModel2);
+        _ZN17dExtSimpleModel_cD1Ev(mModel1);
         __cxa_vec_cleanup(mArray, 5, 0x34, (void *)Roulette_Nothing);
         Dealer_Destruct((char *)mDealer);
     }
@@ -54,7 +54,7 @@ struct dScMgRoulette_c : dScMgSingle3DBase_c {
        helpers in d_s_mg_roulette_methods.cpp take mBoard and reach all of
        it through their RouletteBoardView. */
     u8 mBoard[0x10];       /* 0x530c -- PMF state and the two model files */
-    u8 mModel1[0x50];      /* 0x531c -- raw Model, the wheel; the destructor calls it explicitly */
+    u8 mModel1[0x50];      /* 0x531c -- raw dExtSimpleModel_c, the wheel; destroyed explicitly */
     u8 mModel2[0x50];      /* 0x536c -- the ball */
     s32 mBallRadius;       /* 0x53bc -- Fix12; 0x4200 when the spin starts */
     s32 mBallRadiusVel;    /* 0x53c0 -- added to mBallRadius each frame */

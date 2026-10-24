@@ -11,14 +11,14 @@
 
 #include "types.h"
 #include "dActor_c.h"
-#include "ModelAnim.h"
+#include "dExtAnmModel_c.h"
 #include "dCcAc_c.h"
 
 struct daObjHeart_c : dActor_c {
     u8 pad_0d0[0x4];
-    /* ModelAnim member, named by _ZN9ModelAnimD1Ev at +0xd4 -- a relocation the ROM build
+    /* dExtAnmModel_c member, named by _ZN14dExtAnmModel_cD1Ev at +0xd4 -- a relocation the ROM build
        checks. D1 and not D2, so it is this type and not an inlined base. */
-    ModelAnim mModelAnim; /* 0x0d4 */
+    dExtAnmModel_c mModelAnim; /* 0x0d4 */
     /* dCcAc_c member. The cartridge's own ~daObjHeart_c calls _ZN7dCcAc_cD1Ev at +0x138
        (D0/D1), a relocation the ROM build checks. D1 and not D2, so it is this type
        and not an inlined base. */

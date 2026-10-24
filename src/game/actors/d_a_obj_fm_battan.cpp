@@ -148,7 +148,7 @@ extern "C" SpawnInfo<daObjFm_Battan_c> g_profile_FM_BATTAN = {
 // @symbol _ZN16daObjFm_Battan_c13InitResourcesEv
 int daObjFm_Battan_c::InitResources()
 {
-    mModel.SetFile((BMD_File *)Model::LoadFile(data_ov023_02112088), 1, -1);
+    mModel.SetFile((BMD_File *)dExtSimpleModel_c::LoadFile(data_ov023_02112088), 1, -1);
     mShadowModel.InitCuboid();
     UpdateModelTransform();
     UpdateClsnPosAndRot();

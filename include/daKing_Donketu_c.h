@@ -7,7 +7,7 @@
 
 #include "dEnemyBase_c.h"
 #include "dExtShadowModel_c.h"
-#include "BlendModelAnim.h"
+#include "dExtBlendAnmModel_c.h"
 #include "dBgCh_Actr.h"
 #include "dCcAcPos_c.h"
 
@@ -30,7 +30,7 @@ struct daKing_Donketu_c : dEnemyBase_c {
        (mat4x3, 0x328) to find where to put particles, treat its dExtFrameCtrl_c
        base (0x35c) as the clock they wait on, and set its playback speed
        (speed, 0x368; 0x1000 is 1.0). */
-    BlendModelAnim mBlendModelAnim;                        /* 0x30c */
+    dExtBlendAnmModel_c mBlendModelAnim; /* 0x30c */
     /* One state is two member-function pointers: the enter member runs once
        when the state is installed, the update member every frame. The sixteen
        records at data_ov073_02123320 .. data_ov073_02123410 are filled in by

@@ -2,6 +2,8 @@
 #define DEALER_H
 
 #include "types.h"
+#include "dExtBlendAnmModel_c.h"
+#include "MascotWalker.h"
 
 /* Dealer, Luigi dealing in the card games: the 0x270-byte record
  * Dealer_Construct builds and the Dealer_* helpers in
@@ -38,22 +40,14 @@ struct Dealer {
     Vector3 mPos;  /* 0x008 */
     s16 mRot[3];   /* 0x014 */
     s16 mHand; /* 0x01a -- picks deal_end (0) or deal_end2 (2); 1 makes PlayLose play deal_end first */
-    u8 mModel[0x1c];       /* 0x01c -- a BlendModelAnim, running to 0x08c */
-    u8 mModelMatrix[0x30]; /* 0x038 -- mModel's Matrix4x3 (Model +0x1c), set by ResetMatrices */
-    u8 pad_068[0x4];       /* 0x068 -- the rest of mModel's Model */
-    /* mModel's dExtFrameCtrl_c (ModelAnim +0x50), which the state functions
-       test with Finished and WillHitFrame. */
-    s32 mModelFrame[4]; /* 0x06c */
-    s32 mAnim;          /* 0x07c -- the BCA file mModel plays */
-    u8 pad_080[0xc];    /* 0x080 */
-    u8 mTable[0xc];     /* 0x08c -- a Model, running to 0x0dc */
-    /* mTable's material table (Model +0xc, ModelComponents::materials):
-       Load clears and sets flags on materials 0, 4 and 5. */
-    s32 mTableMaterials;   /* 0x098 */
-    u8 pad_09c[0xc];       /* 0x09c */
-    u8 mTableMatrix[0x30]; /* 0x0a8 -- mTable's Matrix4x3 (Model +0x1c), set by ResetMatrices */
-    u8 pad_0d8[0x4];       /* 0x0d8 -- the rest of mTable */
-    u8 mWalker[0xf8];  /* 0x0dc -- a MascotWalker */
+    /* 0x70 bytes. ResetMatrices sets its mat4x3; the state functions test its
+       dExtFrameCtrl_c base with Finished and WillHitFrame and compare its file
+       with mAnims. */
+    dExtBlendAnmModel_c mModel; /* 0x01c */
+    /* 0x50 bytes. ResetMatrices sets its mat4x3; Load clears and sets flags on
+       materials 0, 4 and 5 of its data.materials. */
+    dExtSimpleModel_c mTable; /* 0x08c */
+    MascotWalker mWalker; /* 0x0dc */
     s32 mDealtCount;   /* 0x1d4 -- a short the deal loop bumps once per card, or 0 */
     s16 mShuffleLeft;  /* 0x1d8 -- shuffle repeats left */
     s16 mDealDoneAt;   /* 0x1da -- the repeat that calls OnDealDone */

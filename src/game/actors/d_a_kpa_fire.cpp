@@ -37,7 +37,7 @@
  *   Fix12<int> by value; the header spelling of dBgCh_Actr::Init is
  *   Fix12i, which mangles as int.
  * - GetFrameCount stays the void* extern. The argument is
- *   static_cast<dExtFrameCtrl_c *>(&o->mModelAnim), ModelAnim's
+ *   static_cast<dExtFrameCtrl_c *>(&o->mModelAnim), dExtAnmModel_c's
  *   second base, which is Bowser + 0x124. The header method is not
  *   that symbol's spelling at this site.
  * - Particle::System::callbackScale and callbackVelocity are named.
@@ -114,6 +114,11 @@ enum {
 /* Sound id variant 0 plays through its mSoundHandle; named by use site, not decoded. */
 enum { SOUND_ID_MOUTH = 0x180 };
 
+namespace Sound {
+/* local extern: including Sound.h renumbers @NNN. */
+int PlayLong(u32, u32, u32, const Vector3 &, s16);
+}
+
 extern "C" {
 /* This file's own helpers, defined further down. */
 extern Entry data_ov060_0211afb4[];
@@ -121,11 +126,11 @@ extern PMF data_ov060_0211af74[];
 
 /* Fix12<int>-by-value and other mangled-name calls (see the banner). */
 extern u32 _ZN8Particle6System17NewUnkCallback818Ejj5Fix12IiES2_S2_PK11Vector3_16f( u32 a, u32 b, Fix12i c, Fix12i d, Fix12i e, const struct Vector3_16f* f);
-extern u32 _ZN8Particle6System3NewEjj5Fix12IiES2_S2_PK11Vector3_16fPNS_8CallbackE( u32 a, u32 b, Fix12i c, Fix12i d, Fix12i e, const void* f, void* g);
-void _ZN8Particle6System9NewSimpleEj5Fix12IiES2_S2_(u32 id, Fix12i x, Fix12i y, Fix12i z);
+extern u32 d_a_kpa_fireNewHold(u32 a, u32 b, Fix12i c, Fix12i d, Fix12i e, const void *f, void *g);
+void d_a_kpa_fireNewSimpleHold(u32 id, Fix12i x, Fix12i y, Fix12i z);
 /* local extern: the header method is not this symbol's spelling here. */
 extern int _ZNK15dExtFrameCtrl_c13GetFrameCountEv(void *anim);
-extern u32 _ZN5Sound8PlayLongEjjjRK7Vector3s(u32 a, u32 b, u32 c, void *pos, u32 d);
+extern void d_a_kpa_firePlayLongHold(u32 a, u32 b, u32 c, void *pos, u32 d);
 extern void _ZN7dCcAc_c4InitEP8dActor_c5Fix12IiES3_jj(void *self, void *actor, int a, int b, unsigned int c, unsigned int d);
 extern void _ZN10dBgCh_Actr4InitEP8dActor_c5Fix12IiES3_P10Vector3_16S5_(void *self, void *actor, int a, int b, void *v, int c);
 void _ZN8dActor_c19DropShadowRadHeightER17dExtShadowModel_cR9Matrix4x35Fix12IiES5_j(void *thisp, void *sm, void *mtx, int rad, int t, unsigned int j);
@@ -348,8 +353,8 @@ void daKpaFire_c::func_ov060_0211747c() {
     if (this->mSoundID != SOUND_ID_MOUTH)
         this->mSoundHandle = 0;
     this->mSoundID = SOUND_ID_MOUTH;
-    this->mSoundHandle = _ZN5Sound8PlayLongEjjjRK7Vector3s(this->mSoundHandle, 3, this->mSoundID,
-                                                           &this->mCamSpacePosX, 0);
+    this->mSoundHandle =
+        Sound::PlayLong(this->mSoundHandle, 3, this->mSoundID, *(Vector3 *)&this->mCamSpacePosX, 0);
 
     side = t[0];
     fwd = t[2] + 0x14;
@@ -379,9 +384,8 @@ void daKpaFire_c::func_ov060_0211747c() {
  *     and stops -- this branch returns whether or not the spawn worked;
  *   - otherwise it spawns a coin and zeroes the coin's three velocity words. */
 void daKpaFire_c::func_ov060_021172e0() {
-    _ZN8Particle6System9NewSimpleEj5Fix12IiES2_S2_(PARTICLE_END_PUFF, *(Fix12i *)&this->mPosX,
-                                                   *(Fix12i *)&this->mPosY,
-                                                   *(Fix12i *)&this->mPosZ);
+    Particle::System::NewSimple(PARTICLE_END_PUFF, *(Fix12i *)&this->mPosX, *(Fix12i *)&this->mPosY,
+                                *(Fix12i *)&this->mPosZ);
     this->MarkForDestruction();
 
     if ((((u32)RandomIntInternal(&data_0209e650[0]) >> 0x10) % 10) >= 2) {
@@ -853,9 +857,8 @@ void daKpaFire_c::func_ov060_02116518(u32 kind, int resize, int yOffset) {
             _ZN8Particle6System17NewUnkCallback818Ejj5Fix12IiES2_S2_PK11Vector3_16f(
                 this->mParticleHandle, kind, this->mPosX, this->mPosY + yOffset, this->mPosZ, 0);
     } else {
-        this->mParticleHandle =
-            _ZN8Particle6System3NewEjj5Fix12IiES2_S2_PK11Vector3_16fPNS_8CallbackE(
-                this->mParticleHandle, kind, this->mPosX, this->mPosY + yOffset, this->mPosZ, 0, 0);
+        this->mParticleHandle = Particle::System::New(this->mParticleHandle, kind, this->mPosX,
+                                                      this->mPosY + yOffset, this->mPosZ, 0, 0);
     }
 
     if (this->mParticleHandle != 0 && resize != 0) {
@@ -872,8 +875,8 @@ void daKpaFire_c::func_ov060_02116518(u32 kind, int resize, int yOffset) {
         }
     }
 
-    this->mParticleHandle2 = _ZN8Particle6System3NewEjj5Fix12IiES2_S2_PK11Vector3_16fPNS_8CallbackE(
-        this->mParticleHandle2, kind + 1, this->mPosX, this->mPosY + yOffset, this->mPosZ, 0, 0);
+    this->mParticleHandle2 = Particle::System::New(this->mParticleHandle2, kind + 1, this->mPosX,
+                                                   this->mPosY + yOffset, this->mPosZ, 0, 0);
     if (this->mParticleHandle2 == 0)
         return;
     if (resize == 0)

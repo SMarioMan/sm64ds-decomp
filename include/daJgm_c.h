@@ -2,8 +2,8 @@
 #define DAJGM_C_H
 
 #include "dActor_c.h"
-#include "ModelAnim.h"
-#include "Model.h"
+#include "dExtAnmModel_c.h"
+#include "dExtSimpleModel_c.h"
 #include "dExtShadowModel_c.h"
 #include "TextureSequence.h"
 #include "dCcAcPos_c.h"
@@ -50,8 +50,8 @@ typedef char DaJgmStateHandlers_size_must_be_0x10[
  */
 struct daJgm_c : dActor_c {
     dActor_c                 *mCarryActor;          /* 0x0d0 */
-    ModelAnim                 mModelAnim;            /* 0x0d4 */
-    Model                     mModel;                /* 0x138 */
+    dExtAnmModel_c mModelAnim;                      /* 0x0d4 */
+    dExtSimpleModel_c mModel;                       /* 0x138 */
     dExtShadowModel_c               mShadowModel;          /* 0x188 */
     TextureSequence           mTextureSequence;      /* 0x1b0 */
     dCcAcPos_c                mdCcAcPos_c;           /* 0x1c4 */

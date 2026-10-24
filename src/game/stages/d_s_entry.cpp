@@ -71,16 +71,24 @@
 #include "OAM.h"
 #include "OamAttr.h"
 
+namespace G2 {
+void *GetBG1ScrPtr();
+}
+
+namespace G2S {
+unsigned int GetBG2ScrPtr();
+}
+
 extern "C" {
-unsigned int _ZN3G2S12GetBG2ScrPtrEv();
+
 void DecompressLZ16(void *, void *);
 void Deallocate(void *);
 
 int _Z15ApproachLinear2Rsss(short *, short, short);
 extern unsigned char data_0209b2e4;
 
-extern void _ZN3OAM6RenderEbP7OamAttriiii5Fix12IiES3_ii(int a, void *oam, int b, int c, int d,
-                                                        int e, int f, int g, int h, int i);
+extern void OamRender10_d_s_entry(int a, void *oam, int b, int c, int d, int e, int f, int g, int h,
+                                  int i);
 extern int func_0203d974(void);
 
 int func_0200f0bc(void);
@@ -159,8 +167,7 @@ void dScEntry_c::icon_c::Render() {
             scale = ((8 - scale) << 8) + 0x1000;
         }
 
-        _ZN3OAM6RenderEbP7OamAttriiii5Fix12IiES3_ii(1, spriteData, xy[0], xy[1], -1, -1, scale,
-                                                    scale, 0, -1);
+        OAM::Render(1, (OamAttr *)spriteData, xy[0], xy[1], -1, -1, scale, scale, 0, -1);
         return;
     }
 
@@ -185,7 +192,7 @@ void dScEntry_c::icon_c::Render() {
         paletteBits = (mOn != 0) ? 0x2000 : 0x1000;
     fill:
         halfWidth = mHalfW;
-        screenMap = (u16 *)_ZN3G2S12GetBG2ScrPtrEv();
+        screenMap = (u16 *)G2S::GetBG2ScrPtr();
         x = mX;
         halfHeight = mHalfH;
         x -= halfWidth;
@@ -303,7 +310,7 @@ int dScEntry_c::graphCallback_c::GraphCallback2() {
     *reg = value | (bg2ScreenBase << 8);
 
     if (compressedBg2Screen != 0) {
-        unsigned short *screen = (unsigned short *)_ZN3G2S12GetBG2ScrPtrEv();
+        unsigned short *screen = (unsigned short *)G2S::GetBG2ScrPtr();
         DecompressLZ16(compressedBg2Screen, screen);
         Deallocate(compressedBg2Screen);
         compressedBg2Screen = 0;
@@ -356,7 +363,7 @@ extern "C" void func_ov075_021160dc(char *rawScene) {
  */
 
 extern "C" {
-void *_ZN2G212GetBG1ScrPtrEv();
+
 int func_02030958(int val);
 }
 extern u8 data_0209fc50;
@@ -367,7 +374,7 @@ static inline void SetPalette(u16 *entry, u16 pal) {
 
 extern "C" void func_ov075_02116128(int unused, int slot, int dim) {
     int players = data_0209fc50;
-    u16 *map = (u16 *)_ZN2G212GetBG1ScrPtrEv();
+    u16 *map = (u16 *)G2::GetBG1ScrPtr();
     u16 pal = func_02030958(slot) + 10;
     u16 *p;
     int i;
@@ -470,9 +477,8 @@ extern "C" void func_ov075_0211621c(char *c) {
             do {
                 int *p;
                 int pid = EntryPlayerIndex(i);
-                _ZN3OAM6RenderEbP7OamAttriiii5Fix12IiES3_ii(zA, data_ov075_0211c7c0,
-                                                            xbase + i * stride, yIcon, minus1,
-                                                            minus1, scale, scale, zA, minus1);
+                OAM::Render(zA, data_ov075_0211c7c0, xbase + i * stride, yIcon, minus1, minus1,
+                            scale, scale, zA, minus1);
                 p = (int *)_ZN3OAM6RenderEbP7OamAttriiii5Fix12IiEi(
                     zC, (OamAttr *)data_ov075_0211c8b0, xbase + 0x1c + i * stride, yIcon, minus1,
                     minus1, scale, zC);
@@ -482,9 +488,8 @@ extern "C" void func_ov075_0211621c(char *c) {
                     *q = (val & (~0x3ff)) |
                          ((data_0209f310[pid] + (((u32)(val << 22)) >> 22)) & 0x3ff);
                 }
-                _ZN3OAM6RenderEbP7OamAttriiii5Fix12IiES3_ii(zB, data_ov075_0211c870,
-                                                            xbase + i * stride, yNum, minus1,
-                                                            minus1, scale, scale, zB, minus1);
+                OAM::Render(zB, data_ov075_0211c870, xbase + i * stride, yNum, minus1, minus1,
+                            scale, scale, zB, minus1);
                 {
                     int n;
                     int dx = off14;

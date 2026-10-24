@@ -60,7 +60,11 @@ extern CLPS_Block data_ov002_0210d754;
  * Declaring that on this TU's Kill does not compile: mPosX/Y/Z are s32 and
  * mwccarm refuses the implicit conversion. The scalar ABI spelling is the
  * measured form (notes/mwccarm-codegen.md 6az). */
-void _ZN8Particle6System9NewSimpleEj5Fix12IiES2_S2_(u32 id, Fix12i x, Fix12i y, Fix12i z);
+namespace Particle {
+struct System {
+    static void NewSimple(u32 id, Fix12i x, Fix12i y, Fix12i z);
+};
+}
 
 /* dBgW_KcMbg::SetFile likewise takes Fix12<int> by value. A real member
  * call on this TU's InitResources emits different code there. */
@@ -85,7 +89,7 @@ extern "C" daObjIceBoard_c *daObjIceBoard_c_classInit()
 // @symbol _ZN15daObjIceBoard_c13InitResourcesEv
 int daObjIceBoard_c::InitResources()
 {
-    void *modelFile = Model::LoadFile(daObjIceBoard_c_ModelFile);
+    void *modelFile = dExtSimpleModel_c::LoadFile(daObjIceBoard_c_ModelFile);
     mModel.SetFile((BMD_File *)modelFile, 1, -1);
     UpdateModelPosAndRotY();
     UpdateClsnPosAndRot();
@@ -157,9 +161,9 @@ void daObjIceBoard_c::OnGroundPounded(dActor_c &other)
 void daObjIceBoard_c::Kill()
 {
     Sound::PlayBank3(0x41, mCamSpacePos);
-    _ZN8Particle6System9NewSimpleEj5Fix12IiES2_S2_(0x74, mPosX, mPosY, mPosZ);
-    _ZN8Particle6System9NewSimpleEj5Fix12IiES2_S2_(0x75, mPosX, mPosY, mPosZ);
-    _ZN8Particle6System9NewSimpleEj5Fix12IiES2_S2_(0x76, mPosX, mPosY, mPosZ);
+    Particle::System::NewSimple(0x74, mPosX, mPosY, mPosZ);
+    Particle::System::NewSimple(0x75, mPosX, mPosY, mPosZ);
+    Particle::System::NewSimple(0x76, mPosX, mPosY, mPosZ);
     MarkForDestruction();
 }
 
@@ -188,7 +192,7 @@ void daObjIceBoard_c::OnHitByMegaChar(Player &player)
  *
  * Both bodies are short because the chain is short and this class adds no
  * member of its own: this class's vptr store, then dBgActor_c's -- inlined,
- * its destructor is defined in its class body -- then dBgActor_c's Model and
+ * its destructor is defined in its class body -- then dBgActor_c's dExtSimpleModel_c and
  * dBgW_KcMbg, then dActor_c. D0's trailing deallocation is the inherited
  * inline operator delete, which is why nothing here names a heap.
  */

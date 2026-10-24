@@ -850,14 +850,14 @@
   ],
   "defined_symbol_renames": [
     {
-      "from": "@1350",
+      "from": "@1344",
       "to": "@1336",
-      "evidence": "compiler temp; the types.h Vector3 ctors and main's sinit folds shift this TU's per-TU @NNN uniquifier, so mwcc emits it as @1350 now; licensed under the existing pin @1336"
+      "evidence": "compiler temp; the types.h Vector3 ctors and main's sinit folds shift this TU's per-TU @NNN uniquifier, so mwcc emits it as @1344 now (measured 2026-10-23: the typed Heyho::mModelAnim retires Heyho_Draw's local Sub view (one label, bisected) and the other shadow declarations (one more), @1346 before -> @1344 after); licensed under the existing pin @1336"
     },
     {
-      "from": "@1351",
+      "from": "@1345",
       "to": "@1337",
-      "evidence": "compiler temp; the types.h Vector3 ctors and main's sinit folds shift this TU's per-TU @NNN uniquifier, so mwcc emits it as @1351 now; licensed under the existing pin @1337"
+      "evidence": "compiler temp; the types.h Vector3 ctors and main's sinit folds shift this TU's per-TU @NNN uniquifier, so mwcc emits it as @1345 now (measured 2026-10-23: the typed Heyho::mModelAnim retires Heyho_Draw's local Sub view (one label, bisected) and the other shadow declarations (one more), @1347 before -> @1345 after); licensed under the existing pin @1337"
     }
   ]
 }

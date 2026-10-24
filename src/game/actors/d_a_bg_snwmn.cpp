@@ -109,9 +109,9 @@ s32 daBgSnwmn_c::InitResources()
         MarkForDestruction();
     }
 
-    model = Model::LoadFile(gdaBgSnwmnBigSnowmanHeadModelFile);
+    model = dExtSimpleModel_c::LoadFile(gdaBgSnwmnBigSnowmanHeadModelFile);
     mModel1.SetFile((BMD_File *)model, 1, 1);
-    model = Model::LoadFile(gdaBgSnwmnBigSnowmanBodyModelFile);
+    model = dExtSimpleModel_c::LoadFile(gdaBgSnwmnBigSnowmanBodyModelFile);
     mModel2.SetFile((BMD_File *)model, 1, 1);
 
     TextureSequence::LoadFile(gdaBgSnwmnBigSnowmanSmileTextureSequenceFile);

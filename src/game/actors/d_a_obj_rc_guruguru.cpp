@@ -47,7 +47,6 @@ extern void *data_ov036_02113d78[];
 
 void func_020393d4(void *bgw, void *fn);
 
-bool _ZN10dBgActor_c13IsClsnInRangeE5Fix12IiES1_(void *self, int a, int b);
 void _ZN10dBgW_KcMbg7SetFileEP8KCL_FileRK9Matrix4x35Fix12IiEsR10CLPS_Block(
     void *self, void *kcl, void *mtx, int scale, short angleY, void *clps);
 }
@@ -86,8 +85,8 @@ extern "C" daObjRc_Guruguru_c *daObjRc_Guruguru_c_classInit()
  * so this one call deliberately retains the measured register-level view. */
 s32 daObjRc_Guruguru_c::InitResources()
 {
-    mModel.SetFile((BMD_File *)Model::LoadFile(
-        *(SharedFilePtr *)data_ov036_02113d78[0]), 1, -1);
+    mModel.SetFile(
+        (BMD_File *)dExtSimpleModel_c::LoadFile(*(SharedFilePtr *)data_ov036_02113d78[0]), 1, -1);
     UpdateModelPosAndRotY();
     UpdateClsnPosAndRot();
 
@@ -127,7 +126,7 @@ s32 daObjRc_Guruguru_c::Behavior()
     }
 
     UpdateModelPosAndRotY();
-    if (_ZN10dBgActor_c13IsClsnInRangeE5Fix12IiES1_(this, 0, 0))
+    if (IsClsnInRange(0, 0))
         UpdateClsnPosAndRot();
     return 1;
 }

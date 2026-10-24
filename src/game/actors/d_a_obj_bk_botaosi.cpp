@@ -102,9 +102,8 @@ void func_ov015_02111414(daObjBk_Botaosi_c *plank, dActor_c *other);
 void func_ov015_021114f0(daObjBk_Botaosi_c *plank);
 void func_ov015_0211166c(daObjBk_Botaosi_c *plank);
 
-void _ZN8dActor_c10EarthquakeERK7Vector35Fix12IiE(
-    dActor_c *self, const Vector3 *pos, Fix12i strength);
-int  _ZN10dBgActor_c13IsClsnInRangeE5Fix12IiES1_(void *self, int a, int b);
+void _ZN8dActor_c10EarthquakeERK7Vector35Fix12IiE(dActor_c *self, const Vector3 *pos,
+                                                  Fix12i strength);
 void _ZN10dBgW_KcMbg7SetFileEP8KCL_FileRK9Matrix4x35Fix12IiEsR10CLPS_Block(
     void *self, void *file, void *mat, int scale, s16 angle, void *clps);
 void *_ZN9dBgCh_GndC1Ev(dBgCh_Gnd *self);
@@ -117,7 +116,7 @@ void _ZN8dActor_c18DropShadowScaleXYZER17dExtShadowModel_cR9Matrix4x35Fix12IiES5
 // @symbol _ZN17daObjBk_Botaosi_cD1Ev
 // @symbol _ZN17daObjBk_Botaosi_cD0Ev
 /* Empty on purpose. mwccarm destroys the dExtShadowModel_c member, then runs
-   ~dBgActor_c inline (its Model and dBgW_KcMbg, then ~dActor_c), and emits
+   ~dBgActor_c inline (its dExtSimpleModel_c and dBgW_KcMbg, then ~dActor_c), and emits
    retail D1 followed by D0. D0's deallocation is an inline operator delete,
    which is why nothing here mentions a heap. */
 daObjBk_Botaosi_c::~daObjBk_Botaosi_c()
@@ -340,7 +339,7 @@ int daObjBk_Botaosi_c::Behavior()
     }
 
     func_ov015_0211166c(this);
-    if (_ZN10dBgActor_c13IsClsnInRangeE5Fix12IiES1_(this, 0, 0))
+    if (IsClsnInRange(0, 0))
         UpdateClsnPosAndRot();
     func_ov015_021114f0(this);
     return 1;
@@ -361,7 +360,7 @@ int daObjBk_Botaosi_c::InitResources()
     Vector3 a, b, c, d;
     int zero, one;
 
-    mModel.SetFile((BMD_File *)Model::LoadFile(data_ov015_0211497c), 1, -1);
+    mModel.SetFile((BMD_File *)dExtSimpleModel_c::LoadFile(data_ov015_0211497c), 1, -1);
     mShadowModel.InitCuboid();
     func_ov015_0211166c(this);
     UpdateClsnPosAndRot();

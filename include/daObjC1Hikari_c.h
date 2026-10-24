@@ -2,7 +2,7 @@
 #define DAOBJC1HIKARI_C_H
 
 #include "dActor_c.h"
-#include "Model.h"
+#include "dExtSimpleModel_c.h"
 #include "dCcAcPos_c.h"
 
 /**
@@ -17,7 +17,7 @@
  */
 struct daObjC1Hikari_c : dActor_c {
     u8 pad_0d0[4];                    /* 0x0d0 */
-    Model mModel;                     /* 0x0d4 */
+    dExtSimpleModel_c mModel;         /* 0x0d4 */
     dCcAcPos_c mCylinder;             /* 0x124 */
     dActor_c *mTalkPlayer;            /* 0x164 */
     u16 mSoundTimers[2];              /* 0x168 */

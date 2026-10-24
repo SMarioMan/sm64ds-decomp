@@ -1,4 +1,8 @@
 //cpp
+namespace Particle {
+struct Callback;
+}
+struct Vector3_16f;
 /* daObjDlPyramid_c and daObjDlPyramidDummy_c. ov024 0x021111a0..0x021118ac,
  * 16 functions.
  *
@@ -17,11 +21,16 @@
  * reads in ROM order. The four helpers keep their unmangled ROM-only
  * names and take the top by pointer.
  *
+ * S41: _ZTS16daObjDlPyramid_c / _ZTS21daObjDlPyramidDummy_c;
+ * _ZTV16daObjDlPyramid_c 0x021138c8, _ZTV21daObjDlPyramidDummy_c 0x02113844;
+ * D1 0x021111a0 / D0 0x021111ec (pyramid), D1 0x0211124c / D0 0x0211127c (dummy);
+ * D0 emitted from D1 definition, defer_codegen off keeps ROM order.
+ *
  * deslop
  * Leftover: the four helpers keep their unmangled ROM-only names
  *   (func_ov024_021112c0, 02111350, 02111480, 021114c4). They are this TU's
  *   own statics/helpers, not vtable slots, and no header names them.
- * Leftover: dBgW_KcMbg::SetFile, Model::LoadFile and dCcAc_c::Init keep
+ * Leftover: dBgW_KcMbg::SetFile, dExtSimpleModel_c::LoadFile and dCcAc_c::Init keep
  *   their mangled extern-C spellings. SetFile takes Fix12<int> by value
  *   (Fix12 wall, notes/mwccarm-codegen.md 6az).
  * The two resource handles below (model gDlPyramidModelFile, collision
@@ -54,9 +63,13 @@ namespace Event { void SetBit(unsigned int bit); int ClearBit(unsigned int bit);
  * class type, mwccarm homes the register arguments and the callers grow, so
  * the measured scalar views stay. */
 extern "C" {
-void *_ZN8Particle6System9NewSimpleEj5Fix12IiES2_S2_(u32 id, int x, int y, int z);
-int _ZN8Particle6System3NewEjj5Fix12IiES2_S2_PK11Vector3_16fPNS_8CallbackE(
-    u32 handle, u32 id, int x, int y, int z, void *dir, void *callback);
+namespace Particle {
+struct System {
+    static void *NewSimple(u32 id, int x, int y, int z);
+    static int New(unsigned, unsigned, int, int, int, const ::Vector3_16f *, Callback *);
+};
+}
+int d_a_obj_dl_pyramidNewHold(u32 handle, u32 id, int x, int y, int z, void *dir, void *callback);
 void _ZN7dCcAc_c4InitEP8dActor_c5Fix12IiES3_jj(
     void *cylinder, dActor_c *owner, Fix12i radius, Fix12i height, u32 flags, u32 hitFlags);
 void _ZN10dBgW_KcMbg7SetFileEP8KCL_FileRK9Matrix4x35Fix12IiEsR10CLPS_Block(
@@ -76,7 +89,7 @@ void func_ov024_021114c4(daObjDlPyramid_c *self);
 /* The retail static initializer constructs these two 8-byte resource handles
  * in source order (model 1501, then collision 1502) and lets the C++ runtime
  * register their destructors. InitResources loads the model through the first
- * (Model::LoadFile) and the collision through the second (dBgW_Kc::LoadFile);
+ * (dExtSimpleModel_c::LoadFile) and the collision through the second (dBgW_Kc::LoadFile);
  * CleanupResources releases both (S19/S31: typed from this TU's callees).
  * The family spellings are reconstructed; the constructor/destructor
  * addresses, file IDs, object widths, BSS order, and registration topology
@@ -99,7 +112,6 @@ extern "C" DlPyramidCollisionFilePtr gDlPyramidCollisionFile;
 #pragma defer_codegen off
 
 /* -------------------------------------------------------------------------- */
-/* 0x021111a0 _ZN16daObjDlPyramid_cD1Ev, 0x021111ec _ZN16daObjDlPyramid_cD0Ev   */
 /* -------------------------------------------------------------------------- */
 // @symbol _ZN16daObjDlPyramid_cD1Ev
 daObjDlPyramid_c::~daObjDlPyramid_c()
@@ -111,8 +123,6 @@ daObjDlPyramid_c::~daObjDlPyramid_c()
    it from the definition above. */
 
 /* -------------------------------------------------------------------------- */
-/* 0x0211124c _ZN21daObjDlPyramidDummy_cD1Ev,                                  */
-/* 0x0211127c _ZN21daObjDlPyramidDummy_cD0Ev                                   */
 /* -------------------------------------------------------------------------- */
 // @symbol _ZN21daObjDlPyramidDummy_cD1Ev
 daObjDlPyramidDummy_c::~daObjDlPyramidDummy_c()
@@ -133,10 +143,13 @@ extern "C" void func_ov024_021112c0(daObjDlPyramid_c *self)
     v.y = self->mPosY;
     v.z = self->mPosZ;
     v.y += 0xfa000;
-    _ZN8Particle6System9NewSimpleEj5Fix12IiES2_S2_(0x1f, v.x, v.y, v.z);
-    _ZN8Particle6System9NewSimpleEj5Fix12IiES2_S2_(0x20, *(volatile int *)&v.x, *(volatile int *)&v.y, *(volatile int *)&v.z);
-    _ZN8Particle6System9NewSimpleEj5Fix12IiES2_S2_(0x21, *(volatile int *)&v.x, *(volatile int *)&v.y, *(volatile int *)&v.z);
-    _ZN8Particle6System9NewSimpleEj5Fix12IiES2_S2_(0x22, *(volatile int *)&v.x, *(volatile int *)&v.y, *(volatile int *)&v.z);
+    Particle::System::NewSimple(0x1f, v.x, v.y, v.z);
+    Particle::System::NewSimple(0x20, *(volatile int *)&v.x, *(volatile int *)&v.y,
+                                *(volatile int *)&v.z);
+    Particle::System::NewSimple(0x21, *(volatile int *)&v.x, *(volatile int *)&v.y,
+                                *(volatile int *)&v.z);
+    Particle::System::NewSimple(0x22, *(volatile int *)&v.x, *(volatile int *)&v.y,
+                                *(volatile int *)&v.z);
     self->MarkForDestruction();
     Event::SetBit(0xe);
     dMap_c::UpdateLevelSpecific();
@@ -165,8 +178,8 @@ extern "C" void func_ov024_02111350(daObjDlPyramid_c *self)
         self->mAngleY += self->mAngVelY;
         self->mPosY += self->mVertSpeed;
     }
-    self->mSpinParticleID = _ZN8Particle6System3NewEjj5Fix12IiES2_S2_PK11Vector3_16fPNS_8CallbackE(
-        self->mSpinParticleID, 0x23, self->mPosX, self->mPosY, self->mPosZ, 0, 0);
+    self->mSpinParticleID = Particle::System::New(self->mSpinParticleID, 0x23, self->mPosX,
+                                                  self->mPosY, self->mPosZ, 0, 0);
     if (self->mStateTimer == 150)
         self->mState = 2;
 }
@@ -269,7 +282,7 @@ s32 daObjDlPyramidDummy_c::Behavior()
 // @symbol _ZN16daObjDlPyramid_c13InitResourcesEv
 int daObjDlPyramid_c::InitResources()
 {
-    BMD_File *bmd = (BMD_File *)Model::LoadFile(gDlPyramidModelFile);
+    BMD_File *bmd = (BMD_File *)dExtSimpleModel_c::LoadFile(gDlPyramidModelFile);
     mTopModel.SetFile(bmd, 1, -1);
     func_ov024_021114c4(this);
     func_ov024_02111480(this);

@@ -114,9 +114,13 @@ extern int __aeabi_idiv(int, int);
    spells it the same way. */
 extern void _ZN7Message7AddCharEc(int c);
 void _ZN5Sound17ChangeMusicVolumeEj5Fix12IiE(u32 vol, Fix12i speed);
-void _ZN3OAM6RenderEbP7OamAttriiii5Fix12IiES3_ii(int a, void *b, int c, int d, int e, int f, int g,
-                                                 int h, int i, int j);
+void OamRender10_Message2(int a, void *b, int c, int d, int e, int f, int g, int h, int i, int j);
 }
+
+struct OamAttr;
+struct OAM {
+    static void Render(bool, OamAttr *, int, int, int, int, int, int, int, int);
+};
 
 namespace G2 {
 void *GetBG2CharPtr();
@@ -824,11 +828,11 @@ void Message::Update() {
             int r5 = data_0209d6e4[data_0209d68c] + data_0209d650 + 0xC;
             int r4 = data_0209d6cc + (data_0209d688 * 0x10) + 0xE;
             if (data_020a0db0 & (0x10 / data_0208ee44)) {
-                _ZN3OAM6RenderEbP7OamAttriiii5Fix12IiES3_ii(0, &data_ov002_0210c3a8, r5, r4, -1, -1,
-                                                            0x1000, 0x1000, 0, -1);
+                OAM::Render(0, (OamAttr *)&data_ov002_0210c3a8, r5, r4, -1, -1, 0x1000, 0x1000, 0,
+                            -1);
             } else {
-                _ZN3OAM6RenderEbP7OamAttriiii5Fix12IiES3_ii(0, &data_ov002_0210c3a0, r5, r4, -1, -1,
-                                                            0x1000, 0x1000, 0, -1);
+                OAM::Render(0, (OamAttr *)&data_ov002_0210c3a0, r5, r4, -1, -1, 0x1000, 0x1000, 0,
+                            -1);
             }
             return;
         }
@@ -860,11 +864,11 @@ void Message::Update() {
             int r5 = data_0209d650 + 0xC;
             int r4 = data_0209d6cc + (data_0209d6e4[data_0209d68c] * 0x10) + 0xE;
             if (data_020a0db0 & (0x10 / data_0208ee44)) {
-                _ZN3OAM6RenderEbP7OamAttriiii5Fix12IiES3_ii(0, &data_ov002_0210c3a8, r5, r4, -1, -1,
-                                                            0x1000, 0x1000, 0, -1);
+                OAM::Render(0, (OamAttr *)&data_ov002_0210c3a8, r5, r4, -1, -1, 0x1000, 0x1000, 0,
+                            -1);
             } else {
-                _ZN3OAM6RenderEbP7OamAttriiii5Fix12IiES3_ii(0, &data_ov002_0210c3a0, r5, r4, -1, -1,
-                                                            0x1000, 0x1000, 0, -1);
+                OAM::Render(0, (OamAttr *)&data_ov002_0210c3a0, r5, r4, -1, -1, 0x1000, 0x1000, 0,
+                            -1);
             }
             return;
         }
@@ -942,11 +946,11 @@ void Message::Update() {
             int r5 = data_0209d650 + 0xC;
             int r4 = data_0209d6cc + (data_0209d6e4[data_0209d68c] * 0x10) + 0xE;
             if (data_020a0db0 & (0x10 / data_0208ee44)) {
-                _ZN3OAM6RenderEbP7OamAttriiii5Fix12IiES3_ii(0, &data_ov002_0210c3a8, r5, r4, -1, -1,
-                                                            0x1000, 0x1000, 0, -1);
+                OAM::Render(0, (OamAttr *)&data_ov002_0210c3a8, r5, r4, -1, -1, 0x1000, 0x1000, 0,
+                            -1);
             } else {
-                _ZN3OAM6RenderEbP7OamAttriiii5Fix12IiES3_ii(0, &data_ov002_0210c3a0, r5, r4, -1, -1,
-                                                            0x1000, 0x1000, 0, -1);
+                OAM::Render(0, (OamAttr *)&data_ov002_0210c3a0, r5, r4, -1, -1, 0x1000, 0x1000, 0,
+                            -1);
             }
             return;
         }
@@ -972,11 +976,11 @@ void Message::Update() {
                 return;
             }
             if (data_0209d6c4 != 0) {
-                _ZN3OAM6RenderEbP7OamAttriiii5Fix12IiES3_ii(0, &data_ov002_0210c390, r5, r4, -1, -1,
-                                                            0x1000, 0x1000, 0, -1);
+                OAM::Render(0, (OamAttr *)&data_ov002_0210c390, r5, r4, -1, -1, 0x1000, 0x1000, 0,
+                            -1);
             } else {
-                _ZN3OAM6RenderEbP7OamAttriiii5Fix12IiES3_ii(0, &data_ov002_0210c398, r5, r4, -1, -1,
-                                                            0x1000, 0x1000, 0, -1);
+                OAM::Render(0, (OamAttr *)&data_ov002_0210c398, r5, r4, -1, -1, 0x1000, 0x1000, 0,
+                            -1);
             }
             return;
         }

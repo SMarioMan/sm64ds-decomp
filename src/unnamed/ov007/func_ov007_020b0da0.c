@@ -1,5 +1,5 @@
 #include "types.h"
-#include "ModelBase.h"
+#include "dExtModel_c.h"
 #include "Ov007MenuState.h"
 #include "Ov007Touch.h"
 // @symbol func_ov007_020b0da0

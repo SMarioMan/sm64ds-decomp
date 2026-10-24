@@ -2,7 +2,7 @@
 #define DAMCFLAG_C_H
 #include "types.h"
 #include "dActor_c.h"
-#include "ModelAnim.h"
+#include "dExtAnmModel_c.h"
 
 extern "C" void *_ZN7fBase_cnwEj(unsigned size);
 
@@ -13,16 +13,16 @@ extern "C" void *_ZN7fBase_cnwEj(unsigned size);
  * This is the flag, not metalnet and not castle water.
  *
  * SIZE 0x138, the literal daMcFlag_c_classInit passes to operator new.
- * Factory constructs ModelAnim at 0xd4; D1 tears it down before ~dActor_c.
+ * Factory constructs dExtAnmModel_c at 0xd4; D1 tears it down before ~dActor_c.
  * dActor_c ends at 0xd0; pad_0d0 is the 4-byte gap before mModelAnim.
- * 0xd4 + sizeof(ModelAnim) 0x64 = 0x138.
+ * 0xd4 + sizeof(dExtAnmModel_c) 0x64 = 0x138.
  *
  * The 31-slot ROM vtable differs from dActor_c only in slots 0, 3, 6, 9, 16
  * and 17. All other actor virtuals are inherited and must not be redeclared.
  */
 struct daMcFlag_c : dActor_c {
     u8        pad_0d0[0x4];
-    ModelAnim mModelAnim;       /* 0x0d4 */
+    dExtAnmModel_c mModelAnim; /* 0x0d4 */
 
     /* INLINE IS LOAD-BEARING. Out of line, mwccarm emits D0 before D1
        (cartridge is 0x02112078 D1 then 0x021120a8 D0) plus a D2 with no

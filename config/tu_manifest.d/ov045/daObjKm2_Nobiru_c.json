@@ -10,7 +10,7 @@
     "contiguous linker run: 0x2111840..0x2111ad4, 9 function(s), from build/tu_map.json (tools/tu_map.py)",
     "class label(s): daObjKm2_Nobiru_c",
     "module sinit corroboration: 6 sinit(s) / 6 .ctor entries, sinit_vs_tu=ok, corroborated=False (module-wide, NOT narrowed to this one TU -- see notes/tu-reconstruction-pilot-report.md sec 2 for the by-hand narrowing step)",
-    "fold-lane-c-0929: loose src/d_a_obj_km2_nobiru.c (daObjKm2_Nobiru_c_classInit, 0x02111ad4..0x02111b14) sits immediately after this TU's InitResources with no gap before the next class's TU (src/game/actors/d_a_obj_km2_ukishima.cpp at 0x02111b14); folded in as `return new daObjKm2_Nobiru_c();` -- daObjKm2_Nobiru_c declares no constructor of its own, so the compiler-synthesized default constructor reproduces the loose file's hand-written fBase_c::operator new(808) + dActor_c::dActor_c() + vtable store + Model/dBgW_KcMbgSclY sub-object construction sequence byte-for-byte."
+    "fold-lane-c-0929: loose src/d_a_obj_km2_nobiru.c (daObjKm2_Nobiru_c_classInit, 0x02111ad4..0x02111b14) sits immediately after this TU's InitResources with no gap before the next class's TU (src/game/actors/d_a_obj_km2_ukishima.cpp at 0x02111b14); folded in as `return new daObjKm2_Nobiru_c();` -- daObjKm2_Nobiru_c declares no constructor of its own, so the compiler-synthesized default constructor reproduces the loose file's hand-written fBase_c::operator new(808) + dActor_c::dActor_c() + vtable store + dExtSimpleModel_c/dBgW_KcMbgSclY sub-object construction sequence byte-for-byte."
   ],
   "sections": [
     {

@@ -5,7 +5,7 @@
  * A SharedFilePtr is an eight-byte handle to one file that several actors
  * share: the first LoadFile reads the file in, later ones only count
  * references, and the last Release frees it. Each format's LoadFile
- * (Model, TextureSequence, dExtFrameCtrl_c, dBgW_Kc) loads through the handle
+ * (dExtSimpleModel_c, TextureSequence, dExtFrameCtrl_c, dBgW_Kc) loads through the handle
  * and rebases the file's internal offsets the first time it arrives. Those
  * four are members of other classes, but the cartridge emits them in this
  * run, so they live here.
@@ -28,7 +28,7 @@
  *
  * HOST BUILD. port/ compiles this file for gate 3b and every target above it.
  * The host gets the refcounting core (func_02017e0c, func_02017c24, LoadFile,
- * Release). Model::LoadFile and dExtFrameCtrl_c::LoadFile are compiled only
+ * Release). dExtSimpleModel_c::LoadFile and dExtFrameCtrl_c::LoadFile are compiled only
  * where the gate-4b slice supplies their UpdateFileOffsets, and
  * dBgW_Kc::LoadFile only where gate 8 does: port/CMakeLists.txt defines
  * SM64DS_PORT_GATE4B and SM64DS_PORT_GATE8 on those targets. Everything else
@@ -39,7 +39,7 @@
 
 #include "types.h"
 #include "SharedFilePtr.h"
-#include "Model.h"
+#include "dExtSimpleModel_c.h"
 #include "TextureSequence.h"
 #include "dBgW_Kc.h"
 
@@ -281,8 +281,8 @@ void SharedFilePtr::ReallocateModelFile() {
 #if !defined(_MSC_VER) || defined(SM64DS_PORT_GATE4B)
 /* Loads a BMD model. The first holder rebases its offsets, registers it in
    the common model data array, and trims its allocation to the real size. */
-// @symbol _ZN5Model8LoadFileER13SharedFilePtr
-void *Model::LoadFile(SharedFilePtr &ptr) {
+// @symbol _ZN17dExtSimpleModel_c8LoadFileER13SharedFilePtr
+void *dExtSimpleModel_c::LoadFile(SharedFilePtr &ptr) {
     void *filePtr;
     ptr.LoadFile();
     filePtr = ptr.filePtr;
@@ -308,13 +308,13 @@ extern "C" int func_02017a0c(int self) {
     return self;
 }
 
-/* Loads a BMD through the handle and gives it to a ModelBase. If SetFile
+/* Loads a BMD through the handle and gives it to a dExtModel_c. If SetFile
    refuses it, the reference is handed back. */
 // @symbol func_020179b4
-extern "C" int func_020179b4(SharedFilePtr *filePtr, ModelBase *model, int arg) {
+extern "C" int func_020179b4(SharedFilePtr *filePtr, dExtModel_c *model, int arg) {
     int result = 0;
     if (model) {
-        BMD_File *file = (BMD_File *)Model::LoadFile(*filePtr);
+        BMD_File *file = (BMD_File *)dExtSimpleModel_c::LoadFile(*filePtr);
         if (file) {
             result = model->SetFile(file, arg, -1);
             if (!result) {
@@ -393,7 +393,7 @@ extern "C" int func_020178b4(int self) {
     return self;
 }
 
-/* A BMD LoadFile that rebases the file but, unlike Model::LoadFile, neither
+/* A BMD LoadFile that rebases the file but, unlike dExtSimpleModel_c::LoadFile, neither
    registers it in the common model data array nor trims its allocation. */
 // @symbol func_0201787c
 extern "C" void *func_0201787c(SharedFilePtr *ptr) {
@@ -401,7 +401,7 @@ extern "C" void *func_0201787c(SharedFilePtr *ptr) {
     ptr->LoadFile();
     filePtr = ptr->filePtr;
     if (ptr->numRefs == 1 && filePtr != 0) {
-        Model::UpdateFileOffsets(*(BMD_File *)filePtr);
+        dExtSimpleModel_c::UpdateFileOffsets(*(BMD_File *)filePtr);
     }
     return filePtr;
 }

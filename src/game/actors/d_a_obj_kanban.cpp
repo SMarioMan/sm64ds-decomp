@@ -70,7 +70,7 @@ extern int func_ov002_020bec9c(void *c, unsigned int a, int b, int d, unsigned s
 // @symbol _ZN13daObjKanban_cD0Ev
 /* One out-of-line definition; mwccarm emits D1 and D0 from it, in that
  * order: its own vptr, then dCcAcPos_c (0x320), then dBgActor_c's
- * inlined, then dBgActor_c's dBgW_KcMbg and Model, then dActor_c. */
+ * inlined, then dBgActor_c's dBgW_KcMbg and dExtSimpleModel_c, then dActor_c. */
 daObjKanban_c::~daObjKanban_c()
 {
 }
@@ -184,7 +184,7 @@ int daObjKanban_c::Behavior()
 int daObjKanban_c::InitResources()
 {
   struct Vector3 v;
-  void* file = Model::LoadFile(data_ov085_02130858);
+  void *file = dExtSimpleModel_c::LoadFile(data_ov085_02130858);
   mModel.SetFile((BMD_File *)file, 1, -1);
   UpdateModelPosAndRotY();
   v.x = data_ov085_0212f29c.x;

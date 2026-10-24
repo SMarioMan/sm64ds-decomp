@@ -396,7 +396,7 @@
       "ordinal": 51
     },
     {
-      "symbol": "_ZN6Player7SetAnimEji5Fix12IiEj",
+      "symbol": "_ZN6Player7SetAnimEjiit",
       "address": "0x020bef2c",
       "size": "0x00000210",
       "legacy_source": "src/_ZN6Player7SetAnimEji5Fix12IiEj.cpp",

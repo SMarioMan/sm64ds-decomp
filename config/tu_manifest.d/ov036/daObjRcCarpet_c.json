@@ -2451,17 +2451,17 @@
   },
   "defined_symbol_renames": [
     {
-      "from": "@467",
+      "from": "@459",
       "to": "@453",
       "evidence": "compiler temp; the types.h Vector3 ctors shift this TU's per-TU @NNN uniquifier, so mwcc emits it under this name now; licensed under the existing pin"
     },
     {
-      "from": "@468",
+      "from": "@460",
       "to": "@454",
       "evidence": "compiler temp; the types.h Vector3 ctors shift this TU's per-TU @NNN uniquifier, so mwcc emits it under this name now; licensed under the existing pin"
     },
     {
-      "from": "@469",
+      "from": "@461",
       "to": "@455",
       "evidence": "compiler temp; the types.h Vector3 ctors shift this TU's per-TU @NNN uniquifier, so mwcc emits it under this name now; licensed under the existing pin"
     }

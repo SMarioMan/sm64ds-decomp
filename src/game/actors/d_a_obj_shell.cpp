@@ -30,7 +30,7 @@
  * first and emits no D2 body.
  *
  * leftovers:
- * - ModelAnim::SetAnim, dCcAc_c::Init, Particle::System::NewSimple and
+ * - dExtAnmModel_c::SetAnim, dCcAc_c::Init, Particle::System::NewSimple and
  *   Player::Hurt keep their C ABI spellings: their real declarations pass
  *   Fix12<int> by value, which mwccarm lowers differently at a C++ call site.
  * - func_0201267c is still a linker name; it is the positional-sound entry
@@ -83,9 +83,11 @@ extern "C" {
 void Matrix4x3_FromRotationY(Matrix4x3 *, s32);
 /* The positional-sound entry point; takes the actor's camera-space position. */
 void func_0201267c(int soundId, Fix12i *camSpacePos);
-int _ZN8Particle6System9NewSimpleEj5Fix12IiES2_S2_(unsigned id, int x, int y, int z);
-void _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(
-    ModelAnim *self, BCA_File *file, int flags, int speed, u32 startFrame);
+namespace Particle {
+struct System {
+    static int NewSimple(unsigned id, int x, int y, int z);
+};
+}
 void _ZN7dCcAc_c4InitEP8dActor_c5Fix12IiES3_jj(
     dCcAc_c *self, dActor_c *actor, int radius, int height,
     u32 flags, u32 vulnFlags);
@@ -115,7 +117,7 @@ extern ShellAnimationFilePtr data_ov064_0211c9cc;
  * Every instruction the cartridge has here falls out of the one `new`. The
  * literal 0x174 is the class's own size, handed to the leaf operator new the
  * header declares; then dActor_c's C2, this class's vptr store, and the
- * ModelAnim (0x0d4) and dCcAc_c (0x138) member constructors, in declaration
+ * dExtAnmModel_c (0x0d4) and dCcAc_c (0x138) member constructors, in declaration
  * order. The null check is the one `new` itself emits, and the implicit
  * default constructor is what keeps that construction inlined -- declaring a
  * constructor of our own would emit a `bl` the factory does not have.
@@ -139,10 +141,9 @@ int daObjShell_c::InitResources()
 {
     dExtFrameCtrl_c::LoadFile(data_ov064_0211c9cc);
     dExtFrameCtrl_c::LoadFile(data_ov064_0211c9bc);
-    BMD_File *modelFile = (BMD_File *)Model::LoadFile(data_ov064_0211c9c4);
+    BMD_File *modelFile = (BMD_File *)dExtSimpleModel_c::LoadFile(data_ov064_0211c9c4);
     mModelAnim.SetFile(modelFile, 1, -1);
-    _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(
-        &mModelAnim, (BCA_File *)data_ov064_0211c9bc.filePtr, 0x40000000, 0x1000, 0);
+    mModelAnim.SetAnim((BCA_File *)data_ov064_0211c9bc.filePtr, 0x40000000, 0x1000, 0);
     _ZN7dCcAc_c4InitEP8dActor_c5Fix12IiES3_jj(
         &mdCcAc_c, this, 0x64000, 0x64000, 0x200004, 0);
     func_ov064_0211a9b4();
@@ -192,8 +193,7 @@ int daObjShell_c::Behavior()
             u.shutPuff[1] = mPosY;
             u.shutPuff[2] = mPosZ;
             u.shutPuff[1] = u.shutPuff[1] + 0x32000;
-            _ZN8Particle6System9NewSimpleEj5Fix12IiES2_S2_(0x10c,
-                u.shutPuff[0], u.shutPuff[1], u.shutPuff[2]);
+            Particle::System::NewSimple(0x10c, u.shutPuff[0], u.shutPuff[1], u.shutPuff[2]);
             mShutTimer = 0xa;
             mStateTimer = 0;
             mdCcAc_c.flags &= ~1;
@@ -205,12 +205,10 @@ int daObjShell_c::Behavior()
                 u.lungePuff[1] = mPosY;
                 u.lungePuff[2] = mPosZ;
                 u.lungePuff[1] = u.lungePuff[1] + 0x32000;
-                _ZN8Particle6System9NewSimpleEj5Fix12IiES2_S2_(0x10b,
-                    u.lungePuff[0], u.lungePuff[1], u.lungePuff[2]);
+                Particle::System::NewSimple(0x10b, u.lungePuff[0], u.lungePuff[1], u.lungePuff[2]);
                 mStateTimer = 0;
                 mState = STATE_LUNGE;
-                _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(
-                    &mModelAnim, (BCA_File *)data_ov064_0211c9cc.filePtr, 0x40000000, 0x1000, 0);
+                mModelAnim.SetAnim((BCA_File *)data_ov064_0211c9cc.filePtr, 0x40000000, 0x1000, 0);
             } else {
                 if (mShutTimer != 0)
                     mShutTimer--;
@@ -220,8 +218,7 @@ int daObjShell_c::Behavior()
     case STATE_LUNGE:
         if (mStateTimer > 0x96) {
             mState = STATE_SHUT;
-            _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(
-                &mModelAnim, (BCA_File *)data_ov064_0211c9bc.filePtr, 0x40000000, 0x1000, 0);
+            mModelAnim.SetAnim((BCA_File *)data_ov064_0211c9bc.filePtr, 0x40000000, 0x1000, 0);
             mStateTimer = 0;
         } else {
             if (!mModelAnim.WillHitFrame(8)) {
@@ -278,7 +275,7 @@ int daObjShell_c::CleanupResources()
 
 // @symbol _ZN12daObjShell_c19func_ov064_0211a9b4Ev
 /* Rebuilds the model's world matrix from the actor's facing angle and its
- * position, the position scaled down by 8 the way every ModelAnim actor in
+ * position, the position scaled down by 8 the way every dExtAnmModel_c actor in
  * this overlay does it. InitResources calls it once, at spawn.
  *
  * Keeps its address name: daObjTbox_c, promoted just before this TU in the
@@ -302,7 +299,7 @@ void daObjShell_c::func_ov064_0211a9b4()
  *
  * Every instruction in both is compiler-generated teardown implied by
  * `struct daObjShell_c : dActor_c`: this class's own vptr store, then dCcAc_c
- * at 0x138 and ModelAnim at 0x0d4 in reverse construction order, then the
+ * at 0x138 and dExtAnmModel_c at 0x0d4 in reverse construction order, then the
  * dActor_c base. D0 additionally returns the object to the actor heap through
  * the inline operator delete.
  */

@@ -8,7 +8,7 @@
  * deslop leftovers:
  * - TextureSequence::SetFile as a member (Fix12<int> by value):
  *   ResetEyeAnim 0x58->0x64, UpdateEyeAnim 0x168->0x178.
- *   ModelAnim::SetAnim as a member: St_Die_Init 0xd4->0xe0.
+ *   dExtAnmModel_c::SetAnim as a member: St_Die_Init 0xd4->0xe0.
  *   InitResources' SetAnim and SetFile together 0x298->0x2ac.
  * - DropShadowRadHeight as a member: UpdateModelTransform 0xa0->0xb0.
  * - dCcAcPos_c::Init as a member, both call sites: InitResources
@@ -56,7 +56,7 @@
  * profiles); retail does not store them. Historical aliases: BigMrI_Spawn
  * and MrI_Spawn. Each hand-called fBase_c::operator new(536) + the inherited
  * dActor_c ctor + this class's vtable store + the four member subobjects in
- * field order (ModelAnim, TextureSequence, dExtShadowModel_c, dCcAcPos_c).
+ * field order (dExtAnmModel_c, TextureSequence, dExtShadowModel_c, dCcAcPos_c).
  * daEykn_c has no user-declared constructor, so both factories are now
  * `new daEykn_c()`. This TU keeps `#pragma defer_codegen off`, so emission
  * follows source order (ROM-ascending); the two factories append after
@@ -133,15 +133,13 @@ void func_0200f760(void *actor, void *clsn);
 
 /* Fix12<int> by value. Scalar parameters: the member form size-DIFFs.
    See the leftover list. */
-int _ZN8Particle6System3NewEjj5Fix12IiES2_S2_PK11Vector3_16fPNS_8CallbackE(
-    u32 uniqueID, u32 effectID, int x, int y, int z, const void *dir, void *callback);
+int d_a_eyknNewHold(u32 uniqueID, u32 effectID, int x, int y, int z, const void *dir,
+                    void *callback);
 u32 _ZN8Particle6System17NewUnkCallback818Ejj5Fix12IiES2_S2_PK11Vector3_16f(
     u32 uniqueID, u32 effectID, int x, int y, int z, const Vector3_16f *dir);
-void _ZN8Particle6System9NewSimpleEj5Fix12IiES2_S2_(u32 effectID, int x, int y, int z);
-int _ZN6Player4HurtERK7Vector3j5Fix12IiEjjj(
-    Player *player, void *source, u32 damage, int speed, u8 a, u8 b, u8 c);
-void _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(
-    ModelAnim *anim, void *file, int flags, int speed, u32 startFrame);
+void d_a_eyknNewSimpleHold(u32 effectID, int x, int y, int z);
+int _ZN6Player4HurtERK7Vector3j5Fix12IiEjjj(Player *player, void *source, u32 damage, int speed,
+                                            u8 a, u8 b, u8 c);
 void _ZN15TextureSequence7SetFileER8BTP_Filei5Fix12IiEj(
     TextureSequence *seq, void *file, int flags, int speed, u32 startFrame);
 void _ZN10dCcAcPos_c4InitEP8dActor_cRK7Vector35Fix12IiES6_jj(
@@ -364,7 +362,8 @@ idCheck:
     if (!isPlayer) return;
 
     if (mdCcAcPos_c.hitFlags & kKillHit) {
-        mParticleID0 = (u32)_ZN8Particle6System3NewEjj5Fix12IiES2_S2_PK11Vector3_16fPNS_8CallbackE(mParticleID0, kDeathPtcl0, mPosX, mPosY, mPosZ, 0, 0);
+        mParticleID0 =
+            (u32)Particle::System::New(mParticleID0, kDeathPtcl0, mPosX, mPosY, mPosZ, 0, 0);
         mParticleID1 = _ZN8Particle6System17NewUnkCallback818Ejj5Fix12IiES2_S2_PK11Vector3_16f(mParticleID1, kDeathPtcl1, mPosX, mPosY, mPosZ, 0);
         SetState(2);
         return;
@@ -412,8 +411,7 @@ int daEykn_c::St_Die_Main()
     if (id0 != 0 && mParticleID1 != 0) {
         Particle::System *p0;
         Particle::System *p1;
-        mParticleID0 = (u32)_ZN8Particle6System3NewEjj5Fix12IiES2_S2_PK11Vector3_16fPNS_8CallbackE(
-            id0, kDeathPtcl0, mPosX, mPosY, mPosZ, 0, 0);
+        mParticleID0 = (u32)Particle::System::New(id0, kDeathPtcl0, mPosX, mPosY, mPosZ, 0, 0);
         mParticleID1 = _ZN8Particle6System17NewUnkCallback818Ejj5Fix12IiES2_S2_PK11Vector3_16f(
             mParticleID1, kDeathPtcl1, mPosX, mPosY, mPosZ, 0);
         p0 = Particle::System::FromUniqueID(mParticleID0);
@@ -489,9 +487,9 @@ int daEykn_c::St_Die_Main()
             if (isBig != 0) {
                 unsigned char star = (unsigned char)(param1 & 0xf);
                 UntrackAndSpawnStar(mStarTrackID, star, mPos, 4);
-                _ZN8Particle6System9NewSimpleEj5Fix12IiES2_S2_(0x124, mPosX, mPosY, mPosZ);
-                _ZN8Particle6System9NewSimpleEj5Fix12IiES2_S2_(0x125, mPosX, mPosY, mPosZ);
-                _ZN8Particle6System9NewSimpleEj5Fix12IiES2_S2_(0x126, mPosX, mPosY, mPosZ);
+                Particle::System::NewSimple(0x124, mPosX, mPosY, mPosZ);
+                Particle::System::NewSimple(0x125, mPosX, mPosY, mPosZ);
+                Particle::System::NewSimple(0x126, mPosX, mPosY, mPosZ);
             }
         }
         func_0201267c(0xc4, &mCamSpacePosX);
@@ -517,8 +515,7 @@ int daEykn_c::St_Die_Init()
         mDeathSpinSpeed = 0x2500;
     else
         mDeathSpinSpeed = -0x2500;
-    _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(&mModelAnim, gEyknDeathAnimationFile.filePtr, 0,
-                                                0x1000, 0);
+    mModelAnim.SetAnim((BCA_File *)gEyknDeathAnimationFile.filePtr, 0, 0x1000, 0);
     mModelAnim.SetFlags(0x40000000);
     mModelAnim.speed = 0x2800;
     mModelAnim.currFrame = 0;
@@ -786,9 +783,9 @@ s32 daEykn_c::InitResources()
     BMD_File *bmd;
     LoadBlueCoinModel(this);
 
-    Model::LoadFile(data_ov002_0210da38);
-    bmd = (BMD_File *)Model::LoadFile(gEyknModelFile);
-    ((ModelBase *)&mModelAnim)->SetFile(bmd, 1, 1);
+    dExtSimpleModel_c::LoadFile(data_ov002_0210da38);
+    bmd = (BMD_File *)dExtSimpleModel_c::LoadFile(gEyknModelFile);
+    ((dExtModel_c *)&mModelAnim)->SetFile(bmd, 1, 1);
 
     int i;
     for (i = 0; i < 2; i++) {
@@ -839,8 +836,7 @@ s32 daEykn_c::InitResources()
     mTerminalVelocity = 0;
     SetState(0);
 
-    _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(&mModelAnim, gEyknDeathAnimationFile.filePtr, 0,
-                                                0x1000, 0);
+    mModelAnim.SetAnim((BCA_File *)gEyknDeathAnimationFile.filePtr, 0, 0x1000, 0);
 
     mModelAnim.speed = 0x1000;
     _ZN15TextureSequence7SetFileER8BTP_Filei5Fix12IiEj(

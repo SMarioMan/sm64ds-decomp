@@ -1,7 +1,11 @@
 //cpp
+
+namespace CP15 {
+void FlushDataCache(unsigned int a, unsigned int b);
+}
 extern "C" {
 extern int WM_CheckStateEx(int count, ...);
-extern void _ZN4CP1514FlushDataCacheEjj(unsigned int a, unsigned int b);
+
 extern void WM_SetCallbackTable(int i, int val);
 extern char *WM_GetSystemWork(void);
 extern int WM_SendCommand(short a0, unsigned short count);
@@ -49,7 +53,7 @@ int func_02061ee4(int a, char *b) {
         return 6;
     h = param->channel;
     if (h < 1 || h > 0xe) return 6;
-    _ZN4CP1514FlushDataCacheEjj((unsigned int)b, 0x20);
+    CP15::FlushDataCache((unsigned int)b, 0x20);
     WM_SetCallbackTable(0xa, a);
     req = ((WMArm9Buf *)WM_GetSystemWork())->fifo9to7;
     req->apiid = 0xa;

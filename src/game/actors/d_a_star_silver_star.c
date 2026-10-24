@@ -14,8 +14,8 @@ typedef struct {
     char pad_000[0x110];
     char mdCc_c[0x40];         /* 0x110 dCcAcPos_c */
     char mWithMeshClsn[0x1bc]; /* 0x150 dBgCh_Actr */
-    char mModelAnim1[0x64];    /* 0x30c ModelAnim */
-    char mModelAnim2[0x64];    /* 0x370 ModelAnim */
+    char mModelAnim1[0x64];    /* 0x30c dExtAnmModel_c */
+    char mModelAnim2[0x64];    /* 0x370 dExtAnmModel_c */
     char mShadowModel[0x28];   /* 0x3d4 dExtShadowModel_c */
 } StarView;
 /* recovered: vtable identified, globals resolved */
@@ -32,8 +32,8 @@ int *daStar_c_classInit_SILVER_STAR(void)
         p[0] = (int)_ZTV8daStar_c;
         _ZN10dCcAcPos_cC1Ev(((StarView *)p)->mdCc_c);
         _ZN10dBgCh_ActrC1Ev(((StarView *)p)->mWithMeshClsn);
-        _ZN9ModelAnimC1Ev(((StarView *)p)->mModelAnim1);
-        _ZN9ModelAnimC1Ev(((StarView *)p)->mModelAnim2);
+        _ZN14dExtAnmModel_cC1Ev(((StarView *)p)->mModelAnim1);
+        _ZN14dExtAnmModel_cC1Ev(((StarView *)p)->mModelAnim2);
         _ZN17dExtShadowModel_cC1Ev(((StarView *)p)->mShadowModel);
     }
     return p;

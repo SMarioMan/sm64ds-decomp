@@ -43,6 +43,24 @@ enum dScMgCurling_c_AssetId {
 #include "PlayerInput.h"
 #include "nitro/fx/fx.h"
 
+namespace G2 {
+void *GetBG2CharPtr(void);
+}
+
+namespace G2S {
+unsigned GetBG2CharPtr(void);
+}
+
+namespace GX {
+void LoadBGPltt(const void *p, u32 a, u32 b);
+void LoadOBJPltt(const void *p, u32 a, u32 b);
+}
+
+namespace GXS {
+void LoadBGPltt(const void *p, u32 a, u32 b);
+void LoadOBJPltt(const void *p, u32 a, u32 b);
+}
+
 /* `C` is the receiver of the pointer-to-member state tables. It must stay
  * incomplete: mwccarm picks the pointer-to-member layout from whether the
  * class is complete, and completing it changes all four dispatchers. */
@@ -91,18 +109,14 @@ extern int Mg_GetTopRecord(void);
 extern int Mg_DrawTopLeftCounter(int self);
 extern char *Ov004_LoadFileByPath(void *p);
 extern void Mg_SetTopScreenYOffset(int a);
-extern void *_ZN2G213GetBG2CharPtrEv(void);
-extern unsigned _ZN3G2S13GetBG2CharPtrEv(void);
+
 extern void DecompressLZ16(const void *src, void *dst);
 extern void *LoadFile(int handle);
 extern void Deallocate(void *ptr);
 extern void Ov004_Deallocate(void *p);
 extern void func_020563d4(const void *src, u32 offset, u32 count);
 extern void func_02056374(const void *src, u32 offset, u32 count);
-extern void _ZN2GX10LoadBGPlttEPKvjj(const void *p, u32 a, u32 b);
-extern void _ZN2GX11LoadOBJPlttEPKvjj(const void *p, u32 a, u32 b);
-extern void _ZN3GXS10LoadBGPlttEPKvjj(const void *p, u32 a, u32 b);
-extern void _ZN3GXS11LoadOBJPlttEPKvjj(const void *p, u32 a, u32 b);
+
 extern void _ZN3G2x13SetBlendAlphaEPVttttj(volatile u16 *p, u16 a, u16 b, u16 c, u16 d);
 
 extern int data_0209d4b8;
@@ -1649,10 +1663,10 @@ s32 dScMgCurling_c::InitResources() {
     data_0209d45c |= 4;
     *(volatile u16 *)0x400000c = (*(volatile u16 *)0x400000c & ~3) | 2;
     *(volatile u16 *)0x400000c = (*(volatile u16 *)0x400000c & 0x43) | 0x1220;
-    DecompressLZ16(a, _ZN2G213GetBG2CharPtrEv());
+    DecompressLZ16(a, G2::GetBG2CharPtr());
 
     f = LoadFile(ASSET_D_2D_MG_BG_CURLING1_NCL_BIN);
-    _ZN2GX10LoadBGPlttEPKvjj(f, 0x60, 0x1a0);
+    GX::LoadBGPltt(f, 0x60, 0x1a0);
     Deallocate(f);
 
     f = LoadFile(ASSET_D_2D_MG_BG_CURLING1_NSC_BIN);
@@ -1663,15 +1677,15 @@ s32 dScMgCurling_c::InitResources() {
         void *c7 = LoadFile(ASSET_D_2D_MG_CURLING_NCG_BIN);
         void *c8 = LoadFile(ASSET_D_2D_MG_CURLING_NCL_BIN);
         DecompressLZ16(c7, (void *)0x6400000);
-        _ZN2GX11LoadOBJPlttEPKvjj(c8, 0, 0x100);
+        GX::LoadOBJPltt(c8, 0, 0x100);
 
         data_0209d454 |= 4;
         *(volatile u16 *)0x400100c = (*(volatile u16 *)0x400100c & ~3) | 2;
         *(volatile u16 *)0x400100c = (*(volatile u16 *)0x400100c & 0x43) | 0x814;
-        DecompressLZ16(b, (void *)_ZN3G2S13GetBG2CharPtrEv());
+        DecompressLZ16(b, (void *)G2S::GetBG2CharPtr());
 
         f = LoadFile(ASSET_D_2D_MG_BG_CURLING2_NCL_BIN);
-        _ZN3GXS10LoadBGPlttEPKvjj(f, 0x60, 0x1a0);
+        GXS::LoadBGPltt(f, 0x60, 0x1a0);
         Deallocate(f);
 
         f = LoadFile(ASSET_D_2D_MG_BG_CURLING2_NSC_BIN);
@@ -1682,7 +1696,7 @@ s32 dScMgCurling_c::InitResources() {
         Ov004_Deallocate(b);
 
         DecompressLZ16(c7, (void *)0x6600000);
-        _ZN3GXS11LoadOBJPlttEPKvjj(c8, 0, 0x100);
+        GXS::LoadOBJPltt(c8, 0, 0x100);
         Deallocate(c7);
         Deallocate(c8);
     }

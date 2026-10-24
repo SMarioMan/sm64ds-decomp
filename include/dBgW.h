@@ -25,7 +25,7 @@
  *   slot 12    GetVelocity(Vector3 &)           - zeroes it here
  *
  * THE DESTRUCTOR IS DECLARED FIRST AND NEVER DEFINED AS A METHOD -- the
- * key-function arrangement from include/ModelBase.h.
+ * key-function arrangement from include/dExtModel_c.h.
  *
  * THE TWO DESTRUCTOR BODIES. Both are `ldr r1,[pc,#4]; str r1,[r0]; bx lr'
  * storing the vtable word, and they are byte-identical -- but the compiler

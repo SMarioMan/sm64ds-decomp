@@ -3,8 +3,8 @@
  * cartridge home. func_0203aa10, func_0203aa74 and func_0203aad0 retain
  * their address names and C linkage; DetectClsn and GetNormal call them
  * by address, and daObjKm2_Nobiru_c reads scaleY through func_0203aad0.
- * SetFile and SetScaleY stay mangled: the scale arguments are Fix12 by
- * value. func_0203aa74 multiplies y by invScaleY after the parent's inverse
+ * SetFile and SetScaleY are real methods taking the scale as a scalar
+ * Fix12i, which is what the bytes pass. func_0203aa74 multiplies y by invScaleY after the parent's inverse
  * matrix; func_0203aa10 applies scaleY before the parent's scaled matrix.
  */
 /* dBgW_KcMbgSclY: mesh collider stretched in y (Snowman's body, lift
@@ -58,22 +58,21 @@ dBgW_KcMbgSclY::dBgW_KcMbgSclY() {}
 // @symbol _ZN14dBgW_KcMbgSclYD1Ev
 dBgW_KcMbgSclY::~dBgW_KcMbgSclY() {}
 
-// @symbol _ZN14dBgW_KcMbgSclY7SetFileEP8KCL_FileRK9Matrix4x35Fix12IiEsR10CLPS_Block
-extern "C" void _ZN14dBgW_KcMbgSclY7SetFileEP8KCL_FileRK9Matrix4x35Fix12IiEsR10CLPS_Block(
-    dBgW_KcMbgSclY *self, KCL_File *file, const Matrix4x3 *mtx, Fix12i scale, s16 angY,
-    CLPS_Block *clps) {
-    _ZN10dBgW_KcMbg7SetFileEP8KCL_FileRK9Matrix4x35Fix12IiEsR10CLPS_Block(self, file, mtx, scale,
-                                                                          angY, clps);
-    self->scaleY = 0x1000;
-    self->invScaleY = 0x1000;
+// @symbol _ZN14dBgW_KcMbgSclY7SetFileEP8KCL_FileRK9Matrix4x3isR10CLPS_Block
+void dBgW_KcMbgSclY::SetFile(KCL_File *file, const Matrix4x3 &mat, Fix12i scale, s16 angY,
+                             CLPS_Block &clps) {
+    _ZN10dBgW_KcMbg7SetFileEP8KCL_FileRK9Matrix4x35Fix12IiEsR10CLPS_Block(this, file, &mat, scale,
+                                                                          angY, &clps);
+    scaleY = 0x1000;
+    invScaleY = 0x1000;
 }
 
-// @symbol _ZN14dBgW_KcMbgSclY9SetScaleYE5Fix12IiE
-extern "C" void _ZN14dBgW_KcMbgSclY9SetScaleYE5Fix12IiE(dBgW_KcMbgSclY *self, Fix12i newScaleY) {
-    self->scaleY = newScaleY;
-    if (self->scaleY == 0)
+// @symbol _ZN14dBgW_KcMbgSclY9SetScaleYEi
+void dBgW_KcMbgSclY::SetScaleY(Fix12i newScaleY) {
+    scaleY = newScaleY;
+    if (scaleY == 0)
         return;
-    self->invScaleY = func_02053200(self->scaleY);
+    invScaleY = func_02053200(scaleY);
 }
 
 // @symbol func_0203aad0

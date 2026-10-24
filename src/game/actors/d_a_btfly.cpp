@@ -21,7 +21,7 @@
  * `return new daBtfly_c();` to the same _ZN7fBase_cnwEj(1012) allocator the
  * loose factory called by hand, and daBtfly_c has no user-declared
  * constructor, so the inherited dActor_c ctor plus the vtable store plus the
- * six member subobjects in field order (ModelAnim, Model, dExtShadowModel_c x2,
+ * six member subobjects in field order (dExtAnmModel_c, dExtSimpleModel_c, dExtShadowModel_c x2,
  * dBgCh_Actr, dCcAcPos_c) come from the implicit default constructor with
  * zero mangled calls.
  *
@@ -40,7 +40,7 @@
  * - Behavior scratch matrix: Matrix4x3 assignment is 0x264 vs 0x22c.
  *   Flat Mtx copy is the ROM ldm/stm; the real type's translation is a
  *   Vector3 and runs ~Vector3.
- * - InitResources ModelAnim::SetAnim: method form is 0x244 vs 0x238
+ * - InitResources dExtAnmModel_c::SetAnim: method form is 0x244 vs 0x238
  *   (+0xc). Fix12<int> speed.
  * - InitResources dBgCh_Actr::Init: header Fix12i mangles as cii. ROM
  *   symbol is 5Fix12IiES3_.
@@ -124,10 +124,8 @@ extern ButterflyState data_ov100_02148628[];
 
 /* Fix12<int> by value. The header method form homes those arguments on the
  * stack; these scalar entries are the ROM calls. */
-void _ZN8dActor_c9SetRangesE5Fix12IiES1_S1_S1_(void *c, int oy, int rad, int clip, int far);
 void _ZN8dActor_c19DropShadowRadHeightER17dExtShadowModel_cR9Matrix4x35Fix12IiES5_j(
     void *actor, void *shadow, void *mtx, int radius, int height, unsigned int opacity);
-void _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(void *ma, void *bca, int flags, int speed, u32 start);
 void _ZN10dBgCh_Actr4InitEP8dActor_c5Fix12IiES3_P10Vector3_16S5_(
     void *w, void *actor, int radius, int height, void *a, void *b);
 void _ZN10dCcAcPos_c4InitEP8dActor_cRK7Vector35Fix12IiES6_jj(
@@ -239,7 +237,7 @@ void daBtfly_c::State6()
     mScale += 0x40;
     if (mScale < 0x800)
         return;
-    _ZN8dActor_c9SetRangesE5Fix12IiES1_S1_S1_(this, 0x32000, 0x32000, 0x1000000, 0x320000);
+    SetRanges(0x32000, 0x32000, 0x1000000, 0x320000);
     mFlutterPhase = 0;
     mStateTimer = 0;
     mState = 7;
@@ -546,15 +544,14 @@ int daBtfly_c::Behavior()
 // @symbol _ZN9daBtfly_c13InitResourcesEv
 int daBtfly_c::InitResources()
 {
-    Model::LoadFile(data_ov002_0210d9d8);
+    dExtSimpleModel_c::LoadFile(data_ov002_0210d9d8);
     dExtFrameCtrl_c::LoadFile(gButterflyFlyAnimationFile);
-    Model::LoadFile(data_ov100_02148668);
-    void *bmd = Model::LoadFile(gButterflyModelFile);
+    dExtSimpleModel_c::LoadFile(data_ov100_02148668);
+    void *bmd = dExtSimpleModel_c::LoadFile(gButterflyModelFile);
 
     if (mModelAnim.SetFile((BMD_File *)bmd, 1, 1) == 0)
         return 0;
-    _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(&mModelAnim, gButterflyFlyAnimationFile.filePtr, 0,
-                                                0x1000, 0);
+    mModelAnim.SetAnim((BCA_File *)gButterflyFlyAnimationFile.filePtr, 0, 0x1000, 0);
     if (mShadowModel1.InitCylinder() == 0)
         return 0;
     if (mModel.SetFile((BMD_File *)data_ov100_02148668.filePtr, 1, 1) == 0)

@@ -89,8 +89,6 @@ void _Z14ApproachLinearRiii(int *value, int target, int step);
 void func_02010da4(void *actor);
 void func_020393d4(int *collider, int callback);
 void func_020393c4(int *collider, int callback);
-int _ZN10dBgActor_c13IsClsnInRangeE5Fix12IiES1_(
-    dBgActor_c *self, int a, int b);
 void _ZN10dBgW_KcMbg7SetFileEP8KCL_FileRK9Matrix4x35Fix12IiEsR10CLPS_Block(
     dBgW_KcMbg *self, KCL_File *kcl, const Matrix4x3 *mtx, int scale,
     s16 angleY, CLPS_Block *clps);
@@ -144,7 +142,7 @@ void daLinelift2_c::func_ov091_02132360(dActor_c *other)
 int daLinelift2_c::InitResources()
 {
     mVariant = param1 >> 8;
-    mModel.SetFile((BMD_File *)Model::LoadFile(*data_ov091_021344fc[mVariant]), 1, -1);
+    mModel.SetFile((BMD_File *)dExtSimpleModel_c::LoadFile(*data_ov091_021344fc[mVariant]), 1, -1);
 
     _ZN10dBgW_KcMbg7SetFileEP8KCL_FileRK9Matrix4x35Fix12IiEsR10CLPS_Block(
         &mMeshCollider,
@@ -196,7 +194,7 @@ int daLinelift2_c::Behavior()
         mPosY = saved;
     }
     UpdateModelPosAndRotY();
-    if (_ZN10dBgActor_c13IsClsnInRangeE5Fix12IiES1_(this, 0, 0) != 0)
+    if (IsClsnInRange(0, 0) != 0)
         UpdateClsnPosAndRot();
     mIsPressed = 0;
     return 1;

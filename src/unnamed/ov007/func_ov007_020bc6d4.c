@@ -1,5 +1,5 @@
 #include "types.h"
-#include "ModelBase.h"
+#include "dExtModel_c.h"
 extern void *func_ov007_020c3df4(int a, int b);
 extern int func_02046564(void *p);
 extern int func_020462bc(void *p);
@@ -13,9 +13,9 @@ extern void func_ov007_020bc47c(void *thiz);
  * bind. */
 typedef struct Ov007Model {
     struct ModelComponents *model; /* 0x00 */
-    void *transforms;              /* 0x04: func_02046564-sized, as Model's transformsBuf */
+    void *transforms; /* 0x04: func_02046564-sized, as dExtSimpleModel_c's transformsBuf */
     void *nextTransforms;          /* 0x08: flags & 2 only */
-    void *blendBuffer;  /* 0x0c: flags & 4 only; func_020462bc-sized, as BlendModelAnim's */
+    void *blendBuffer;  /* 0x0c: flags & 4 only; func_020462bc-sized, as dExtBlendAnmModel_c's */
     int numBoneAnims;   /* 0x10 */
     void *boneAnims;    /* 0x14: BCA_File table (UpdateBones) */
     void *boneAnim;     /* 0x18 */

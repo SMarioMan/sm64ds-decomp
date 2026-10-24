@@ -161,7 +161,7 @@ int func_ov002_020bac18(daObjSwdoor_c *self)
 
 /* func_ov002_020bad10, 0x020bad10, size 0xc0.
  * Resource setup both leaves call. The descriptor's model file goes to
- * Model::LoadFile, its collision file to dBgW_Kc::LoadFile, and its CLPS block
+ * dExtSimpleModel_c::LoadFile, its collision file to dBgW_Kc::LoadFile, and its CLPS block
  * into SetFile; then the stock UpdatePosAndAngs hook and Enable. The four
  * byte fields are set last: mTurnDir from bit 0 of param1, mEventBit from
  * bits 1..5, mState 0 and the start-up mTimer 5. */
@@ -169,7 +169,7 @@ int func_ov002_020bac18(daObjSwdoor_c *self)
 extern "C" {
 int func_ov002_020bad10(daObjSwdoor_c *self, ResourceDescriptor *descriptor)
 {
-    self->mModel.SetFile((BMD_File *)Model::LoadFile(*descriptor->model), 1, -1);
+    self->mModel.SetFile((BMD_File *)dExtSimpleModel_c::LoadFile(*descriptor->model), 1, -1);
     self->UpdateModelPosAndRotY();
     self->UpdateClsnPosAndRot();
     _ZN10dBgW_KcMbg7SetFileEP8KCL_FileRK9Matrix4x35Fix12IiEsR10CLPS_Block(

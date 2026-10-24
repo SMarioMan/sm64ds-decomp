@@ -358,7 +358,7 @@ int daObj_Mip_Key_c::Behavior()
 
 int daObj_Mip_Key_c::InitResources()
 {
-    void* f = Model::LoadFile(data_ov085_021305d8);
+    void *f = dExtSimpleModel_c::LoadFile(data_ov085_021305d8);
     if (mModel.SetFile((BMD_File*)f, 1, -1) == 0)
         return 0;
     mShadowModel.InitCylinder();

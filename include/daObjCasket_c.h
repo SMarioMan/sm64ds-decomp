@@ -16,7 +16,7 @@
  * that _ZTI. The tree called the class Coffin until then.
  *
  * The destructor proves 0x000..0x31f is the dBgActor_c base: it destroys the
- * inherited dBgW_KcMbg at 0x124 and Model at 0x0d4, then chains to dActor_c.
+ * inherited dBgW_KcMbg at 0x124 and dExtSimpleModel_c at 0x0d4, then chains to dActor_c.
  * The remaining fields are evidenced by the class's state functions. */
 struct daObjCasket_c : dBgActor_c {
     s32 mState;             /* 0x320 -- index into the WAIT, STANDUP state table */

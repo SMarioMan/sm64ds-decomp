@@ -312,32 +312,32 @@
   ],
   "defined_symbol_renames": [
     {
-      "from": "@1072",
+      "from": "@1069",
       "to": "@1701",
       "evidence": "mwcc numbers this registration node @1072 per TU (the @NNN numbering shifted when cleanup added the Event.h/daObjBlockItemTag_c.h includes); renamed to a fleet-unique name because anonymous compiler temporaries collide across TUs in the scratch link"
     },
     {
-      "from": "@1073",
+      "from": "@1070",
       "to": "@1702",
       "evidence": "mwcc numbers this registration node @1073 per TU (the @NNN numbering shifted when cleanup added the Event.h/daObjBlockItemTag_c.h includes); renamed to a fleet-unique name because anonymous compiler temporaries collide across TUs in the scratch link"
     },
     {
-      "from": "@1074",
+      "from": "@1071",
       "to": "@1703",
       "evidence": "mwcc numbers this registration node @1074 per TU (the @NNN numbering shifted when cleanup added the Event.h/daObjBlockItemTag_c.h includes); renamed to a fleet-unique name because anonymous compiler temporaries collide across TUs in the scratch link"
     },
     {
-      "from": "@1075",
+      "from": "@1072",
       "to": "@1704",
       "evidence": "mwcc numbers this registration node @1075 per TU (the @NNN numbering shifted when cleanup added the Event.h/daObjBlockItemTag_c.h includes); renamed to a fleet-unique name because anonymous compiler temporaries collide across TUs in the scratch link"
     },
     {
-      "from": "@1076",
+      "from": "@1073",
       "to": "@1705",
       "evidence": "mwcc numbers this registration node @1076 per TU (the @NNN numbering shifted when cleanup added the Event.h/daObjBlockItemTag_c.h includes); renamed to a fleet-unique name because anonymous compiler temporaries collide across TUs in the scratch link"
     },
     {
-      "from": "@1077",
+      "from": "@1074",
       "to": "@1706",
       "evidence": "mwcc numbers this registration node @1077 per TU (the @NNN numbering shifted when cleanup added the Event.h/daObjBlockItemTag_c.h includes); renamed to a fleet-unique name because anonymous compiler temporaries collide across TUs in the scratch link"
     }

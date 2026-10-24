@@ -10,15 +10,15 @@
 #define DATREE_C_H
 #include "types.h"
 #include "dActor_c.h"
-#include "Model.h"
+#include "dExtSimpleModel_c.h"
 
 extern "C" void *_ZN7fBase_cnwEj(unsigned size);
 
 struct daTree_c : dActor_c {
     u8 pad_0d0[0x4];
-    /* One Model per spawn-param variant (bits 4-6, clamped to 4); the
+    /* One dExtSimpleModel_c per spawn-param variant (bits 4-6, clamped to 4); the
      * factory constructs all five, InitResources loads only its own. */
-    Model mModel[5]; /* 0x0d4 */
+    dExtSimpleModel_c mModel[5]; /* 0x0d4 */
 
     virtual ~daTree_c() {}
     virtual s32 InitResources();     /* slot  0 -- key function */

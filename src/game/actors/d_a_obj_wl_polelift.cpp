@@ -23,7 +23,7 @@
  * into the drop-shadow matrix, and the cartridge does it as one flat
  * twelve-word ldm/stm run. common.h's flat `s32 m[12]` spelling of Matrix4x3
  * is that copy; math/Matrix.h's nested {Matrix3x3 r; Vector3 t;} -- which
- * Model.h would otherwise pull in first -- scalarizes the last three words,
+ * dExtSimpleModel_c.h would otherwise pull in first -- scalarizes the last three words,
  * because Vector3 declares a destructor and is therefore not POD. Measured:
  * 0x88 emitted against the cartridge's 0x70. */
 /* Runtime asset handles resolved through the overlay 0 file table. */
@@ -60,7 +60,7 @@ extern "C" {
 /* Factory ABI: the allocation goes through fBase_c::operator new by name, but
  * the base/subobject construction sequence stays explicit here. */
 void *_ZN8dActor_cC2Ev(void *self);
-void *_ZN5ModelC1Ev(void *self);
+void *_ZN17dExtSimpleModel_cC1Ev(void *self);
 void *_ZN10dCcAcPos_cC1Ev(void *self);
 void *_ZN7PathPtrC1Ev(void *self);
 void *_ZN17dExtShadowModel_cC1Ev(void *self);
@@ -95,7 +95,7 @@ extern "C" daObjWlPolelift_c *daObjWlPolelift_c_classInit()
     if (actor) {
         _ZN8dActor_cC2Ev(actor);
         *(int *)actor = (int)&_ZTV17daObjWlPolelift_c[2];
-        _ZN5ModelC1Ev(&actor->model);
+        _ZN17dExtSimpleModel_cC1Ev(&actor->model);
         _ZN10dCcAcPos_cC1Ev(&actor->clsn);
         _ZN7PathPtrC1Ev(&actor->path);
         _ZN17dExtShadowModel_cC1Ev(&actor->shadow);
@@ -108,7 +108,7 @@ extern "C" daObjWlPolelift_c *daObjWlPolelift_c_classInit()
  * actor-owned shadow and cylinder. */
 s32 daObjWlPolelift_c::InitResources()
 {
-    model.SetFile((BMD_File *)Model::LoadFile(data_ov026_02113ea0), 1, -1);
+    model.SetFile((BMD_File *)dExtSimpleModel_c::LoadFile(data_ov026_02113ea0), 1, -1);
     if ((data_0209caa0[1] & 0x204) == 0)
         return 0;
 
@@ -218,7 +218,7 @@ s32 daObjWlPolelift_c::Behavior()
 }
 
 // @symbol _ZN17daObjWlPolelift_c6RenderEv
-/* Vtable slot 9. The owned Model renders through its own vtable. */
+/* Vtable slot 9. The owned dExtSimpleModel_c renders through its own vtable. */
 s32 daObjWlPolelift_c::Render()
 {
     model.Render(0);

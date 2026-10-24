@@ -86,7 +86,7 @@ struct V3 {
 /* The FLAT 12-word view of Matrix4x3. include/common.h and include/math/Matrix.h
    carry two spellings of this 0x30-byte type and whichever a TU sees first
    stands; as one-function files these members saw common.h's flat `s32 m[12]`,
-   but this TU reaches math/Matrix.h first through dScMgSnowball_c.h -> Model.h,
+   but this TU reaches math/Matrix.h first through dScMgSnowball_c.h -> dExtSimpleModel_c.h,
    and the nested {Matrix3x3 r; Vector3 t;} spelling copies member-wise because
    Vector3 has a user-declared destructor -- 0x20 bytes more than the ROM has.
    Copying through this view restores the cartridge's block copy. */
@@ -115,7 +115,7 @@ struct SPS {
    `pointer + constant` arithmetic because every member spelling moved bytes. */
 #define SNOW_OFF(m) ((int)&((dScMgSnowball_c *)0)->m)
 #define atan2 _ZN4cstd5atan2E5Fix12IiES1_
-#define pnew _ZN8Particle6System3NewEjj5Fix12IiES2_S2_PK11Vector3_16fPNS_8CallbackE
+#define pnew Particle::System::New
 #define pfromid(id) ((int *)Particle::System::FromUniqueID(id))
 
 namespace cstd {
@@ -149,8 +149,8 @@ extern void func_0203d388(int *p, int angle);
 extern int func_0203d434(int *p);
 extern int Vec2_Len(int *p);
 extern void func_0203d630(int *p, int m);
-extern u32 _ZN8Particle6System3NewEjj5Fix12IiES2_S2_PK11Vector3_16fPNS_8CallbackE(
-    u32 uniqueID, u32 effectID, int x, int y, int z, const void *dir, void *callback);
+extern u32 d_s_mg_snowballNewHold(u32 uniqueID, u32 effectID, int x, int y, int z, const void *dir,
+                                  void *callback);
 extern void func_02012718(int a, int b);
 extern int _ZN4cstd5atan2E5Fix12IiES1_(int y, int x);
 extern s16 data_02082214[];
@@ -199,7 +199,7 @@ extern u8 data_0209d454;
 
 // @symbol _ZN15dScMgSnowball_cD1Ev
 /* Destroys mSprays, mArray2 and mArray1, in reverse of construction. The
-   ROM's fourth call, ~Model on mModel, is not written: mModel is declared
+   ROM's fourth call, ~dExtSimpleModel_c on mModel, is not written: mModel is declared
    before the arrays, so the compiler destroys it last, where the ROM has it.
    The rest is the inlined dScMgSingle3DBase_c destructor. */
 dScMgSnowball_c::~dScMgSnowball_c() {
@@ -671,10 +671,8 @@ void dScMgSnowball_c::UpdateSnowball() {
             part.x = px;
             part.y = py;
             part.z = pz;
-            id1 = _ZN8Particle6System3NewEjj5Fix12IiES2_S2_PK11Vector3_16fPNS_8CallbackE(
-                0, 0xf1, part.x * 8, part.y * 8, part.z * 8, 0, 0);
-            id2 = _ZN8Particle6System3NewEjj5Fix12IiES2_S2_PK11Vector3_16fPNS_8CallbackE(
-                0, 0xf2, part.x * 8, part.y * 8, part.z * 8, 0, 0);
+            id1 = Particle::System::New(0, 0xf1, part.x * 8, part.y * 8, part.z * 8, 0, 0);
+            id2 = Particle::System::New(0, 0xf2, part.x * 8, part.y * 8, part.z * 8, 0, 0);
             sys = Particle::System::FromUniqueID(id1);
             if (sys != 0) {
                 /* 0x44 lies in Particle::System's unnamed pad_042. */
@@ -1448,7 +1446,7 @@ s32 dScMgSnowball_c::Render() {
         vecArr[1] = t;
         vecArr[2] = t;
         if (self->mBallSize > 0) {
-            Model *model = &((dScMgSnowball_c *)c)->mModel;
+            dExtSimpleModel_c *model = &((dScMgSnowball_c *)c)->mModel;
             const Vector3 *scale = (const Vector3 *)vecArr;
             model->Render(scale);
         }
@@ -1943,7 +1941,7 @@ void dScMgSnowball_c::StartRound(int i) {
 // @symbol _ZN15dScMgSnowball_c13InitResourcesEv
 /* Slot 0. Sets up both screens' BG2 and BG3 layers, loads the palettes and
  * tiles, then loads the snowball BMD into mBallBmd and hands it to mModel.
- * Returning 0 when ModelBase::SetFile fails aborts the scene. The helpers at
+ * Returning 0 when dExtModel_c::SetFile fails aborts the scene. The helpers at
  * the end take the scene as an opaque pointer, so the receiver stays raw. */
 s32 dScMgSnowball_c::InitResources() {
     void *arg0 = this;
@@ -2009,7 +2007,7 @@ s32 dScMgSnowball_c::InitResources() {
     ((dScMgSnowball_c *)r4)->mBallBmd = (BMD_File *)Ov004_LoadFileByPath(&data_ov006_021400fc);
     /* The two mBallBmd reloads keep `r4 + offset`: as members they cost 8
        bytes of address setup the ROM does not have. */
-    Model::UpdateFileOffsets(**(BMD_File **)(r4 + SNOW_OFF(mBallBmd)));
+    dExtSimpleModel_c::UpdateFileOffsets(**(BMD_File **)(r4 + SNOW_OFF(mBallBmd)));
 
     if (!((dScMgSnowball_c *)r4)->mModel.SetFile(*(BMD_File **)(r4 + SNOW_OFF(mBallBmd)), 1, -1))
         return 0;
@@ -2033,7 +2031,7 @@ s32 dScMgSnowball_c::InitResources() {
 extern "C" {
 void *_ZN11dScMgBase_cC2Ev(void *p);
 void _ZN8Particle10SysTrackerC1Ev(void *p);
-void *_ZN5ModelC1Ev(void *p);
+void *_ZN17dExtSimpleModel_cC1Ev(void *p);
 void __cxa_vec_ctor(void *arr, int count, int size, void *ctor, void *dtor);
 void func_0203d738(void *);
 void SnowSpray_ElemCtor(void);
@@ -2045,7 +2043,7 @@ extern "C" void *dScMgSnowball_c_Construct(char *t) {
     *(void **)t = &_ZTV19dScMgSingle3DBase_c;
     _ZN8Particle10SysTrackerC1Ev(&((dScMgSnowball_c *)t)->mSysTracker);
     *(void **)t = &_ZTV15dScMgSnowball_c[2];
-    _ZN5ModelC1Ev(&((dScMgSnowball_c *)t)->mModel);
+    _ZN17dExtSimpleModel_cC1Ev(&((dScMgSnowball_c *)t)->mModel);
     ((dScMgSnowball_c *)t)->mBallBmd = 0;
     __cxa_vec_ctor(((dScMgSnowball_c *)t)->mArray1, 0x80, 8, (void *)func_0203d738,
                    (void *)NullDestructor_0203d47c);

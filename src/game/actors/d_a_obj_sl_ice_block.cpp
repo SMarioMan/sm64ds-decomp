@@ -47,7 +47,7 @@ void func_020393d4(int *p, int v);
 extern char data_ov027_02113108[];
 }
 
-/* Model handles construct through func_02017acc and destroy through
+/* dExtSimpleModel_c handles construct through func_02017acc and destroy through
  * func_02017ab4; collision handles construct through func_02017b4c and destroy
  * through SharedFilePtr_Destruct_Clsn. The manifest aliases those undefined
  * member spellings onto the real ROM functions; each handle is the base plus
@@ -73,7 +73,7 @@ extern SlIceBlockClsnFileHandle data_ov027_02113be0;
 // @symbol _ZN17daObjSlIceBlock_cD0Ev
 /* One out-of-line definition; mwccarm emits D1 and D0 from it, in that
  * order: its own vptr, then dBgActor_c's inlined, then dBgActor_c's
- * Model and dBgW_KcMbg, then dActor_c. */
+ * dExtSimpleModel_c and dBgW_KcMbg, then dActor_c. */
 daObjSlIceBlock_c::~daObjSlIceBlock_c()
 {
 }
@@ -147,7 +147,7 @@ int daObjSlIceBlock_c::Behavior()
 // @symbol _ZN17daObjSlIceBlock_c13InitResourcesEv
 int daObjSlIceBlock_c::InitResources()
 {
-    Model::LoadFile(data_ov027_02113be8);
+    dExtSimpleModel_c::LoadFile(data_ov027_02113be8);
     dBgW_Kc::LoadFile(data_ov027_02113be0);
 
     int on = (actorID == 0x5d);

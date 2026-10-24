@@ -1,6 +1,10 @@
 //cpp
 #include "IRQ.h"
 
+namespace IRQ {
+u32 Disable(void);
+}
+
 extern "C" {
 typedef struct {
     int busy;
@@ -14,7 +18,7 @@ typedef struct {
 } Data0205;
 extern Data0205 data_020a6460;
 extern void func_02059fa8(int ch);
-extern int _ZN3IRQ7DisableEv(void);
+
 extern void _ZN3IRQ7RestoreEj(int saved);
 extern void func_0205a290(void);
 
@@ -33,7 +37,7 @@ void func_0205a358(int a0, int a1, int a2, void (*a3)(int), int a4) {
     data_020a6460.cb = a3;
     data_020a6460.arg = a4;
     func_02059fa8(a0);
-    saved = _ZN3IRQ7DisableEv();
+    saved = IRQ::Disable();
     data_020a6460.oldmode = (*(volatile unsigned int *)0x4000600 & 0xc0000000) >> 0x1e;
     data_020a6460.oldhandler = IRQ::GetIRQHandler(0x200000);
     *(volatile unsigned int *)0x4000600 = (*(volatile unsigned int *)0x4000600 & ~0xc0000000) | 0x40000000;

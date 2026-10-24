@@ -475,6 +475,10 @@
   },
   {
    "file": "notes/agents/handoffs/promote-ov098-wbm-0924.md",
+   "ref": "include/ModelBase.h"
+  },
+  {
+   "file": "notes/agents/handoffs/promote-ov098-wbm-0924.md",
    "ref": "tools/check_src_tu_compiles.py"
   },
   {
@@ -512,6 +516,10 @@
   {
    "file": "notes/agents/handoffs/readable-ov025-dpbrock-0925.md",
    "ref": "tools/tiers_ratchet.py"
+  },
+  {
+   "file": "notes/agents/handoffs/readable-ov034-hanachan-0925.md",
+   "ref": "src/engine/model/Model.cpp"
   },
   {
    "file": "notes/agents/handoffs/readable-ov034-hanachan-0925.md",
@@ -612,6 +620,10 @@
   {
    "file": "notes/agents/handoffs/readable-ov095-udlift-0925.md",
    "ref": "tools/tiers_ratchet.py"
+  },
+  {
+   "file": "notes/agents/handoffs/readable-ov098-wbm-0925.md",
+   "ref": "include/ModelBase.h"
   },
   {
    "file": "notes/agents/handoffs/readable-ov098-wbm-0925.md",
@@ -831,7 +843,7 @@
   },
   {
    "file": "notes/ctor-migration.md",
-   "ref": "src/_ZN5ModelC1Ev.cpp"
+   "ref": "src/_ZN17dExtSimpleModel_cC1Ev.cpp"
   },
   {
    "file": "notes/ctor-migration.md",
@@ -851,11 +863,11 @@
   },
   {
    "file": "notes/dtor-migration.md",
-   "ref": "src/_ZN5EnemyD0Ev.c"
+   "ref": "src/_ZN17dExtSimpleModel_cD1Ev.cpp"
   },
   {
    "file": "notes/dtor-migration.md",
-   "ref": "src/_ZN5ModelD1Ev.cpp"
+   "ref": "src/_ZN5EnemyD0Ev.c"
   },
   {
    "file": "notes/emu-trace-build.md",
@@ -908,6 +920,10 @@
   {
    "file": "notes/experiments/batch3-2707-floatboard-riderpos-ptr.md",
    "ref": "src/actors/daObjFloatBoard_c.cpp"
+  },
+  {
+   "file": "notes/experiments/batch3-2707-tree-applyopacity-census.md",
+   "ref": "include/ModelBase.h"
   },
   {
    "file": "notes/experiments/batch3-2707-tree-clipper-6az.md",
@@ -1058,6 +1074,14 @@
    "ref": "src/actors/dMgJump3DMario_c.cpp"
   },
   {
+   "file": "notes/experiments/koopa-2864-source-forms.md",
+   "ref": "src/engine/model/ModelAnim.cpp"
+  },
+  {
+   "file": "notes/experiments/piano-2712-dropshadow-advance.md",
+   "ref": "include/ModelAnim.h"
+  },
+  {
    "file": "notes/experiments/piano-2712-dropshadow-advance.md",
    "ref": "src/game/actors/daPiano_c/d_a_piano.cpp"
   },
@@ -1076,6 +1100,10 @@
   {
    "file": "notes/experiments/piano-2712-pmf-verified.md",
    "ref": "src/game/actors/daPiano_c/d_a_piano.cpp"
+  },
+  {
+   "file": "notes/experiments/piano-2712-setanim-6az.md",
+   "ref": "include/ModelAnim.h"
   },
   {
    "file": "notes/experiments/piano-2712-setanim-6az.md",
@@ -1356,6 +1384,10 @@
   {
    "file": "notes/tu-reconstruction-pilot-2-report.md",
    "ref": "tools/reloc_audit.check_destinations"
+  },
+  {
+   "file": "notes/tu-reconstruction-pilot-report.md",
+   "ref": "include/Model.h"
   },
   {
    "file": "notes/tu-reconstruction-pilot-report.md",

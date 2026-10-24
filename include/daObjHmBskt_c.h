@@ -19,7 +19,7 @@ struct dActor_c;
  * Everything below 0x320 belongs to dActor_c and dBgActor_c and is inherited,
  * which is why the destructor stores this class's vtable, then dBgActor_c's --
  * inlined, because dBgActor_c defines its destructor in its class body -- then
- * destroys the dBgW_KcMbg at 0x124 and the Model at 0xd4 before chaining to
+ * destroys the dBgW_KcMbg at 0x124 and the dExtSimpleModel_c at 0xd4 before chaining to
  * dActor_c.
  *
  * The class translation unit is src/game/actors/d_a_obj_hm_bskt.cpp. It is

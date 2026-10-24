@@ -8,7 +8,7 @@
   "boundary_confidence": "medium",
   "boundary_evidence": [
     "contiguous linker run: 0x211a930..0x211ad70, 7 function(s), from build/tu_map.json (tools/tu_map.py)",
-    "right edge extended to 0x0211adb0 to take in daObjShell_c_classInit at 0x0211ad70: the run carries no mangled name for tu_map to attribute, but it allocates this class's own 0x174, installs _ZTV12daObjShell_c, constructs ModelAnim at 0x0d4 and dCcAc_c at 0x138, is the factory word of g_profile_OBJ_SHELL at 0x0211c5a4, and ends exactly at the end of the overlay's .text. Same registry/factory-backed join ov064/daObjTbox_c was promoted on",
+    "right edge extended to 0x0211adb0 to take in daObjShell_c_classInit at 0x0211ad70: the run carries no mangled name for tu_map to attribute, but it allocates this class's own 0x174, installs _ZTV12daObjShell_c, constructs dExtAnmModel_c at 0x0d4 and dCcAc_c at 0x138, is the factory word of g_profile_OBJ_SHELL at 0x0211c5a4, and ends exactly at the end of the overlay's .text. Same registry/factory-backed join ov064/daObjTbox_c was promoted on",
     "left edge is the end of the already promoted ov064/daObjTbox_c entry (0x0211a930)",
     "class label(s): daObjShell_c",
     "module sinit corroboration: 11 sinit(s) / 11 .ctor entries, sinit_vs_tu=ok, corroborated=False (module-wide, NOT narrowed to this one TU)"
@@ -488,17 +488,17 @@
   ],
   "defined_symbol_renames": [
     {
-      "from": "@374",
+      "from": "@369",
       "to": "@88",
       "evidence": "emitted destructor-registration node name collides with the configured @360 on ov023 on main; @88 is unused everywhere and shorter than the original"
     },
     {
-      "from": "@375",
+      "from": "@370",
       "to": "@89",
       "evidence": "emitted destructor-registration node name collides with the configured @361 on ov036 on main; @89 is unused everywhere and shorter than the original"
     },
     {
-      "from": "@376",
+      "from": "@371",
       "to": "@90",
       "evidence": "emitted destructor-registration node name collides with the configured @362 on ov036 on main; @90 is unused everywhere and shorter than the original"
     }

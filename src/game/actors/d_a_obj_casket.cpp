@@ -107,10 +107,11 @@ int Vec3_HorzDist(const Vector3 *a, const Vector3 *b);
 unsigned short DecIfAbove0_Short(unsigned short *p);
 void func_020393d4(int *p, int v);
 
-void _ZN10dBgW_KcMbg7SetFileEP8KCL_FileRK9Matrix4x35Fix12IiEsR10CLPS_Block(
-    dBgW_KcMbg *self, KCL_File *file, const Matrix4x3 &mat, int scale,
-    short angleY, CLPS_Block &clps);
-int _ZN10dBgActor_c13IsClsnInRangeE5Fix12IiES1_(void *self, int a, int b);
+void _ZN10dBgW_KcMbg7SetFileEP8KCL_FileRK9Matrix4x35Fix12IiEsR10CLPS_Block(dBgW_KcMbg *self,
+                                                                           KCL_File *file,
+                                                                           const Matrix4x3 &mat,
+                                                                           int scale, short angleY,
+                                                                           CLPS_Block &clps);
 void _ZN8dActor_c10EarthquakeERK7Vector35Fix12IiE(void *self, Vector3 *pos, int strength);
 }
 
@@ -127,7 +128,7 @@ extern "C" daObjCasket_c *daObjCasket_c_classInit()
 // @symbol _ZN13daObjCasket_c13InitResourcesEv
 int daObjCasket_c::InitResources()
 {
-    mModel.SetFile((BMD_File *)Model::LoadFile(data_ov071_021230d0), 1, -1);
+    mModel.SetFile((BMD_File *)dExtSimpleModel_c::LoadFile(data_ov071_021230d0), 1, -1);
     mVertAccel = -0x2000;
     mTerminalVelocity = -0x3c000;
 
@@ -165,7 +166,7 @@ int daObjCasket_c::Behavior()
     /* Setting 1 is a casket that never moves. */
     if ((param1 & 0xff) == 1) {
         UpdateModelTransform();
-        if (_ZN10dBgActor_c13IsClsnInRangeE5Fix12IiES1_(this, 0, 0))
+        if (IsClsnInRange(0, 0))
             UpdateClsnPosAndRot();
         return 1;
     }
@@ -173,7 +174,7 @@ int daObjCasket_c::Behavior()
     mBehaviorTimer++;
     RunState();
     UpdateModelTransform();
-    if (_ZN10dBgActor_c13IsClsnInRangeE5Fix12IiES1_(this, 0, 0))
+    if (IsClsnInRange(0, 0))
         UpdateClsnPosAndRot();
     return 1;
 }

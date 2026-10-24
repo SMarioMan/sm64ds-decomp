@@ -21,6 +21,12 @@
 #include "SolidHeapAllocator.h"
 #include "Heap.h"
 
+namespace CP15 {
+void FlushAndInvalidateDataCache(unsigned int a, unsigned int b);
+void FlushDataCache(unsigned int a, unsigned int b);
+void InvalidateDataCache(unsigned int addr, unsigned int n);
+}
+
 namespace IRQ {
     /* Defined at 0x02059d1c/0x02059d30 (the IRQ TU); namespace-scope externs
        mangle exactly like the ROM's IRQ::Disable/IRQ::Restore. */
@@ -399,11 +405,7 @@ extern struct NestedHeapIterator;
 extern struct Obj;
 extern struct Obj1;
 extern int _ZN18NestedHeapIteratorC1Ej(int a, int b);
-extern u32 _ZN3IRQ7DisableEv(void);
-extern u32 _ZN3IRQ7RestoreEj(u32 state);
-extern void _ZN4CP1514FlushDataCacheEjj(unsigned int a, unsigned int b);
-extern void _ZN4CP1519InvalidateDataCacheEjj(unsigned int addr, unsigned int n);
-extern void _ZN4CP1527FlushAndInvalidateDataCacheEjj(unsigned int a, unsigned int b);
+
 extern unsigned int _ZN4cstd6strlenEPKc(const char *s);
 extern int __aeabi_idiv(int a, int b);
 extern unsigned int __aeabi_uidiv(unsigned int a, unsigned int b);
@@ -1128,7 +1130,7 @@ extern "C" void* func_02051634(unsigned int a0, unsigned int a1, unsigned int a2
     r4 = ((extern void*(*)(void *owner, unsigned int elemSize, unsigned int p2, unsigned int p3, unsigned int p4))func_020511d4)(owner, r5 + 0x20, a1, a2, a3);
     if (r4 == 0) return 0;
     if (r5 != ((extern int(*)(unsigned int a, void* b, int c, int d))func_020509d8)(a0, r4, r5, 0)) return 0;
-    _ZN4CP1514FlushDataCacheEjj((unsigned int)r4, r5);
+    CP15::FlushDataCache((unsigned int)r4, r5);
     return r4;
 }
 
@@ -1651,7 +1653,7 @@ extern "C" int func_020507e0(int a0, unsigned int a1, int a2, int a3, int a4, in
     if (((int*)&data_020a5634)[0] != 0) return 0;
     z = 0;
     MultiStore_Int(z, (int *)a0, a1);
-    _ZN4CP1527FlushAndInvalidateDataCacheEjj((unsigned int)a0, a1);
+    CP15::FlushAndInvalidateDataCache((unsigned int)a0, a1);
     return ((int(*)(int a0, int a1, int a2, int a3, int s0, int s1, int s2, int s3, int s4, int s5, int s6, int s7, int s8, int s9, int s10))func_020503a4)(1, a0, a0 + (a1 >> 1), a1 >> 1,
                          a2, 0, 0, 1, a3, 0x7f, 0, 0x7f, a4, a5, a6);
 }
@@ -1702,8 +1704,8 @@ extern "C" int func_020503a4(int a, int b, int c, int d, int p5, int p6, int p7,
 
     handle = -1;
     g = ((G_20503a4*)&data_020a5634);
-    ((void(*)(int a, int b))_ZN4CP1527FlushAndInvalidateDataCacheEjj)(b, dd);
-    ((void(*)(int a, int b))_ZN4CP1527FlushAndInvalidateDataCacheEjj)(c, dd);
+    ((void (*)(int a, int b))CP15::FlushAndInvalidateDataCache)(b, dd);
+    ((void (*)(int a, int b))CP15::FlushAndInvalidateDataCache)(c, dd);
     stereo = (p5 == 1) ? 1 : 0;
     align = 0xffb0ff / p9;
     if (p14 != 0) {
@@ -1822,8 +1824,10 @@ extern "C" void func_020501b8(void)
     ((extern void(*)(int val, int *dst, int len))MultiStore_Int)(a, g->dstc, g->len);
     b = 0;
     ((extern void(*)(int val, int *dst, int len))MultiStore_Int)(b, g->dst10, g->len);
-    ((extern void(*)(unsigned int a, unsigned int b))_ZN4CP1527FlushAndInvalidateDataCacheEjj)((unsigned int)g->dstc, g->len);
-    ((extern void(*)(unsigned int a, unsigned int b))_ZN4CP1527FlushAndInvalidateDataCacheEjj)((unsigned int)g->dst10, g->len);
+    ((extern void (*)(unsigned int a, unsigned int b))CP15::FlushAndInvalidateDataCache)(
+        (unsigned int)g->dstc, g->len);
+    ((extern void (*)(unsigned int a, unsigned int b))CP15::FlushAndInvalidateDataCache)(
+        (unsigned int)g->dst10, g->len);
     {
         int sh = g->f28;
         int mask = (sh >= 0) ? (1 << sh) : 0;
@@ -1850,8 +1854,8 @@ extern "C" void func_020500a4(struct T *thiz)
         data_020a55f8 = data_020a55f8 + 1;
         if (data_020a55f8 >= 8) data_020a55f8 = 0;
     } else {
-        _ZN4CP1519InvalidateDataCacheEjj(e6, quot);
-        _ZN4CP1519InvalidateDataCacheEjj(e5, quot);
+        CP15::InvalidateDataCache(e6, quot);
+        CP15::InvalidateDataCache(e5, quot);
         thiz->f30(e6, e5, quot, thiz->f8, thiz->f34);
     }
     {
@@ -1869,8 +1873,10 @@ extern "C" void func_02050038(void)
     for (;;) {
         ((void(*)(void *a, void **out, int c))func_020587e4)(&data_020a5600, &out, 1);
         r = (struct Outer *)out;
-        ((void(*)(unsigned int a, unsigned int b))_ZN4CP1519InvalidateDataCacheEjj)((unsigned int)r->hc, (unsigned int)r->h4);
-        ((void(*)(unsigned int a, unsigned int b))_ZN4CP1519InvalidateDataCacheEjj)((unsigned int)r->h10, (unsigned int)r->h4);
+        ((void (*)(unsigned int a, unsigned int b))CP15::InvalidateDataCache)((unsigned int)r->hc,
+                                                                              (unsigned int)r->h4);
+        ((void (*)(unsigned int a, unsigned int b))CP15::InvalidateDataCache)((unsigned int)r->h10,
+                                                                              (unsigned int)r->h4);
         r->p0->h30((unsigned int)r->hc, (unsigned int)r->h10, (unsigned int)r->h4, r->p0->h8, r->p0->h34);
     }
 }

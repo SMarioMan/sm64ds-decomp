@@ -1,4 +1,7 @@
 //cpp
+namespace Particle {
+struct Callback;
+}
 /* daObjBlockS_c -- small breakable crate (BLOCK_S, ov098).
  * 37 functions, .text 0x02138040..0x02139f70, ending with classInit.
  * (registry profile BLOCK_S): it sits where it is placed, can be picked up
@@ -83,6 +86,7 @@ enum daObjBlockS_c_AssetId {
 #include "dBgCh_Gnd.h"
 #include "SurfaceInfo.h"
 #include "dCc_c.h"
+#include "Sound.h"
 
 struct Vector3_16f;
 
@@ -128,11 +132,16 @@ extern int data_ov098_0213c4c8[];
 extern s16 data_02082214[];
 extern int Vec3_HorzDist(const struct Vector3 *a, const struct Vector3 *b);
 extern u8 DecIfAbove0_Byte(u8 *p);
-extern void *_ZN8Particle6System3NewEjj5Fix12IiES2_S2_PK11Vector3_16fPNS_8CallbackE(
-    u32 a, u32 b, int c, int d, int e, const void *v, void *cb);
+extern void *d_a_obj_block_sNewHold(u32 a, u32 b, int c, int d, int e, const void *v, void *cb);
 extern u32 _ZN8Particle6System17NewUnkCallback818Ejj5Fix12IiES2_S2_PK11Vector3_16f(
     u32 a, u32 b, int c, int d, int e, const Vector3_16f *v);
-extern void _ZN8Particle6System9NewSimpleEj5Fix12IiES2_S2_(unsigned int id, int x, int y, int z);
+namespace Particle {
+struct System {
+    static void NewSimple(unsigned int id, int x, int y, int z);
+
+    static int New(unsigned, unsigned, int, int, int, const ::Vector3_16f *, Callback *);
+};
+}
 extern void _ZN8Particle20RunningSlidingDustAtE5Fix12IiES1_S1_(s32 x, s32 y, s32 z);
 extern void _ZN10dBgW_KcMbg7SetFileEP8KCL_FileRK9Matrix4x35Fix12IiEsR10CLPS_Block(
     char *thiz, int f, char *m, int fix, short s, int blk);
@@ -143,7 +152,6 @@ extern void _ZN8dActor_c10SpawnCoinsERK7Vector3j5Fix12IiEs(void *self, void *pos
 extern short _ZN8dActor_c12ReflectAngleE5Fix12IiES1_s(void *self, int a, int b, short c);
 extern void _ZN8dActor_c18DropShadowScaleXYZER17dExtShadowModel_cR9Matrix4x35Fix12IiES5_S5_j(
     void *self, void *shadow, void *mtx, int fix, int t1, int t2, unsigned int n);
-extern int _ZN10dBgActor_c21IsClsnInRangeOnScreenE5Fix12IiES1_(void *self, int a, int b);
 extern void _ZN10dCcAcPos_c4InitEP8dActor_cRK7Vector35Fix12IiES6_jj(
     void *thiz, void *actor, void *vec, int fix, int t, unsigned u1, unsigned u2);
 
@@ -157,8 +165,7 @@ extern s16 func_02010844(void *unused, Vector3 *v, s16 angle);
 
 extern void _ZN6Player4HurtERK7Vector3j5Fix12IiEjjj(void *p, struct Vector3 *pos, u32 a, int b, u32 d, u32 e, u32 f);
 
-extern void _ZN5Sound9PlayBank3EjRK7Vector3(u32 id, const struct Vector3 *pos);
-extern u32 _ZN5Sound8PlayLongEjjjRK7Vector3s(u32 a, u32 b, u32 c, const Vector3 *pos, u32 e);
+extern void d_a_obj_block_sPlayLongHold(u32 a, u32 b, u32 c, const Vector3 *pos, u32 e);
 
 extern int _Z14ApproachLinearRiii(int *a, int b, int c);
 extern void _Z11UpdateAngleRssis(s16 *a, s16 b, int c, s16 d);
@@ -221,7 +228,7 @@ extern "C" BlockSW4 data_ov098_0213c4f0;
 // @symbol _ZN13daObjBlockS_cD0Ev
 /* Destroys dCcAcPos_c x2, dExtShadowModel_c and dBgCh_Actr in reverse declaration
  * order, then dBgActor_c's inline destructor stores its own vptr and destroys
- * its dBgW_KcMbg and Model before chaining to dActor_c. D0 then returns the
+ * its dBgW_KcMbg and dExtSimpleModel_c before chaining to dActor_c. D0 then returns the
  * object through the inline operator delete. */
 daObjBlockS_c::~daObjBlockS_c()
 {
@@ -343,7 +350,7 @@ void daObjBlockS_c::func_ov098_02138344()
     dBgCh_Actr_UpdateContinuous_Veneer(&mWithMeshClsn);
     _Z14ApproachLinearRiii(&mHorzSpeed, 0, 0x555);
     if (mWithMeshClsn.IsOnGround() != 0) {
-        _ZN5Sound9PlayBank3EjRK7Vector3(0x51, &mCamSpacePos);
+        Sound::PlayBank3(0x51, mCamSpacePos);
         DecIfAbove0_Byte(&mBounceCount);
         mVertSpeed = mBounceCount * 0xa000;
         mHorzSpeed = mBounceCount * 0x5000;
@@ -363,7 +370,7 @@ void daObjBlockS_c::func_ov098_02138344()
     if (mWithMeshClsn.IsOnGround() == 0) {
         func_ov098_021396a4();
     }
-    if (_ZN10dBgActor_c21IsClsnInRangeOnScreenE5Fix12IiES1_(this, 0, 0) != 0) {
+    if (IsClsnInRangeOnScreen(0, 0) != 0) {
         func_ov098_021397c8();
     }
 }
@@ -632,7 +639,7 @@ void daObjBlockS_c::func_ov098_021389f8()
     if (!mWithMeshClsn.IsOnGround()) {
         func_ov098_021396a4();
     }
-    if (!_ZN10dBgActor_c21IsClsnInRangeOnScreenE5Fix12IiES1_(this, 0x600000, 0)) {
+    if (!IsClsnInRangeOnScreen(0x600000, 0)) {
         return;
     }
     func_ov098_021397c8();
@@ -876,12 +883,12 @@ void daObjBlockS_c::Kill()
     vec.x = x;
     vec.y = y;
     vec.z = z;
-    _ZN8Particle6System9NewSimpleEj5Fix12IiES2_S2_(0xe, vec.x, vec.y, vec.z);
+    Particle::System::NewSimple(0xe, vec.x, vec.y, vec.z);
     ((int *)&vec2)[0] = ((int *)&vec)[0];
     ((int *)&vec2)[1] = ((int *)&vec)[1];
     ((int *)&vec2)[2] = ((int *)&vec)[2];
     _ZN8dActor_c19DisappearPoofDustAtERK7Vector3((char *)this, &vec2);
-    _ZN5Sound9PlayBank3EjRK7Vector3(0x41, &mCamSpacePos);
+    Sound::PlayBank3(0x41, mCamSpacePos);
     Crate_SetState(this, STATE_BROKEN);
 }
 
@@ -1069,7 +1076,7 @@ int daObjBlockS_c::func_ov098_02139228()
                 sd = _ZN4cstd4fdivEii(FX_MUL(v, 8), 0xa);
                 if (sd < 0) sd = -sd;
                 if (mVertSpeed > 0xa000)
-                    _ZN5Sound9PlayBank3EjRK7Vector3(0x51, &mCamSpacePos);
+                    Sound::PlayBank3(0x51, mCamSpacePos);
                 if (mVertSpeed > sd)
                     mVertSpeed = sd;
             }
@@ -1081,7 +1088,7 @@ int daObjBlockS_c::func_ov098_02139228()
         && mHorzSpeed > 0xa000) {
         _ZN8Particle20RunningSlidingDustAtE5Fix12IiES1_S1_(mPosX, mPosY, mPosZ);
         mSlideSoundHandle =
-            _ZN5Sound8PlayLongEjjjRK7Vector3s(mSlideSoundHandle, 3, 0x93, &mCamSpacePos, 0);
+            Sound::PlayLong(mSlideSoundHandle, 3, 0x93, *(Vector3 *)&mCamSpacePos, 0);
     }
 
     {
@@ -1154,7 +1161,7 @@ void daObjBlockS_c::func_ov098_021397c8()
 }
 
 // @symbol _ZN13daObjBlockS_c19func_ov098_02139850Ev
-/* Model matrix. When mHoldingPlayer is set, mFlags bit 0x4000 is set and the
+/* dExtSimpleModel_c matrix. When mHoldingPlayer is set, mFlags bit 0x4000 is set and the
  * player's mCarryMatrix is nonzero, the
  * crate follows the player's hand: it picks a row r5 of the carry-offset
  * table (data_ov098_0213bf60 / 64 / 68 are its x / y / z columns, stride 12
@@ -1240,7 +1247,7 @@ int daObjBlockS_c::CleanupResources()
 }
 
 // @symbol _ZN13daObjBlockS_c6RenderEv
-/* Draws the model through Model's vtable slot 5 (Render) unless the crate is
+/* Draws the model through dExtSimpleModel_c's vtable slot 5 (Render) unless the crate is
  * in STATE_BROKEN or mFlags 0x40000 (a yoshi-mouth bit) is set. The call goes
  * through the local `Sub` shadow so it stays a virtual dispatch on the member
  * object. Always returns 1. */
@@ -1303,8 +1310,8 @@ int daObjBlockS_c::Behavior()
         ((int *)&v)[1] = y;
         ((int *)&v)[2] = z;
         if (DecIfAbove0_Byte(&mBreakTimer)) {
-            mParticleHandle1 = (u32)_ZN8Particle6System3NewEjj5Fix12IiES2_S2_PK11Vector3_16fPNS_8CallbackE(
-                mParticleHandle1, 0x13a, v.x, v.y, v.z, 0, 0);
+            mParticleHandle1 =
+                (u32)Particle::System::New(mParticleHandle1, 0x13a, v.x, v.y, v.z, 0, 0);
             mParticleHandle2 = _ZN8Particle6System17NewUnkCallback818Ejj5Fix12IiES2_S2_PK11Vector3_16f(
                 mParticleHandle2, 0x13b, v.x, v.y, v.z, 0);
             goto done;
@@ -1362,7 +1369,7 @@ int daObjBlockS_c::InitResources()
     mHomeAngleX = mAngleX;
     mHomeAngleY = mAngleY;
     mHomeAngleZ = mAngleZ;
-    mModel.SetFile((BMD_File *)Model::LoadFile(**(SharedFilePtr **)(f)), 1, -1);
+    mModel.SetFile((BMD_File *)dExtSimpleModel_c::LoadFile(**(SharedFilePtr **)(f)), 1, -1);
     mShadowModel.InitCuboid();
     _ZN10dBgW_KcMbg7SetFileEP8KCL_FileRK9Matrix4x35Fix12IiEsR10CLPS_Block(
         (char *)&mMeshCollider, (int)dBgW_Kc::LoadFile(**(SharedFilePtr **)(f + 4)),

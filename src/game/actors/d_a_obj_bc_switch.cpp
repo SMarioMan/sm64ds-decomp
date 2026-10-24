@@ -103,7 +103,7 @@
  */
 
 /* daObjBC_Switch_c.h FIRST: it pulls in dBgActor_c.h, which must reach
-   common.h ahead of Model.h or the wrong Matrix4x3 spelling wins. */
+   common.h ahead of dExtSimpleModel_c.h or the wrong Matrix4x3 spelling wins. */
 /* Runtime asset handles resolved through the overlay 0 file table. */
 enum d_a_obj_bc_switch_AssetId {
     ASSET_B_COIN_SWITCH_BMD = 0x043c,
@@ -137,7 +137,6 @@ extern s32 _ZN5Sound17ChangeMusicVolumeEj5Fix12IiE(u32 a, s32 vol);
 extern void _ZN5Event6SetBitEj(u32 bit);
 extern u16 DecIfAbove0_Short(u16 *p);
 /* dBgActor_c::IsClsnInRange(Fix12<int>, Fix12<int>) -- wall 6az on Behavior. */
-extern s32 _ZN10dBgActor_c13IsClsnInRangeE5Fix12IiES1_(void *self, s32 a, s32 b);
 /* dBgW_KcMbg::SetFile -- wall 6az on InitResources. */
 void _ZN10dBgW_KcMbg7SetFileEP8KCL_FileRK9Matrix4x35Fix12IiEsR10CLPS_Block(
     dBgW_KcMbg *self, KCL_File *file, Matrix4x3 *mat, int scale,
@@ -229,7 +228,7 @@ int daObjBC_Switch_c::InitResources()
     unsigned short val;
     unsigned short* p;
 
-    bmd = Model::LoadFile(daObjBC_Switch_c_ModelFile);
+    bmd = dExtSimpleModel_c::LoadFile(daObjBC_Switch_c_ModelFile);
     mModel.SetFile((BMD_File *)bmd, 1, -1);
 
     mEventBit = (int)param1 & 0xf;
@@ -337,7 +336,7 @@ s32 daObjBC_Switch_c::Behavior()
     UpdateModelPosAndRotY();
     /* MEASURED on ov002/daObjBC_Switch_c::Behavior: the two by-value
        Fix12<int> parameters are wall 6az. */
-    if (_ZN10dBgActor_c13IsClsnInRangeE5Fix12IiES1_(this, 0x1f4000, 0) != 0)
+    if (IsClsnInRange(0x1f4000, 0) != 0)
         UpdateClsnPosAndRot();
     return 1;
 }
@@ -406,7 +405,7 @@ int daObjBC_Switch_c::CleanupResources()
  * Two vtable stores and three destructor calls, every one a consequence of
  * `struct daObjBC_Switch_c : dBgActor_c`: its own vptr, then dBgActor_c's -- inlined,
  * because dBgActor_c's destructor is defined in its class body -- then
- * dBgActor_c's Model and dBgW_KcMbg, then dActor_c. This class adds no
+ * dBgActor_c's dExtSimpleModel_c and dBgW_KcMbg, then dActor_c. This class adds no
  * member with a destructor of its own.
  */
 /* The destructor body lives in the class declaration in

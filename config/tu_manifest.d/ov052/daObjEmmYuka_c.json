@@ -92,7 +92,7 @@
       "address": "0x021126a8",
       "size": "0x8",
       "binding": "STB_GLOBAL",
-      "evidence": "model resource handle constructed with file ID 1509; Model::LoadFile reaches it through data_ov052_021125a0.model"
+      "evidence": "model resource handle constructed with file ID 1509; dExtSimpleModel_c::LoadFile reaches it through data_ov052_021125a0.model"
     },
     {
       "symbol": "gEmmYukaCollisionFile",
@@ -637,12 +637,12 @@
   ],
   "defined_symbol_renames": [
     {
-      "from": "@495",
+      "from": "@492",
       "to": "@481",
       "evidence": "compiler temp; the types.h Vector3 ctors and main's sinit folds shift this TU's per-TU @NNN uniquifier, so mwcc emits it as @495 now; licensed under the existing pin @481"
     },
     {
-      "from": "@496",
+      "from": "@493",
       "to": "@482",
       "evidence": "compiler temp; the types.h Vector3 ctors and main's sinit folds shift this TU's per-TU @NNN uniquifier, so mwcc emits it as @496 now; licensed under the existing pin @482"
     }

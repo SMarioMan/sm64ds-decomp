@@ -16,12 +16,12 @@
 #ifdef __cplusplus
 
 #include "dBgActor_c.h"
-#include "Model.h"
+#include "dExtSimpleModel_c.h"
 
 extern "C" void *_ZN7fBase_cnwEj(unsigned size);
 
 struct daObjC1_Trap_c : dBgActor_c {
-    Model mDoorModel;                 /* 0x320 */
+    dExtSimpleModel_c mDoorModel;     /* 0x320 */
     Matrix4x3 mDoorMat;               /* 0x370 */
     s32 mState;                         /* 0x3a0 */
     s32 mPlayerDist;                    /* 0x3a4 */

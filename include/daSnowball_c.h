@@ -12,7 +12,7 @@
  *
  *     0x110 dCcAc_c         0x34   -> 0x144
  *     0x144 dBgCh_Actr               0x1bc  -> 0x300
- *     0x300 Model                      0x50   -> 0x350
+ *     0x300 dExtSimpleModel_c                      0x50   -> 0x350
  *     0x350 dExtShadowModel_c                0x28   -> 0x378
  *
  * Member NAMES are the ones this header already used -- a rebase should not
@@ -35,8 +35,8 @@
  */
 
 #include "dEnemyBase_c.h"
-#include "Model.h"
-#include "ModelAnim.h"
+#include "dExtSimpleModel_c.h"
+#include "dExtAnmModel_c.h"
 #include "dCcAc_c.h"
 #include "dCcAcPos_c.h"
 #include "dExtShadowModel_c.h"
@@ -58,7 +58,7 @@ struct daSnowball_StateRec {
 struct daSnowball_c : dEnemyBase_c {
     dCcAc_c           mdCcAc_c;   /* 0x110 */
     dBgCh_Actr                 mWithMeshClsn;         /* 0x144 */
-    Model                        mModel;                /* 0x300 */
+    dExtSimpleModel_c mModel;                         /* 0x300 */
     dExtShadowModel_c                  mShadowModel;          /* 0x350 */
     daSnowball_StateRec         *mStateRec;             /* 0x378 -- installed by func_ov081_021261d4 */
     /* Where the actor was placed: InitResources copies mPosX/Y/Z here before

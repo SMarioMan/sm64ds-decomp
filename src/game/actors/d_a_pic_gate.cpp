@@ -45,7 +45,7 @@
 #include "daPicGate_c.h"
 #include "common.h"
 #include "Player.h"
-#include "Model.h"
+#include "dExtSimpleModel_c.h"
 #include "SharedFilePtr.h"
 #include "private/Ov080Mat.h"
 #include "nitro/fx/fx.h"
@@ -202,7 +202,8 @@ u8 *daPicGate_c::func_ov080_02125630(s32 i)
         b = (PicGateMaterial *)o->materials;
         c = o->palettes;
         int sz;
-        e->texAddr = (int)Model::LoadCompressedTextureToVram(a->data, a->size, a->data + a->size);
+        e->texAddr = (int)dExtSimpleModel_c::LoadCompressedTextureToVram(a->data, a->size,
+                                                                         a->data + a->size);
         sz = c->size;
         if (sz <= 8)
             e->pltAddr = (int)func_02045ad8(c->data, (unsigned int)sz);

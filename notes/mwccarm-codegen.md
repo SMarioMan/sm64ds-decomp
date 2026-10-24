@@ -59,6 +59,11 @@ aggregate a `union` rather than a `struct`, or copying each parameter to a local
 before use -- re-measured on Actor::SetRanges (0x02010e08, target 0x24), where every
 aggregate form costs the same +0x14 and only a scalar parameter reproduces.
 
+**That last example is no longer a wall, and it was the flagship one.**
+`dActor_c::SetRanges` is a real method as of 2026-10-23 -- see BATCH 4 below.
+Everything in this paragraph is still true of a CLASS-TYPED parameter; what it
+was taken to prove, that the symbol could not be a method, does not follow.
+
 ### CORRECTED 2026-08-27: the cost is per USE, and the wall was partly self-inflicted
 
 The paragraph above used to end "The cost is in the parameter passing, not in how
@@ -137,19 +142,19 @@ still costs nothing.
 
 ### MEASURED 2026-10-22: both `SetAnim` symbols are NOT walled -- the name was the wall
 
-`ModelAnim::SetAnim` and `BlendModelAnim::SetAnim` were the two standing in-tree
-citations of this wall. Their sources said so in four places (`include/ModelAnim.h`,
-`src/engine/model/ModelAnim.cpp`, `include/BlendModelAnim.h`,
-`src/engine/model/BlendModelAnim.cpp`): "SetAnim's definition stays a mangled free
+`dExtAnmModel_c::SetAnim` and `dExtBlendAnmModel_c::SetAnim` were the two standing in-tree
+citations of this wall. Their sources said so in four places (`include/dExtAnmModel_c.h`,
+`src/engine/model/d_ext_anm_model.cpp`, `include/dExtBlendAnmModel_c.h`,
+`src/engine/model/d_ext_blend_anm_model.cpp`): "SetAnim's definition stays a mangled free
 function (wall 6az)". Measured on 605184f87d, that is wrong. Both reproduce as real
 C++ methods once the symbol is renamed to its scalar mangling, exactly as
 `IsGoingOffCliff` above:
 
 | symbol | form | result |
 |---|---|---|
-| `_ZN9ModelAnim7SetAnimEP8BCA_Fileiit` | `void ModelAnim::SetAnim(BCA_File *, int, Fix12i, u16)` | **2004/b56, 0x5c** |
-| `_ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj` | same body, method, `Fix12<int>` + `u32` | 0x74 vs 0x5c (+0x18) |
-| `_ZN14BlendModelAnim7SetAnimER8BCA_Fileiiit` | `void BlendModelAnim::SetAnim(BCA_File &, int, int, Fix12i, u16)` | **2004/b56, 0x9c** |
+| `_ZN14dExtAnmModel_c7SetAnimEP8BCA_Fileiit` | `void dExtAnmModel_c::SetAnim(BCA_File *, int, Fix12i, u16)` | **2004/b56, 0x5c** |
+| `_ZN14dExtAnmModel_c7SetAnimEP8BCA_Filei5Fix12IiEj` | same body, method, `Fix12<int>` + `u32` | 0x74 vs 0x5c (+0x18) |
+| `_ZN19dExtBlendAnmModel_c7SetAnimER8BCA_Fileiiit` | `void dExtBlendAnmModel_c::SetAnim(BCA_File &, int, int, Fix12i, u16)` | **2004/b56, 0x9c** |
 
 Both matches are `--module arm9` (strict relocs), 0x02016748/0x5c and
 0x020163e0/0x9c. The class-typed row is the wall doing what this section says: the
@@ -161,7 +166,7 @@ Two things follow, and both are general, not specific to these two symbols:
 
 - **`extern "C"` and `thiz` are symptoms of the name, not of the compiler.** The
   `extern "C"` exists only to stop mwccarm re-mangling a hand-spelled mangled
-  identifier, and the explicit `ModelAnim *thiz` exists only because an
+  identifier, and the explicit `dExtAnmModel_c *thiz` exists only because an
   `extern "C"` function has no implicit `this`. A real method's natural mangling
   IS the symbol, so all three disappear together. The tree carries 1111 `thiz`
   across 164 files and 54 distinct `5Fix12IiE` symbols, 207 files defining one as
@@ -174,14 +179,237 @@ Two things follow, and both are general, not specific to these two symbols:
   in arm9 and all 105 overlays. Those names are ours; they cannot be evidence for
   the type they contain.
 
-**NOT done here.** Landing either rename is a source campaign, not a comment fix:
-801 references across 114 files, plus `config/arm9/symbols.txt`, ~30
-`config/tu_manifest.d/` manifests and `config/decl-agreement-baseline.json`.
-Renaming a symbol re-keys every local `extern` of it, so each must be retyped to
-agree with the new definition -- including `unsigned int` -> `u16` on
-`startFrame`, which is itself an instruction-selection risk at ~100 call sites.
-A symbol rename cannot partially land, so it needs a full `tools/rombuild.py`
-run, not a sampled one.
+### THE CALLER DOES NOT PAY EITHER, once the parameter is scalar (2026-10-23)
+
+The 2026-09-23 correction above says the caller pays for a by-value `Fix12<int>`
+independent of what the callee does. True -- but it is the same naming artifact,
+and it dissolves the same way. `d_a_obj_km2_nobiru.cpp` carried two comments
+saying so in as many words: "SetScaleY takes Fix12<int> by value, so it stays
+mangled; the method call makes Behavior differ", and the same for
+`dBgW_KcMbgSclY::SetFile` in `InitResources`. Both were measured against the
+HEADER's `Fix12<int>` spelling. With the declaration changed to the scalar
+`Fix12i`, the method call is free: `daObjKm2_Nobiru_c::Behavior` (ov045
+0x021119c0/0x70) and `InitResources` (0x02111a30/0xa4) both reproduce with
+`mCollider.SetScaleY(...)` and `mCollider.SetFile(...)` and the local externs
+deleted.
+
+So "the caller pays" is a statement about a class-typed parameter, never about
+reaching a `5Fix12IiE` callee. A comment that says a method call cannot be used
+at a call site is evidence only about the spelling it was measured with.
+
+### BATCH 3: five more symbols (2026-10-23)
+
+All five reproduce as real methods/functions under scalar mangling, all
+`--module` (strict relocs), with 158/158 functions in the six changed sources
+matching:
+
+| old symbol | new symbol | addr/size |
+|---|---|---|
+| `_ZN4cstd10fdiv_asyncE5Fix12IiE5Fix12IiE` | `_ZN4cstd10fdiv_asyncEii` | 0x02052fa4/0x38 |
+| `_ZN4cstd16reciprocal_asyncE5Fix12IiE` | `_ZN4cstd16reciprocal_asyncEi` | 0x02053090/0x3c |
+| `_ZN14dBgW_KcMbgSclY9SetScaleYE5Fix12IiE` | `_ZN14dBgW_KcMbgSclY9SetScaleYEi` | 0x0203aad8/0x2c |
+| `_ZN14dBgW_KcMbgSclY7SetFileE...5Fix12IiEs...` | `..._ZN14dBgW_KcMbgSclY7SetFileEP8KCL_FileRK9Matrix4x3isR10CLPS_Block` | 0x0203ab04/0x38 |
+| `_ZN8dActor_c15IsPlayerInRangeE5Fix12IiES1_S1_i` | `_ZN8dActor_c15IsPlayerInRangeEiiii` | 0x02010498/0x44 |
+
+Three things this batch adds to the recipe:
+
+- **A namespaced function is the same job as a method.** `cstd::fdiv_async` and
+  `cstd::reciprocal_async` become real `namespace cstd` functions. Watch the
+  lookup: `func_02053200` and `func_02053130` are `extern "C"` blocks OUTSIDE
+  the namespace, so their calls need `cstd::` qualification -- an unqualified
+  call compiles nowhere and the error (`undefined identifier`) is the only
+  symptom.
+- **A `.c` caller cannot follow at all.** `src/InvMat4x3.c` is C and cannot name
+  a C++ namespaced function, so it keeps a mangled extern under the new spelling
+  with a `local extern:` reason. This is a third category alongside shadow
+  scaffolds and raw-offset TUs.
+- **The scalar name can FIX a recorded name defect.** `fdiv_async`'s old name
+  was in `config/name-roundtrip-baseline.json` as a MISMATCH, because a
+  hand-derived name spelled the second `Fix12<int>` out in full where the
+  Itanium ABI requires the `S1_` back-reference. `...Eii` has no substitution to
+  get wrong, so it round-trips and the exemption was deleted. Any symbol with
+  repeated `5Fix12IiE` parameters is likely carrying the same defect -- check
+  that baseline before and after.
+
+Also worth knowing: `tools/name_roundtrip.py --symbol X` prints a SUMMARY, so
+the word MISMATCH appears in its output even when the count is 0. Read the
+`ROUND-TRIPS n 100.0%` line, not a grep for the word.
+
+### THE COMPILER'S NUMBERED LOCAL LABELS COUNT *NAMED* PARAMETERS (2026-10-23)
+
+AGENTS.md says a FILE RENAME moves compiler-numbered local symbols
+(`Bundle$902d_a_mky_cpp`, the `@NNN` .bss/.data labels, `__sinit_<file>`). It is
+broader than that, and the mechanism is specific: **the counter advances per
+NAMED PARAMETER the TU has seen before the local class or label.** That gives a
+rename two separate ways to break the ROM build, both of which show up as
+
+    isolate: defined symbol rename refused: defined rename source @N has 0 symbols
+
+**1. A shared header gaining a declaration renumbers labels in EVERY consumer,
+including files the branch never edited.** Declaring `dActor_c::SetRanges` (four
+`Fix12i`) and `dActor_c::IsTooFarAwayFromPlayer` (one) moved `d_a_mky.cpp`'s
+`Bundle$976` to `$981` -- an untouched file -- and shifted every other
+consumer's `@NNN` labels by the same five. 227 TU manifests record such labels,
+so this is a ~200-file failure from a two-line header edit.
+
+**THE LEVER: dropping the parameter NAMES costs nothing.** Declared types-only,
+`void SetRanges(Fix12i, Fix12i, Fix12i, Fix12i);`, every counter stays put --
+`d_a_mky.cpp` is back to `Bundle$976` and `ov002/da1up_c` reports no EXTRA
+labels. A header declaration added for a rename should omit its parameter
+names; put the names on the definition, where they document the code and cost
+nothing. Do this FIRST and the 227-TU blast radius never exists.
+
+**2. Deleting a local `extern` that HAD named parameters frees numbers in that
+TU.** Unavoidable, but bounded by the files actually edited (plus any TU that
+reaches a changed local header: `d_a_obj_km2_ami_bou.cpp` via
+`daObjKm2_Ami_Bou_c.h`). Re-key those manifests against objects compiled at the
+PR's real base and at the head:
+
+- Pair the bare `@NNN` DEFINED symbols as a WHOLE BLOCK: sort each side by
+  number, require the same count and the same section/size sequence, and map
+  position to position. Pair `$NNN` mangled names (`Bundle$NNN...`) by shape.
+- Rewrite every `defined_symbol_renames[].from` (and compiler-only `Bundle$NNN`
+  rows) in ONE pass from that map. Leave `to`, `.bss`/`.data`, relocations and
+  binding rewrites alone: they carry ROM-side names.
+
+#4296 landed this way: every converted TU dropped its extern and took the
+member call, and 79 manifests were re-keyed (full rombuild: intact TU gates
+clean, 0 mismatching; PR validation green). A per-label remap applied one
+rename at a time collides when
+the block shifts onto itself (`rename destination @N already exists in
+object`); the simultaneous block map does not. Apply it exactly ONCE -- a
+second pass double-shifts and reports `duplicate defined symbol rename`.
+
+One case the map cannot see: a label that USED to coincide with its ROM name
+has no rename row at all (`daLinelift2_c` `@508`). Once it moves, the
+`symbol_binding_rewrites`/relocation rows naming it fail with `binding rewrite
+symbol @508 has 0 entries`; add the rename (`@505 -> @508`) rather than
+editing the ROM-side rows.
+
+Also note `tools/rombuild.py` prints at most ten isolate failures
+(`failures[:10]`), and isolate reports only the FIRST stale source per TU, so
+one run never yields the complete list -- raise the cap locally while sweeping.
+
+**How to check any of this.** `tubuild verify <tu>`'s verdict is NOT the signal:
+`ov002/da1up_c` reports `38/38 MATCH ... TEXT-VERIFIED` with every label wrong,
+because the verdict covers function bytes. The signal is the `EXTRA .data/.bss
+@NNN` lines in the same output -- once a rename source matches what the object
+emits, isolate renames it and it stops being EXTRA. **A TU is clean when EXTRA
+is empty.** Sweep every manifest carrying an `@NNN` rename source, not just the
+TUs whose sources changed, because cause 1 hits files the branch never touched.
+And when `PR validation` shows a wall of "N blocking relocation verdict(s)" that
+all read `validation error (not verified)` with `Slots checked: 1`, the check
+never ran -- find the single real failure in the full-ROM build output instead.
+
+### BATCH 4: the range-check family, and the wall's own flagship example (2026-10-23)
+
+| old symbol | new symbol | addr/size |
+|---|---|---|
+| `_ZN10dBgActor_c13IsClsnInRangeE5Fix12IiES1_` | `_ZN10dBgActor_c13IsClsnInRangeEii` | ov002 0x020ee870/0xc4 |
+| `_ZN10dBgActor_c21IsClsnInRangeOnScreenE5Fix12IiES1_` | `_ZN10dBgActor_c21IsClsnInRangeOnScreenEii` | ov002 0x020ee934/0x11c |
+| `_ZN8dActor_c9SetRangesE5Fix12IiES1_S1_S1_` | `_ZN8dActor_c9SetRangesEiiii` | 0x02010e08/0x24 |
+| `_ZN8dActor_c22IsTooFarAwayFromPlayerE5Fix12IiE` | `_ZN8dActor_c22IsTooFarAwayFromPlayerEi` | 0x0200f70c/0x54 |
+
+237 references across 101 files: 120 call sites became method calls and 102 local
+`extern` declarations were deleted. **Zero residual handspelled debt** -- no file
+keeps a mangled extern for any of the four, and `source_style` reports 0 findings.
+
+- **`SetRanges` was this section's own headline example** ("only a scalar
+  parameter reproduces"), and the conclusion drawn from it -- that the symbol
+  therefore stays mangled -- was the error. The measurement was right; it
+  measured the parameter, not the name.
+- **`include/dBgActor_c.h` had already written down the answer** for the two
+  `IsClsnInRange*` symbols: "The two IsClsnInRange* symbols make the same claim
+  and their bytes refuse it". Nobody had acted on it. Grep the headers for that
+  kind of sentence before re-deriving anything.
+- **`UpdateKillByMegaChar` is a GENUINE wall and is left alone.** Its header
+  says the by-value `Fix12<int>` "is confirmed by the body at ov002 0x020ee674,
+  not inferred from the mangled name". That is the distinction that matters: a
+  claim measured FROM THE BYTES stands; a claim inferred from a name we wrote
+  does not.
+- **Batch 3's `S1_` theory does NOT generalise.** #4293 suggested symbols with
+  repeated `5Fix12IiE` parameters likely carried `fdiv_async`'s Itanium
+  substitution defect. These four all spell `S1_` correctly and none was in
+  `config/name-roundtrip-baseline.json`. The defect was specific to that one
+  hand-derived name.
+- **`SetRanges` and `IsTooFarAwayFromPlayer` were not declared in
+  `include/dActor_c.h` at all**, so this adds two declarations to a 295-consumer
+  header. Adding a NON-VIRTUAL member declaration changes no layout and no
+  vtable, but it does mean the whole consumer set is in `validate`'s scope.
+- **A `char *` receiver still needs a cast.** `d_a_obj_sm_lift.cpp` holds its
+  actor as `char *self` and does arithmetic on it (`*(int *)(self + 0x320)`), so
+  `self->IsClsnInRange(...)` does not compile -- `expression syntax error`, which
+  names the line but not the cause. It became
+  `((dBgActor_c *)self)->IsClsnInRange(...)`.
+- **A `config/source-style-exceptions.json` entry had to go.** It banked three
+  `handspelled-member` occurrences for `SetRanges` with the reason "defining the
+  body as a method homes each [argument]" -- the thing this branch disproves.
+  Exceptions files carry stale reasoning the same way comments do.
+
+Verification shape for a change this wide: every `@symbol` in all 101 changed
+sources, 1,492 functions, not just the call-site holders. 1,486 match; the other
+6 are `__sinit_*` glue that reports WRONG-DEST reloc destinations IDENTICALLY on
+`origin/main`, checked one by one by swapping each file for its base copy. Expect
+that noise on any wide actor-file change and check it against base rather than
+assuming it is yours.
+
+### DONE for both SetAnim symbols (2026-10-22/23)
+
+`_ZN14dExtAnmModel_c7SetAnimEP8BCA_Filei5Fix12IiEj` is now
+`_ZN14dExtAnmModel_c7SetAnimEP8BCA_Fileiit`, a real method, and the 612 references
+across 79 files were converted: 394 call sites became `obj.SetAnim(...)` and 120
+local `extern` declarations were deleted outright. What the campaign actually
+cost, for whoever does the other 53 symbols:
+
+- **Four sites could not follow, and each needs a scalar `local extern:`.**
+  `d_mg_trmpln2_mario.cpp` (61 refs) and `unit020bfec0.cpp` (5) never see the
+  real class -- trmpln2 declares a never-defined `struct dExtAnmModel_c` scaffold in
+  every `ns_*` namespace, and unit020bfec0 reaches its anim through raw record
+  offsets -- so a method call cannot bind and only the symbol name changed there.
+  `d_a_ots.cpp` tail-forwards SetAnim's r0 as `func_ov064_02116560`'s own `int`
+  result, which needs the int-returning spelling. One `Player.cpp` body
+  (`St_YoshiPower_Main`) passes a NON-CONSTANT startFrame, and narrowing
+  `(currFrame << 4) >> 0x10` to the real `u16` costs +0x10 there.
+- **The `u16` startFrame is the one real codegen risk, and it is rare.** 383 of
+  394 sites pass a constant 0, where it is free. Only the non-constant ones pay.
+- **Two `#define` aliases hid call sites from a textual sweep** (`SET_ANIM` in
+  `d_a_r_nk.cpp`, `SetChompAnim` in `d_a_wanwan.cpp`), and a third file reached
+  the symbol through a macro that a sweep must not join across its
+  line-continuation backslash.
+- **Casts must be scope-qualified.** `d_mg_trmpln2_mario.cpp` has per-function
+  `ns_*::BCA_File` types, so an unqualified `(BCA_File *)` binds the wrong one.
+- **The config side is `config/arm9/symbols.txt` plus
+  `config/decl-agreement-baseline.json`.** The `config/tu_manifest.d/` hits are
+  historical `tubuild create warning (RESOLVED)` narrative strings and must NOT
+  be rewritten -- they record what happened under the old name. Deleting the 120
+  local externs removes their banked disagreements, so the baseline shrinks; the
+  remaining deliberate ones are re-banked with `--update`.
+- **`source_style` reports the surviving `handspelled-member` debt as new,**
+  because it keys debt on the exact spelling and the spelling changed. For this
+  symbol the count went 612 -> 71, and the 71 are the same occurrences in the
+  four files above (61 -> 61 and 5 -> 5 unchanged; 15 -> 2 and 18 -> 3).
+
+`_ZN19dExtBlendAnmModel_c7SetAnimER8BCA_Fileii5Fix12IiEt` followed as
+`_ZN19dExtBlendAnmModel_c7SetAnimER8BCA_Fileiiit`: 191 references across 8 files, 68
+call sites converted and 11 local declarations deleted. Only
+`unit020bfec0.cpp` (37 refs) could not follow, for the same reason as above.
+Two things that differ from the dExtAnmModel_c pass, both from parameter 2 being
+`BCA_File &` rather than a pointer:
+
+- **A reference parameter needs an lvalue, so call sites gain a dereference**
+  (`*(BCA_File *)x.filePtr`). Where a file's old local extern ALREADY declared
+  `BCA_File &`, its call site was already passing a dereferenced lvalue, and a
+  sweep that adds its own `*(BCA_File *)` double-wraps it --
+  `illegal explicit conversion from 'BCA_File' to 'BCA_File *'`, 7 sites in
+  `d_a_jango.cpp`. Check what the old declaration said before casting.
+- **An incomplete `BCA_File` is fine.** No header defines it; most callers only
+  forward-declare it, and mwccarm still binds `*(BCA_File *)p` to the reference.
+  That was not the jango failure, despite looking like it.
+
+`d_a_jango.cpp` also carried five `TUBUILD CONFLICT` markers that quoted the old
+declaration; removing the declaration leaves the marker recording nothing, so
+those were dropped. That is different from the `config/tu_manifest.d/` strings,
+which stay.
 
 ## 1. Ground rules of the build
 
@@ -1760,7 +1988,7 @@ Rules, each verified by a div->0 crack (full write-ups in the opus batch journal
   re-folds. Where you put the launder in the address TREE is itself the lever.
 - **Taking &arr[i] escapes the WHOLE stack array** (RaycastGround::DetectClsn). Every
   unrelated scalar living in that array joins the alias set, its stores become ordered
-  memory ops, and LICM/outgoing-arg scheduling pin around them. Model separate concepts
+  memory ops, and LICM/outgoing-arg scheduling pin around them. dExtSimpleModel_c separate concepts
   as separate locals unless the ROM shows the pinning.
 - **Callee-saved rank classes** (ExpandingHeapAllocator::Reallocate): locals whose
   defining RHS is param-only address arithmetic, taken as a maximal DECL PREFIX, promote
@@ -2868,7 +3096,7 @@ A three-web rotation over r5-r7 that survived decl order, scope depth, the 6y/6a
 family at every placement, the 6h launder, C-vs-C++ TU, and a type sweep. Measuring the
 classes rather than permuting the source produced a model that predicts the coloring.
 
-**Model.** mwccarm assigns the callee-saved band in TWO passes, not one:
+**dExtSimpleModel_c.** mwccarm assigns the callee-saved band in TWO passes, not one:
 
 1. **NORMAL-class** webs, in first-definition order, ascending from r5.
 2. **ADDRESS-CONSTANT-class** webs (rematerializable pointer constants, i.e. a pooled
@@ -6869,7 +7097,7 @@ AND IT IS HIDING NOTHING ELSE. All 29 NONMATCHING-bannered committed rows were r
 same way. Eighteen are already byte-exact and always were -- the HAND-ASM PRIMITIVE files,
 which carry the banner as a policy marker under the 09-09 ruling -- and the remaining eleven
 keep their residue exactly (func_02009e70 96, `dScStarSel_c::Behavior` 11,
-func_ov015_021114f0 8, func_ov007_020bfd70 7, `Model::LoadCompressedTextureToVram` 5,
+func_ov015_021114f0 8, func_ov007_020bfd70 7, `dExtSimpleModel_c::LoadCompressedTextureToVram` 5,
 `dScStage_c::InitResources` 4, func_ov075_0211afb0 4, `daEykn_c::InitResources` 3, `OAM::Render` 2,
 func_0202ffec 2). Do not go looking for a second free match here; there is one, and this
 was it.
@@ -7707,7 +7935,7 @@ MATCHED (3 -> 0); the two-regime coupling on func_ov006_020fdaf0 (7 -> 6); two A
 scheduling floors named.**
 
 `_ZN8daEykn_c13InitResourcesEv` (ov071 0x02121734, 0x298) sat at three words for a month: the slot
-of `mov r2,#1` in the ModelBase::SetFile argument setup at +0x20 (ROM `mov r2,#1 / mov r1,r0 /
+of `mov r2,#1` in the dExtModel_c::SetFile argument setup at +0x20 (ROM `mov r2,#1 / mov r1,r0 /
 add r0,r4,#0xd4 / mov r3,r2`, every draft `mov r1,r0 / add r0,r4,#0xd4 / mov r2,#1 / mov r3,r2`).
 CRK-O's micro-lab had reduced it to "a third call ahead of the site in the block loses the
 constant-first order", which is true and was still not the lever. The draft declared the first

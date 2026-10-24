@@ -1,5 +1,5 @@
 //cpp
-#include "ModelBase.h"
+#include "dExtModel_c.h"
 
 extern "C" {
 extern void func_ov007_020c9110(void*);

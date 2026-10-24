@@ -13,9 +13,9 @@
  * the factory.
  *
  * deslop leftovers:
- * - InitResources: a local holding Model::LoadFile's return, reused by
+ * - InitResources: a local holding dExtSimpleModel_c::LoadFile's return, reused by
  *   Prepare, differs by 34 words (size stays 0x1ec).
- * - InitResources: ModelAnim::SetAnim with a Fix12<int> local differs
+ * - InitResources: dExtAnmModel_c::SetAnim with a Fix12<int> local differs
  *   (size stays 0x1ec, 10 relocation destinations wrong).
  * - InitResources: TextureSequence::SetFile with a Fix12<int> local differs
  *   (size stays 0x1ec, 11 relocation destinations wrong; the call is not
@@ -110,14 +110,15 @@ int func_ov002_020e496c(char *player);
 void func_0203c178(Matrix4x3 *m, int sx, int sy, int sz);
 void MulMat3x3Mat3x3(const int *a, const int *b, int *dst);
 void Matrix4x3_FromTranslation(Matrix4x3 *m, int x, int y, int z);
-void func_02016acc(Model *model, unsigned int mask);
-void func_02016b24(Model *model, u32 mask);
+void func_02016acc(dExtSimpleModel_c *model, unsigned int mask);
+void func_02016b24(dExtSimpleModel_c *model, u32 mask);
 void Vec3_Asr(Vec3 *dst, Vec3 *src, int shift);
 void Matrix4x3_ApplyInPlaceToRotationY(Matrix4x3 *m, short angY);
 
 /* Fix12<int> by value. The method form homes that argument on the stack. */
-void _ZN8dActor_c19DropShadowRadHeightER17dExtShadowModel_cR9Matrix4x35Fix12IiES5_j(dActor_c *self, dExtShadowModel_c *shadow, Matrix4x3 *mat, int radius, int depth, unsigned char opacity);
-void _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(ModelAnim *model, BCA_File *file, int flags, int speed, unsigned short start);
+void _ZN8dActor_c19DropShadowRadHeightER17dExtShadowModel_cR9Matrix4x35Fix12IiES5_j(
+    dActor_c *self, dExtShadowModel_c *shadow, Matrix4x3 *mat, int radius, int depth,
+    unsigned char opacity);
 void _ZN15TextureSequence7SetFileER8BTP_Filei5Fix12IiEj(TextureSequence *seq, BTP_File *file, int flags, int speed, unsigned short start);
 }
 
@@ -136,11 +137,11 @@ int daLuigi_c::InitResources()
 {
     Vec3 t;
 
-    mModelAnim.SetFile((BMD_File *)Model::LoadFile(data_ov002_0210ebb8), 1, -1);
+    mModelAnim.SetFile((BMD_File *)dExtSimpleModel_c::LoadFile(data_ov002_0210ebb8), 1, -1);
     func_02016acc(&mModelAnim, kMatClear);
     func_02016b24(&mModelAnim, kMatSet);
 
-    mModel.SetFile((BMD_File *)Model::LoadFile(data_ov002_0210eb20), 1, -1);
+    mModel.SetFile((BMD_File *)dExtSimpleModel_c::LoadFile(data_ov002_0210eb20), 1, -1);
     func_02016acc(&mModel, kMatClear);
     func_02016b24(&mModel, kMatSet);
 
@@ -155,7 +156,7 @@ int daLuigi_c::InitResources()
 
     mShadowModel.InitCylinder();
 
-    _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(&mModelAnim, (BCA_File *)dExtFrameCtrl_c::LoadFile(data_ov002_0210eaa0), 0, kFxOne, 0);
+    mModelAnim.SetAnim((BCA_File *)dExtFrameCtrl_c::LoadFile(data_ov002_0210eaa0), 0, kFxOne, 0);
 
     Vec3_Asr(&t, (Vec3 *)&mPosX, 3);
     Matrix4x3_FromTranslation(&data_020a0e68, t.x, t.y, t.z);
@@ -202,7 +203,7 @@ int daLuigi_c::Behavior()
 int daLuigi_c::Render()
 {
     Player *player;
-    Model *body;
+    dExtSimpleModel_c *body;
     ModelComponents *comps;
     BMD_File *file;
     Matrix4x3 *mat;
@@ -213,7 +214,7 @@ int daLuigi_c::Render()
     if (data_ov055_02111b6c == 0) return 1;
 
     player = CurrentPlayer();
-    body = (Model *)func_ov002_020e496c((char *)player);
+    body = (dExtSimpleModel_c *)func_ov002_020e496c((char *)player);
 
     comps = &mModelAnim.data;
     file = comps->modelFile;
@@ -236,7 +237,7 @@ int daLuigi_c::Render()
 
     if (data_ov055_02111b64 & kHideBit) return 1;
 
-    mModelAnim.Model::Render(0);
+    mModelAnim.dExtSimpleModel_c::Render(0);
     *(Mtx *)&mModel.data.transforms[0] = *(Mtx *)&mModelAnim.data.transforms[15];
     mTextureSequences[0].Update(mModelAnim.data);
     mTextureSequences[0].currFrame = player->mIsVanish << 12;

@@ -79,7 +79,7 @@
       "address": "0x02112610",
       "size": "0x8",
       "binding": "STB_GLOBAL",
-      "evidence": "model resource handle constructed with file ID 1621; Model::LoadFile reaches it through data_ov043_02112344.model"
+      "evidence": "model resource handle constructed with file ID 1621; dExtSimpleModel_c::LoadFile reaches it through data_ov043_02112344.model"
     },
     {
       "symbol": "gKm1KurumajikuCollisionFile",

@@ -1,5 +1,5 @@
 #include "types.h"
-#include "ModelBase.h"
+#include "dExtModel_c.h"
 typedef struct { int f[12]; } Blk;
 
 #define LS(a) (*(short*)(((long long)(int)(a))))
@@ -42,7 +42,7 @@ typedef struct Ov007Model {
     int animTick;
     /* 0x9c: func_ov007_020bc6d4's second argument. 1/2 half-rate animation
      * (2 also fills the in-between frames), 4 cross-fade buffers, 8 skips
-     * Model::LoadTexAndPal (func_ov007_020bc47c) */
+     * dExtSimpleModel_c::LoadTexAndPal (func_ov007_020bc47c) */
     int flags;
 } Ov007Model;
 

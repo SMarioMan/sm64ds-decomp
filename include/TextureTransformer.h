@@ -10,7 +10,7 @@
  * plain methods.
  *
  * THE DESTRUCTOR IS DECLARED FIRST AND D1 IS A REAL METHOD -- see
- * include/ModelBase.h for the key-function rule and the objisolate exemption
+ * include/dExtModel_c.h for the key-function rule and the objisolate exemption
  * to it. D0 emits beside it from the one definition.
  *
  * Prepare's ROM body is a 0xc long-call veneer (ldr ip, [pc]; bx ip;

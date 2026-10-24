@@ -4,7 +4,7 @@
  *
  * No fields. InitResources / CleanupResources hand this overlay's
  * model and collision files to daObjGuragura_c's shared ov002 helpers.
- * func_ov002_020b6244 loads slot 0 with Model::LoadFile, slot 1 with
+ * func_ov002_020b6244 loads slot 0 with dExtSimpleModel_c::LoadFile, slot 1 with
  * dBgW_Kc::LoadFile, slot 2 as CLPS into SetFile. ov064 sinit
  * constructs those SharedFilePtrs as file IDs 1523 / 1524.
  *

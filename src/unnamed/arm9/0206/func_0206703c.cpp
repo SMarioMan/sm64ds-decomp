@@ -1,14 +1,18 @@
 //cpp
+
+namespace IRQ {
+int Disable(void);
+}
 extern "C" {
 extern int data_020a9db8;
-extern int _ZN3IRQ7DisableEv(void);
+
 extern void _ZN3IRQ7RestoreEj(int saved);
 extern int func_02065edc(unsigned int x);
 
 int func_0206703c(unsigned int arg0, int sel) {
     int val;
     int code;
-    int saved = _ZN3IRQ7DisableEv();
+    int saved = IRQ::Disable();
     switch (sel) {
     case 0: code = 0xa; val = 4; break;
     case 1: code = 0xa; val = 3; break;

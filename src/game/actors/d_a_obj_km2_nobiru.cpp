@@ -49,9 +49,6 @@ extern NobiruClsnFileHandle PoleLift_ClsnFile;
 extern NobiruModelFileHandle PoleLift_ModelFile;
 extern s32 func_0203aad0(dBgW_KcMbgSclY *);
 extern void Matrix4x3_FromRotationY(Matrix4x3 *, s32);
-extern void _ZN14dBgW_KcMbgSclY9SetScaleYE5Fix12IiE(dBgW_KcMbgSclY *, s32);
-extern void _ZN14dBgW_KcMbgSclY7SetFileEP8KCL_FileRK9Matrix4x35Fix12IiEsR10CLPS_Block(
-    dBgW_KcMbgSclY *, KCL_File *, const Matrix4x3 &, s32, s16, CLPS_Block &);
 }
 
 // @symbol _ZN17daObjKm2_Nobiru_cD1Ev
@@ -109,15 +106,16 @@ int daObjKm2_Nobiru_c::Render()
 int daObjKm2_Nobiru_c::Behavior()
 {
     /* Leftover: the scale is read through func_0203aad0, because the direct
-     * mCollider.scaleY load makes Behavior differ. SetScaleY takes Fix12<int>
-     * by value, so it stays mangled; the method call makes Behavior differ. */
+     * mCollider.scaleY load makes Behavior differ. SetScaleY is a real method
+     * now: its old name's Fix12<int> was ours, and under the scalar Fix12i the
+     * method call costs nothing here (notes/mwccarm-codegen.md 6az). */
     s32 scaleY = func_0203aad0(&mCollider);
     if (mGrowing) {
-        _ZN14dBgW_KcMbgSclY9SetScaleYE5Fix12IiE(&mCollider, scaleY + 8);
+        mCollider.SetScaleY(scaleY + 8);
         if (func_0203aad0(&mCollider) > 0x1000)
             mGrowing = 0;
     } else {
-        _ZN14dBgW_KcMbgSclY9SetScaleYE5Fix12IiE(&mCollider, scaleY - 8);
+        mCollider.SetScaleY(scaleY - 8);
         if (func_0203aad0(&mCollider) < 0x800)
             mGrowing = 1;
     }
@@ -127,17 +125,14 @@ int daObjKm2_Nobiru_c::Behavior()
 // @symbol _ZN17daObjKm2_Nobiru_c13InitResourcesEv
 int daObjKm2_Nobiru_c::InitResources()
 {
-    mModel.SetFile((BMD_File *)Model::LoadFile(PoleLift_ModelFile), 1, -1);
+    mModel.SetFile((BMD_File *)dExtSimpleModel_c::LoadFile(PoleLift_ModelFile), 1, -1);
     UpdateModelTransform();
     UpdateColliderTransform();
 
-    /* Leftover: dBgW_KcMbgSclY::SetFile takes Fix12<int> by value, so it stays
-     * mangled; the method call makes InitResources differ. func_020396c0 stays
-     * a call because the direct mCollider.edgeToleranceShift = 4 store makes
-     * InitResources differ. */
-    _ZN14dBgW_KcMbgSclY7SetFileEP8KCL_FileRK9Matrix4x35Fix12IiEsR10CLPS_Block(
-        &mCollider, (KCL_File *)dBgW_Kc::LoadFile(PoleLift_ClsnFile),
-        mColliderTransform, 0x1000, mAngleY, *(CLPS_Block *)data_ov045_021125b0);
+    /* func_020396c0 stays a call because the direct
+     * mCollider.edgeToleranceShift = 4 store makes InitResources differ. */
+    mCollider.SetFile((KCL_File *)dBgW_Kc::LoadFile(PoleLift_ClsnFile), mColliderTransform, 0x1000,
+                      mAngleY, *(CLPS_Block *)data_ov045_021125b0);
     func_020396c0(&mCollider, 4);
     mCollider.tolerantWallEdges = true;
     mCollider.Enable(this);

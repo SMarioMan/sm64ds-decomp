@@ -26,7 +26,7 @@ extern "C" {
 void *_ZN11dScMgBase_cC2Ev(void *scene);
 extern "C" void _ZN8Particle10SysTrackerC1Ev(char* p);
 extern "C" void __cxa_vec_ctor(void* p, int a, int b, void* d, void* e);
-extern "C" void *_ZN5ModelC1Ev(char* p);
+extern "C" void *_ZN17dExtSimpleModel_cC1Ev(char *p);
 extern int _ZTV19dScMgSingle3DBase_c[];
 extern int _ZTV15dScMgRoulette_c[];
 extern "C" void Roulette_ConstructElement(void);
@@ -55,8 +55,8 @@ extern "C" void* dScMgRoulette_c_classInit(void){
     Dealer_Construct((char *)scene->mDealer);
     __cxa_vec_ctor(scene->mArray, 5, 0x34, Roulette_ConstructElement, Roulette_Nothing);
     char *models = (char *)scene->mBoard;
-    _ZN5ModelC1Ev(models + 0x10);   /* mModel1 */
-    _ZN5ModelC1Ev(models + 0x60);   /* mModel2 */
+    _ZN17dExtSimpleModel_cC1Ev(models + 0x10); /* mModel1 */
+    _ZN17dExtSimpleModel_cC1Ev(models + 0x60); /* mModel2 */
   }
   return scene;
 }

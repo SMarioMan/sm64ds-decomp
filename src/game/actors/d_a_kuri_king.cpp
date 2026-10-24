@@ -57,7 +57,7 @@
  *   daKuriKing_c has virtuals, so its own member pointers are wider than the
  *   8-byte records the sinit copies in.
  * - The remaining mangled calls that carry Fix12<int> (Particle::System::
- *   NewSimple, Player::Hurt, ModelAnim::SetAnim, the SetFile/Init family,
+ *   NewSimple, Player::Hurt, dExtAnmModel_c::SetAnim, the SetFile/Init family,
  *   Earthquake, DropShadowRadHeight, cstd::atan2, Sound::ChangeMusicVolume)
  *   pass it as a raw int. The header form with Fix12<int> locals builds a
  *   stack temporary and changes size (021223bc goes 0x278 -> 0x288 through
@@ -135,7 +135,11 @@ extern "C" u16 DecIfAbove0_Short(u16* p);
 extern "C" s16 Vec3_VertAngle(const struct Vector3* v1, const struct Vector3* v0);
 extern "C" s16 data_02082214[];
 extern "C" void func_02012694(u32 a, void* b);
-extern "C" void _ZN8Particle6System9NewSimpleEj5Fix12IiES2_S2_(u32 id, int x, int y, int z);
+namespace Particle {
+struct System {
+    static void NewSimple(u32 id, int x, int y, int z);
+};
+}
 /* local extern: include/Sound.h does not declare the layer-3 pair yet. */
 namespace Sound {
 void StopLoadedMusic_Layer3();
@@ -171,7 +175,6 @@ extern "C" void MulMat4x3Mat4x3(void* out, void* a, void* b);
 extern "C" void Vec3_LslInPlace(void* v, int n);
 extern "C" struct Matrix4x3 data_020a0e68;
 extern "C" struct Matrix4x3 IDENTITY_MATRIX4X3;
-extern "C" void _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(void* anim, void* file, int a, int b, unsigned int u);
 extern "C" void _ZN18TextureTransformer7SetFileER8BTA_Filei5Fix12IiEj(void* tt, void* file, int a, int b, unsigned int u);
 extern "C" void _ZN15TextureSequence7SetFileER8BTP_Filei5Fix12IiEj(void *self, void *f, int a, s32 fix, u32 c);
 extern "C" void _ZN15MaterialChanger7SetFileER8BMA_Filei5Fix12IiEj(void *self, void *f, int a, s32 fix, u32 c);
@@ -515,8 +518,8 @@ void daKuriKing_c::func_ov074_0211f5b8()
         vzero.y = this->mPosY;
         vzero.z = this->mPosZ;
         vzero.y = vzero.y + 0x190000;
-        _ZN8Particle6System9NewSimpleEj5Fix12IiES2_S2_(0x91, vzero.x, vzero.y, vzero.z);
-        _ZN8Particle6System9NewSimpleEj5Fix12IiES2_S2_(0x92, vzero.x, vzero.y, vzero.z);
+        Particle::System::NewSimple(0x91, vzero.x, vzero.y, vzero.z);
+        Particle::System::NewSimple(0x92, vzero.x, vzero.y, vzero.z);
         func_02012694(0x15f, &this->mCamSpacePosX);
         func_ov074_0211f344(1);
         func_ov074_0211f244();
@@ -951,7 +954,7 @@ int daKuriKing_c::func_ov074_021204c0() {
             v.y = this->mPosY;
             v.z = this->mPosZ;
             v.y += FX_MUL(this->mCurrentScale, (long long)0x190000);
-            _ZN8Particle6System9NewSimpleEj5Fix12IiES2_S2_(0xb1, ((int*)&v)[0], ((int*)&v)[1], ((int*)&v)[2]);
+            Particle::System::NewSimple(0xb1, ((int *)&v)[0], ((int *)&v)[1], ((int *)&v)[2]);
         }
     }
     k = ((u16)this->mScalePhase >> 4) * 2;
@@ -1163,11 +1166,11 @@ void daKuriKing_c::func_ov074_02120bb8(dActor_c *other, dCcAcPos_c *clsn, int mo
 
     switch (mode) {
     case 0:
-        _ZN8Particle6System9NewSimpleEj5Fix12IiES2_S2_(0xf6, dst.x, dst.y, dst.z);
+        Particle::System::NewSimple(0xf6, dst.x, dst.y, dst.z);
         break;
     case 1:
-        _ZN8Particle6System9NewSimpleEj5Fix12IiES2_S2_(0x43, dst.x, dst.y, dst.z);
-        _ZN8Particle6System9NewSimpleEj5Fix12IiES2_S2_(0x44, dst.x, dst.y, dst.z);
+        Particle::System::NewSimple(0x43, dst.x, dst.y, dst.z);
+        Particle::System::NewSimple(0x44, dst.x, dst.y, dst.z);
         break;
     }
 }
@@ -1558,7 +1561,7 @@ extern KuriKingAnimEntry data_ov074_02122f34[];
 
 // @symbol _ZN12daKuriKing_c19func_ov074_02121a20Ei
 /* Is clip `idx` the one currently playing: compare its file pointer with the
- * ModelAnim's. */
+ * dExtAnmModel_c's. */
 int daKuriKing_c::func_ov074_02121a20(int idx)
 {
     KuriKingAnimFile *anim = data_ov074_02122f34[idx].anim;
@@ -1571,7 +1574,8 @@ extern "C" void func_ov074_02121a4c(char* c, int idx)
     int off = idx * 0xc;
     void* file1 = data_ov074_02122f34[idx].anim->filePtr;
     int arg2 = *(int*)(data_ov074_02122f3c + off);
-    _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(&((daKuriKing_c *)c)->mModelAnim, file1, arg2, 0x1000, 0);
+    ((dExtAnmModel_c *)&((daKuriKing_c *)c)->mModelAnim)
+        ->SetAnim((BCA_File *)file1, arg2, 0x1000, 0);
     _ZN18TextureTransformer7SetFileER8BTA_Filei5Fix12IiEj(
         &((daKuriKing_c *)c)->mTextureTransformer, *(void**)(data_ov074_02122f38 + off), 0, 0x1000, 0);
 }
@@ -1717,9 +1721,9 @@ int daKuriKing_c::InitResources()
         return func_ov074_02122634();
     }
 
-    Model::LoadFile(data_ov002_0210da30);
+    dExtSimpleModel_c::LoadFile(data_ov002_0210da30);
     LoadKeyModels(2);
-    Model::LoadFile(data_ov084_02130cf8);
+    dExtSimpleModel_c::LoadFile(data_ov084_02130cf8);
 
     i = 0;
     do {
@@ -1734,7 +1738,7 @@ int daKuriKing_c::InitResources()
     } while (i < 0xc);
 
     TextureSequence::LoadFile(gKurikingAngerTextureSequenceFile);
-    p = Model::LoadFile(gKurikingModelModelFile);
+    p = dExtSimpleModel_c::LoadFile(gKurikingModelModelFile);
     mModelAnim.SetFile((BMD_File *)p, 1, -1);
 
     j = 0;
@@ -1762,8 +1766,7 @@ int daKuriKing_c::InitResources()
         k++;
     } while (k < 4);
 
-    _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(&mModelAnim, data_ov074_02123030.filePtr, 0, 0x1000,
-                                                0);
+    mModelAnim.SetAnim((BCA_File *)data_ov074_02123030.filePtr, 0, 0x1000, 0);
     TextureSequence::Prepare(*(BMD_File *)gKurikingModelModelFile.filePtr,
                              *(BTP_File *)gKurikingAngerTextureSequenceFile.filePtr);
     MaterialChanger::Prepare(*(BMD_File *)gKurikingModelModelFile.filePtr,
@@ -1947,7 +1950,7 @@ int daKuriKing_c::func_ov074_02122634()
 {
     int i;
 
-    Model::LoadFile(data_ov084_02130cf8);
+    dExtSimpleModel_c::LoadFile(data_ov084_02130cf8);
     for (i = 0; i < 7; i++)
         dExtFrameCtrl_c::LoadFile(*sKurikingMinionAnimationFiles[i]);
 
@@ -1965,8 +1968,7 @@ int daKuriKing_c::func_ov074_02122634()
         (void *)&data_ov084_0213089c,
         0x40000000, 0x1000, 0);
 
-    _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(
-        &this->mModelAnim, (BCA_File *)data_ov084_02130cc8.filePtr, 0, 0x1000, 0);
+    this->mModelAnim.SetAnim((BCA_File *)data_ov084_02130cc8.filePtr, 0, 0x1000, 0);
 
     this->mPrevAngleX = this->mAngleX;
     this->mPrevAngleY = this->mAngleY;

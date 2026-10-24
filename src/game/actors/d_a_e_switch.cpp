@@ -14,7 +14,7 @@
 #include "EnemySwitchTag.h"
 #include "EnemySpawner.h"
 #include "SharedFilePtr.h"
-#include "Model.h"
+#include "dExtSimpleModel_c.h"
 #include "Event.h"
 
 extern "C" {
@@ -63,7 +63,7 @@ int daECreate_c::InitResources()
     mActorToSpawn = 0xce;
     mEventBit = mAngleZ & 0x1f;
     mPreviousEventBit = Event::GetBit(mEventBit);
-    Model::LoadFile(data_ov002_0210d9e0);
+    dExtSimpleModel_c::LoadFile(data_ov002_0210d9e0);
     return 1;
 }
 

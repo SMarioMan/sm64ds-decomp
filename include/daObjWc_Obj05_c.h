@@ -19,7 +19,7 @@ extern "C" void *_ZN7fBase_cnwEj(unsigned size);
  * Obj04_c / Mizu_c.
  *
  * SIZE 0x330, the factory's own literal. dBgActor_c fills 0x000..0x31f
- * (D1 restores _ZTV10dBgActor_c, destroys dBgW_KcMbg at 0x124 and Model
+ * (D1 restores _ZTV10dBgActor_c, destroys dBgW_KcMbg at 0x124 and dExtSimpleModel_c
  * at 0x0d4, then chains to dActor_c). This class owns the state tail:
  *
  *   0x320  mRestPosY      -- rest height; InitResources snapshots mPosY

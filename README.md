@@ -23,7 +23,8 @@ A lot of people have put real time into this. Thank you to everyone in [CREDITS.
 ```
 MATCHED    ██████████████████████████████  100.0%   11,389 / 11,389 functions
            of which 109 are byte-exact assembly (hand-written in the original, not C)
-LINKED     █████████████████████████████░  96.2%   10,957 / 11,389 functions
+LINKED     ██████████████████████████████  99.8%   11,361 / 11,388 functions
+PORTED     █████████████████████████████░  96.2%   10,957 / 11,389 functions
 ```
 <!-- tiers:end -->
 

@@ -17,7 +17,7 @@
  * below differ from _ZTV10dBgActor_c, every other slot holds the base's own
  * word and is inherited. The destructor stores this class's vtable, then
  * dBgActor_c's -- inlined -- then destroys the dBgW_KcMbg at 0x124 and the
- * Model at 0xd4 before chaining to dActor_c. All three belong to dBgActor_c,
+ * dExtSimpleModel_c at 0xd4 before chaining to dActor_c. All three belong to dBgActor_c,
  * and everything this header used to restate below 0x31e is inherited.
  *
  * SIZE IS THE OBSERVED FIELD SPAN, rounded up, and agrees with the 0x328 the

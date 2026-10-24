@@ -3,8 +3,8 @@
 
 #include "types.h"
 #include "dActor_c.h"
-#include "Model.h"
-#include "ModelAnim.h"
+#include "dExtSimpleModel_c.h"
+#include "dExtAnmModel_c.h"
 #include "dExtShadowModel_c.h"
 #include "dCcAc_c.h"
 #include "dBgCh_Actr.h"
@@ -12,7 +12,7 @@
 /* daTgz_c -- Spiny (TOGEZO). sizeof is the factory literal 1004 (0x3ec).
  *
  * daTgz_c_classInit does fBase_c::operator new(1004), dActor_c::C2, stores
- * _ZTV7daTgz_c, then constructs Model, ModelAnim, dExtShadowModel_c, dCcAc_c and
+ * _ZTV7daTgz_c, then constructs dExtSimpleModel_c, dExtAnmModel_c, dExtShadowModel_c, dCcAc_c and
  * dBgCh_Actr in that order. ~daTgz_c destroys those five in reverse. The
  * pointer at 0xd0 is not constructed.
  *
@@ -26,8 +26,8 @@ struct daTgz_c : dActor_c {
     /* Actor holding this Spiny. State 4 copies its position and yaw, then
        clears the pointer once the Spiny is thrown. */
     dActor_c *mCarrier;                  /* 0x0d0 */
-    Model mModel;                        /* 0x0d4 */
-    ModelAnim mModelAnim;                /* 0x124 */
+    dExtSimpleModel_c mModel;            /* 0x0d4 */
+    dExtAnmModel_c mModelAnim;           /* 0x124 */
     dExtShadowModel_c mShadowModel;            /* 0x188 */
     dCcAc_c mdCcAc_c;                    /* 0x1b0 */
     dBgCh_Actr mWithMeshClsn;            /* 0x1e4 */
@@ -40,7 +40,7 @@ struct daTgz_c : dActor_c {
     void *mStateDesc;                    /* 0x3d0 */
     /* Player stored when a hit sends the Spiny into state 2. */
     Player *mChasePlayer;                /* 0x3d4 */
-    /* Render draws the still Model in states 0 and 4 and the ModelAnim
+    /* Render draws the still dExtSimpleModel_c in states 0 and 4 and the dExtAnmModel_c
        otherwise. Behavior keeps states 4 and 5 running however far the
        player is, and state 1 only once it is on the ground. */
     s32 mState;                          /* 0x3d8 */

@@ -774,62 +774,62 @@
   ],
   "defined_symbol_renames": [
     {
-      "from": "@563",
+      "from": "@560",
       "to": "@953",
       "evidence": "mwcc numbers this registration node @545 per TU and another module already defines @545"
     },
     {
-      "from": "@564",
+      "from": "@561",
       "to": "@896",
       "evidence": "mwcc numbers this registration node @546 per TU and another module already defines @546"
     },
     {
-      "from": "@565",
+      "from": "@562",
       "to": "@892",
       "evidence": "mwcc numbers this registration node @547 per TU and another module already defines @547"
     },
     {
-      "from": "@566",
+      "from": "@563",
       "to": "@888",
       "evidence": "mwcc numbers this registration node @548 per TU and another module already defines @548"
     },
     {
-      "from": "@567",
+      "from": "@564",
       "to": "@883",
       "evidence": "mwcc numbers this registration node @549 per TU and another module already defines @549"
     },
     {
-      "from": "@568",
+      "from": "@565",
       "to": "@879",
       "evidence": "mwcc numbers this registration node @550 per TU and another module already defines @550"
     },
     {
-      "from": "@570",
+      "from": "@567",
       "to": "@868",
       "evidence": "mwcc numbers this registration node @552 per TU and another module already defines @552"
     },
     {
-      "from": "@572",
+      "from": "@569",
       "to": "@864",
       "evidence": "mwcc numbers this registration node @554 per TU and another module already defines @554"
     },
     {
-      "from": "@574",
+      "from": "@571",
       "to": "@859",
       "evidence": "mwcc numbers this registration node @556 per TU and another module already defines @556"
     },
     {
-      "from": "@571",
+      "from": "@568",
       "to": "@596",
       "evidence": "batch-5 atdup: @553 collides cross-module (temps are fleet-global); renumber to unused same-length @596"
     },
     {
-      "from": "@573",
+      "from": "@570",
       "to": "@595",
       "evidence": "batch-5 atdup: @555 collides cross-module (temps are fleet-global); renumber to unused same-length @595"
     },
     {
-      "from": "@569",
+      "from": "@566",
       "to": "@551",
       "evidence": "compiler temp; the types.h Vector3 ctors and main's sinit folds shift this TU's per-TU @NNN uniquifier, so mwcc emits it as @569 now; licensed under the existing pin @551"
     }

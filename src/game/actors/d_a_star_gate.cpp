@@ -41,7 +41,7 @@ enum d_a_star_gate_AssetId {
 #include "SpawnInfo.h"
 #include "Player.h"
 #include "SharedFilePtr.h"
-#include "Model.h"
+#include "dExtSimpleModel_c.h"
 
 struct dCamera_c;
 
@@ -154,7 +154,7 @@ int daStarGate_c::InitResources()
 {
     param1 = (u32)param1 >> 16;
 
-    BMD_File *file = (BMD_File *)Model::LoadFile(gObjStargateModelFile);
+    BMD_File *file = (BMD_File *)dExtSimpleModel_c::LoadFile(gObjStargateModelFile);
     if (!mModel.SetFile(file, 1, 1))
         return 0;
 

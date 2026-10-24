@@ -4,56 +4,17 @@
 #ifdef __cplusplus
 
 #include "dActor_c.h"
-#include "ModelAnim.h"
+#include "dExtAnmModel_c.h"
 #include "dPa_c.h"
 
 struct TextureSequence;
 
-/* The nested classes' bases are declared here under the cartridge's RTTI
- * spellings rather than through the old project spellings. daDemo_c's
- * typeinfo and vtable records are emitted by this translation unit, and an
- * emitted record is only verifiable when its mangled name is the one
- * symbols.txt configures: "9ModelAnim" exists nowhere in the ROM,
- * "14dExtAnmModel_c" is the real record at arm9:0x0208e924. The model
- * structs below copy the field layout and vtable order of ModelBase.h and
- * Model.h. The frame-controller base is the real dExtFrameCtrl_c: that is
- * now the project class as well as the cartridge name, so a second local
- * struct would be a redefinition. notes/model-rtti-names.md maps the
- * spellings. */
-struct dExtModel_c {
-    BMD_File *modelFile;        /* 0x04 */
-
-    dExtModel_c();
-    virtual ~dExtModel_c();                              /* slots 0 (D1), 1 (D0) */
-    virtual int DoSetFile(char *file, int a, int b) = 0; /* slot 2, null here */
-    void operator delete(void *ptr) { _ZN6Memory16operator_delete2EPv(ptr); }
-};
-
-struct dExtSimpleModel_c : dExtModel_c {
-    ModelComponents data;      /* 0x08 */
-    Matrix4x3 mat4x3;          /* 0x1c */
-    void *transformsBuf;       /* 0x4c */
-
-    dExtSimpleModel_c();
-    virtual ~dExtSimpleModel_c();                     /* slots 0 (D1), 1 (D0) */
-    virtual int DoSetFile(char *file, int a, int b);  /* slot 2 */
-    virtual void UpdateVerts();                       /* slot 3 */
-    virtual void Virtual10(Matrix4x3 &mat);           /* slot 4 */
-    virtual void Render(const Vector3 *scale);        /* slot 5 */
-    void operator delete(void *ptr) { _ZN6Memory16operator_delete2EPv(ptr); }
-};
-
-struct dExtAnmModel_c : dExtSimpleModel_c, dExtFrameCtrl_c {
-    BCA_File *file;            /* 0x60 */
-
-    virtual ~dExtAnmModel_c();                          /* slots 0 (D1), 1 (D0) */
-    virtual void UpdateVerts();                         /* slot 3 */
-    virtual void Virtual10(Matrix4x3 &mat);             /* slot 4 */
-    virtual void Render(const Vector3 *scale);          /* slot 5 */
-    virtual void Virtual18(u32 mat, const Vector3 *scale); /* slot 6 */
-    dExtAnmModel_c();
-    void operator delete(void *ptr) { _ZN6Memory16operator_delete2EPv(ptr); }
-};
+/* The nested model helpers below derive from the real model classes, which
+ * carry the cartridge's RTTI spellings: dExtSimpleModel_c (_ZTI at
+ * arm9:0x0208e794) and dExtAnmModel_c (_ZTI at arm9:0x0208e924), over the
+ * root dExtModel_c (arm9:0x0208e73c). daDemo_c's typeinfo and vtable records
+ * are emitted by this translation unit, and their base pointers name those
+ * records directly. notes/model-rtti-names.md maps the spellings. */
 
 /* The cutscene-only actor family, vtable _ZTV8daDemo_c.
  *
@@ -64,7 +25,7 @@ struct dExtAnmModel_c : dExtSimpleModel_c, dExtFrameCtrl_c {
  * graph; none of those operations belongs in the source body.
  *
  * The two owned render objects are selected by param1. InitResources writes a
- * Model pointer at 0xdc for the static variants and a ModelAnim pointer at
+ * dExtSimpleModel_c pointer at 0xdc for the static variants and a dExtAnmModel_c pointer at
  * 0xe0 for the animated variants; CleanupResources destroys whichever exists.
  */
 struct daDemo_c : dActor_c {
@@ -72,7 +33,7 @@ struct daDemo_c : dActor_c {
        ROM's RTTI names daDemo_c::param_c. It is declared first so it lands
        as the non-primary base at the object tail (0x64 in anmModel_c, 0x50
        in simpleModel_c): bases destroy in reverse declaration order, so the
-       Model/ModelAnim base runs before the Vector3 array, which is the
+       dExtSimpleModel_c/dExtAnmModel_c base runs before the Vector3 array, which is the
        ROM's order and what its vmi typeinfo records encode. Members a
        nested class declares land after both bases (simpleModel_c's mFile
        at 0x5c, anmModel_c's files at 0x70). */
@@ -280,8 +241,8 @@ struct daDemo_c : dActor_c {
     u8 pad_0d0[4];          /* 0x0d0 */
     ScrollState *mScroll;   /* 0x0d4 - param1 0x2f only */
     StaffRoll *mStaffRoll;  /* 0x0d8 - param1 0x2e only */
-    Model *mModel;          /* 0x0dc */
-    ModelAnim *mModelAnim;  /* 0x0e0 */
+    dExtSimpleModel_c *mModel;  /* 0x0dc */
+    dExtAnmModel_c *mModelAnim; /* 0x0e0 */
     u32 mSoundHandle;       /* 0x0e4 - Sound::PlayLong handle, passed back on every call */
     u32 mParticleID[3];     /* 0x0e8 - Particle::System::New handles, passed back likewise */
     /* A fix12 magnitude each script handler sets or eases, then scales by:

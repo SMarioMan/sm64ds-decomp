@@ -11,7 +11,7 @@
  * common.h stays first: the pose reads Matrix4x3 words m[9], m[10], m[11].
  *
  * leftovers:
- * - BlendModelAnim::SetAnim, dCcAcPos_c::Init, ApproachLinear and
+ * - dExtBlendAnmModel_c::SetAnim, dCcAcPos_c::Init, ApproachLinear and
  *   dActor_c::SetRanges stay scalar Fix12 externs. The member forms
  *   grow the callers (02111718, InitResources, 02111758).
  * - currFrame >> 12 instead of the << 4 >> 16 shift shrinks 02111758
@@ -45,7 +45,7 @@ enum daMoray_c_AssetId {
 #include "SharedFilePtr.h"
 #include "PathPtr.h"
 #include "dExtFrameCtrl_c.h"
-#include "Model.h"
+#include "dExtSimpleModel_c.h"
 #include "Player.h"
 
 #pragma defer_codegen off
@@ -103,7 +103,7 @@ u16 DecIfAbove0_Short(u16 *p);
 void func_02012694(unsigned int id, const Vector3 *pos);
 /* UpdateBones(model.data, model.file, frame). Inlining that grows Render
    0x8c -> 0x9c. */
-void func_020167a4(BlendModelAnim *model);
+void func_020167a4(dExtBlendAnmModel_c *model);
 /* Blend the posed bones by blendWeight. No named method. */
 void func_0204531c(ModelComponents *data, s32 weight);
 
@@ -129,8 +129,6 @@ void _ZN6Player4HurtERK7Vector3j5Fix12IiEjjj(void *self, Vector3 *v, u32 a, int 
 /* Header methods take Fix12<int> by value. Brace-init compiles and homes
    the argument (see Known limits). These scalars are the calls that
    match. */
-void _ZN14BlendModelAnim7SetAnimER8BCA_Fileii5Fix12IiEt(void *self, void *file, int blendFrames, int flags, int speed, unsigned short startFrame);
-void _ZN8dActor_c9SetRangesE5Fix12IiES1_S1_S1_(dActor_c *self, int offsetY, int radius, int clipDistance, int farDistance);
 void _ZN10dCcAcPos_c4InitEP8dActor_cRK7Vector35Fix12IiES6_jj(dCcAcPos_c *self, dActor_c *actor, const Vector3 *offset, int radius, int height, u32 flags, u32 vulnFlags);
 int _Z14ApproachLinearR7Vector3RKS_5Fix12IiE(Vector3 &cur, const Vector3 &target, int step);
 }
@@ -387,7 +385,7 @@ int daMoray_c::func_ov016_021115c0()
 // @symbol _ZN9daMoray_c19func_ov016_02111718Ev
 int daMoray_c::func_ov016_02111718()
 {
-    _ZN14BlendModelAnim7SetAnimER8BCA_Fileii5Fix12IiEt(&this->mBlendModelAnim, data_ov016_02114d30.filePtr, 8, 0, 0x1000, 0);
+    this->mBlendModelAnim.SetAnim(*(BCA_File *)data_ov016_02114d30.filePtr, 8, 0, 0x1000, 0);
     return 1;
 }
 
@@ -429,7 +427,8 @@ int daMoray_c::func_ov016_02111758()
 // @symbol _ZN9daMoray_c19func_ov016_02111860Ev
 int daMoray_c::func_ov016_02111860()
 {
-    _ZN14BlendModelAnim7SetAnimER8BCA_Fileii5Fix12IiEt(&this->mBlendModelAnim, data_ov016_02114d20.filePtr, 8, 0x40000000, 0x1000, 0);
+    this->mBlendModelAnim.SetAnim(*(BCA_File *)data_ov016_02114d20.filePtr, 8, 0x40000000, 0x1000,
+                                  0);
     func_02012694(0xfa, &this->mCamSpacePos);
     return 1;
 }
@@ -465,7 +464,7 @@ int daMoray_c::func_ov016_02111994()
 {
     this->unk_400 = 0;
     func_02012694(0xfa, &this->mCamSpacePos);
-    _ZN14BlendModelAnim7SetAnimER8BCA_Fileii5Fix12IiEt(&this->mBlendModelAnim, data_ov016_02114d28.filePtr, 8, 0, 0x1000, 0);
+    this->mBlendModelAnim.SetAnim(*(BCA_File *)data_ov016_02114d28.filePtr, 8, 0, 0x1000, 0);
     return 1;
 }
 
@@ -559,7 +558,7 @@ int daMoray_c::func_ov016_021119ec()
 int daMoray_c::func_ov016_02111bac()
 {
     this->unk_400 = 0;
-    _ZN14BlendModelAnim7SetAnimER8BCA_Fileii5Fix12IiEt(&this->mBlendModelAnim, data_ov016_02114d28.filePtr, 8, 0, 0x1000, 0);
+    this->mBlendModelAnim.SetAnim(*(BCA_File *)data_ov016_02114d28.filePtr, 8, 0, 0x1000, 0);
     return 1;
 }
 
@@ -698,7 +697,7 @@ s32 daMoray_c::Render()
         bone++;
     }
     func_0204531c(&mBlendModelAnim.data, mBlendModelAnim.blendWeight);
-    mBlendModelAnim.Model::Render(0);
+    mBlendModelAnim.dExtSimpleModel_c::Render(0);
     return 1;
 }
 #pragma pop
@@ -763,7 +762,7 @@ s32 daMoray_c::InitResources()
     void *file;
     dActor_c *spawned;
 
-    file = Model::LoadFile(data_ov016_02114d38);
+    file = dExtSimpleModel_c::LoadFile(data_ov016_02114d38);
     mBlendModelAnim.SetFile((BMD_File *)file, 1, -1);
     dExtFrameCtrl_c::LoadFile(data_ov016_02114d20);
     dExtFrameCtrl_c::LoadFile(data_ov016_02114d30);
@@ -826,8 +825,7 @@ s32 daMoray_c::InitResources()
             if (spawned != 0) {
                 mStarUniqueID = spawned->uniqueID;
                 spawned->mFlags = 0;
-                _ZN8dActor_c9SetRangesE5Fix12IiES1_S1_S1_(spawned, 0, 0x3e8000, 0x1f40000,
-                                                          0x1f40000);
+                spawned->SetRanges(0, 0x3e8000, 0x1f40000, 0x1f40000);
             }
             func_ov016_02111bf0(&data_ov016_02114d8c);
         } else {

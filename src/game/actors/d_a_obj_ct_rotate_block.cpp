@@ -24,7 +24,7 @@
  * daObjCtRotateBlock_c_classInit_CT_MECHA02 (0x02119ebc, historical alias
  * TtcRotatingPrism_Spawn) and daObjCtRotateBlock_c_classInit_CT_MECHA01
  * (0x02119efc, historical alias TtcRotatingCube_Spawn). Each is operator
- * new(0x3d8), the dBgActor_c constructor, the vtable store and the Model and
+ * new(0x3d8), the dBgActor_c constructor, the vtable store and the dExtSimpleModel_c and
  * dExtShadowModel_c constructors, which is exactly `new daObjCtRotateBlock_c()`.
  * Their names are reconstructed from the profiles; retail does not store
  * them. The new-expression also emits dBgActor_c's base-object destructor,
@@ -77,7 +77,6 @@ extern void MulVec3Mat4x3(void *src, void *mtx, void *dst);
 extern void AddVec3(void *a, void *b, void *c);
 extern u16 DecIfAbove0_Short(u16 *p);
 extern int RandomIntInternal(int *seed);
-extern int _ZN10dBgActor_c13IsClsnInRangeE5Fix12IiES1_(void *self, int a, int b);
 extern int _ZN8dActor_c18DropShadowScaleXYZER17dExtShadowModel_cR9Matrix4x35Fix12IiES5_S5_j(
     void *self, void *sm, void *mtx, int a, int b, int d, unsigned int e);
 extern void _ZN10dBgW_KcMbg7SetFileEP8KCL_FileRK9Matrix4x35Fix12IiEsR10CLPS_Block(
@@ -211,7 +210,7 @@ int daObjCtRotateBlock_c::Behavior()
     }
     UpdateModel();
     UpdateShadow();
-    if (_ZN10dBgActor_c13IsClsnInRangeE5Fix12IiES1_(this, 0, 0))
+    if (IsClsnInRange(0, 0))
         UpdateClsn();
     return 1;
 }
@@ -231,12 +230,13 @@ int daObjCtRotateBlock_c::InitResources()
 
     u8 idx = mVariant;
     {
-        void *bmd = Model::LoadFile(*(SharedFilePtr *)*(void **)(data_ov065_0211cfd0 + idx * 0xc));
+        void *bmd = dExtSimpleModel_c::LoadFile(
+            *(SharedFilePtr *)*(void **)(data_ov065_0211cfd0 + idx * 0xc));
         mModel.SetFile((BMD_File *)bmd, 1, -1);
     }
 
     {
-        void *bmd = Model::LoadFile(*(SharedFilePtr *)data_ov065_0211c0a8[mVariant]);
+        void *bmd = dExtSimpleModel_c::LoadFile(*(SharedFilePtr *)data_ov065_0211c0a8[mVariant]);
         mRotatingModel.SetFile((BMD_File *)bmd, 1, -1);
     }
 

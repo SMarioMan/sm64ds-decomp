@@ -69,7 +69,6 @@ extern int DecIfAbove0_Short(char *p);
 extern int RandomIntInternal(char *p);
 extern void func_020393a4(int *p, int v);
 extern void func_02039394(int *p, int v);
-extern int _ZN10dBgActor_c13IsClsnInRangeE5Fix12IiES1_(char *c, int a, int b);
 extern unsigned char data_0209f2c0[];
 extern int data_0209e650[];
 extern short data_ov035_02112b80[];
@@ -168,8 +167,7 @@ int daObjCtMecha11_c::Behavior()
     *angle = (short)(*angle + mPrevAngleX);
     UpdateModel();
     UpdateShadow();
-    if (_ZN10dBgActor_c13IsClsnInRangeE5Fix12IiES1_(
-            (char *)this, 0x180000, 0x1000))
+    if (IsClsnInRange(0x180000, 0x1000))
         UpdateClsnPosAndRot();
     return 1;
 }
@@ -177,7 +175,7 @@ int daObjCtMecha11_c::Behavior()
 // @symbol _ZN16daObjCtMecha11_c13InitResourcesEv
 int daObjCtMecha11_c::InitResources()
 {
-    void *mf = Model::LoadFile(RotatingClockHand_ModelFile);
+    void *mf = dExtSimpleModel_c::LoadFile(RotatingClockHand_ModelFile);
     mModel.SetFile((BMD_File *)mf, 1, -1);
     mShadowModel.InitCuboid();
     UpdateModel();

@@ -22,7 +22,7 @@
  * MEMBERS: the dExtShadowModel_c at 0x328 is named twice -- the factory calls
  * _ZN17dExtShadowModel_cC1Ev at +0x328, and D1/D0 call _ZN17dExtShadowModel_cD1Ev there
  * before dBgActor_c's inlined destructor takes down its dBgW_KcMbg (0x124)
- * and Model (0xd4). dBgActor_c's non-POD data ends at 0x31e, so the Itanium
+ * and dExtSimpleModel_c (0xd4). dBgActor_c's non-POD data ends at 0x31e, so the Itanium
  * layout reuses its two bytes of tail padding for the first derived member.
  * Field names are descriptive; offsets and widths are the ROM-evidenced claims.
  *

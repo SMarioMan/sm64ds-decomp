@@ -30,6 +30,25 @@ enum dScBoot_c_AssetId { ASSET_D_2D_FRAMEWORK_INITIALIZE_NSC_BIN = 0x022d };
 #include "MessageBank.h"
 #include "PlayerInput.h"
 
+namespace G2S {
+u32 GetBG1CharPtr(void);
+u32 GetBG1ScrPtr(void);
+u32 GetBG2CharPtr(void);
+u32 GetBG2ScrPtr(void);
+}
+
+namespace GX {
+void LoadBGPltt(const void *p, u32 offset, u32 size);
+void SetBankForBG(u16 bank);
+void SetBankForOBJ(u16 bank);
+void SetBankForSubBG(u16 bank);
+void SetBankForSubOBJ(u16 bank);
+}
+
+namespace GXS {
+void LoadBGPltt(const void *p, u32 a, u32 b);
+}
+
 #pragma opt_common_subs off
 
 extern "C" {
@@ -42,21 +61,14 @@ extern u8 data_0209d454;
 extern u8 data_0209d45c;
 extern dFdColor_c data_0209f5e8;
 
-u32 _ZN3G2S13GetBG1CharPtrEv(void);
 u32 LoadCompressedFileAt(u16 fileID, void *target);
 int LoadFile(int handle);
-void _ZN3GXS10LoadBGPlttEPKvjj(const void *p, u32 a, u32 b);
-u32 _ZN3G2S12GetBG1ScrPtrEv(void);
+
 u32 func_02012790(u32 a);
-void _ZN2GX12SetBankForBGEt(u16 bank);
-void _ZN2GX13SetBankForOBJEt(u16 bank);
-void _ZN2GX15SetBankForSubBGEt(u16 bank);
-void _ZN2GX16SetBankForSubOBJEt(u16 bank);
+
 void DecompressLZ16(const void *src, void *dst);
-void _ZN2GX10LoadBGPlttEPKvjj(const void *p, u32 offset, u32 size);
+
 void *_ZN2G212GetBG0ScrPtrEv(void);
-u32 _ZN3G2S13GetBG2CharPtrEv(void);
-u32 _ZN3G2S12GetBG2ScrPtrEv(void);
 }
 
 /* These names describe the observed transitions; original state names are unknown. */
@@ -89,10 +101,10 @@ enum BootMenuState {
  */
 s32 dScBoot_c::InitResources() {
     _ZN2GX15DisableAllBanksEv();
-    _ZN2GX12SetBankForBGEt(1);
-    _ZN2GX13SetBankForOBJEt(2);
-    _ZN2GX15SetBankForSubBGEt(4);
-    _ZN2GX16SetBankForSubOBJEt(8);
+    GX::SetBankForBG(1);
+    GX::SetBankForOBJ(2);
+    GX::SetBankForSubBG(4);
+    GX::SetBankForSubOBJ(8);
 
     *(volatile u32 *)0x4000000 &= 0xffcfffef;
     *(volatile u32 *)0x4001000 &= 0xffcfffef;
@@ -110,7 +122,7 @@ s32 dScBoot_c::InitResources() {
     SetBg0Offset(0, 0);
 
     DecompressLZ16(&data_020918c4, func_02054efc());
-    _ZN2GX10LoadBGPlttEPKvjj(&data_020914e0, 0x1c0, 0x40);
+    GX::LoadBGPltt(&data_020914e0, 0x1c0, 0x40);
     DecompressLZ16(&data_020916d8, _ZN2G212GetBG0ScrPtrEv());
 
     *(volatile u16 *)0x400000e = *(volatile u16 *)0x400000e & ~3;
@@ -131,10 +143,10 @@ s32 dScBoot_c::InitResources() {
     *(volatile u16 *)0x400100c = (*(volatile u16 *)0x400100c & 0x43) | 0x310;
     SetSubBg2Offset(0, 0);
 
-    DecompressLZ16(&data_020918c4, (void *)_ZN3G2S13GetBG2CharPtrEv());
-    _ZN3GXS10LoadBGPlttEPKvjj(&data_020914e0, 0, 2);
-    _ZN3GXS10LoadBGPlttEPKvjj(&data_020914e0, 0x1c0, 0x40);
-    DecompressLZ16(&data_02091570, (void *)_ZN3G2S12GetBG2ScrPtrEv());
+    DecompressLZ16(&data_020918c4, (void *)G2S::GetBG2CharPtr());
+    GXS::LoadBGPltt(&data_020914e0, 0, 2);
+    GXS::LoadBGPltt(&data_020914e0, 0x1c0, 0x40);
+    DecompressLZ16(&data_02091570, (void *)G2S::GetBG2ScrPtr());
 
     data_0209d45c = 1;
     data_0209d454 = 4;
@@ -218,13 +230,13 @@ s32 dScBoot_c::Behavior() {
                     } else {
                         langFileID = 0xa00d;
                     }
-                    LoadCompressedFileAt(langFileID, (void *)_ZN3G2S13GetBG1CharPtrEv());
+                    LoadCompressedFileAt(langFileID, (void *)G2S::GetBG1CharPtr());
                     palette = LoadFile(0x9807);
-                    _ZN3GXS10LoadBGPlttEPKvjj((const void *)palette, 0, 0x1c0);
+                    GXS::LoadBGPltt((const void *)palette, 0, 0x1c0);
                     Deallocate((void *)palette);
                     LoadCompressedFileAt(ASSET_D_2D_FRAMEWORK_INITIALIZE_NSC_BIN,
-                                         (void *)_ZN3G2S12GetBG1ScrPtrEv());
-                    LoadCompressedFileAt(0x9803, (char *)_ZN3G2S12GetBG1ScrPtrEv() + 0x800);
+                                         (void *)G2S::GetBG1ScrPtr());
+                    LoadCompressedFileAt(0x9803, (char *)G2S::GetBG1ScrPtr() + 0x800);
                     func_0201cd08(0x29a);
                     mSelectedButton = 1;
                     func_02005348();
@@ -381,7 +393,7 @@ void dScBoot_c::func_02005348() {
             selectedPaletteBits = 0x1000;
         }
         selectedPaletteBits = (unsigned short)selectedPaletteBits;
-        buttonMap = (unsigned short *)(((char *)_ZN3G2S12GetBG1ScrPtrEv()) + 0x4c0);
+        buttonMap = (unsigned short *)(((char *)G2S::GetBG1ScrPtr()) + 0x4c0);
         paletteBits = selectedPaletteBits;
         tiles = buttonMap + (button * 0x10);
         for (column = 0; column < 0x10; column++) {

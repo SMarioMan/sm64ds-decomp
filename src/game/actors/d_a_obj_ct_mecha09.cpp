@@ -56,9 +56,8 @@ struct Mecha09ClsnFilePtr : SharedFilePtr {
 extern "C" {
 extern void Matrix4x3_FromRotationY(Matrix4x3 *matrix, int angle);
 extern void _ZN8dActor_c18DropShadowScaleXYZER17dExtShadowModel_cR9Matrix4x35Fix12IiES5_S5_j(
-    dActor_c *actor, dExtShadowModel_c *shadow, Matrix4x3 *matrix,
-    int scaleX, int scaleY, int scaleZ, u32 opacity);
-extern int _ZN10dBgActor_c13IsClsnInRangeE5Fix12IiES1_(dBgActor_c *self, int a, int b);
+    dActor_c *actor, dExtShadowModel_c *shadow, Matrix4x3 *matrix, int scaleX, int scaleY,
+    int scaleZ, u32 opacity);
 extern Mecha09ClsnFilePtr data_ov065_0211d9cc;
 extern Mecha09ModelFilePtr data_ov065_0211d9d4;
 extern u16 DecIfAbove0_Short(u16 *p);
@@ -153,7 +152,7 @@ int daObjCtMecha09_c::Behavior()
 
     UpdateModelPosAndRotY();
     func_ov065_0211bc88();
-    if (_ZN10dBgActor_c13IsClsnInRangeE5Fix12IiES1_(this, 0, 0) != 0)
+    if (IsClsnInRange(0, 0) != 0)
         UpdateClsnPosAndRot();
     return 1;
 }
@@ -170,7 +169,7 @@ int daObjCtMecha09_c::InitResources()
     KCL_File *kcl;
     Vector3 pos;
 
-    bmd = (BMD_File *)Model::LoadFile(data_ov065_0211d9d4);
+    bmd = (BMD_File *)dExtSimpleModel_c::LoadFile(data_ov065_0211d9d4);
     mModel.SetFile(bmd, 1, -1);
     mShadowModel.InitCuboid();
     UpdateModelPosAndRotY();

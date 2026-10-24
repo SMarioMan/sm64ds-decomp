@@ -19,7 +19,7 @@ struct daObjKi_Fune_c : dBgActor_c {
        has no D2 at all. Inline emits D1 then D0 and no D2, and moves the key
        function to InitResources, the first non-inline virtual, which is what
        makes the promoted TU emit this class's vtable and RTTI records under
-       the ROM's own names. Body is empty: destroying the dBgW_KcMbg and Model
+       the ROM's own names. Body is empty: destroying the dBgW_KcMbg and dExtSimpleModel_c
        subobjects and running dBgActor_c's own destructor all follow from the
        declarations above. Keep the brace on the signature line --
        tools/check_header_offsets.py only recognises a body written that way.

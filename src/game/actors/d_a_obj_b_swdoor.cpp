@@ -10,11 +10,14 @@
  * daObjBSwdoor_c_classInit is reconstructed (RTTI daObjBSwdoor_c,
  * SWITCHDOOR / SHUTTER_BOB registry). Retail does not store that spelling.
  *
+ * S41: RTTI daObjBSwdoor_c; D1 0x021111a0 size 0x50, D0 0x021111f0 size 0x64;
+ * inline ~daObjBSwdoor_c() in daObjBSwdoor_c.h emits D1 then D0, no D2.
+ *
  * deslop
  * Leftover: func_ov002_020bad10 / func_ov002_020baba8 / func_ov002_020bac18
  *   are still the linker names of daObjSwdoor_c setup / teardown / step
  *   (the base leaves those slots pure virtual). Naming belongs in ov002.
- *   The setup helper loads data_ov014_021145c4 slot 0 with Model::LoadFile,
+ *   The setup helper loads data_ov014_021145c4 slot 0 with dExtSimpleModel_c::LoadFile,
  *   slot 1 with dBgW_Kc::LoadFile, slot 2 as CLPS into SetFile, and writes
  *   daObjSwdoor_c's four byte fields from param1.
  * Leftover: data_ov014_021145c4 is overlay data; this TU is text-only so
@@ -96,7 +99,6 @@ s32 daObjBSwdoor_c::CleanupResources()
 }
 #pragma long_calls off
 /* -------------------------------------------------------------------------- */
-/* ROM ordinal 1 -- _ZN14daObjBSwdoor_cD0Ev, 0x021111f0, size 0x64 */
 /* -------------------------------------------------------------------------- */
 // @symbol _ZN14daObjBSwdoor_cD0Ev
 /* recovered: named members + shared header, vtable identified, declarations from a shared header */
@@ -107,7 +109,6 @@ s32 daObjBSwdoor_c::CleanupResources()
  * is the known mwccarm ICE, ELFgen.c:483.) */
 
 /* -------------------------------------------------------------------------- */
-/* ROM ordinal 0 -- _ZN14daObjBSwdoor_cD1Ev, 0x021111a0, size 0x50 */
 /* -------------------------------------------------------------------------- */
 // @symbol _ZN14daObjBSwdoor_cD1Ev
 /* recovered: real C++ destructor -- the compiler emits the whole body

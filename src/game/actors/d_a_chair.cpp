@@ -109,8 +109,11 @@ void _ZN10dCcAcPos_c4InitEP8dActor_cRK7Vector35Fix12IiES6_jj(
     int radius, int height, u32 flags, u32 vulnFlags);
 void _ZN8dActor_c19DropShadowRadHeightER17dExtShadowModel_cR9Matrix4x35Fix12IiES5_j(
     void *self, void *shadow, void *matrix, int radius, int height, u32 flags);
-void *_ZN8Particle6System9NewSimpleEj5Fix12IiES2_S2_(
-    unsigned id, int x, int y, int z);
+namespace Particle {
+struct System {
+    static void *NewSimple(unsigned id, int x, int y, int z);
+};
+}
 int _ZN6Player4HurtERK7Vector3j5Fix12IiEjjj(
     void *player, const void *pos, u32 kind, int damage, u32 a, u32 b, u32 c);
 
@@ -127,7 +130,7 @@ extern "C" daChair_c *daChair_c_classInit(void)
 // @symbol _ZN9daChair_c13InitResourcesEv
 s32 daChair_c::InitResources()
 {
-    BMD_File *file = (BMD_File *)Model::LoadFile(data_ov020_02114af0);
+    BMD_File *file = (BMD_File *)dExtSimpleModel_c::LoadFile(data_ov020_02114af0);
     mModel.SetFile(file, 1, -1);
     mShadowModel.InitCylinder();
     _ZN10dBgCh_Actr4InitEP8dActor_c5Fix12IiES3_P10Vector3_16S5_(
@@ -193,8 +196,8 @@ void daChair_c::UpdateModel()
 // @symbol _ZN9daChair_c5BreakEv
 void daChair_c::Break()
 {
-    _ZN8Particle6System9NewSimpleEj5Fix12IiES2_S2_(0x25, mPosX, mPosY, mPosZ);
-    _ZN8Particle6System9NewSimpleEj5Fix12IiES2_S2_(0x26, mPosX, mPosY, mPosZ);
+    Particle::System::NewSimple(0x25, mPosX, mPosY, mPosZ);
+    Particle::System::NewSimple(0x26, mPosX, mPosY, mPosZ);
     PoofDust();
     MarkForDestruction();
 }

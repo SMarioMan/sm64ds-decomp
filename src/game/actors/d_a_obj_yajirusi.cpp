@@ -78,17 +78,20 @@ struct ArrowSignFileColumn {
 
 extern "C" {
 extern void Matrix4x3_FromRotationY(void *mtx, int angle);
-void _ZN8Particle6System9NewSimpleEj5Fix12IiES2_S2_(u32 id, Fix12i x, Fix12i y, Fix12i z);
+namespace Particle {
+struct System {
+    static void NewSimple(u32 id, Fix12i x, Fix12i y, Fix12i z);
+};
+}
 int func_02012694(int id, void *pos);
 int _ZN10dBgActor_c20UpdateKillByMegaCharEsss5Fix12IiE(void *self, short a, short b, short c, int d);
 void func_02039394(int *collider, int v);
 void func_020393a4(int *collider, int v);
 void _ZN8dActor_c18DropShadowScaleXYZER17dExtShadowModel_cR9Matrix4x35Fix12IiES5_S5_j(
     void *self, void *shadow, void *mtx, int sy, int sx, int sz, unsigned int flags);
-int _ZN10dBgActor_c21IsClsnInRangeOnScreenE5Fix12IiES1_(void *self, int radius, int unused);
 void _ZN10dBgW_KcMbg7SetFileEP8KCL_FileRK9Matrix4x35Fix12IiEsR10CLPS_Block(
     void *self, void *kcl, void *mtx, int scale, short angle, void *clps);
-/* Model, KCL and CLPS. Each column is its own symbol so the relocations
+/* dExtSimpleModel_c, KCL and CLPS. Each column is its own symbol so the relocations
  * stay on 0x0213c380 / 0x0213c384 / 0x0213c388. */
 extern ArrowSignFileColumn data_ov098_0213c380[];
 extern ArrowSignFileColumn data_ov098_0213c384[];
@@ -130,8 +133,9 @@ int daObjYajirusi_c::InitResources()
     }
 
     u32 modelIndex = mVariant;
-    void *model = Model::LoadFile(*(SharedFilePtr *)data_ov098_0213c380[modelIndex].value);
-    mModel.ModelBase::SetFile((BMD_File *)model, 1, -1);
+    void *model =
+        dExtSimpleModel_c::LoadFile(*(SharedFilePtr *)data_ov098_0213c380[modelIndex].value);
+    mModel.dExtModel_c::SetFile((BMD_File *)model, 1, -1);
     mShadowModel.InitCuboid();
     UpdateModelPosAndRotY();
     UpdateClsnPosAndRot();
@@ -155,7 +159,7 @@ int daObjYajirusi_c::Behavior()
     func_020393a4((int *)&mMeshCollider, 0xe0000);
     _ZN8dActor_c18DropShadowScaleXYZER17dExtShadowModel_cR9Matrix4x35Fix12IiES5_S5_j(
         this, &mShadowModel, mShadowMat, 0x10e000, 0x64000, 0x46000, 0xf);
-    _ZN10dBgActor_c21IsClsnInRangeOnScreenE5Fix12IiES1_(this, 0x600000, 0);
+    IsClsnInRangeOnScreen(0x600000, 0);
     return 1;
 }
 
@@ -226,7 +230,7 @@ void daObjYajirusi_c::Kill()
     pos.x = x;
     pos.y = y;
     pos.z = z;
-    _ZN8Particle6System9NewSimpleEj5Fix12IiES2_S2_(0xe, pos.x, pos.y, pos.z);
+    Particle::System::NewSimple(0xe, pos.x, pos.y, pos.z);
     dustPos.x = pos.x;
     dustPos.y = pos.y;
     dustPos.z = pos.z;

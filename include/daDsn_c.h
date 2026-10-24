@@ -50,7 +50,7 @@
  *   0x3a2  the trigger flag. Behavior clears it, InitResources zeroes it.
  *
  * WHAT THIS HEADER USED TO SAY, AND WHY MOST OF IT WAS THE BASE'S. The generated
- * body had nine fields over `u8 pad_000[0xd4]`. `Model mModel` at 0xd4 and a
+ * body had nine fields over `u8 pad_000[0xd4]`. `dExtSimpleModel_c mModel` at 0xd4 and a
  * `u8 mMovingMeshCollider` marker at 0x124 are dBgActor_c's, twice removed --
  * dBgActor_c calls the second one mMeshCollider. `s32 mFileTable` at 0x320,
  * `u8 mTextureSequence` at 0x324 and `u8 mShadowModel` at 0x338 are
@@ -100,7 +100,7 @@ struct daDsn_c : daDsnBase_c {
        leaf daDkk_c.h does it. EMPTY, BUT NOT INERT: the 0x60-byte D1 stores this
        class's vptr, then daDsnBase_c's (inlined -- its destructor is in its
        class body too), destroying dExtShadowModel_c@0x338 and TextureSequence@0x324,
-       then dBgActor_c's, destroying dBgW_KcMbg@0x124 and Model@0xd4, before
+       then dBgActor_c's, destroying dBgW_KcMbg@0x124 and dExtSimpleModel_c@0xd4, before
        chaining to dActor_c::~dActor_c.
 
        In-class is load-bearing twice. It moves the ABI key function down to

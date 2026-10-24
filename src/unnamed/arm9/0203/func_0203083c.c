@@ -16,23 +16,15 @@ extern struct OamAttr *data_020927a0[];  /* 0x020927a0: table of OamAttr* */
 extern s32 func_0203d9f4(void);    /* 0x0203d9f4 */
 extern void func_02030838(void);   /* 0x02030838 (empty stub, bx lr) */
 
-extern void _ZN3OAM6RenderEbP7OamAttriiii5Fix12IiES3_ii(
-    bool32 sub, struct OamAttr *data,
-    s32 x, s32 y,
-    s32 palette, s32 priority,
-    Fix12i scaleX, Fix12i scaleY,
-    s32 rotation, s32 mode);
+extern void _ZN3OAM6RenderEbP7OamAttriiiiiiii(bool32 sub, struct OamAttr *data, s32 x, s32 y,
+                                              s32 palette, s32 priority, Fix12i scaleX,
+                                              Fix12i scaleY, s32 rotation, s32 mode);
 
 void func_0203083c(void)
 {
     if (data_0209fc68 != 0) {
         struct OamAttr *oam = data_020927a0[func_0203d9f4()];
-        _ZN3OAM6RenderEbP7OamAttriiii5Fix12IiES3_ii(
-            0, oam,
-            8, 0xb8,
-            -1, -1,
-            0x1000, 0x1000,
-            0, -1);
+        _ZN3OAM6RenderEbP7OamAttriiiiiiii(0, oam, 8, 0xb8, -1, -1, 0x1000, 0x1000, 0, -1);
     }
     func_02030838();
 }

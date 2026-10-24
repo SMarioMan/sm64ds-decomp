@@ -46,7 +46,7 @@
       "ordinal": 3
     },
     {
-      "symbol": "_ZN3OAM6RenderEbP7OamAttriiii5Fix12IiES3_ii",
+      "symbol": "_ZN3OAM6RenderEbP7OamAttriiiiiiii",
       "address": "0x02020994",
       "size": "0x00000690",
       "legacy_source": "src/_ZN3OAM6RenderEbP7OamAttriiii5Fix12IiES3_ii.c",

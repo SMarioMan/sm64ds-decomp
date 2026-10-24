@@ -1003,79 +1003,79 @@
   ],
   "defined_symbol_renames": [
     {
-      "from": "@712",
-      "to": "@1",
-      "evidence": "emitted destructor-registration node name collides with the configured @700 on ov089 on main; @1 is unused everywhere and shorter than the original"
-    },
-    {
-      "from": "@713",
-      "to": "@2",
-      "evidence": "emitted destructor-registration node name collides with the configured @701 on ov081 on main; @2 is unused everywhere and shorter than the original"
-    },
-    {
-      "from": "@714",
-      "to": "@3",
-      "evidence": "emitted destructor-registration node name collides with the configured @702 on ov089 on main; @3 is unused everywhere and shorter than the original"
-    },
-    {
-      "from": "@715",
-      "to": "@4",
-      "evidence": "emitted destructor-registration node name collides with the configured @703 on ov081 on main; @4 is unused everywhere and shorter than the original"
-    },
-    {
-      "from": "@716",
-      "to": "@5",
-      "evidence": "emitted destructor-registration node name collides with the configured @704 on ov089 on main; @5 is unused everywhere and shorter than the original"
-    },
-    {
-      "from": "@717",
-      "to": "@6",
-      "evidence": "emitted destructor-registration node name collides with the configured @705 on ov060 on main; @6 is unused everywhere and shorter than the original"
-    },
-    {
-      "from": "@718",
-      "to": "@7",
-      "evidence": "emitted destructor-registration node name collides with the configured @706 on ov089 on main; @7 is unused everywhere and shorter than the original"
-    },
-    {
-      "from": "@719",
-      "to": "@8",
-      "evidence": "emitted destructor-registration node name collides with the configured @707 on ov060 on main; @8 is unused everywhere and shorter than the original"
-    },
-    {
-      "from": "@720",
-      "to": "@9",
-      "evidence": "emitted destructor-registration node name collides with the configured @708 on ov089 on main; @9 is unused everywhere and shorter than the original"
-    },
-    {
-      "from": "@721",
-      "to": "@10",
-      "evidence": "emitted destructor-registration node name collides with the configured @709 on ov060 on main; @10 is unused everywhere and shorter than the original"
-    },
-    {
       "from": "@722",
-      "to": "@11",
-      "evidence": "emitted destructor-registration node name collides with the configured @710 on ov089 on main; @11 is unused everywhere and shorter than the original"
+      "to": "@1",
+      "evidence": "emitted destructor-registration node name collides with the configured @700 on ov089 on main; @1 is unused everywhere and shorter than the original 2026-10-23: #include Sound.h shifted file-local numbering +13; from-names re-pointed by symbol-index order (indices identical pre/post)."
     },
     {
       "from": "@723",
-      "to": "@12",
-      "evidence": "emitted destructor-registration node name collides with the configured @711 on ov060 on main; @12 is unused everywhere and shorter than the original"
+      "to": "@2",
+      "evidence": "emitted destructor-registration node name collides with the configured @701 on ov081 on main; @2 is unused everywhere and shorter than the original 2026-10-23: #include Sound.h shifted file-local numbering +13; from-names re-pointed by symbol-index order (indices identical pre/post)."
     },
     {
       "from": "@724",
-      "to": "@13",
-      "evidence": "emitted destructor-registration node name collides with the configured @712 on ov063 on main; @13 is unused everywhere and shorter than the original"
+      "to": "@3",
+      "evidence": "emitted destructor-registration node name collides with the configured @702 on ov089 on main; @3 is unused everywhere and shorter than the original 2026-10-23: #include Sound.h shifted file-local numbering +13; from-names re-pointed by symbol-index order (indices identical pre/post)."
     },
     {
       "from": "@725",
-      "to": "@14",
-      "evidence": "emitted destructor-registration node name collides with the configured @713 on ov060 on main; @14 is unused everywhere and shorter than the original"
+      "to": "@4",
+      "evidence": "emitted destructor-registration node name collides with the configured @703 on ov081 on main; @4 is unused everywhere and shorter than the original 2026-10-23: #include Sound.h shifted file-local numbering +13; from-names re-pointed by symbol-index order (indices identical pre/post)."
     },
     {
       "from": "@726",
+      "to": "@5",
+      "evidence": "emitted destructor-registration node name collides with the configured @704 on ov089 on main; @5 is unused everywhere and shorter than the original 2026-10-23: #include Sound.h shifted file-local numbering +13; from-names re-pointed by symbol-index order (indices identical pre/post)."
+    },
+    {
+      "from": "@727",
+      "to": "@6",
+      "evidence": "emitted destructor-registration node name collides with the configured @705 on ov060 on main; @6 is unused everywhere and shorter than the original 2026-10-23: #include Sound.h shifted file-local numbering +13; from-names re-pointed by symbol-index order (indices identical pre/post)."
+    },
+    {
+      "from": "@728",
+      "to": "@7",
+      "evidence": "emitted destructor-registration node name collides with the configured @706 on ov089 on main; @7 is unused everywhere and shorter than the original 2026-10-23: #include Sound.h shifted file-local numbering +13; from-names re-pointed by symbol-index order (indices identical pre/post)."
+    },
+    {
+      "from": "@729",
+      "to": "@8",
+      "evidence": "emitted destructor-registration node name collides with the configured @707 on ov060 on main; @8 is unused everywhere and shorter than the original 2026-10-23: #include Sound.h shifted file-local numbering +13; from-names re-pointed by symbol-index order (indices identical pre/post)."
+    },
+    {
+      "from": "@730",
+      "to": "@9",
+      "evidence": "emitted destructor-registration node name collides with the configured @708 on ov089 on main; @9 is unused everywhere and shorter than the original 2026-10-23: #include Sound.h shifted file-local numbering +13; from-names re-pointed by symbol-index order (indices identical pre/post)."
+    },
+    {
+      "from": "@731",
+      "to": "@10",
+      "evidence": "emitted destructor-registration node name collides with the configured @709 on ov060 on main; @10 is unused everywhere and shorter than the original 2026-10-23: #include Sound.h shifted file-local numbering +13; from-names re-pointed by symbol-index order (indices identical pre/post)."
+    },
+    {
+      "from": "@732",
+      "to": "@11",
+      "evidence": "emitted destructor-registration node name collides with the configured @710 on ov089 on main; @11 is unused everywhere and shorter than the original 2026-10-23: #include Sound.h shifted file-local numbering +13; from-names re-pointed by symbol-index order (indices identical pre/post)."
+    },
+    {
+      "from": "@733",
+      "to": "@12",
+      "evidence": "emitted destructor-registration node name collides with the configured @711 on ov060 on main; @12 is unused everywhere and shorter than the original 2026-10-23: #include Sound.h shifted file-local numbering +13; from-names re-pointed by symbol-index order (indices identical pre/post)."
+    },
+    {
+      "from": "@734",
+      "to": "@13",
+      "evidence": "emitted destructor-registration node name collides with the configured @712 on ov063 on main; @13 is unused everywhere and shorter than the original 2026-10-23: #include Sound.h shifted file-local numbering +13; from-names re-pointed by symbol-index order (indices identical pre/post)."
+    },
+    {
+      "from": "@735",
+      "to": "@14",
+      "evidence": "emitted destructor-registration node name collides with the configured @713 on ov060 on main; @14 is unused everywhere and shorter than the original 2026-10-23: #include Sound.h shifted file-local numbering +13; from-names re-pointed by symbol-index order (indices identical pre/post)."
+    },
+    {
+      "from": "@736",
       "to": "@15",
-      "evidence": "emitted destructor-registration node name collides with the configured @714 on ov063 on main; @15 is unused everywhere and shorter than the original"
+      "evidence": "emitted destructor-registration node name collides with the configured @714 on ov063 on main; @15 is unused everywhere and shorter than the original 2026-10-23: #include Sound.h shifted file-local numbering +13; from-names re-pointed by symbol-index order (indices identical pre/post)."
     }
   ],
   "symbol_binding_rewrites": [

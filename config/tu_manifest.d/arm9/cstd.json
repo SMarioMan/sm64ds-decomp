@@ -33,7 +33,7 @@
       "ordinal": 1
     },
     {
-      "symbol": "_ZN4cstd10fdiv_asyncE5Fix12IiE5Fix12IiE",
+      "symbol": "_ZN4cstd10fdiv_asyncEii",
       "address": "0x02052fa4",
       "size": "0x00000038",
       "legacy_source": "src/_ZN4cstd10fdiv_asyncE5Fix12IiE5Fix12IiE.c",
@@ -54,7 +54,7 @@
       "ordinal": 4
     },
     {
-      "symbol": "_ZN4cstd16reciprocal_asyncE5Fix12IiE",
+      "symbol": "_ZN4cstd16reciprocal_asyncEi",
       "address": "0x02053090",
       "size": "0x0000003c",
       "legacy_source": "src/_ZN4cstd16reciprocal_asyncE5Fix12IiE.c",

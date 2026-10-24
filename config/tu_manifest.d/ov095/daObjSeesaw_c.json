@@ -176,28 +176,28 @@
       "address": "0x02137780",
       "size": "0x8",
       "binding": "STB_GLOBAL",
-      "evidence": "model resource handle constructed with file ID 1445; Model::LoadFile reaches it through the data_ov095_021374a0 pointer table"
+      "evidence": "model resource handle constructed with file ID 1445; dExtSimpleModel_c::LoadFile reaches it through the data_ov095_021374a0 pointer table"
     },
     {
       "symbol": "gKm3ShisoModelFile",
       "address": "0x02137788",
       "size": "0x8",
       "binding": "STB_GLOBAL",
-      "evidence": "model resource handle constructed with file ID 1669; Model::LoadFile reaches it through the data_ov095_021374a0 pointer table"
+      "evidence": "model resource handle constructed with file ID 1669; dExtSimpleModel_c::LoadFile reaches it through the data_ov095_021374a0 pointer table"
     },
     {
       "symbol": "gObjSeesawModelFile",
       "address": "0x02137790",
       "size": "0x8",
       "binding": "STB_GLOBAL",
-      "evidence": "model resource handle constructed with file ID 1162; Model::LoadFile reaches it through the data_ov095_021374a0 pointer table"
+      "evidence": "model resource handle constructed with file ID 1162; dExtSimpleModel_c::LoadFile reaches it through the data_ov095_021374a0 pointer table"
     },
     {
       "symbol": "gKm1ShisoModelFile",
       "address": "0x02137798",
       "size": "0x8",
       "binding": "STB_GLOBAL",
-      "evidence": "model resource handle constructed with file ID 1623; Model::LoadFile reaches it through the data_ov095_021374a0 pointer table"
+      "evidence": "model resource handle constructed with file ID 1623; dExtSimpleModel_c::LoadFile reaches it through the data_ov095_021374a0 pointer table"
     },
     {
       "symbol": "gBSiSoCollisionFile",
@@ -218,14 +218,14 @@
       "address": "0x021377b0",
       "size": "0x8",
       "binding": "STB_GLOBAL",
-      "evidence": "model resource handle constructed with file ID 1645; Model::LoadFile reaches it through the data_ov095_021374a0 pointer table"
+      "evidence": "model resource handle constructed with file ID 1645; dExtSimpleModel_c::LoadFile reaches it through the data_ov095_021374a0 pointer table"
     },
     {
       "symbol": "gRcShisoModelFile",
       "address": "0x021377b8",
       "size": "0x8",
       "binding": "STB_GLOBAL",
-      "evidence": "model resource handle constructed with file ID 1709; Model::LoadFile reaches it through the data_ov095_021374a0 pointer table"
+      "evidence": "model resource handle constructed with file ID 1709; dExtSimpleModel_c::LoadFile reaches it through the data_ov095_021374a0 pointer table"
     },
     {
       "symbol": "gRcShisoCollisionFile",
@@ -253,7 +253,7 @@
       "address": "0x021377d8",
       "size": "0x8",
       "binding": "STB_GLOBAL",
-      "evidence": "model resource handle constructed with file ID 1671; Model::LoadFile reaches it through the data_ov095_021374a0 pointer table"
+      "evidence": "model resource handle constructed with file ID 1671; dExtSimpleModel_c::LoadFile reaches it through the data_ov095_021374a0 pointer table"
     },
     {
       "symbol": "gKm1ShisoCollisionFile",
@@ -968,72 +968,72 @@
   ],
   "defined_symbol_renames": [
     {
-      "from": "@919",
+      "from": "@916",
       "to": "@982",
       "evidence": "compiler-local destructor-registration node; mwcc numbers it @905 per TU and that name collides with global @NNN rows owned by other TUs on main"
     },
     {
-      "from": "@920",
+      "from": "@917",
       "to": "@898",
       "evidence": "compiler-local destructor-registration node; mwcc numbers it @906 per TU and that name collides with global @NNN rows owned by other TUs on main"
     },
     {
-      "from": "@921",
+      "from": "@918",
       "to": "@893",
       "evidence": "compiler-local destructor-registration node; mwcc numbers it @907 per TU and that name collides with global @NNN rows owned by other TUs on main"
     },
     {
-      "from": "@922",
+      "from": "@919",
       "to": "@889",
       "evidence": "compiler-local destructor-registration node; mwcc numbers it @908 per TU and that name collides with global @NNN rows owned by other TUs on main"
     },
     {
-      "from": "@923",
+      "from": "@920",
       "to": "@884",
       "evidence": "compiler-local destructor-registration node; mwcc numbers it @909 per TU and that name collides with global @NNN rows owned by other TUs on main"
     },
     {
-      "from": "@924",
+      "from": "@921",
       "to": "@880",
       "evidence": "compiler-local destructor-registration node; mwcc numbers it @910 per TU and that name collides with global @NNN rows owned by other TUs on main"
     },
     {
-      "from": "@925",
+      "from": "@922",
       "to": "@876",
       "evidence": "compiler-local destructor-registration node; mwcc numbers it @911 per TU and that name collides with global @NNN rows owned by other TUs on main"
     },
     {
-      "from": "@926",
+      "from": "@923",
       "to": "@865",
       "evidence": "compiler-local destructor-registration node; mwcc numbers it @912 per TU and that name collides with global @NNN rows owned by other TUs on main"
     },
     {
-      "from": "@927",
+      "from": "@924",
       "to": "@861",
       "evidence": "compiler-local destructor-registration node; mwcc numbers it @913 per TU and that name collides with global @NNN rows owned by other TUs on main"
     },
     {
-      "from": "@928",
+      "from": "@925",
       "to": "@814",
       "evidence": "compiler-local destructor-registration node; mwcc numbers it @914 per TU and that name collides with global @NNN rows owned by other TUs on main"
     },
     {
-      "from": "@929",
+      "from": "@926",
       "to": "@788",
       "evidence": "compiler-local destructor-registration node; mwcc numbers it @915 per TU and that name collides with global @NNN rows owned by other TUs on main"
     },
     {
-      "from": "@930",
+      "from": "@927",
       "to": "@782",
       "evidence": "compiler-local destructor-registration node; mwcc numbers it @916 per TU and that name collides with global @NNN rows owned by other TUs on main"
     },
     {
-      "from": "@931",
+      "from": "@928",
       "to": "@780",
       "evidence": "compiler-local destructor-registration node; mwcc numbers it @917 per TU and that name collides with global @NNN rows owned by other TUs on main"
     },
     {
-      "from": "@932",
+      "from": "@929",
       "to": "@650",
       "evidence": "compiler-local destructor-registration node; mwcc numbers it @918 per TU and that name collides with global @NNN rows owned by other TUs on main"
     }

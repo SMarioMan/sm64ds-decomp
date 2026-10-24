@@ -26,7 +26,7 @@
  * NO FIELDS OF ITS OWN, and that is measured rather than assumed. Its own
  * Behavior (0x020b6920) and Render (`func_ov002_020b68f8`) reach
  * nothing above dBgActor_c -- Behavior is UpdateModelPosAndRotY plus the guarded
- * UpdateClsnPosAndRot, Render dispatches through the Model at 0xd4. Its own
+ * UpdateClsnPosAndRot, Render dispatches through the dExtSimpleModel_c at 0xd4. Its own
  * destructor destroys only dBgActor_c's two members. And both factories,
  * daObjKm1_Kuruma_c_Spawn and daObjKm3_Kuruma_c_classInit, pass 800 = 0x320 to
  * fBase_c::operator new, which is sizeof(dBgActor_c) exactly: there is no room

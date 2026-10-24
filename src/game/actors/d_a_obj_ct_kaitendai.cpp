@@ -103,9 +103,8 @@ typedef char
  * reads. The class spelling homes it (see the leftover above). */
 extern "C" {
 extern void _ZN8dActor_c19DropShadowRadHeightER17dExtShadowModel_cR9Matrix4x35Fix12IiES5_j(
-    dActor_c *actor, dExtShadowModel_c *shadow, Matrix4x3 *matrix,
-    int radius, int height, u32 opacity);
-extern int _ZN10dBgActor_c13IsClsnInRangeE5Fix12IiES1_(void *self, int a, int b);
+    dActor_c *actor, dExtShadowModel_c *shadow, Matrix4x3 *matrix, int radius, int height,
+    u32 opacity);
 extern void _ZN10dBgW_KcMbg7SetFileEP8KCL_FileRK9Matrix4x35Fix12IiEsR10CLPS_Block(
     dBgW_KcMbg *thisp, KCL_File *kcl, const Matrix4x3 &mtx, int fix, short s,
     CLPS_Block &clps);
@@ -142,9 +141,8 @@ int daObjCtKaitendai_c::InitResources()
         mVariant = 0;
     }
 
-    mModel.SetFile(
-        (BMD_File *)Model::LoadFile(*data_ov065_0211d35c[mVariant].model),
-        1, -1);
+    mModel.SetFile((BMD_File *)dExtSimpleModel_c::LoadFile(*data_ov065_0211d35c[mVariant].model), 1,
+                   -1);
 
     mShadowModel.InitCylinder();
     UpdateModelPosAndRotY();
@@ -210,7 +208,7 @@ int daObjCtKaitendai_c::Behavior()
     UpdateModelPosAndRotY();
     func_ov065_0211b40c();
 
-    if (_ZN10dBgActor_c13IsClsnInRangeE5Fix12IiES1_(this, 0, 0) != 0)
+    if (IsClsnInRange(0, 0) != 0)
         UpdateClsnPosAndRot();
 
     return 1;

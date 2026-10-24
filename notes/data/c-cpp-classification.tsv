@@ -568,8 +568,8 @@ src/_ZN10FlameChomp16OnPendingDestroyEv.c	P1-vtable+mangled	ov070	daKrpa_c	Flame
 src/_ZN10FlameChompD0Ev.c	DTOR-ONLY	ov070	daKrpa_c	FlameChomp/daKrpa_c	_ZN10FlameChompD0Ev	1		True		-
 src/_ZN16daObjFl_London_cD0Ev.c	DTOR-ONLY	ov022	daObjFl_London_c	daObjFl_London_c/daObjFl_London_c	_ZN16daObjFl_London_cD0Ev	1		True	_ZTV16daObjFl_London_c/_ZTV10dBgActor_c	-
 src/_ZN10LavaSeesawD0Ev.c	DTOR-ONLY	ov022	daObjFl_Seesaw_c	LavaSeesaw/daObjFl_Seesaw_c	_ZN10LavaSeesawD0Ev	1		True	_ZTV10LavaSeesaw/_ZTV10dBgActor_c	-
-src/_ZN10ModelAnim213Func_020162C4Eji5Fix12IiEt.c	P3-mangled-method-only	arm9		ModelAnim2	_ZN10ModelAnim213Func_020162C4Eji5Fix12IiEt	1		True		by-value-class-param
-src/_ZN10ModelAnim2C1Ev.c	P3-mangled-method-only	arm9		ModelAnim2	_ZN10ModelAnim2C1Ev	1		True	_ZTV10ModelAnim2	-
+src/_ZN15dExtAnm2Model_c13Func_020162C4Eji5Fix12IiEt.c	P3-mangled-method-only	arm9		dExtAnm2Model_c	_ZN15dExtAnm2Model_c13Func_020162C4Eji5Fix12IiEt	1		True		by-value-class-param
+src/_ZN15dExtAnm2Model_cC1Ev.c	P3-mangled-method-only	arm9		dExtAnm2Model_c	_ZN15dExtAnm2Model_cC1Ev	1		True	_ZTV15dExtAnm2Model_c	-
 src/_ZN21daObjDlPyramidDummy_cD0Ev.c	DTOR-ONLY	ov024	daObjDlPyramidDummy_c	daObjDlPyramidDummy_c/daObjDlPyramidDummy_c	_ZN21daObjDlPyramidDummy_cD0Ev	1		True		-
 src/_ZN10RockPillarD0Ev.c	DTOR-ONLY	ov016	daObjKi_Hasira_c	RockPillar/daObjKi_Hasira_c	_ZN10RockPillarD0Ev	1		True	_ZTV10RockPillar/_ZTV10dBgActor_c	-
 src/_ZN10Scuttlebug16CleanupResourcesEv.c	P1-vtable+mangled	ov071	daSpd_c	Scuttlebug/daSpd_c	vtable daSpd_c slot 3 @0x2120308 | _ZN10Scuttlebug16CleanupResourcesEv	1		True		-
@@ -728,9 +728,9 @@ src/_ZN13daObjEmmLog_c16CleanupResourcesEv.c	P1-vtable+mangled	ov052	daObjEmmLog
 src/_ZN13daObjEmmLog_c8BehaviorEv.c	P1-vtable+mangled	ov052	daObjEmmLog_c	daObjEmmLog_c	vtable daObjEmmLog_c slot 6 @0x21112ac | _ZN13daObjEmmLog_c8BehaviorEv	1		True		-
 src/_ZN13daObjMaruta_cD0Ev.c	DTOR-ONLY	ov080	daPicGate_c	daObjMaruta_c/daPicGate_c	_ZN13daObjMaruta_cD0Ev	1		True	_ZTV10dBgActor_c/_ZTV13daObjMaruta_c	-
 src/_ZN13daObjMaruta_cD1Ev.c	DTOR-ONLY	ov080	daPicGate_c	daObjMaruta_c/daPicGate_c	_ZN13daObjMaruta_cD1Ev	1		True	_ZTV10dBgActor_c/_ZTV13daObjMaruta_c	-
-src/_ZN14BlendModelAnimC1Ev.c	P3-mangled-method-only	arm9		BlendModelAnim	_ZN14BlendModelAnimC1Ev	1		True	_ZTV14BlendModelAnim	-
-src/_ZN14BlendModelAnimD0Ev.c	DTOR-ONLY	arm9	dExtBlendAnmModel_c	BlendModelAnim/dExtBlendAnmModel_c	_ZN14BlendModelAnimD0Ev	1		True	_ZTV14BlendModelAnim	-
-src/_ZN14BlendModelAnimD1Ev.c	DTOR-ONLY			BlendModelAnim	_ZN14BlendModelAnimD1Ev	0		True	_ZTV14BlendModelAnim	not-in-delinks
+src/_ZN19dExtBlendAnmModel_cC1Ev.c	P3-mangled-method-only	arm9		dExtBlendAnmModel_c	_ZN19dExtBlendAnmModel_cC1Ev	1		True	_ZTV19dExtBlendAnmModel_c	-
+src/_ZN19dExtBlendAnmModel_cD0Ev.c	DTOR-ONLY	arm9	dExtBlendAnmModel_c	dExtBlendAnmModel_c/dExtBlendAnmModel_c	_ZN19dExtBlendAnmModel_cD0Ev	1		True	_ZTV19dExtBlendAnmModel_c	-
+src/_ZN19dExtBlendAnmModel_cD1Ev.c	DTOR-ONLY			dExtBlendAnmModel_c	_ZN19dExtBlendAnmModel_cD1Ev	0		True	_ZTV19dExtBlendAnmModel_c	not-in-delinks
 src/_ZN14CutsceneObject16OnPendingDestroyEv.c	P1-vtable+mangled	ov002	daDemo_c	CutsceneObject/daDemo_c	vtable daDemo_c slot 12 @0x20f80a8 | _ZN14CutsceneObject16OnPendingDestroyEv	1		True		-
 src/_ZN14CutsceneObjectD0Ev.cpp	DTOR-ONLY	ov002	daDemo_c	CutsceneObject/daDemo_c	_ZN14CutsceneObjectD0Ev	1		True	_ZTV14CutsceneObject	-
 src/_ZN14EnemySwitchTagD0Ev.c	DTOR-ONLY	ov002	daESwitch_c	EnemySwitchTag/daESwitch_c	_ZN14EnemySwitchTagD0Ev	1		True		-
@@ -908,11 +908,11 @@ src/_ZN5Crate13OnTurnIntoEggER6Player.c	P1-vtable+mangled	ov098	daObjBlockS_c	Cr
 src/_ZN5Crate13OnYoshiTryEatEv.c	P1-vtable+mangled	ov098	daObjBlockS_c	Crate/daObjBlockS_c	vtable daObjBlockS_c slot 18 @0x2139e64 | _ZN5Crate13OnYoshiTryEatEv	1		True		-
 src/_ZN5Crate4KillEv.c	P1-vtable+mangled	ov098	daObjBlockS_c	Crate/daObjBlockS_c	vtable daObjBlockS_c slot 31 @0x2139070 | _ZN5Crate4KillEv	1		True		-
 src/_ZN8dFader_cD2Ev.c	DTOR-ONLY	arm9		dFader_c	_ZN8dFader_cD2Ev	1		True		-
-src/_ZN5ModelC1Ev.c	P3-mangled-method-only	arm9		Model	_ZN5ModelC1Ev	1		True	_ZTV5Model	-
-src/_ZN5ModelC2Ev.cpp	P3-mangled-method-only	arm9		Model	_ZN5ModelC2Ev	1		True	_ZTV5Model	-
-src/_ZN5ModelD0Ev.cpp	DTOR-ONLY	arm9	dExtSimpleModel_c	Model/dExtSimpleModel_c	_ZN5ModelD0Ev	1		True	_ZTV5Model	-
-src/_ZN5ModelD1Ev.cpp	DTOR-ONLY	arm9		Model	_ZN5ModelD1Ev	1		True	_ZTV5Model	-
-src/_ZN5ModelD2Ev.cpp	DTOR-ONLY	arm9		Model	_ZN5ModelD2Ev	1		True	_ZTV5Model	-
+src/_ZN17dExtSimpleModel_cC1Ev.c	P3-mangled-method-only	arm9		dExtSimpleModel_c	_ZN17dExtSimpleModel_cC1Ev	1		True	_ZTV17dExtSimpleModel_c	-
+src/_ZN17dExtSimpleModel_cC2Ev.cpp	P3-mangled-method-only	arm9		dExtSimpleModel_c	_ZN17dExtSimpleModel_cC2Ev	1		True	_ZTV17dExtSimpleModel_c	-
+src/_ZN17dExtSimpleModel_cD0Ev.cpp	DTOR-ONLY	arm9	dExtSimpleModel_c	dExtSimpleModel_c/dExtSimpleModel_c	_ZN17dExtSimpleModel_cD0Ev	1		True	_ZTV17dExtSimpleModel_c	-
+src/_ZN17dExtSimpleModel_cD1Ev.cpp	DTOR-ONLY	arm9		dExtSimpleModel_c	_ZN17dExtSimpleModel_cD1Ev	1		True	_ZTV17dExtSimpleModel_c	-
+src/_ZN17dExtSimpleModel_cD2Ev.cpp	DTOR-ONLY	arm9		dExtSimpleModel_c	_ZN17dExtSimpleModel_cD2Ev	1		True	_ZTV17dExtSimpleModel_c	-
 src/_ZN5PokeyD0Ev.c	DTOR-ONLY	ov096	daSanbo_c	Pokey/daSanbo_c	_ZN5PokeyD0Ev	1		True		-
 src/_ZN5Sound17ChangeMusicVolumeEj5Fix12IiE.c	P3-mangled-method-only	arm9		Sound	_ZN5Sound17ChangeMusicVolumeEj5Fix12IiE	1		True		by-value-class-param
 src/_ZN5Sound4PlayEjjRK7Vector3.c	P3-mangled-method-only	arm9		Sound	_ZN5Sound4PlayEjjRK7Vector3	1	active	True		-
@@ -1043,15 +1043,15 @@ src/_ZN9daRFlag_c16CleanupResourcesEv.c	P1-vtable+mangled	ov062	daRFlag_c	daRFla
 src/_ZN9daRFlag_cD0Ev.c	DTOR-ONLY	ov062	daRFlag_c	daRFlag_c/daRFlag_c	_ZN9daRFlag_cD0Ev	1		True		-
 src/_ZN15daObjC1Hikari_c16CleanupResourcesEv.c	P1-vtable+mangled	ov010	daObjC1Hikari_c	daObjC1Hikari_c/daObjC1Hikari_c	vtable daObjC1Hikari_c slot 3 @0x2111a94 | _ZN15daObjC1Hikari_c16CleanupResourcesEv	1		True		-
 src/_ZN15daObjC1Hikari_cD0Ev.c	DTOR-ONLY	ov010	daObjC1Hikari_c	daObjC1Hikari_c/daObjC1Hikari_c	_ZN15daObjC1Hikari_cD0Ev	1		True		-
-src/_ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj.c	P3-mangled-method-only	arm9		ModelAnim	_ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj	1		True		by-value-class-param
-src/_ZN9ModelAnimC1Ev.c	P3-mangled-method-only	arm9		ModelAnim	_ZN9ModelAnimC1Ev	1		True	_ZTV9ModelAnim	-
-src/_ZN9ModelAnimC2Ev.c	P3-mangled-method-only	arm9		ModelAnim	_ZN9ModelAnimC2Ev	1		True	_ZTV9ModelAnim	-
-src/_ZN9ModelAnimD0Ev.c	DTOR-ONLY	arm9	dExtAnmModel_c	ModelAnim/dExtAnmModel_c	_ZN9ModelAnimD0Ev	1		True	_ZTV9ModelAnim	-
-src/_ZN9ModelAnimD2Ev.cpp	DTOR-ONLY	arm9		ModelAnim	_ZN9ModelAnimD2Ev	1		True	_ZTV9ModelAnim	-
-src/_ZN9ModelBaseC1Ev.c	P3-mangled-method-only	arm9		ModelBase	_ZN9ModelBaseC1Ev	1		True		-
-src/_ZN9ModelBaseD0Ev.cpp	DTOR-ONLY	arm9	dExtModel_c	ModelBase/dExtModel_c	_ZN9ModelBaseD0Ev	1		True		-
-src/_ZN9ModelBaseD1Ev.cpp	DTOR-ONLY	arm9	dExtModel_c	ModelBase/dExtModel_c	_ZN9ModelBaseD1Ev	1		True		-
-src/_ZN9ModelBaseD2Ev.cpp	DTOR-ONLY	arm9		ModelBase	_ZN9ModelBaseD2Ev	1		True		-
+src/_ZN14dExtAnmModel_c7SetAnimEP8BCA_Filei5Fix12IiEj.c	P3-mangled-method-only	arm9		dExtAnmModel_c	_ZN14dExtAnmModel_c7SetAnimEP8BCA_Filei5Fix12IiEj	1		True		by-value-class-param
+src/_ZN14dExtAnmModel_cC1Ev.c	P3-mangled-method-only	arm9		dExtAnmModel_c	_ZN14dExtAnmModel_cC1Ev	1		True	_ZTV14dExtAnmModel_c	-
+src/_ZN14dExtAnmModel_cC2Ev.c	P3-mangled-method-only	arm9		dExtAnmModel_c	_ZN14dExtAnmModel_cC2Ev	1		True	_ZTV14dExtAnmModel_c	-
+src/_ZN14dExtAnmModel_cD0Ev.c	DTOR-ONLY	arm9	dExtAnmModel_c	dExtAnmModel_c/dExtAnmModel_c	_ZN14dExtAnmModel_cD0Ev	1		True	_ZTV14dExtAnmModel_c	-
+src/_ZN14dExtAnmModel_cD2Ev.cpp	DTOR-ONLY	arm9		dExtAnmModel_c	_ZN14dExtAnmModel_cD2Ev	1		True	_ZTV14dExtAnmModel_c	-
+src/_ZN11dExtModel_cC1Ev.c	P3-mangled-method-only	arm9		dExtModel_c	_ZN11dExtModel_cC1Ev	1		True		-
+src/_ZN11dExtModel_cD0Ev.cpp	DTOR-ONLY	arm9	dExtModel_c	dExtModel_c/dExtModel_c	_ZN11dExtModel_cD0Ev	1		True		-
+src/_ZN11dExtModel_cD1Ev.cpp	DTOR-ONLY	arm9	dExtModel_c	dExtModel_c/dExtModel_c	_ZN11dExtModel_cD1Ev	1		True		-
+src/_ZN11dExtModel_cD2Ev.cpp	DTOR-ONLY	arm9		dExtModel_c	_ZN11dExtModel_cD2Ev	1		True		-
 src/_ZN11daChoropu_c16CleanupResourcesEv.c	P1-vtable+mangled	ov080	daChoropu_c	daChoropu_c/daChoropu_c	vtable daChoropu_c slot 3 @0x2124458 | _ZN11daChoropu_c16CleanupResourcesEv	1		True		-
 src/_ZN11daChoropu_cD0Ev.c	DTOR-ONLY	ov080	daChoropu_c	daChoropu_c/daChoropu_c	_ZN11daChoropu_cD0Ev	1		True		-
 src/_ZN16daObjPushblock_c16CleanupResourcesEv.c	P1-vtable+mangled	ov002	daObjPushblock_c	daObjPushblock_c/daObjPushblock_c	vtable daObjPushblock_c slot 3 @0x20b8d68 | _ZN16daObjPushblock_c16CleanupResourcesEv	1		True		-

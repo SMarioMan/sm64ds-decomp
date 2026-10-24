@@ -10,7 +10,7 @@
  *
  * The members close exactly on one another:
  *
- *     0x114 ModelAnim                  0x64   -> 0x178
+ *     0x114 dExtAnmModel_c                  0x64   -> 0x178
  *     0x178 TextureTransformer         0x14   -> 0x18c
  *
  * Typing them absorbed these markers, which were a member's insides:
@@ -29,8 +29,8 @@
  */
 
 #include "dEnemyBase_c.h"
-#include "Model.h"
-#include "ModelAnim.h"
+#include "dExtSimpleModel_c.h"
+#include "dExtAnmModel_c.h"
 #include "dCcAc_c.h"
 #include "dCcAcPos_c.h"
 #include "dExtShadowModel_c.h"
@@ -50,7 +50,7 @@ struct daWater_Tatumaki_c : dEnemyBase_c {
     };
 
     const State                 *mState;                /* 0x110 */
-    ModelAnim                    mModelAnim;            /* 0x114 */
+    dExtAnmModel_c mModelAnim;                          /* 0x114 */
     TextureTransformer           mTextureTransformer;   /* 0x178 */
     /* Set once the player has been dragged under the whirlpool's centre and
        KillPlayer has run, so it runs once. */

@@ -90,15 +90,19 @@ extern HasiraModelFile RockPillar_ModelFile;
 extern HasiraCollisionFile RockPillar_ClsnFile;
 extern char data_ov016_02113cac[];
 
-void _ZN10dBgW_KcMbg7SetFileEP8KCL_FileRK9Matrix4x35Fix12IiEsR10CLPS_Block(
-    void *self, void *kcl, void *mtx, int scale, s16 angleY, void *clps);
-int _ZN10dBgActor_c13IsClsnInRangeE5Fix12IiES1_(void *self, int a, int b);
+void _ZN10dBgW_KcMbg7SetFileEP8KCL_FileRK9Matrix4x35Fix12IiEsR10CLPS_Block(void *self, void *kcl,
+                                                                           void *mtx, int scale,
+                                                                           s16 angleY, void *clps);
 
 void Matrix4x3_FromRotationXYZExt(void *m, int x, int y, int z);
 int Vec3_Dist(const Vector3 *a, const Vector3 *b);
 s16 Vec3_HorzAngle(const Vector3 *a, const Vector3 *b);
 u8 DecIfAbove0_Byte(u8 *p);
-void *_ZN8Particle6System9NewSimpleEj5Fix12IiES2_S2_(unsigned int id, int x, int y, int z);
+namespace Particle {
+struct System {
+    static void *NewSimple(unsigned int id, int x, int y, int z);
+};
+}
 /* The camera-shake request and the camera it goes to (arm9). */
 void func_0200d8c8(dCamera_c *cam, const Vector3 *pos, int strength);
 extern void *data_0209f318;
@@ -122,7 +126,7 @@ extern "C" daObjKi_Hasira_c *daObjKi_Hasira_c_classInit()
 // @symbol _ZN16daObjKi_Hasira_c13InitResourcesEv
 s32 daObjKi_Hasira_c::InitResources()
 {
-    void *f = Model::LoadFile(RockPillar_ModelFile);
+    void *f = dExtSimpleModel_c::LoadFile(RockPillar_ModelFile);
     mModel.SetFile((BMD_File *)f, 1, -1);
     func_ov016_02112a9c();
     UpdateClsnPosAndRot();
@@ -208,7 +212,7 @@ s32 daObjKi_Hasira_c::Behavior()
             z = z + (int)(((s64)cos * (s64)reach + round) >> 12);
             crashPos.y = y;
             crashPos.z = z;
-            _ZN8Particle6System9NewSimpleEj5Fix12IiES2_S2_(particleID, x, y, z);
+            Particle::System::NewSimple(particleID, x, y, z);
             dustPos.x = crashPos.x; dustPos.y = crashPos.y; dustPos.z = crashPos.z;
             LandingDustAt(dustPos, true);
             func_0200d8c8((dCamera_c *)data_0209f318, &mPos, 0x5dc000);
@@ -220,7 +224,7 @@ s32 daObjKi_Hasira_c::Behavior()
     }
 
     func_ov016_02112a9c();
-    if (_ZN10dBgActor_c13IsClsnInRangeE5Fix12IiES1_(this, 0, 0) != 0)
+    if (IsClsnInRange(0, 0) != 0)
         UpdateClsnPosAndRot();
     return 1;
 }

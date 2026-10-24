@@ -66,7 +66,11 @@ void _ZN10dBgCh_Actr4InitEP8dActor_c5Fix12IiES3_P10Vector3_16S5_(
 }
 
 extern "C" {
-void _ZN8Particle6System9NewSimpleEj5Fix12IiES2_S2_(unsigned int id, int x, int y, int z);
+namespace Particle {
+struct System {
+    static void NewSimple(unsigned int id, int x, int y, int z);
+};
+}
 /* local extern: Player.h has no Hurt member; the owning symbol remains a
  * scalar C ABI entry. Keep its exact return, receiver, payload and byte flags. */
 int _ZN6Player4HurtERK7Vector3j5Fix12IiEjjj(
@@ -147,7 +151,7 @@ extern "C" void func_ov081_02125fb8(daSnowball_c *self)
     if (other == 0) return;
     flags = self->mdCcAc_c.hitFlags;
     if ((flags & SNOWBALL_HIT_BIT_0x10) || (flags & SNOWBALL_HIT_BIT_0x40000)) {
-        _ZN8Particle6System9NewSimpleEj5Fix12IiES2_S2_(PTCL_SNOWBALL_BURST, self->mPosX, self->mPosY, self->mPosZ);
+        Particle::System::NewSimple(PTCL_SNOWBALL_BURST, self->mPosX, self->mPosY, self->mPosZ);
         self->MarkForDestruction();
         return;
     }
@@ -157,7 +161,8 @@ extern "C" void func_ov081_02125fb8(daSnowball_c *self)
             Player *player = static_cast<Player *>(other);
             if (player->mIsVanish != 0) return;
             if (player->mIsMetal == 1) {
-                _ZN8Particle6System9NewSimpleEj5Fix12IiES2_S2_(PTCL_SNOWBALL_BURST, self->mPosX, self->mPosY, self->mPosZ);
+                Particle::System::NewSimple(PTCL_SNOWBALL_BURST, self->mPosX, self->mPosY,
+                                            self->mPosZ);
                 self->MarkForDestruction();
                 return;
             }
@@ -171,7 +176,8 @@ extern "C" void func_ov081_02125fb8(daSnowball_c *self)
                 pos.z = self->mPosZ;
                 _ZN6Player4HurtERK7Vector3j5Fix12IiEjjj(player, &pos, 1, 0xc000, 1, 0, 1);
                 func_02012694(SND3_SNOWBALL_BURST, &self->mCamSpacePosX);
-                _ZN8Particle6System9NewSimpleEj5Fix12IiES2_S2_(PTCL_SNOWBALL_BURST, self->mPosX, self->mPosY, self->mPosZ);
+                Particle::System::NewSimple(PTCL_SNOWBALL_BURST, self->mPosX, self->mPosY,
+                                            self->mPosZ);
                 self->MarkForDestruction();
                 return;
             }
@@ -205,8 +211,7 @@ int daSnowball_c::func_ov081_021260fc()
     if ((unsigned short)this->mStateTimer == 0 ||
         mWithMeshClsn.IsOnGround() != 0) {
         func_02012694(SND3_SNOWBALL_BURST, &this->mCamSpacePosX);
-        _ZN8Particle6System9NewSimpleEj5Fix12IiES2_S2_(
-            PTCL_SNOWBALL_BURST, this->mPosX, this->mPosY, this->mPosZ);
+        Particle::System::NewSimple(PTCL_SNOWBALL_BURST, this->mPosX, this->mPosY, this->mPosZ);
         MarkForDestruction();
     }
     if (this->mSpeedX != 0 || this->mSpeedZ != 0) {
@@ -321,7 +326,7 @@ int daSnowball_c::Behavior()
  * Returns 0 if the model file could not be bound, else 1. */
 int daSnowball_c::InitResources()
 {
-    void *file = Model::LoadFile(data_ov081_02128d90);
+    void *file = dExtSimpleModel_c::LoadFile(data_ov081_02128d90);
     if (mModel.SetFile((BMD_File *)file, 1, -1) == 0)
         return 0;
 

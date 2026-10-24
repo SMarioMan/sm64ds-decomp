@@ -127,10 +127,11 @@ extern State data_ov095_0213758c;
 extern State data_ov095_0213759c;
 
 /* Fix12<int> by value. The member call grows InitResources; see leftovers. */
-void _ZN10dBgW_KcMbg7SetFileEP8KCL_FileRK9Matrix4x35Fix12IiEsR10CLPS_Block(
-    dBgW_KcMbg *self, KCL_File *file, const Matrix4x3 *mat, int scale,
-    s16 angleY, CLPS_Block *clps);
-int _ZN10dBgActor_c13IsClsnInRangeE5Fix12IiES1_(void *self, int a, int b);
+void _ZN10dBgW_KcMbg7SetFileEP8KCL_FileRK9Matrix4x35Fix12IiEsR10CLPS_Block(dBgW_KcMbg *self,
+                                                                           KCL_File *file,
+                                                                           const Matrix4x3 *mat,
+                                                                           int scale, s16 angleY,
+                                                                           CLPS_Block *clps);
 void _ZN8dActor_c10EarthquakeERK7Vector35Fix12IiE(void *self, Vector3 *pos, int strength);
 /* dBgW+0x18 and dBgW+0x1c. A direct store shrinks InitResources. */
 void func_020393d4(void *collider, void *callback);
@@ -196,7 +197,7 @@ int daUdlift_c::InitResources()
         return 0;
     }
 
-    mModel.SetFile((BMD_File *)Model::LoadFile(*data_ov095_02136f68[mVariant]), 1, -1);
+    mModel.SetFile((BMD_File *)dExtSimpleModel_c::LoadFile(*data_ov095_02136f68[mVariant]), 1, -1);
     UpdateClsnPosAndRot();
     _ZN10dBgW_KcMbg7SetFileEP8KCL_FileRK9Matrix4x35Fix12IiEsR10CLPS_Block(
         &mMeshCollider, (KCL_File *)dBgW_Kc::LoadFile(*data_ov095_02136f74[mVariant]),
@@ -235,7 +236,7 @@ int daUdlift_c::Behavior()
         mStateTimer = 0;
 
     UpdateModelPosAndRotY();
-    if (_ZN10dBgActor_c13IsClsnInRangeE5Fix12IiES1_(this, 0, 0) != 0)
+    if (IsClsnInRange(0, 0) != 0)
         UpdateClsnPosAndRot();
 
     /* Waiting or stopped: once the rider is on the ground and mIsRidden is

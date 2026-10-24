@@ -40,7 +40,6 @@ typedef char ResourceDescriptor_size_must_be_0x0c[
 extern "C" {
 extern s16 data_02082214[];
 u16 DecIfAbove0_Short(u16 *p);
-int _ZN10dBgActor_c13IsClsnInRangeE5Fix12IiES1_(void *c, int a, int b);
 void _ZN10dBgW_KcMbg7SetFileEP8KCL_FileRK9Matrix4x35Fix12IiEsR10CLPS_Block(
     dBgW_KcMbg *self, KCL_File *kcl, const Matrix4x3 *mtx, int scale,
     s16 angleY, CLPS_Block *clps);
@@ -107,7 +106,7 @@ s32 daObjUkiyuka_c::Behavior()
     char *c = (char *)this;
 
     if (DecIfAbove0_Short(&mRestTimer) != 0) {
-        _ZN10dBgActor_c13IsClsnInRangeE5Fix12IiES1_(c, 0, 0);
+        IsClsnInRange(0, 0);
         return 1;
     }
     *(u16 *)&mBobPhase += 0x100;
@@ -123,20 +122,20 @@ s32 daObjUkiyuka_c::Behavior()
             mRestTimer = 0x3c;
     }
     UpdateModelPosAndRotY();
-    if (_ZN10dBgActor_c13IsClsnInRangeE5Fix12IiES1_(this, 0, 0) != 0)
+    if (IsClsnInRange(0, 0) != 0)
         UpdateClsnPosAndRot();
     return 1;
 }
 
 /* ROM ordinal 5 -- func_ov002_020b6584, 0x020b6584, size 0x88.
- * Shared resource setup both leaves call. Slot 0 is Model::LoadFile, slot 1
+ * Shared resource setup both leaves call. Slot 0 is dExtSimpleModel_c::LoadFile, slot 1
  * is dBgW_Kc::LoadFile, slot 2 is CLPS into SetFile; then mRestY = mPosY
  * and mBobAmplitude = arg 3. */
 // @symbol func_ov002_020b6584
 extern "C" {
 int func_ov002_020b6584(daObjUkiyuka_c *self, ResourceDescriptor *descriptor, int bobAmplitude)
 {
-    self->mModel.SetFile((BMD_File *)Model::LoadFile(*descriptor->model), 1, -1);
+    self->mModel.SetFile((BMD_File *)dExtSimpleModel_c::LoadFile(*descriptor->model), 1, -1);
     self->UpdateModelPosAndRotY();
     self->UpdateClsnPosAndRot();
     _ZN10dBgW_KcMbg7SetFileEP8KCL_FileRK9Matrix4x35Fix12IiEsR10CLPS_Block(

@@ -16,15 +16,15 @@
  * field -- five independent confirmations of one layout:
  *
  *     dActor_c                      0x000 + 0x0d0 = 0x0d0   -> pad_0d0
- *     ModelAnim                  0x0d4 + 0x064 = 0x138   -> mTextureSequence
+ *     dExtAnmModel_c                  0x0d4 + 0x064 = 0x138   -> mTextureSequence
  *     TextureSequence            0x138 + 0x014 = 0x14c   -> mWithMeshClsn
  *     dBgCh_Actr               0x14c + 0x1bc = 0x308   -> mShadowModel
  *     dExtShadowModel_c                0x308 + 0x028 = 0x330   -> padding
  *     dCcAcPos_c  0x360 + 0x040 = 0x3a0   -> mTargetPlayer
  *
- * TWO OF THE GENERATED HEADER'S FIELDS WERE THE ModelAnim'S OWN INSIDES and are
+ * TWO OF THE GENERATED HEADER'S FIELDS WERE THE dExtAnmModel_c'S OWN INSIDES and are
  * gone from this half: `mAnimation` at 0x124 is 0x0d4 + 0x50, the dExtFrameCtrl_c base
- * inside ModelAnim, and `unk_130` at 0x130 is 0x0d4 + 0x5c. Both were declared as
+ * inside dExtAnmModel_c, and `unk_130` at 0x130 is 0x0d4 + 0x5c. Both were declared as
  * siblings of a `u8 mModelAnim` marker whose pad stopped short of the real object.
  * Same shape as Player's two ModelAnims.
  *
@@ -36,7 +36,7 @@
 #ifndef DAKPA_C_H
 #define DAKPA_C_H
 #include "types.h"
-#include "ModelAnim.h"
+#include "dExtAnmModel_c.h"
 #include "TextureSequence.h"
 #include "dBgCh_Actr.h"
 #include "dExtShadowModel_c.h"
@@ -48,7 +48,7 @@
 
 struct daKpa_c : dActor_c {
     u8  pad_0d0[0x4];
-    ModelAnim mModelAnim;                                   /* 0x0d4 */
+    dExtAnmModel_c mModelAnim;                              /* 0x0d4 */
     TextureSequence mTextureSequence;                       /* 0x138 */
     dBgCh_Actr mWithMeshClsn;                             /* 0x14c */
     dExtShadowModel_c mShadowModel;                               /* 0x308 */
@@ -103,7 +103,7 @@ struct daKpa_c : dActor_c {
        speed. */
     s32 mSwingSpeed;          /* 0x3f0 */
     s32 mDistToCenter;        /* 0x3f4 -- horizontal distance from the world origin (the arena centre) */
-    s32 mAnimSpeed;            /* 0x3f8 -- written to the ModelAnim's playback speed each frame; 0x1000 = 1.0 */
+    s32 mAnimSpeed; /* 0x3f8 -- written to the dExtAnmModel_c's playback speed each frame; 0x1000 = 1.0 */
     u16 mTimer;            /* 0x3fc -- frames in the current state; reset on every state change */
     u16 mStepCounter;         /* 0x3fe -- general per-state counter; its meaning depends on mState */
     u16 mFireTimer;           /* 0x400 -- frames of fire breath so far */
@@ -257,7 +257,7 @@ struct daKpa_c {
     u8  pad_0a4[0x28];
     s8  mAreaId;            /* 0x0cc */
     u8  pad_0cd[0x7];
-    ModelAnim mModelAnim;                                   /* 0x0d4 */
+    dExtAnmModel_c mModelAnim;                              /* 0x0d4 */
     TextureSequence mTextureSequence;                       /* 0x138 */
     dBgCh_Actr mWithMeshClsn;                             /* 0x14c */
     dExtShadowModel_c mShadowModel;                               /* 0x308 */
@@ -308,7 +308,7 @@ struct daKpa_c {
        speed. */
     s32 mSwingSpeed;          /* 0x3f0 */
     s32 mDistToCenter;        /* 0x3f4 -- horizontal distance from the world origin (the arena centre) */
-    s32 mAnimSpeed;            /* 0x3f8 -- written to the ModelAnim's playback speed each frame; 0x1000 = 1.0 */
+    s32 mAnimSpeed; /* 0x3f8 -- written to the dExtAnmModel_c's playback speed each frame; 0x1000 = 1.0 */
     u16 mTimer;            /* 0x3fc -- frames in the current state; reset on every state change */
     u16 mStepCounter;         /* 0x3fe -- general per-state counter; its meaning depends on mState */
     u16 mFireTimer;           /* 0x400 -- frames of fire breath so far */

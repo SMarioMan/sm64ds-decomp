@@ -102,7 +102,7 @@ extern "C" daObjC1Hikari_c *daObjC1Hikari_c_classInit()
 // @symbol _ZN15daObjC1Hikari_c13InitResourcesEv
 int daObjC1Hikari_c::InitResources()
 {
-    Model::LoadFile(gC1HikariModelFile);
+    dExtSimpleModel_c::LoadFile(gC1HikariModelFile);
     if (NumStars() < 0xe)
         return 0;
     if (data_0209caa0[1] & 0x80000000)

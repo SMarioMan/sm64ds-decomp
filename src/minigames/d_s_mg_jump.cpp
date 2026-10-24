@@ -18,7 +18,7 @@
 extern "C" {
 extern void *_ZN11dScMgBase_cC2Ev(void *p);
 extern void _ZN8Particle10SysTrackerC1Ev(void *);
-extern void *_ZN5ModelC1Ev(void *);
+extern void *_ZN17dExtSimpleModel_cC1Ev(void *);
 extern void __cxa_vec_ctor(void *base, unsigned int count, unsigned int stride,
                     void (*ctor)(void *), void (*dtor)(void *));
 extern int _ZTV14dScMgD3DBase_c[];
@@ -50,7 +50,7 @@ extern "C" void *dScMgJump_c_classInit(void)
         }
         _ZN8Particle10SysTrackerC1Ev(&((dScMgJump_c *)p)->mSysTracker);
         *(int *)p = (int)_ZTV11dScMgJump_c;
-        _ZN5ModelC1Ev(&((dScMgJump_c *)p)->mModel);
+        _ZN17dExtSimpleModel_cC1Ev(&((dScMgJump_c *)p)->mModel);
         __cxa_vec_ctor(((dScMgJump_c *)p)->mPlayers, 3, 0xb8,
                        (void (*)(void *))_ZN16dMgJump3DMario_cC1Ev,
                        (void (*)(void *))_ZN16dMgJump3DMario_cD1Ev);

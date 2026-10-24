@@ -1,7 +1,7 @@
 #ifndef DAREDBOMBHEI_C_H
 #define DAREDBOMBHEI_C_H
 
-#include "ModelAnim.h"
+#include "dExtAnmModel_c.h"
 #include "dCcAc_c.h"
 #include "dExtShadowModel_c.h"
 #include "dActor_c.h"
@@ -26,7 +26,7 @@ struct Player;
 struct daRedBombhei_c : dActor_c {
     u8          pad_0d0[0x4];
     dCcAc_c     mdCcAc_c;           /* 0x0d4 -- talk trigger; a player hit starts the talk */
-    ModelAnim   mModelAnim;         /* 0x108 */
+    dExtAnmModel_c mModelAnim;      /* 0x108 */
     dExtShadowModel_c mShadowModel;       /* 0x16c */
     Player     *mTalkPlayer;        /* 0x194 -- the player that walked into mdCcAc_c */
     u32         mShutterID;         /* 0x198 -- uniqueID of this level's closed cannon shutter, 0 if none */

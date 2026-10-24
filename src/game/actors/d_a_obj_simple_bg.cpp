@@ -94,9 +94,7 @@ extern u8 data_0209f220;
 extern u8 data_0209f2d8[];
 int IsStarCollectedInCurLevel(int starID);
 void _ZN10dBgW_KcMbg7SetFileEP8KCL_FileRK9Matrix4x35Fix12IiEsR10CLPS_Block(
-    dBgW_KcMbg *self, KCL_File *kcl, const Matrix4x3 *mat, int scale, s16 angY,
-    CLPS_Block *clps);
-int _ZN10dBgActor_c21IsClsnInRangeOnScreenE5Fix12IiES1_(void *self, int a, int b);
+    dBgW_KcMbg *self, KCL_File *kcl, const Matrix4x3 *mat, int scale, s16 angY, CLPS_Block *clps);
 }
 
 /* Actor ID 0x31 is BK_TOWER; data_0209f2d8[0] is CURRENT_GAMEMODE
@@ -152,7 +150,7 @@ int daObjSimpleBg_c::Behavior()
         if (!mMeshCollider.IsEnabled())
             mMeshCollider.Enable(this);
     } else {
-        _ZN10dBgActor_c21IsClsnInRangeOnScreenE5Fix12IiES1_(this, range, 0);
+        IsClsnInRangeOnScreen(range, 0);
     }
     return 1;
 }
@@ -173,7 +171,7 @@ int daObjSimpleBg_c::InitResources()
     }
 
     idx = mVariant;
-    mModel.SetFile((BMD_File *)Model::LoadFile(*data_ov102_0214e188[idx].file), 1, -1);
+    mModel.SetFile((BMD_File *)dExtSimpleModel_c::LoadFile(*data_ov102_0214e188[idx].file), 1, -1);
     UpdateModelPosAndRotY();
     UpdateClsnPosAndRot();
 

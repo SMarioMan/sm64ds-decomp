@@ -3,7 +3,7 @@
 
 #include "types.h"
 #include "dActor_c.h"
-#include "ModelAnim.h"
+#include "dExtAnmModel_c.h"
 #include "dExtShadowModel_c.h"
 #include "dCcAc_c.h"
 #include "dBgCh_Actr.h"
@@ -34,7 +34,7 @@
 struct Scuttlebug : dActor_c {
     /* Actor this bug copies its pose from, then clears when it lets go. */
     dActor_c *mParent;                       /* 0x0d0 */
-    ModelAnim mModelAnim;                    /* 0x0d4 */
+    dExtAnmModel_c mModelAnim;               /* 0x0d4 */
     dExtShadowModel_c mShadowModel;                /* 0x138 */
     dCcAc_c mdCcAc_c;  /* 0x160 */
     dBgCh_Actr mWithMeshClsn;              /* 0x194 */

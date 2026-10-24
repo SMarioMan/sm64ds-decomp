@@ -10,7 +10,7 @@
  * 0x02017838..0x0201787c in cartridge order.
  *
  * For the host port only the non-hardware members compile; the structors, the
- * GX/CP15/MMIO writers and the Model-/filesystem-touching dFdWipe_c members
+ * GX/CP15/MMIO writers and the dExtSimpleModel_c-/filesystem-touching dFdWipe_c members
  * stay NDS-only behind _MSC_VER, exactly the subset port/slice_gate1.txt and
  * port/hal/shims.cpp already arrange.
  *
@@ -25,7 +25,7 @@
 #include "dFdWipe_c.h"
 #include "dFdDummy_c.h"
 #include "decl_common.h"
-#include "ModelBase.h"
+#include "dExtModel_c.h"
 
 // These helpers have native definitions but no shared declaration yet.
 namespace cstd {
@@ -200,14 +200,14 @@ void dFdColor_c::AdvanceFade()
 /* The empty C1 is the clearest single statement of the chain's shape:
    dFader_c's vptr, then dFdBrightness_c's plus its two field stores, then
    dFdColor_c's plus its field store, then this class's own, then
-   Model::Model() at +0x10 -- all base ctors inline in their headers, which
+   dExtSimpleModel_c::dExtSimpleModel_c() at +0x10 -- all base ctors inline in their headers, which
    is why the whole chain flattens into this one body. */
 // @symbol _ZN9dFdWipe_cC1Ev
 dFdWipe_c::dFdWipe_c()
 {
 }
 
-/* ~dFdWipe_c: store this class's vptr, destroy the Model member (out of
+/* ~dFdWipe_c: store this class's vptr, destroy the dExtSimpleModel_c member (out of
    line), run the dFdColor_c sub-object destructor, and -- for D0 -- dFader_c's
    class operator delete inlined to Memory::operator_delete2. */
 // @symbol _ZN9dFdWipe_cD0Ev
@@ -254,7 +254,7 @@ void dFdWipe_c::AdvanceFade()
     }
 }
 
-/* This used to reach the model as `(char*)this + 0x10` with Model declared
+/* This used to reach the model as `(char*)this + 0x10` with dExtSimpleModel_c declared
    nowhere. Going through the member instead is the same bytes and turns the
    offset into a checkable claim. */
 // @symbol _ZN9dFdWipe_c14LoadAndSetFileEt

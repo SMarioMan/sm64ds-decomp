@@ -16,10 +16,8 @@
  * - dBgW_KcMbg::SetFile, dBgActor_c::UpdateKillByMegaChar and
  *   dBgActor_c::IsClsnInRange take Fix12<int> by value, so they stay mangled;
  *   a member call homes the argument and changes the ROM ABI.
- * - The Sound::PlayLong extern is the shards' own spelling.
- *   Retyping it is declaration-changing matching work, so its banked
- *   decl-agreement entry moved to this file unchanged. The path handles
- *   are still 8-byte local views of PathPtr, constructed explicitly.
+ * - The path handles are still 8-byte local views of PathPtr, constructed
+ *   explicitly.
  * - InitResources keeps the param1 mask, the yaw adjust, and the
  *   node-index add as offset writes. Naming them changed the function size.
  * The file ends with the mesh-collider callback func_ov018_021117e8, the
@@ -41,6 +39,11 @@ enum daObjSm_Lift_c_AssetId {
 
 bool ApproachLinear(short &value, short target, short step);
 
+namespace Sound {
+/* local extern: including Sound.h renumbers @NNN. */
+int PlayLong(u32, u32, u32, const Vector3 &, s16);
+}
+
 extern "C" {
 void Vec3_Asr(Vector3 *d, Vector3 *s, int n);
 void Matrix4x3_FromTranslation(Matrix4x3 *m, int x, int y, int z);
@@ -50,7 +53,6 @@ extern Matrix4x3 data_020a0e68;
 extern s16 data_02082214[];
 
 int _ZN10dBgActor_c20UpdateKillByMegaCharEsss5Fix12IiE(void *self, s16 a, s16 b, s16 c, int d);
-int _ZN10dBgActor_c13IsClsnInRangeE5Fix12IiES1_(void *self, int a, int b);
 void _ZN10dBgW_KcMbg7SetFileEP8KCL_FileRK9Matrix4x35Fix12IiEsR10CLPS_Block(
     void *th, void *kf, void *mtx, int fx, short s, void *clps);
 void func_020393d4(int *p, int v);
@@ -63,7 +65,8 @@ void *_ZN7PathPtrC1Ev(void *self);
 u8 DecIfAbove0_Byte(u8 *p);
 int Vec3_HorzDist(const void *a, const void *b);
 s16 Vec3_HorzAngle(const void *a, const void *b);
-unsigned int _ZN5Sound8PlayLongEjjjRK7Vector3s(unsigned int a, unsigned int b, unsigned int c, void *pos, unsigned int d);
+void d_a_obj_sm_liftPlayLongHold(unsigned int a, unsigned int b, unsigned int c, void *pos,
+                                 unsigned int d);
 void Math_Function_0203b14c(void *p, int a, int b, int c, int d);
 void Vec3_Sub(void *out, void *a, void *b);
 int LenVec3(void *v);
@@ -72,7 +75,7 @@ void Vec3_MulScalar(void *out, void *v, int scalar);
 void SubVec3(void *a, void *b, void *c);
 }
 
-/* Model handles construct through func_02017acc and destroy through
+/* dExtSimpleModel_c handles construct through func_02017acc and destroy through
  * func_02017ab4; collision handles construct through func_02017b4c and destroy
  * through SharedFilePtr_Destruct_Clsn. The manifest aliases those undefined
  * member spellings onto the real ROM functions; each handle is the base plus
@@ -180,7 +183,7 @@ int daObjSm_Lift_c::Behavior()
         int idx2;
         int reached;
 
-        unk_350 = _ZN5Sound8PlayLongEjjjRK7Vector3s(unk_350, 3, 0x8c, &mCamSpacePosX, 0);
+        unk_350 = Sound::PlayLong(unk_350, 3, 0x8c, *(Vector3 *)&mCamSpacePosX, 0);
 
         _ZN7PathPtrC1Ev(&path);
         ((PathPtr *)&path)->FromID(mPathId);
@@ -248,7 +251,7 @@ int daObjSm_Lift_c::Behavior()
 
     func_ov018_02111278();
 
-    if (_ZN10dBgActor_c13IsClsnInRangeE5Fix12IiES1_(self, 0, 0) != 0) {
+    if (((dBgActor_c *)self)->IsClsnInRange(0, 0) != 0) {
         UpdateClsnPosAndRot();
     }
     *(int *)(self + 0x320) = 0;
@@ -262,8 +265,8 @@ s32 daObjSm_Lift_c::InitResources()
     mPathId = *(int *)(c + 8) & 0xff;
     if (mPathId == 0xff)
         return 0;
-    void *f = Model::LoadFile(gSmLiftModelFile);
-    ((ModelBase *)(c + 0xd4))->SetFile((BMD_File *)f, 1, -1);
+    void *f = dExtSimpleModel_c::LoadFile(gSmLiftModelFile);
+    ((dExtModel_c *)(c + 0xd4))->SetFile((BMD_File *)f, 1, -1);
     func_ov018_02111278();
     UpdateClsnPosAndRot();
     void *kf = dBgW_Kc::LoadFile(gSmLiftCollisionFile);

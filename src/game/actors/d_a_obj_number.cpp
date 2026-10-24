@@ -56,8 +56,11 @@ extern int data_0209b454;
 extern void Matrix4x3_FromTranslation(void *m, int x, int y, int z);
 void _ZN15TextureSequence7SetFileER8BTP_Filei5Fix12IiEj(
     void *self, void *btp, int a, int b, unsigned int c);
-void _ZN8Particle6System9NewSimpleEj5Fix12IiES2_S2_(
-    unsigned int id, int x, int y, int z);
+namespace Particle {
+struct System {
+    static void NewSimple(unsigned int id, int x, int y, int z);
+};
+}
 void func_ov002_020f0918(daObjNumber_c *self, dActor_c *owner);
 }
 
@@ -73,7 +76,7 @@ extern int _ZTV13daObjNumber_c[];
  *
  * Every instruction the cartridge has here falls out of the one `new`.
  * 0x020f0d94 loads 336 = 0x150 -- the class's own size -- into
- * fBase_c::operator new; dActor_c's C2, this class's vptr, Model C1 at
+ * fBase_c::operator new; dActor_c's C2, this class's vptr, dExtSimpleModel_c C1 at
  * +0xd4 and TextureSequence C1 at +0x124 are the implicit constructor. */
 extern "C" daObjNumber_c *daObjNumber_c_classInit(void)
 {
@@ -87,7 +90,7 @@ s32 daObjNumber_c::InitResources()
 {
     if (param1 & 0x10) {
         TextureSequence::LoadFile(data_ov002_0210da08);
-        void *m = Model::LoadFile(data_ov002_0210da28);
+        void *m = dExtSimpleModel_c::LoadFile(data_ov002_0210da28);
         if (mModel.SetFile((BMD_File *)m, 1, 1) == 0)
             return 0;
         TextureSequence::Prepare(*(BMD_File *)data_ov002_0210da28.filePtr,
@@ -98,7 +101,7 @@ s32 daObjNumber_c::InitResources()
             (int)((((unsigned int)(param1 & 0xf) % 10) << 16) >> 4);
     } else {
         TextureSequence::LoadFile(data_ov002_0210d9e8);
-        void *m = Model::LoadFile(data_ov002_0210d9a8);
+        void *m = dExtSimpleModel_c::LoadFile(data_ov002_0210d9a8);
         if (mModel.SetFile((BMD_File *)m, 1, 1) == 0)
             return 0;
         TextureSequence::Prepare(*(BMD_File *)data_ov002_0210d9a8.filePtr,
@@ -148,8 +151,7 @@ s32 daObjNumber_c::Behavior()
     case 1:
         if (mPosY < mStartPosY) {
             /* volatile mPosY: a plain field read CSE's with the add above. */
-            _ZN8Particle6System9NewSimpleEj5Fix12IiES2_S2_(0xd2, mPosX, *(volatile int *)&mPosY,
-                                                           mPosZ);
+            Particle::System::NewSimple(0xd2, mPosX, *(volatile int *)&mPosY, mPosZ);
             MarkForDestruction();
         }
         break;

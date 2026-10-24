@@ -69,7 +69,7 @@ REFERENCE_CALLS = {
     "LoadFile": 0,
     "LoadFileAt": 0,
     "LoadCompressedFileAt": 0,
-    "_ZN5Model14LoadAndSetFileEtii": 1,
+    "_ZN17dExtSimpleModel_c14LoadAndSetFileEtii": 1,
     "_ZN13SharedFilePtr9ConstructEj": 1,
     "SharedFilePtr_Construct_TexSeq": 1,
     # Matched constructor veneers.  Their recovered prototypes sometimes omit

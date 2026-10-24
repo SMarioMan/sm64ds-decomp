@@ -20,7 +20,7 @@
  * and RTTI.
  */
 /* leftovers:
- * - ModelAnim::SetAnim, dCcAc_c::Init, dCcAcPos_c::Init,
+ * - dExtAnmModel_c::SetAnim, dCcAc_c::Init, dCcAcPos_c::Init,
  *   Particle::System::New, dActor_c::SpawnFireball / SpawnCoins and
  *   Player::Hurt / Bounce stay mangled. Each takes Fix12<int> by value
  *   and the member spelling of those calls stops matching.
@@ -125,11 +125,9 @@ void UnloadBlueCoinModel(void *);
 
 /* Called by their mangled names: each carries a Fix12<int> by value and
    the member spelling DIFFs. */
-void _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(void *self, void *f, int flags, int speed, unsigned short startFrame);
 void _ZN7dCcAc_c4InitEP8dActor_c5Fix12IiES3_jj(void *self, void *a, int r, int h, u32 e, u32 g);
 void _ZN10dCcAcPos_c4InitEP8dActor_cRK7Vector35Fix12IiES6_jj(void *self, void *a, const Vector3 *v, int r, int h, u32 e, u32 g);
-u32 _ZN8Particle6System3NewEjj5Fix12IiES2_S2_PK11Vector3_16fPNS_8CallbackE(
-    u32 a, u32 b, Fix12i c, Fix12i d, Fix12i e, const void *f, void *g);
+u32 d_a_f_pknNewHold(u32 a, u32 b, Fix12i c, Fix12i d, Fix12i e, const void *f, void *g);
 void _ZN6Player6BounceE5Fix12IiE(void *p, int fix);
 int _ZN6Player4HurtERK7Vector3j5Fix12IiEjjj(void *self, const void *pos, u32 a, int fix, u32 b, u32 c, u32 d);
 void _ZN8dActor_c13SpawnFireballERK7Vector3PK10Vector3_165Fix12IiES7_j(
@@ -170,8 +168,8 @@ void daFPkn_c::SpawnDeathSmoke()
     if (mModelAnim.file != data_ov084_02130e24.filePtr)
         return;
 
-    mParticleHandle1 = _ZN8Particle6System3NewEjj5Fix12IiES2_S2_PK11Vector3_16fPNS_8CallbackE(
-        mParticleHandle1, 0xfc, mPosX, mPosY + 0x1e000, mPosZ, 0, 0);
+    mParticleHandle1 =
+        Particle::System::New(mParticleHandle1, 0xfc, mPosX, mPosY + 0x1e000, mPosZ, 0, 0);
     if (mParticleHandle1 != 0) {
         particle = Particle::System::FromUniqueID(mParticleHandle1);
         if (particle != 0) {
@@ -179,8 +177,8 @@ void daFPkn_c::SpawnDeathSmoke()
         }
     }
 
-    mParticleHandle2 = _ZN8Particle6System3NewEjj5Fix12IiES2_S2_PK11Vector3_16fPNS_8CallbackE(
-        mParticleHandle2, 0xfd, mPosX, mPosY + 0x1e000, mPosZ, 0, 0);
+    mParticleHandle2 =
+        Particle::System::New(mParticleHandle2, 0xfd, mPosX, mPosY + 0x1e000, mPosZ, 0, 0);
     if (mParticleHandle2 == 0)
         return;
     particle = Particle::System::FromUniqueID(mParticleHandle2);
@@ -210,8 +208,7 @@ void daFPkn_c::SpawnDeathBurst()
     product = burstReach * data_02082214[((u16)mAngleY >> 4) * 2 + 1];
     pos.z = pos.z + FX_MUL(product, mScale);
     pos.y = pos.y + mScale * data_ov084_021302c4[frame];
-    mParticleHandle1 = _ZN8Particle6System3NewEjj5Fix12IiES2_S2_PK11Vector3_16fPNS_8CallbackE(
-        mParticleHandle1, 0xfb, pos.x, pos.y, pos.z, 0, 0);
+    mParticleHandle1 = Particle::System::New(mParticleHandle1, 0xfb, pos.x, pos.y, pos.z, 0, 0);
 }
 
 /* Empty. StateWait passes this in r0 and nothing reads it. */
@@ -324,8 +321,7 @@ void daFPkn_c::CheckClsnHits()
             mSpinSpeed = 0x1f40;
             mdCcAc_c.flags |= 1;
             mFlags &= ~0x10000000;
-            _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(&mModelAnim, data_ov084_02130e24.filePtr,
-                                                        0x40000000, 0x1000, 0);
+            mModelAnim.SetAnim((BCA_File *)data_ov084_02130e24.filePtr, 0x40000000, 0x1000, 0);
             mSuppressDeathReward = 0;
             mParticleHandle1 = 0;
         }
@@ -396,8 +392,7 @@ second:
         mSpinSpeed = 0x1f40;
         mdCcAc_c.flags |= 1;
         mFlags &= ~0x10000000;
-        _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(&mModelAnim, data_ov084_02130e24.filePtr,
-                                                    0x40000000, 0x1000, 0);
+        mModelAnim.SetAnim((BCA_File *)data_ov084_02130e24.filePtr, 0x40000000, 0x1000, 0);
         mSuppressDeathReward = 0;
         mParticleHandle1 = 0;
         return;
@@ -482,8 +477,8 @@ void daFPkn_c::StateSpit()
         else
             func_0201267c(SND_SPIT_END, &mCamSpacePos);
         mState = STATE_WAIT;
-        _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(
-            &mModelAnim, ((SharedFilePtr *)data_ov084_02130e1c)->filePtr, 0, 0x1000, 0);
+        mModelAnim.SetAnim((BCA_File *)(((SharedFilePtr *)data_ov084_02130e1c)->filePtr), 0, 0x1000,
+                           0);
     } else {
         if ((u16)mStateTimer < 0x3a) {
             targetAngle = mAngleY;
@@ -633,12 +628,10 @@ void daFPkn_c::StateWait()
     cmp = actorID == ACTOR_PAKUN2;
     if (cmp != false) {
         mState = STATE_GROW;
-        _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(&mModelAnim, data_ov084_02130e14.filePtr,
-                                                    0x40000000, 0x1000, 0);
+        mModelAnim.SetAnim((BCA_File *)data_ov084_02130e14.filePtr, 0x40000000, 0x1000, 0);
     } else {
         mState = STATE_SPIT;
-        _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(&mModelAnim, data_ov084_02130e04.filePtr,
-                                                    0x40000000, 0x1000, 0);
+        mModelAnim.SetAnim((BCA_File *)data_ov084_02130e04.filePtr, 0x40000000, 0x1000, 0);
         mModelAnim.currFrame = 0;
     }
     cmp = actorID == ACTOR_FIREPAKUN;
@@ -770,17 +763,16 @@ int daFPkn_c::InitResources()
     int type;
     int cmp;
 
-    mModelAnim.SetFile((BMD_File *)Model::LoadFile(data_ov084_02130dfc), 1, -1);
+    mModelAnim.SetFile((BMD_File *)dExtSimpleModel_c::LoadFile(data_ov084_02130dfc), 1, -1);
 
     for (i = 0; i < 6; i++)
         dExtFrameCtrl_c::LoadFile(*data_ov084_021302f4[i]);
 
-    Model::LoadFile(data_ov002_0210da38);
+    dExtSimpleModel_c::LoadFile(data_ov002_0210da38);
     LoadBlueCoinModel(this);
 
     /* A real SetAnim call with a Fix12<int> speed DIFFs; see the file header. */
-    _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(&mModelAnim, data_ov084_02130df4.filePtr,
-                                                0x40000000, 0x1000, 0);
+    mModelAnim.SetAnim((BCA_File *)data_ov084_02130df4.filePtr, 0x40000000, 0x1000, 0);
 
     _ZN7dCcAc_c4InitEP8dActor_c5Fix12IiES3_jj(
         &mdCcAc_c, this, 0, 0, 0x200001, HIT_DAMAGE & ~HIT_MEGA_CHARACTER);

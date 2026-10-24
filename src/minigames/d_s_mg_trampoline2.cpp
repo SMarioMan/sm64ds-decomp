@@ -22,7 +22,7 @@ enum d_s_mg_trampoline2_AssetId {
  * - Camera 0 is passed as dScMgD3DBase_c.h's pad_466c. Camera 1 (0x4728,
  *   mid-pad_4726) and the factory loop's end (0x47e4) stay raw: their
  *   member spellings move bytes (measured).
- * - Model / TextureTransformer / SysTracker C1/D1 stay mangled (built on
+ * - dExtSimpleModel_c / TextureTransformer / SysTracker C1/D1 stay mangled (built on
  *   raw storage); NewUnkCallback818 takes Fix12 by value, which costs the
  *   caller bytes (notes/mwccarm-codegen.md 6az); the G2 BG getters stay
  *   mangled because decl_common.h's global G2 hides the namespace;
@@ -59,7 +59,7 @@ extern int _ZTV18dScMgTrampoline2_c[];
 
 /* P2, S2 and the forward declarations below are local stand-ins for types
  * that have no header yet (issue #2497). C has no reader left (the spinner
- * calls Model::Render now), but deleting it renumbers the manifest-pinned
+ * calls dExtSimpleModel_c::Render now), but deleting it renumbers the manifest-pinned
  * @1110 to @1109, so it stays. */
 struct C {
     virtual void v0();
@@ -118,8 +118,8 @@ struct S2 {
     int words[2];
 };
 
-/* TUBUILD CONFLICT -- alternate body of struct 'Model', from the legacy file for Trmp2Spinner_Destruct, NOT applied:
-struct Model { ~Model(); };
+/* TUBUILD CONFLICT -- alternate body of struct 'dExtSimpleModel_c', from the legacy file for Trmp2Spinner_Destruct, NOT applied:
+struct dExtSimpleModel_c { ~dExtSimpleModel_c(); };
 */
 
 extern "C" {
@@ -134,8 +134,9 @@ extern unsigned char *sTrmp2Spinners;
 extern void Trmp2Spinner_Update(char *obj);
 extern void Trmp2Spinner_Init(void *obj, void *kind);
 extern void Trmp2Spinner_SetModel(void *self);
-extern void *_ZN5ModelC1Ev(void *model);
-extern void _ZN5ModelD1Ev(void *model);
+extern void *_ZN17dExtSimpleModel_cC1Ev(void *model);
+/* local extern: D1 is called by entry name; only two scene headers declare it */
+extern void _ZN17dExtSimpleModel_cD1Ev(void *model);
 extern int sTrmp2BrushWord[];
 extern void *func_02054efc(void);
 extern void *func_02054ea8(void);
@@ -313,9 +314,9 @@ void LoadOBJPltt(const void *src, unsigned int offset, unsigned int size);
 
 // @symbol TrmpItem_Construct
 extern "C" void *TrmpItem_Construct(char *raw) {
-    _ZN5ModelC1Ev(((TrmpItem *)raw)->mModels[0]);
-    _ZN5ModelC1Ev(((TrmpItem *)raw)->mModels[1]);
-    _ZN5ModelC1Ev(((TrmpItem *)raw)->mModels[2]);
+    _ZN17dExtSimpleModel_cC1Ev(((TrmpItem *)raw)->mModels[0]);
+    _ZN17dExtSimpleModel_cC1Ev(((TrmpItem *)raw)->mModels[1]);
+    _ZN17dExtSimpleModel_cC1Ev(((TrmpItem *)raw)->mModels[2]);
     _ZN18TextureTransformerC1Ev(((TrmpItem *)raw)->mTexAnim);
     /* TrmpItem.h's pad_1a8: five 8-byte elements, role unknown. */
     __cxa_vec_ctor(((TrmpItem *)raw)->pad_1a8, 5, 8, (void *)func_0203d738,
@@ -1190,10 +1191,10 @@ void dScMgTrampoline2_c::PaintSquare(int x_base, int y, int val, int n) {
 }
 
 /* One of the 0x14 stars in mArray5 (0x78 bytes; the name is coined). The
- * factory's element ctor builds the Model at +0 and clears mLifeTimer;
+ * factory's element ctor builds the dExtSimpleModel_c at +0 and clears mLifeTimer;
  * Trmp2Spinner_Init fills the rest. A layout view only: the helpers below
  * still take the record as char *. */
-struct Trmp2Spinner : Model {
+struct Trmp2Spinner : dExtSimpleModel_c {
     Vector3 mScale; /* 0x50 -- Render's scale: 0x4000 plus 0xa00 per Init arg, capped at 0x8000 */
     Vector3 mPos;   /* 0x5c -- UpdateMatrix's translation */
     Vector3 mVel;   /* 0x68 -- added to mPos every frame */
@@ -1206,16 +1207,16 @@ struct Trmp2Spinner : Model {
 // @symbol Trmp2Spinner_Construct
 extern "C" {
 int Trmp2Spinner_Construct(char *raw) {
-    _ZN5ModelC1Ev(raw);
+    _ZN17dExtSimpleModel_cC1Ev(raw);
     ((Trmp2Spinner *)raw)->mLifeTimer = 0;
     return (int)raw;
 }
 }
 
 // @symbol Trmp2Spinner_Destruct
-extern "C" Model *Trmp2Spinner_Destruct(Model *m) {
+extern "C" dExtSimpleModel_c *Trmp2Spinner_Destruct(dExtSimpleModel_c *m) {
     sTrmp2StarModelFile.Release();
-    _ZN5ModelD1Ev(m);
+    _ZN17dExtSimpleModel_cD1Ev(m);
     return m;
 }
 
@@ -1297,8 +1298,8 @@ void Trmp2Spinner_UpdateMatricesAll(void) {
 
 // @symbol Trmp2Spinner_SetModel
 extern "C" void Trmp2Spinner_SetModel(void *raw) {
-    BMD_File *file = (BMD_File *)Model::LoadFile(sTrmp2StarModelFile);
-    ((ModelBase *)raw)->SetFile(file, 1, -1);
+    BMD_File *file = (BMD_File *)dExtSimpleModel_c::LoadFile(sTrmp2StarModelFile);
+    ((dExtModel_c *)raw)->SetFile(file, 1, -1);
 }
 
 extern "C" {
@@ -1380,14 +1381,15 @@ extern "C" {
 /* local extern: no header declares it (the include/ hits are comments) */
 extern void __cxa_vec_cleanup(void *a, int b, int c, void *d);
 extern void _ZN18TextureTransformerD1Ev(void *);
-extern void _ZN5ModelD1Ev(void *);
+/* local extern: D1 is called by entry name; only two scene headers declare it */
+extern void _ZN17dExtSimpleModel_cD1Ev(void *);
 // @symbol Trmp2_DestructJumperModels
 int Trmp2_DestructJumperModels(char *raw) {
     __cxa_vec_cleanup(((TrmpItem *)raw)->pad_1a8, 5, 8, (void *)NullDestructor_0203d47c);
     _ZN18TextureTransformerD1Ev(((TrmpItem *)raw)->mTexAnim);
-    _ZN5ModelD1Ev(((TrmpItem *)raw)->mModels[2]);
-    _ZN5ModelD1Ev(((TrmpItem *)raw)->mModels[1]);
-    _ZN5ModelD1Ev(((TrmpItem *)raw)->mModels[0]);
+    _ZN17dExtSimpleModel_cD1Ev(((TrmpItem *)raw)->mModels[2]);
+    _ZN17dExtSimpleModel_cD1Ev(((TrmpItem *)raw)->mModels[1]);
+    _ZN17dExtSimpleModel_cD1Ev(((TrmpItem *)raw)->mModels[0]);
     return (int)raw;
 }
 }

@@ -1,4 +1,8 @@
 //cpp
+namespace Particle {
+struct Callback;
+}
+struct Vector3_16f;
 /* daYegg_c -- the Yoshi egg (registry profile YOSHI_EGG).
  *
  * The egg a Yoshi carries and throws. The state table at 0x02110a5c holds
@@ -50,7 +54,7 @@
  * names are reconstructed; this slice does not recover original method names.
  *
  * deslop leftovers:
- * - the callees with Fix12<int> parameters (ModelAnim::SetAnim,
+ * - the callees with Fix12<int> parameters (dExtAnmModel_c::SetAnim,
  *   dCcAc_c::Init, dBgCh_Actr::Init, the shadow drops, Particle::System::New)
  *   stay spelled as mangled extern-C free functions. A real method call homes
  *   a class-typed by-value argument and size-DIFFs the caller
@@ -71,6 +75,7 @@
  *   egg it takes from the held-object queue); who sets 0x400 and 0x2000 is not
  *   recovered. The "idle" and "moving" animation names say when the code
  *   picks each file, not recovered names.
+ * - PlayCharVoice keeps its void-returning local decl (Sound.h declares u32): a return-width wall, do not convert.
  */
 
 #pragma defer_codegen off
@@ -119,6 +124,11 @@ typedef void (daYegg_c::*PMF)();
 struct Entry { PMF pmf[2]; };
 extern Entry data_ov002_02110a5c[];
 
+namespace Sound {
+/* local extern: including Sound.h renumbers @NNN. */
+int PlayLong(u32, u32, u32, const Vector3 &, s16);
+}
+
 extern "C" {
 /* Defined below. */
 void func_ov002_020ed63c(daYegg_c *c, int i);
@@ -149,7 +159,6 @@ extern void Matrix4x3_FromRotationZXYExt(void *m, int x, int y, int z);
 extern void _ZN7daBtn_c19func_ov079_02123804EP8dActor_c(struct daBtn_c *self, dActor_c *other);
 extern void _ZN8dActor_c10SpawnCoinsERK7Vector3j5Fix12IiEs(void *thiz, const void *v, unsigned int n, Fix12i f, short s);
 extern int RandomIntInternal(int *seed);
-extern void _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(void *anim, void *file, int a, int b, unsigned int u);
 extern void _Z15ApproachLinear2Rsss(s16 *p, short a, short b);
 /* Numbering pins: func_ov002_020d5f98/020d6048 are now Player members (see
    Player.h) and no call in this TU uses these free spellings anymore. The
@@ -161,10 +170,16 @@ extern int func_ov002_020d5f98(void *c, unsigned char *a, unsigned char *b);
 extern int func_ov002_020d6048(void *c);
 extern void dBgCh_Actr_UpdateContinuous_Veneer(void *p);
 extern void dBgCh_Actr_UpdateDiscreteNoLava_veneer(void *self);
-extern s32 _ZN8Particle6System3NewEjj5Fix12IiES2_S2_PK11Vector3_16fPNS_8CallbackE(u32 a, u32 b, s32 x, s32 y, s32 z, struct Vec3_16f *rot, void *cb);
-extern void _ZN8Particle6System9NewSimpleEj5Fix12IiES2_S2_(u32 a, int b, int c, int d);
+extern s32 d_a_yeggNewHold(u32 a, u32 b, s32 x, s32 y, s32 z, struct Vec3_16f *rot, void *cb);
+namespace Particle {
+struct System {
+    static void NewSimple(u32 a, int b, int c, int d);
+
+    static int New(unsigned, unsigned, int, int, int, const ::Vector3_16f *, Callback *);
+};
+}
 extern void _ZN8Particle20RunningSlidingDustAtE5Fix12IiES1_S1_(s32 x, s32 y, s32 z);
-extern s32 _ZN5Sound8PlayLongEjjjRK7Vector3s(u32 a, u32 b, u32 c, void *v, u32 d);
+extern void d_a_yeggPlayLongHold(u32 a, u32 b, u32 c, void *v, u32 d);
 extern void _ZN5Sound13PlayCharVoiceEjjRK7Vector3(u32 a, u32 b, const void *pos);
 extern s32 _Z14ApproachLinearR7Vector3RKS_5Fix12IiE(void *dst, const void *src, s32 step);
 extern s16 Vec3_HorzAngle(const void *a, const void *b);
@@ -195,10 +210,6 @@ extern void LoadBlueCoinModel(void *self);
 extern void UnloadBlueCoinModel(void *self);
 }
 
-/* -------------------------------------------------------------------------- */
-/* ROM ordinals 0 and 1 -- _ZN8daYegg_cD1Ev, 0x020ec56c, size 0x48;
- *                         _ZN8daYegg_cD0Ev, 0x020ec5b4, size 0x5c */
-/* -------------------------------------------------------------------------- */
 // @symbol _ZN8daYegg_cD1Ev
 // @symbol _ZN8daYegg_cD0Ev
 /* One native destructor definition emits both ROM variants. D1 is one vtable
@@ -431,7 +442,7 @@ void daYegg_c::func_ov002_020ec938(){
  * speed, zeroes the horizontal speed and sets gravity to -0x2000 (-2 units
  * per frame squared). */
 void daYegg_c::func_ov002_020ec978() {
-    _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(&mModelAnim, *(void **)(data_ov002_0210eb78 + 4), 0, 0x1000, 0);
+    mModelAnim.SetAnim((BCA_File *)(*(void **)(data_ov002_0210eb78 + 4)), 0, 0x1000, 0);
     mHorzSpeed = 0;
     mVertAccel = -0x2000;
 }
@@ -485,7 +496,7 @@ void daYegg_c::func_ov002_020ec9c4(){
  * animation (file 0x0210eb78) at normal speed. */
 void daYegg_c::func_ov002_020ecad4() {
     mHorzSpeed = 0;
-    _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(&mModelAnim, *(void **)(data_ov002_0210eb78 + 4), 0, 0x1000, 0);
+    mModelAnim.SetAnim((BCA_File *)(*(void **)(data_ov002_0210eb78 + 4)), 0, 0x1000, 0);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -558,10 +569,10 @@ void daYegg_c::func_ov002_020ecb0c()
                 ang = *(u16 *)&mAngleY;
                 rz = data_02082214[(ang >> 4) * 2 + 1];
                 sp.rot.z = rz;
-                mParticleHandle = _ZN8Particle6System3NewEjj5Fix12IiES2_S2_PK11Vector3_16fPNS_8CallbackE(
-                    mParticleHandle, 0x2c, sp.pos.x, sp.pos.y, pz, pr, 0);
-                mSoundHandle = _ZN5Sound8PlayLongEjjjRK7Vector3s(
-                    mSoundHandle, 3, 0x93, &mCamSpacePosX, 0);
+                mParticleHandle = Particle::System::New(mParticleHandle, 0x2c, sp.pos.x, sp.pos.y,
+                                                        pz, (const Vector3_16f *)(pr), 0);
+                mSoundHandle =
+                    Sound::PlayLong(mSoundHandle, 3, 0x93, *(Vector3 *)&mCamSpacePosX, 0);
                 flag = 1;
                 func_ov002_020ed738();
                 if (func_ov002_020eddc4() != 0)
@@ -713,8 +724,7 @@ void daYegg_c::func_ov002_020ecf94()
 void daYegg_c::func_ov002_020ecfc8() {
     dActor_c *r5;
     mTargetId = 0;
-    _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(&mModelAnim, *(void **)(data_ov002_0210e6b0 + 4), 0,
-                                                0x1000, 0);
+    mModelAnim.SetAnim((BCA_File *)(*(void **)(data_ov002_0210e6b0 + 4)), 0, 0x1000, 0);
     mHorzSpeed = 0x64000;
     if (!func_ov002_020ec654()) {
         mVertAccel = 0;
@@ -870,9 +880,9 @@ void daYegg_c::func_ov002_020ed0d4()
         int speed = idx << 8;
         if (mPlayer->mIsAirborne != 0) speed = 0;
         if (v98 != 0) {
-            _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(&mModelAnim, *(void **)(data_ov002_0210e6b0 + 4), 0, speed, 0);
+            mModelAnim.SetAnim((BCA_File *)(*(void **)(data_ov002_0210e6b0 + 4)), 0, speed, 0);
         } else {
-            _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(&mModelAnim, *(void **)(data_ov002_0210eb78 + 4), 0, speed, 0);
+            mModelAnim.SetAnim((BCA_File *)(*(void **)(data_ov002_0210eb78 + 4)), 0, speed, 0);
         }
     }
 
@@ -1245,10 +1255,10 @@ void func_ov002_020edca4(daYegg_c* self)
         }
     }
 
-    _ZN8Particle6System9NewSimpleEj5Fix12IiES2_S2_(0x3f, self->mPosX, self->mPosY, self->mPosZ);
-    _ZN8Particle6System9NewSimpleEj5Fix12IiES2_S2_(0x40, self->mPosX, self->mPosY, self->mPosZ);
-    _ZN8Particle6System9NewSimpleEj5Fix12IiES2_S2_(0x41, self->mPosX, self->mPosY, self->mPosZ);
-    _ZN8Particle6System9NewSimpleEj5Fix12IiES2_S2_(0x42, self->mPosX, self->mPosY, self->mPosZ);
+    Particle::System::NewSimple(0x3f, self->mPosX, self->mPosY, self->mPosZ);
+    Particle::System::NewSimple(0x40, self->mPosX, self->mPosY, self->mPosZ);
+    Particle::System::NewSimple(0x41, self->mPosX, self->mPosY, self->mPosZ);
+    Particle::System::NewSimple(0x42, self->mPosX, self->mPosY, self->mPosZ);
     self->MarkForDestruction();
     _ZN5Sound13PlayCharVoiceEjjRK7Vector3(0, 0x103, &self->mCamSpacePos);
 
@@ -1339,9 +1349,6 @@ fail:
     return 0;
 }
 
-/* -------------------------------------------------------------------------- */
-/* ROM ordinal 28 -- _ZN8daYegg_c16CleanupResourcesEv, 0x020edf54, size 0x44 */
-/* -------------------------------------------------------------------------- */
 // @symbol _ZN8daYegg_c16CleanupResourcesEv
 /* recovered: named members + shared header, real C++ method */
 /* Releases the two shared animation files and, if the egg pays a blue coin,
@@ -1355,9 +1362,6 @@ int daYegg_c::CleanupResources()
   return 1;
 }
 
-/* -------------------------------------------------------------------------- */
-/* ROM ordinal 29 -- _ZN8daYegg_c6RenderEv, 0x020edf98, size 0x78 */
-/* -------------------------------------------------------------------------- */
 // @symbol _ZN8daYegg_c6RenderEv
 /* recovered: named members + shared header, real C++ method -- vtable slot 9 */
 /* Draws the egg's model unless it is hidden: skipped when mFlags has 0x40000,
@@ -1378,9 +1382,6 @@ int daYegg_c::Render()
     return 1;
 }
 
-/* -------------------------------------------------------------------------- */
-/* ROM ordinal 30 -- _ZN8daYegg_c8BehaviorEv, 0x020ee010, size 0x134 */
-/* -------------------------------------------------------------------------- */
 // @symbol _ZN8daYegg_c8BehaviorEv
 /* recovered: named members + shared header, real C++ method, declarations from a shared header */
 /* recovered: named members + shared header, real C++ method */
@@ -1439,9 +1440,6 @@ int daYegg_c::Behavior()
     return 1;
 }
 
-/* -------------------------------------------------------------------------- */
-/* ROM ordinal 31 -- _ZN8daYegg_c13InitResourcesEv, 0x020ee144, size 0x294 */
-/* -------------------------------------------------------------------------- */
 // @symbol _ZN8daYegg_c13InitResourcesEv
 /* recovered: named members + shared header, real C++ method
  *
@@ -1491,8 +1489,7 @@ int daYegg_c::InitResources()
             return 0;
     }
 
-    _ZN9ModelAnim7SetAnimEP8BCA_Filei5Fix12IiEj(
-        &mModelAnim, *(void **)(data_ov002_0210eb78 + 4), 0, 0x1000, 0);
+    mModelAnim.SetAnim((BCA_File *)(*(void **)(data_ov002_0210eb78 + 4)), 0, 0x1000, 0);
 
     mAreaId = -1;
     mSpawnPosX = mPosX;

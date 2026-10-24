@@ -8,8 +8,8 @@
  * 0x0212ed54 (historical alias LakituBro_Spawn) constructs the same types at
  * the same offsets before storing _ZTV11daC_Jugem_c.
  *
- *     0x110 ModelAnim                  0x64    -> 0x174
- *     0x174 ModelAnim                  0x64    -> 0x1d8
+ *     0x110 dExtAnmModel_c                  0x64    -> 0x174
+ *     0x174 dExtAnmModel_c                  0x64    -> 0x1d8
  *     0x1d8 TextureSequence            0x14    -> 0x1ec
  *     0x1ec state-record pointer        0x4    -> 0x1f0
  *     0x1f0 dExtShadowModel_c          0x28    -> 0x218
@@ -25,7 +25,7 @@
  */
 
 #include "dEnemyBase_c.h"
-#include "ModelAnim.h"
+#include "dExtAnmModel_c.h"
 #include "dExtShadowModel_c.h"
 #include "TextureSequence.h"
 
@@ -39,8 +39,8 @@ struct daC_Jugem_c : dEnemyBase_c {
        SetState installs one and runs its enter; Behavior calls the run. */
     typedef int (daC_Jugem_c::*StateFn)();
 
-    ModelAnim                    mModelAnim1;           /* 0x110 */
-    ModelAnim                    mModelAnim2;           /* 0x174 */
+    dExtAnmModel_c mModelAnim1;                         /* 0x110 */
+    dExtAnmModel_c mModelAnim2;                         /* 0x174 */
     TextureSequence              mTextureSequence;      /* 0x1d8 */
     StateFn                     *mState;                /* 0x1ec */
     dExtShadowModel_c            mShadowModel1;         /* 0x1f0 */

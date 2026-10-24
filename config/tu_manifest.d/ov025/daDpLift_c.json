@@ -12,7 +12,7 @@
     "MEASURED: the out-of-line destructor, declared first in the header and defined first in the TU under `#pragma defer_codegen off`, emits D1 then D0 in the cartridge's order (0x021120e4, 0x02112148) plus a homeless D2 licensed as deadstrip. The inline-empty destructor used by ov022 daObjFl_Ring_c keeps D1/D0 in order only under deferred codegen, and deferred codegen makes the InitResources opt_strength_reduction bracket file-global, which size-DIFFs Render's indexed loop; with the inline destructor and defer_codegen off, D1/D0 land after InitResources.",
     "SCOPE: func_ov025_021125bc, func_ov025_021125dc (the collision callback InitResources installs) and the factory daDpLift_c_classInit (0x021125f0) sit immediately to the right of this run and remain one-function sources; they are not claimed here.",
     "module sinit corroboration: 4 sinit(s) / 4 .ctor entries, sinit_vs_tu=ok, corroborated=False (module-wide, NOT narrowed to this one TU)",
-    "CLASSINIT TAIL FOLD (2026-10-09): the run 0x021125bc..0x02112654 abuts this TU's .text end with no gap and is now inside it, appended last under the file-level #pragma defer_codegen off. func_ov025_021125bc sets this class's mHadClsn (+0x3f7, the flag Behavior's idle state tests and clears every frame) when the touching actor's actorID is 0xbf (the player); func_ov025_021125dc is the dBgW callback veneer that drops the collider and forwards (lift, other) to it, and its only reference is this TU's InitResources (func_020393c4(&mMeshCollider, &func_ov025_021125dc)); daDpLift_c_classInit (operator new 0x3fc, dBgActor_c base ctor, _ZTV10daDpLift_c vptr store, Model ctor for mModel2, __cxa_vec_ctor over the ten mMarkerPositions with func_0203d384/_ZN7Vector3D1Ev) is the retired shard's hand-spelled chain with typed operands, because `return new daDpLift_c;` compiles to 0x38 bytes without the array-constructor call, for the DP_LIFT profile. The unit's .text is 0x021120e4..0x02112654, the end of ov025 .text (.rodata starts at 0x02112654). The added code advances mwcc's compiler-label counter by 2, so the two .bss destructor-registration nodes were renamed @429 -> @431 (model handle, 0x02113af4) and @430 -> @432 (collision handle, 0x02113ae8) here and in ov025 symbols.txt, matched through their __sinit relocations."
+    "CLASSINIT TAIL FOLD (2026-10-09): the run 0x021125bc..0x02112654 abuts this TU's .text end with no gap and is now inside it, appended last under the file-level #pragma defer_codegen off. func_ov025_021125bc sets this class's mHadClsn (+0x3f7, the flag Behavior's idle state tests and clears every frame) when the touching actor's actorID is 0xbf (the player); func_ov025_021125dc is the dBgW callback veneer that drops the collider and forwards (lift, other) to it, and its only reference is this TU's InitResources (func_020393c4(&mMeshCollider, &func_ov025_021125dc)); daDpLift_c_classInit (operator new 0x3fc, dBgActor_c base ctor, _ZTV10daDpLift_c vptr store, dExtSimpleModel_c ctor for mModel2, __cxa_vec_ctor over the ten mMarkerPositions with func_0203d384/_ZN7Vector3D1Ev) is the retired shard's hand-spelled chain with typed operands, because `return new daDpLift_c;` compiles to 0x38 bytes without the array-constructor call, for the DP_LIFT profile. The unit's .text is 0x021120e4..0x02112654, the end of ov025 .text (.rodata starts at 0x02112654). The added code advances mwcc's compiler-label counter by 2, so the two .bss destructor-registration nodes were renamed @429 -> @431 (model handle, 0x02113af4) and @430 -> @432 (collision handle, 0x02113ae8) here and in ov025 symbols.txt, matched through their __sinit relocations."
   ],
   "sections": [
     {
@@ -655,12 +655,12 @@
   ],
   "defined_symbol_renames": [
     {
-      "from": "@446",
+      "from": "@443",
       "to": "@432",
       "evidence": "compiler temp; the types.h Vector3 ctors and main's sinit folds shift this TU's per-TU @NNN uniquifier, so mwcc emits it as @446 now; licensed under the existing pin @432"
     },
     {
-      "from": "@445",
+      "from": "@442",
       "to": "@431",
       "evidence": "compiler temp; the types.h Vector3 ctors and main's sinit folds shift this TU's per-TU @NNN uniquifier, so mwcc emits it as @445 now; licensed under the existing pin @431"
     }

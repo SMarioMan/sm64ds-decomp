@@ -12,8 +12,8 @@
  *
  *     0x110 dCcAc_c       0x34   -> 0x144
  *     0x144 dBgCh_Actr    0x1bc  -> 0x300
- *     0x300 ModelAnim     0x64   -> 0x364
- *     0x364 ModelAnim     0x64   -> 0x3c8
+ *     0x300 dExtAnmModel_c     0x64   -> 0x364
+ *     0x364 dExtAnmModel_c     0x64   -> 0x3c8
  *     0x3c8 dExtShadowModel_c   0x28   -> 0x3f0
  *
  * SIZE IS THE ROM'S OWN: daBasabasa_c_classInit passes 0x440 to
@@ -26,7 +26,7 @@
  */
 
 #include "dEnemyBase_c.h"
-#include "ModelAnim.h"
+#include "dExtAnmModel_c.h"
 #include "dCcAc_c.h"
 #include "dExtShadowModel_c.h"
 #include "dBgCh_Actr.h"
@@ -44,8 +44,8 @@ struct daBasabasa_c : dEnemyBase_c {
 
     dCcAc_c mdCcAc_c;                 /* 0x110 */
     dBgCh_Actr mWithMeshClsn;         /* 0x144 */
-    ModelAnim mModelAnim1;            /* 0x300 -- flying model */
-    ModelAnim mModelAnim2;            /* 0x364 -- hanging model */
+    dExtAnmModel_c mModelAnim1;       /* 0x300 -- flying model */
+    dExtAnmModel_c mModelAnim2;       /* 0x364 -- hanging model */
     dExtShadowModel_c mShadowModel;         /* 0x3c8 */
     Matrix4x3 mShadowMatrix;          /* 0x3f0 -- coined */
     State *mCurrentState;             /* 0x420 */

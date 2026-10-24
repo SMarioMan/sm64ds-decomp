@@ -12,7 +12,7 @@
  *
  *     0x110 dCcAc_c         0x34   -> 0x144
  *     0x144 dBgCh_Actr               0x1bc  -> 0x300
- *     0x300 ModelAnim                  0x64   -> 0x364
+ *     0x300 dExtAnmModel_c                  0x64   -> 0x364
  *     0x364 dExtShadowModel_c                0x28   -> 0x38c
  *
  * Typing them absorbed these markers, which were a member's insides:
@@ -39,8 +39,8 @@
  */
 
 #include "dEnemyBase_c.h"
-#include "Model.h"
-#include "ModelAnim.h"
+#include "dExtSimpleModel_c.h"
+#include "dExtAnmModel_c.h"
 #include "dCcAc_c.h"
 #include "dCcAcPos_c.h"
 #include "dExtShadowModel_c.h"
@@ -52,7 +52,7 @@ extern "C" void *_ZN7fBase_cnwEj(unsigned size);
 struct daBmb_c : dEnemyBase_c {
     dCcAc_c           mdCc_c;         /* 0x110 */
     dBgCh_Actr                 mWithMeshClsn;         /* 0x144 */
-    ModelAnim                    mModelAnim;            /* 0x300 */
+    dExtAnmModel_c mModelAnim;                        /* 0x300 */
     dExtShadowModel_c                  mShadowModel;          /* 0x364 */
     /* 0214b988 stores ClosestPlayer here after the notice-angle test;
        0214ad14 stores it unconditionally. Arm 0 chases this pointer. */
@@ -110,7 +110,7 @@ struct daBmb_c : dEnemyBase_c {
        at 0x0214a9b4 and carries no D2 anywhere, which is what mwccarm 2004/b56
        emits for an inline in-class destructor; the out-of-line form emits
        D2/D0/D1 in the wrong order plus a homeless D2. The typed member list
-       above makes the empty body own the dExtShadowModel_c, ModelAnim, dBgCh_Actr and
+       above makes the empty body own the dExtShadowModel_c, dExtAnmModel_c, dBgCh_Actr and
        dCcAc_c teardowns and the chain into _ZN12dEnemyBase_cD2Ev.
 
        With the destructor inline, OnYoshiTryEat becomes the first out-of-line

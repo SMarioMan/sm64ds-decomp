@@ -49,7 +49,7 @@ enum d_a_obj_clock_huriko_AssetId {
 #include "SharedFilePtr.h"
 #include "Sound.h"
 
-/* Model handles construct through func_02017acc and destroy through
+/* dExtSimpleModel_c handles construct through func_02017acc and destroy through
  * func_02017ab4. The manifest aliases those undefined members onto the ROM
  * symbols. */
 struct ClockHurikoModelFilePtr : SharedFilePtr {
@@ -85,7 +85,7 @@ extern "C" daObjClockHuriko_c *daObjClockHuriko_c_classInit()
  * class's key function is its first declared non-inline virtual. */
 s32 daObjClockHuriko_c::InitResources()
 {
-    void *f = Model::LoadFile(data_ov013_02112280);
+    void *f = dExtSimpleModel_c::LoadFile(data_ov013_02112280);
     mModel.SetFile((BMD_File *)f, 1, -1);
     func_ov013_02111238(this);
     mAngSpeed = 0x100;

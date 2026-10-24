@@ -64,6 +64,31 @@
 #include "decl_Scene.h"
 #include "decl_common.h"
 
+namespace CP15 {
+void FlushAndInvalidateDataCache(u32 a, u32 b);
+}
+
+namespace G2S {
+void *GetBG0CharPtr(void);
+void *GetBG0ScrPtr(void);
+void *GetBG2CharPtr(void);
+void *GetBG2ScrPtr(void);
+void *GetBG3ScrPtr(void);
+}
+
+namespace GX {
+void LoadBGPltt(const void *p, u32 a, u32 b);
+void LoadOBJPltt(const void *p, u32 a, u32 b);
+void SetBankForBG(u16 v);
+void SetBankForOBJ(u16 v);
+void SetBankForSubBG(u16 v);
+void SetBankForSubOBJ(u16 v);
+}
+
+namespace GXS {
+void LoadBGPltt(const void *p, u32 a, u32 b);
+void LoadOBJPltt(const void *p, u32 a, u32 b);
+}
 
 struct MinigameSaveData;
 struct OamAttr;
@@ -157,24 +182,13 @@ int  RandomIntInternal(int *seed);
 extern char *LoadFile(int id);
 extern void DecompressLZ16(void *src, void *dst);
 extern void MultiStore16(u16 val, void *dst, int nbytes);
-extern void _ZN4CP1527FlushAndInvalidateDataCacheEjj(u32 a, u32 b);
-extern void _ZN3OAM6RenderEbP7OamAttriiii5Fix12IiES3_ii(int sub, OamAttr *attr, int x, int y, int pal, int prio, int sx, int sy, int c, int d);
+
+extern void OamRender10_d_s_mini_gm(int sub, OamAttr *attr, int x, int y, int pal, int prio, int sx,
+                                    int sy, int c, int d);
 extern void _ZN3OAM6RenderEbP7OamAttriiii5Fix12IiEi(int sub, OamAttr *attr, int x, int y, int pal, int prio, int s, int c);
 extern void *_ZN2G212GetBG2ScrPtrEv(void);
 extern void *_ZN2G213GetBG2CharPtrEv(void);
-extern void *_ZN3G2S12GetBG0ScrPtrEv(void);
-extern void *_ZN3G2S12GetBG2ScrPtrEv(void);
-extern void *_ZN3G2S12GetBG3ScrPtrEv(void);
-extern void *_ZN3G2S13GetBG0CharPtrEv(void);
-extern void *_ZN3G2S13GetBG2CharPtrEv(void);
-extern void _ZN2GX10LoadBGPlttEPKvjj(const void *p, u32 a, u32 b);
-extern void _ZN2GX11LoadOBJPlttEPKvjj(const void *p, u32 a, u32 b);
-extern void _ZN2GX12SetBankForBGEt(u16 v);
-extern void _ZN2GX13SetBankForOBJEt(u16 v);
-extern void _ZN2GX15SetBankForSubBGEt(u16 v);
-extern void _ZN2GX16SetBankForSubOBJEt(u16 v);
-extern void _ZN3GXS10LoadBGPlttEPKvjj(const void *p, u32 a, u32 b);
-extern void _ZN3GXS11LoadOBJPlttEPKvjj(const void *p, u32 a, u32 b);
+
 void _ZN5Sound22StopLoadedMusic_Layer1Ej(u32 n);
 }
 
@@ -251,10 +265,10 @@ s32 dScMiniGm_c::InitResources()
     _ZN2GX15DisableAllBanksEv();
     *(volatile u16 *)0x4000304 |= 0x8000;
     _ZN2GX13SetBankForTexEt(1);
-    _ZN2GX12SetBankForBGEt(2);
-    _ZN2GX15SetBankForSubBGEt(4);
-    _ZN2GX16SetBankForSubOBJEt(8);
-    _ZN2GX13SetBankForOBJEt(0x10);
+    GX::SetBankForBG(2);
+    GX::SetBankForSubBG(4);
+    GX::SetBankForSubOBJ(8);
+    GX::SetBankForOBJ(0x10);
     _ZN2GX17SetBankForTexPlttEt(0x20);
 
     data_0209d45c &= ~0x1f;
@@ -287,8 +301,8 @@ s32 dScMiniGm_c::InitResources()
     Deallocate(f);
 
     f = LoadFile(0x58);
-    _ZN4CP1527FlushAndInvalidateDataCacheEjj((u32)f, 0x200);
-    _ZN2GX10LoadBGPlttEPKvjj((const void *)f, 0, 0x200);
+    CP15::FlushAndInvalidateDataCache((u32)f, 0x200);
+    GX::LoadBGPltt((const void *)f, 0, 0x200);
     Deallocate((void *)f);
 
     f = LoadFile(0x59);
@@ -310,8 +324,8 @@ s32 dScMiniGm_c::InitResources()
     Deallocate((void *)f);
 
     f = LoadFile(0xd9);
-    _ZN4CP1527FlushAndInvalidateDataCacheEjj((u32)f, 0x100);
-    _ZN2GX11LoadOBJPlttEPKvjj((const void *)f, 0, 0x100);
+    CP15::FlushAndInvalidateDataCache((u32)f, 0x100);
+    GX::LoadOBJPltt((const void *)f, 0, 0x100);
     Deallocate((void *)f);
 
     *(volatile u16 *)0x400100c = (*(volatile u16 *)0x400100c & ~3) | 1;
@@ -327,12 +341,12 @@ s32 dScMiniGm_c::InitResources()
     SetSubBg3Offset(mSubBgScrollX, 0);
 
     f = LoadFile(0x53);
-    DecompressLZ16(f, _ZN3G2S13GetBG2CharPtrEv());
+    DecompressLZ16(f, G2S::GetBG2CharPtr());
     Deallocate((void *)f);
 
     f = LoadFile(0x5a);
-    _ZN4CP1527FlushAndInvalidateDataCacheEjj((u32)f, 0x200);
-    _ZN3GXS10LoadBGPlttEPKvjj((const void *)f, 0, 0x200);
+    CP15::FlushAndInvalidateDataCache((u32)f, 0x200);
+    GXS::LoadBGPltt((const void *)f, 0, 0x200);
     Deallocate((void *)f);
 
     *(volatile u16 *)0x4001008 = (*(volatile u16 *)0x4001008 & ~3) | 2;
@@ -341,10 +355,10 @@ s32 dScMiniGm_c::InitResources()
     *(volatile u32 *)0x4001010 = mSubBgScrollX & 0x1ff;
     SetSubBg0Offset(mSubBgScrollX, 0);
 
-    dst = (char *)_ZN3G2S13GetBG0CharPtrEv();
+    dst = (char *)G2S::GetBG0CharPtr();
     sp0 = 0;
     MultiStore16(sp0, dst, 0x8000);
-    dst = (char *)_ZN3G2S12GetBG0ScrPtrEv();
+    dst = (char *)G2S::GetBG0ScrPtr();
     sp2 = 0x1f;
     MultiStore16(sp2, dst, 0x1000);
 
@@ -365,8 +379,8 @@ s32 dScMiniGm_c::InitResources()
     Deallocate((void *)f);
 
     f = LoadFile(0xd9);
-    _ZN4CP1527FlushAndInvalidateDataCacheEjj((u32)f, 0x100);
-    _ZN3GXS11LoadOBJPlttEPKvjj((const void *)f, 0, 0x100);
+    CP15::FlushAndInvalidateDataCache((u32)f, 0x100);
+    GXS::LoadOBJPltt((const void *)f, 0, 0x100);
     Deallocate((void *)f);
 
     mPageFlipped = 0;
@@ -430,11 +444,11 @@ void MiniGm_LoadGroupIcons(void *selfv)
     int t;
 
     f = LoadFile(sMiniGmBgFiles[gMgGroupBase]);
-    DecompressLZ16(f, _ZN3G2S12GetBG2ScrPtrEv());
+    DecompressLZ16(f, G2S::GetBG2ScrPtr());
     Deallocate(f);
 
     f = LoadFile(sMiniGmBgFiles[gMgGroupBase + 4]);
-    DecompressLZ16(f, _ZN3G2S12GetBG3ScrPtrEv());
+    DecompressLZ16(f, G2S::GetBG3ScrPtr());
     Deallocate(f);
 
     i = 0;
@@ -468,7 +482,7 @@ void MiniGm_LoadGroupIcons(void *selfv)
                 destOff = off << 1;
                 do {
                     char *dstp;
-                    scr = (char *)_ZN3G2S12GetBG0ScrPtrEv();
+                    scr = (char *)G2S::GetBG0ScrPtr();
                     dstp = scr + destOff;
                     dstp = destOff ? dstp : dstp; /* register-dest pin; arms identical */
                     valA = (u16)fill;
@@ -491,23 +505,23 @@ void MiniGm_LoadGroupIcons(void *selfv)
             int p;
 
             f = LoadFile(sMiniGmIconChars[gMgGroupBase + j]);
-            DecompressLZ16(f, (char *)_ZN3G2S13GetBG0CharPtrEv() + 0x8000);
+            DecompressLZ16(f, (char *)G2S::GetBG0CharPtr() + 0x8000);
             Deallocate(f);
 
             row = m;
             destOff = row;
             do {
                 idx = scene->mGfxSlot;
-                ch = (char *)_ZN3G2S13GetBG0CharPtrEv();
+                ch = (char *)G2S::GetBG0CharPtr();
                 scr = ch + (idx / 4) * 0x2400 + (idx % 4) * 0xc0 + destOff;
-                ch = (char *)_ZN3G2S13GetBG0CharPtrEv();
+                ch = (char *)G2S::GetBG0CharPtr();
                 MultiCopy_Int((int *)(ch + 0x8000 + destOff), (int *)scr, copyLen);
                 destOff += 0x400;
             } while (++row < 9);
 
             f = LoadFile(sMiniGmIconPalettes[gMgGroupBase + j]);
-            _ZN4CP1527FlushAndInvalidateDataCacheEjj((u32)f, flushSize);
-            _ZN3GXS10LoadBGPlttEPKvjj(f, scene->mGfxSlot << 5, plttSize);
+            CP15::FlushAndInvalidateDataCache((u32)f, flushSize);
+            GXS::LoadBGPltt(f, scene->mGfxSlot << 5, plttSize);
             Deallocate(f);
 
             scene->mGfxSlots[i] = scene->mGfxSlot;
@@ -521,7 +535,7 @@ void MiniGm_LoadGroupIcons(void *selfv)
                 do {
                     char *dstp;
                     idx = scene->mGfxSlot;
-                    scr = (char *)_ZN3G2S12GetBG0ScrPtrEv();
+                    scr = (char *)G2S::GetBG0ScrPtr();
                     dstp = scr + destOff;
                     dstp = idx ? dstp : dstp; /* register-dest pin; arms identical */
                     valB = (u16)(q + (p + ((idx % 4) * 6 + ((idx / 4) * 0x120 + (idx << 12)))));
@@ -553,9 +567,9 @@ extern "C" {
 void MiniGm_LoadIconPalette(char *self, int index)
 {
     char *file = LoadFile(sMiniGmIconPalettes[index]);
-    _ZN4CP1527FlushAndInvalidateDataCacheEjj((u32)file, 0x200);
+    CP15::FlushAndInvalidateDataCache((u32)file, 0x200);
     u32 slot = ((dScMiniGm_c *)self)->mGfxSlots[index / 4];
-    _ZN3GXS10LoadBGPlttEPKvjj(file + 0x20, slot << 5, 0x20);
+    GXS::LoadBGPltt(file + 0x20, slot << 5, 0x20);
     Deallocate(file);
 }
 }
@@ -776,9 +790,9 @@ s32 dScMiniGm_c::Render()
     int scale;
 
     if (gMgSaveDirty == 1) {
-        _ZN3OAM6RenderEbP7OamAttriiii5Fix12IiES3_ii(0, (OamAttr *)sMiniGmSavingCaption, 0x80, 0xa4, -1, 0, 0x1000, 0x1000, 0, -1);
+        OAM::Render(0, (OamAttr *)sMiniGmSavingCaption, 0x80, 0xa4, -1, 0, 0x1000, 0x1000, 0, -1);
     } else {
-        _ZN3OAM6RenderEbP7OamAttriiii5Fix12IiES3_ii(0, (OamAttr *)sMiniGmCaption, 0x80, 0xa4, -1, 0, 0x1000, 0x1000, 0, -1);
+        OAM::Render(0, (OamAttr *)sMiniGmCaption, 0x80, 0xa4, -1, 0, 0x1000, 0x1000, 0, -1);
     }
 
     y0 = 0x18;

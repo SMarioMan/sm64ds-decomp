@@ -101,7 +101,7 @@ typedef char daObjRotateUpdownLift_c_size_must_be_0x3a8[sizeof(daObjRotateUpdown
 
 #else
 
-#include "Model.h"
+#include "dExtSimpleModel_c.h"
 
 /* The same object spelled flat, for the compiler-generated destructor, which
    lives in a C translation unit and can never be migrated. */
@@ -128,7 +128,7 @@ struct daObjRotateUpdownLift_c {
     u8  pad_0b4[0x18];
     s8  mAreaId;            /* 0x0cc */
     u8  pad_0cd[0x7];
-    Model mModel;            /* 0x0d4 */
+    dExtSimpleModel_c mModel;            /* 0x0d4 */
     dBgW_KcMbg mMeshCollider;            /* 0x124 */
     u8  pad_2ec[0x14];
     u8  unk_300;            /* 0x300 */

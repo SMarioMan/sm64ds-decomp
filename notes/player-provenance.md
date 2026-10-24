@@ -97,18 +97,18 @@ Four runs, and each one's length is pinned by two independent witnesses -- the
 
 | offset | declaration | length is pinned by |
 | --- | --- | --- |
-| 0x0dc | `ModelAnim *mBodyModels[4]` | `CleanupResources` `i < 4`; closes at 0x0ec, the standalone pointer that was already there |
-| 0x154 | `ModelAnim *unk_154[8]` | `CleanupResources` `i < 4` **and** `i + 4`; closes exactly at `mModelAnim4` (0x174) |
+| 0x0dc | `dExtAnmModel_c *mBodyModels[4]` | `CleanupResources` `i < 4`; closes at 0x0ec, the standalone pointer that was already there |
+| 0x154 | `dExtAnmModel_c *unk_154[8]` | `CleanupResources` `i < 4` **and** `i + 4`; closes exactly at `mModelAnim4` (0x174) |
 | 0x27c | `s32 unk_27c[4]` | `i < 4`; closes exactly at 0x28c |
 | 0x28c | `s32 unk_28c[8]` | `i < 4` **and** `i + 4`; closes exactly at `mShadowModel` (0x2ac) |
 
-The element type of the two model runs is `ModelAnim`, and the matched bodies pin
-every part of that claim rather than just the size: they reach `+0x08` (Model's
-`ModelComponents`, handed to `TextureSequence::Update`), `+0x14` (`Model::mat4x3`),
+The element type of the two model runs is `dExtAnmModel_c`, and the matched bodies pin
+every part of that claim rather than just the size: they reach `+0x08` (dExtSimpleModel_c's
+`ModelComponents`, handed to `TextureSequence::Update`), `+0x14` (`dExtSimpleModel_c::mat4x3`),
 `+0x50` (the `Animation` base, handed to `Animation::Advance`) and `+0x58` (that
-base's `currFrame`); they call `Model::SetPolygonMode` and `Model::Render` on the
+base's `currFrame`); they call `dExtSimpleModel_c::SetPolygonMode` and `dExtSimpleModel_c::Render` on the
 same pointer; and they call vtable slots `+0x14` and `+0x18`, which in
-`_ZTV9ModelAnim` are `Render` and `Virtual18`. `CleanupResources` calls slot 1 --
+`_ZTV14dExtAnmModel_c` are `Render` and `Virtual18`. `CleanupResources` calls slot 1 --
 the deleting destructor -- on each element.
 
 The two `s32` runs are parallel to the model runs, one word per model, and that
@@ -145,9 +145,9 @@ Two sites were deliberately NOT collapsed:
   the "When a rename stops being byte-neutral" section) and `&mBodyModels` still
   compiles unchanged against the array, so it was left exactly as it was.
 - 0x0ec and 0x1d8 stay scalars. `CleanupResources` destroys them in their own
-  block, outside the `i < 4` loop, and they sit one on each side of a `ModelAnim`
+  block, outside the `i < 4` loop, and they sit one on each side of a `dExtAnmModel_c`
   member (`mModelAnim3` at 0x0f0, `mModelAnim4` at 0x174) rather than inside a run.
-  Both are `ModelAnim *` by the same slot-1/slot-5 evidence, but neither is part
+  Both are `dExtAnmModel_c *` by the same slot-1/slot-5 evidence, but neither is part
   of an array and neither was retyped this pass.
 
 `build/eligible-names.txt` is byte-identical across the whole change (11,065
@@ -270,7 +270,7 @@ daKpa_c decisively, and they read almost all of it. Named from that evidence:
 | 0x3fc | `mTimer` | incremented as a `u16`, tested `== 0`, and `& 1` for alternate-frame work. |
 | 0x40c | `mState` | assigned 0, 1, 5, 0xd and 0x13 by different state handlers and compared against 4. An enum-like state word, distinct from the pmf index at 0x410. |
 | 0x414 | `mVariantID` | `param1 & 3`, wrapped by `if (== 3) = 0`, then used to index [data_ov060_02119264](../config/arm9/overlays/ov060/symbols.txt) for the byte at 0x41e. A variant selector that picks per-instance configuration -- which is exactly the part the old note called a guess. |
-| 0x41c | `mOpacity` | the missing `0xff` exists: [func_ov060_021123dc](../src/game/actors/d_a_kpa.cpp) writes `0xff` here and to 0x41d, and [func_ov060_02112434](../src/game/actors/d_a_kpa.cpp) steps 0x41c toward 0x41d by 0x14 a frame, clamping at 0xff and 0, while another handler passes `*(u8 *)(this + 0x41c) >> 3` to `ModelBase::ApplyOpacity` -- 0..255 scaled to the DS's 5-bit alpha. `Render`'s `< 8` early-out is the invisible case. |
+| 0x41c | `mOpacity` | the missing `0xff` exists: [func_ov060_021123dc](../src/game/actors/d_a_kpa.cpp) writes `0xff` here and to 0x41d, and [func_ov060_02112434](../src/game/actors/d_a_kpa.cpp) steps 0x41c toward 0x41d by 0x14 a frame, clamping at 0xff and 0, while another handler passes `*(u8 *)(this + 0x41c) >> 3` to `dExtModel_c::ApplyOpacity` -- 0..255 scaled to the DS's 5-bit alpha. `Render`'s `< 8` early-out is the invisible case. |
 | 0x424 | `mTalkStep` | `switch` on it: case 0 calls `Player::StartTalk`, case 1 waits for `Player::GetTalkState() == 0` then `Player::ShowMessage`, each case incrementing it. |
 | 0x426 | `mDropsShadow` | gates the `dBgCh_Gnd` raycast that projects daKpa_c onto the ground and writes the shadow matrix at 0x330 -- the same role `daKpaFire_c::mDropsShadow` was named for. |
 | 0x427 | `mBounceOnLand` | while set, `dBgCh_Actr::JustHitGround()` reflects the vertical speed at -60% (clamped to 0x14000); cleared once he settles. |

@@ -59,6 +59,29 @@ enum dScMgSlots_AssetId {
 #include "dWipe_c.h"
 #include "G2x.h"
 
+namespace CP15 {
+void FlushAndInvalidateDataCache(u32 a, u32 b);
+}
+
+namespace G2S {
+char *GetBG0CharPtr(void);
+char *GetBG0ScrPtr(void);
+char *GetBG1ScrPtr(void);
+void *GetBG2CharPtr(void);
+void *GetBG2ScrPtr(void);
+char *GetBG3ScrPtr(void);
+}
+
+namespace GX {
+void LoadBGPltt(const void *p, u32 a, u32 b);
+void LoadOBJPltt(const void *p, u32 a, u32 b);
+}
+
+namespace GXS {
+void LoadBGPltt(const void *p, u32 a, u32 b);
+void LoadOBJPltt(const void *p, u32 a, u32 b);
+}
+
 #pragma defer_codegen off
 /* Codegen is deferred by default in mwccarm 2004/b56, which is why its
  * optimisation pragmas are otherwise file-global last-wins. With it off, the
@@ -101,12 +124,14 @@ extern unsigned int func_02012790(unsigned int arg);
 extern void Mg_SubmitScore(int self);
 extern int data_ov006_0213e948[];
 extern void Slot3_ReelDigits(char *c, int i);
+/* S4 WALL (wave-2): kept: local void return disagrees with Sound.h u32
+   (definition returns unsigned int); params match, callers ignore r0. */
 extern void _ZN5Sound12PlayBank2_2DEj(unsigned int id);
 extern int Sound_PlayIfNotActive(int, int, int, int);
 extern int RandomIntInternal(int *seed);
 extern int data_0209e650;
-void _ZN3OAM6RenderEbP7OamAttriiii5Fix12IiES3_ii(int b, void *attr, int a2, int a3, int a4, int a5,
-                                                 int a6, int a7, int a8, int a9);
+void OamRender10_d_s_mg_slots(int b, void *attr, int a2, int a3, int a4, int a5, int a6, int a7,
+                              int a8, int a9);
 void Hud_RenderSprite(void *a0, int a1, int a2, int a3, int a4);
 void Mg_DrawCredits(char *a0, int a1, int a2, int a3);
 void Mg_DrawScoreTally(char *a0, int a1, int a2, int a3);
@@ -123,14 +148,9 @@ extern SlotState pmf_Slot3_StateWait;
 extern SlotState pmf_Slot3_StateGameOver;
 extern SlotState pmf_Slot3_StateDone;
 extern int LoadFile(int handle);
-extern void _ZN2GX10LoadBGPlttEPKvjj(const void *p, u32 a, u32 b);
-extern void _ZN3GXS10LoadBGPlttEPKvjj(const void *p, u32 a, u32 b);
+
 extern void *_ZN2G212GetBG2ScrPtrEv(void);
-extern void *_ZN3G2S13GetBG2CharPtrEv(void);
-extern void *_ZN3G2S12GetBG2ScrPtrEv(void);
-extern void _ZN4CP1527FlushAndInvalidateDataCacheEjj(u32 a, u32 b);
-extern void _ZN2GX11LoadOBJPlttEPKvjj(const void *p, u32 a, u32 b);
-extern void _ZN3GXS11LoadOBJPlttEPKvjj(const void *p, u32 a, u32 b);
+
 extern void _ZN3G2x13SetBlendAlphaEPVttttj(volatile u16 *p, u16 a, u16 b, u16 c, u16 d);
 extern u8 data_0209d454;
 extern int data_0208ee44;
@@ -175,10 +195,7 @@ extern int _ZTVN12dScMgSlot1_c9betIcon_cE[];
 extern int _ZTV9dThIcon_c[];
 extern char *_ZN2G213GetBG2CharPtrEv(void);
 extern char *_ZN2G212GetBG3ScrPtrEv(void);
-extern char *_ZN3G2S13GetBG0CharPtrEv(void);
-extern char *_ZN3G2S12GetBG0ScrPtrEv(void);
-extern char *_ZN3G2S12GetBG1ScrPtrEv(void);
-extern char *_ZN3G2S12GetBG3ScrPtrEv(void);
+
 extern void Mg_RenderSubSpriteScaled(void *a0, int a1, int a2, int a3, int a4, int a5,
                                      unsigned short a6);
 extern void MultiStore16(u16 val, char *dst, int nbytes);
@@ -697,20 +714,17 @@ s32 dScMgSlot3_c::Render() {
 
     if (self->mReelDrawY > 0) {
         for (i = 0; i < 3; i++) {
-            _ZN3OAM6RenderEbP7OamAttriiii5Fix12IiES3_ii(
-                0, sSlot3FaceSprites[self->mWinSymbol * 3 + i], 0x80, self->mReelDrawY + 0x10, -1,
-                2, 0x1000, 0x1000, 0, 1);
+            OAM::Render(0, (OamAttr *)sSlot3FaceSprites[self->mWinSymbol * 3 + i], 0x80,
+                        self->mReelDrawY + 0x10, -1, 2, 0x1000, 0x1000, 0, 1);
         }
         for (i = 0; i < 3; i++) {
-            _ZN3OAM6RenderEbP7OamAttriiii5Fix12IiES3_ii(
-                0, sSlot3FaceSprites[self->mNextWinSymbol * 3 + i], 0x80, self->mReelDrawY + 0x60,
-                -1, 2, 0x1000, 0x1000, 0, 1);
+            OAM::Render(0, (OamAttr *)sSlot3FaceSprites[self->mNextWinSymbol * 3 + i], 0x80,
+                        self->mReelDrawY + 0x60, -1, 2, 0x1000, 0x1000, 0, 1);
         }
     } else {
         for (i = 0; i < 3; i++) {
-            _ZN3OAM6RenderEbP7OamAttriiii5Fix12IiES3_ii(0,
-                                                        sSlot3FaceSprites[self->mWinSymbol * 3 + i],
-                                                        0x80, 0x60, -1, 2, 0x1000, 0x1000, 0, 1);
+            OAM::Render(0, (OamAttr *)sSlot3FaceSprites[self->mWinSymbol * 3 + i], 0x80, 0x60, -1,
+                        2, 0x1000, 0x1000, 0, 1);
         }
     }
 
@@ -890,8 +904,8 @@ s32 dScMgSlot3_c::InitResources() {
 
     {
         int h = LoadFile(ASSET_D_2D_MG_BG_SLOT_FACE_NCL_BIN);
-        _ZN2GX10LoadBGPlttEPKvjj((const void *)h, 0x60, 0x1a0);
-        _ZN3GXS10LoadBGPlttEPKvjj((const void *)h, 0x60, 0x1a0);
+        GX::LoadBGPltt((const void *)h, 0x60, 0x1a0);
+        GXS::LoadBGPltt((const void *)h, 0x60, 0x1a0);
         Deallocate((void *)h);
     }
 
@@ -911,15 +925,15 @@ s32 dScMgSlot3_c::InitResources() {
     *(volatile u16 *)0x400100c = (*(volatile u16 *)0x400100c & 0x43) | 0x1218;
     *(volatile u16 *)0x400100c = *(volatile u16 *)0x400100c & ~0x40;
 
-    LoadCompressedFileAt(ASSET_D_2D_MG_BG_SLOT_FACE_NCG_BIN, _ZN3G2S13GetBG2CharPtrEv());
-    LoadCompressedFileAt(ASSET_D_2D_MG_BG_SLOT_FACE_DOWN_NSC_BIN, _ZN3G2S12GetBG2ScrPtrEv());
+    LoadCompressedFileAt(ASSET_D_2D_MG_BG_SLOT_FACE_NCG_BIN, G2S::GetBG2CharPtr());
+    LoadCompressedFileAt(ASSET_D_2D_MG_BG_SLOT_FACE_DOWN_NSC_BIN, G2S::GetBG2ScrPtr());
     LoadCompressedFileAt(ASSET_D_2D_MG_SLOT_FACE_NCG_BIN, (void *)0x6600000);
 
     {
         int h = LoadFile(ASSET_D_2D_MG_SLOT_FACE_NCL_BIN);
-        _ZN4CP1527FlushAndInvalidateDataCacheEjj((u32)h, 0xe0);
-        _ZN2GX11LoadOBJPlttEPKvjj((const void *)h, 0, 0xe0);
-        _ZN3GXS11LoadOBJPlttEPKvjj((const void *)h, 0, 0xe0);
+        CP15::FlushAndInvalidateDataCache((u32)h, 0xe0);
+        GX::LoadOBJPltt((const void *)h, 0, 0xe0);
+        GXS::LoadOBJPltt((const void *)h, 0, 0xe0);
         Deallocate((void *)h);
     }
 
@@ -1553,7 +1567,7 @@ s32 dScMgSlot1_c::InitResources() {
     LoadCompressedFileAt(ASSET_D_2D_MG_BG_SLOT_GRADE_NCG_BIN, _ZN2G213GetBG2CharPtrEv() + 0x7800);
     {
         int h = LoadFile(ASSET_D_2D_MG_BG_SLOT_UP_NCL_BIN);
-        _ZN2GX10LoadBGPlttEPKvjj((const void *)h, 0x60, 0x1a0);
+        GX::LoadBGPltt((const void *)h, 0x60, 0x1a0);
         Deallocate((void *)h);
     }
     LoadCompressedFileAt(ASSET_D_2D_MG_BG_SLOT_SCORE_UP_NSC_BIN, _ZN2G212GetBG2ScrPtrEv());
@@ -1576,19 +1590,19 @@ s32 dScMgSlot1_c::InitResources() {
     *(volatile u16 *)0x400100e = (*(volatile u16 *)0x400100e & 0x43) | 0x1310;
     *(volatile u16 *)0x400100e = *(volatile u16 *)0x400100e & ~0x40;
 
-    LoadCompressedFileAt(ASSET_D_2D_MG_BG_SLOT_DOWN_NCG_BIN, _ZN3G2S13GetBG2CharPtrEv());
-    LoadCompressedFileAt(ASSET_D_2D_MG_BG_SLOT_GRADE_NCG_BIN, _ZN3G2S13GetBG0CharPtrEv() + 0x7800);
+    LoadCompressedFileAt(ASSET_D_2D_MG_BG_SLOT_DOWN_NCG_BIN, G2S::GetBG2CharPtr());
+    LoadCompressedFileAt(ASSET_D_2D_MG_BG_SLOT_GRADE_NCG_BIN, G2S::GetBG0CharPtr() + 0x7800);
     {
         int h = LoadFile(ASSET_D_2D_MG_BG_SLOT_DOWN_NCL_BIN);
-        _ZN3GXS10LoadBGPlttEPKvjj((const void *)h, 0x60, 0x1a0);
+        GXS::LoadBGPltt((const void *)h, 0x60, 0x1a0);
         Deallocate((void *)h);
     }
-    LoadCompressedFileAt(ASSET_D_2D_GRADE_NSC_BIN, _ZN3G2S12GetBG0ScrPtrEv());
-    LoadCompressedFileAt(ASSET_D_2D_BADWIZER_NSC_BIN, _ZN3G2S12GetBG1ScrPtrEv() + 0x800);
-    LoadCompressedFileAt(ASSET_D_2D_MG_BG_SLOT_DOWN_NSC_BIN, _ZN3G2S12GetBG2ScrPtrEv());
+    LoadCompressedFileAt(ASSET_D_2D_GRADE_NSC_BIN, G2S::GetBG0ScrPtr());
+    LoadCompressedFileAt(ASSET_D_2D_BADWIZER_NSC_BIN, G2S::GetBG1ScrPtr() + 0x800);
+    LoadCompressedFileAt(ASSET_D_2D_MG_BG_SLOT_DOWN_NSC_BIN, G2S::GetBG2ScrPtr());
 
     {
-        char *d3 = _ZN3G2S12GetBG3ScrPtrEv();
+        char *d3 = G2S::GetBG3ScrPtr();
         fill = 0x43e4;
         MultiStore16(fill, d3, 0x800);
     }
@@ -1598,8 +1612,8 @@ s32 dScMgSlot1_c::InitResources() {
 
     {
         int h = LoadFile(ASSET_D_2D_MG_SLOT_NCL_BIN);
-        _ZN2GX11LoadOBJPlttEPKvjj((const void *)h, 0, 0x40);
-        _ZN3GXS11LoadOBJPlttEPKvjj((const void *)h, 0, 0x40);
+        GX::LoadOBJPltt((const void *)h, 0, 0x40);
+        GXS::LoadOBJPltt((const void *)h, 0, 0x40);
         Deallocate((void *)h);
     }
 
