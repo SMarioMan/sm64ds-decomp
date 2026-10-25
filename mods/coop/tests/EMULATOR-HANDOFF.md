@@ -9,6 +9,26 @@ all levels. The tested party size and campaign coverage were not specified;
 newer-image physical acceptance and campaign completion remain open. Read the current regressions first; later sections preserve
 historical checkpoints and failures rather than release acceptance.
 
+## Active performance experiment
+
+- Normal candidate remains fbb2262d below. Default rebuild
+  `frame-clock-default-unchanged-host.nds` reproduces it byte-for-byte.
+- Retail Adventure/file-A castle reference:299 intervals all exactly2 native
+  VBlanks,600 observed frames. Earlier automated VS-practice replay is NOT an
+  Adventure baseline. See `retail-cadence-baseline/retail-adventure-cadence.json`.
+- Experimental flag `--experimental-wireless-frame-clock --output OTHER.nds`
+  retains radio elapsed time in the existing render frame budget. Original
+  render wait/IRQ, NET order and native errors remain unchanged. Scene/loading/
+  teardown/offline paths keep the original reset. Five actual ARM reset-block/
+  IRQ tests pass. Full experimental suite151 discovered,147 executed,4 obsolete
+  prefix skips PASS (`wireless-frame-clock-all-tests.log`).
+- ACTIVE four-console normal route `bob-wireless-frame-clock/`, exec35559,
+  socket `bob-wireless-frame-clock.sock`, image
+  `afa982ae47982e0bc344e7c50db54c5b71f10b4369b145e22f883b5a4bda87ee`.
+  Frozen sources/hashes, key-only fixture, stock core,32-phase frontend.
+  Do not start a second wireless party before closing this one. Startup and
+  normal course movement/performance validation are pending. Not promoted.
+
 ## Current candidate: local shadow visibility and geometry exhaustion
 
 - User reports exact pinned89505d400/aea94 baseline physical multiplayer is
@@ -42,13 +62,13 @@ historical checkpoints and failures rather than release acceptance.
   visible. Entry shadows99→8, entry peak1621 polygons, movement peak1796;
   no observed overflow on any console. Cadence remains similar (~3.58 VBlanks
   per input tick including cold reads). Do not claim performance completion.
-- ACTIVE continuation `local-shadow-guest-star-save/`, exec60302, uses that
+- CLOSED continuation `local-shadow-guest-star-save/`, exec60302, used that
   same party/socket `bob-local-shadow-visibility.sock`. Fresh guest2 coin PASS.
   Guest1 star/save/quit FAILED navigation: attempt1 missed(-1500,5500), then
   attempts2/3 missed(-4000,4500) while re-establishing coins after real exits.
   Captures show NET4/radio3,4,4,4, no message/celebration lock and all players
-  alive. No new star or save acceptance. The physically paused party is retained
-  for controller-route inspection. Never start another before actual shutdown.
+  alive. No new star or save acceptance. The party was shut down through
+  `local-shadow-star-failed-close/`; that party is no longer active.
   Frozen driver sources/hashes are retained. The parent's frontend still has
  16 phase counters; the new32-phase executable is for subsequent sessions.
 - Baseline aea94, planar-quad prototype02a8a8e1 and native-cost d31380ff parties

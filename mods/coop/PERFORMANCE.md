@@ -10,7 +10,7 @@ The user also reports intermittently missing objects/model parts, including a
 Yoshi head, on both hardware and emulation. It is missing immediately on
 entering Bob-omb Battlefield with no first-person view; moving may restore it.
 Target that normal all-Yoshi entrance first. Investigate this alongside the
-performance work; no rendering cause has yet been established.
+performance work. The targeted BoB cause and fix are documented below.
 
 Measure steady play and worst stalls separately. Compare the same scene,
 camera, enemies and effects against retail single-player cadence, then compare
@@ -131,3 +131,31 @@ the optional terrain/body/Yoshi-head cost recorder. It drains the geometry FIFO
 before/after native calls, changing scheduling. Use normal images with the
 read-only frontend for cadence/performance acceptance. The ROM diagnostic is
 only for attributing geometry use and never raises the DS rendering limits.
+
+## Native frame clock experiment (not enabled by default)
+
+A controller-only unmodified EU0 retail Adventure/file-A castle measurement
+records299 consecutive input intervals, all exactly2 SDK VBlanks, over600
+observed frames (`retail-cadence-baseline/retail-adventure-cadence.json`).
+The offline unpaced frontend measures emulated cadence, not wall-clock speed.
+An earlier automated replay entered VS practice instead of Adventure and is
+explicitly marked invalid as an Adventure baseline.
+
+The native render IRQ resets the frame timer at presentation. The main loop
+then performs its synchronous NET exchange and normally resets the timer
+again at02019924, discarding radio elapsed time. Experimental option
+`--experimental-wireless-frame-clock --output OTHER.nds` retains that elapsed
+time during active co-op gameplay only. Disabled/offline, loading, scene/menu/
+title transitions and session teardown retain the native reset. The native
+flag0x10 that already skips the reset still skips the hook. The native frame
+budget, unconditional render sleep, IRQ wake/readiness check, exchange order,
+wireless packets and connection error handling are unchanged. Long frames
+still wait for a real render IRQ; there is no catch-up simulation loop.
+
+The builder checks the exact original conditional store before patching it.
+Five isolated ARM tests execute the original reset block and VBlank handler,
+checking gameplay retention, fallback reset, native flag condition, render
+budget/readiness and long-delay single wake. These tests require an explicitly
+experimental build; default builds skip them. Four-console normal BoB route
+validation with32-phase read-only measurements is in progress under
+`bob-wireless-frame-clock/`. No physical performance acceptance is claimed.

@@ -197,6 +197,11 @@ The host waits for the configured number of guests. Changing this option
 changes the output hash, so retain the adjacent build report with test results.
 
 The output is `build/coop/bootstrap/sm64ds-haxxstation-game-handoff.nds`.
+
+The current default slot-A/four-console build has SHA-256
+`fbb2262d6dbacd6c92e8f585bde99941d587ed8e323bde280f598e91e69abd2d`.
+It includes the verified Bob-omb Battlefield shadow/head rendering fix.
+Other save slots and guest counts produce different hashes.
 Its adjacent JSON records input hashes, client overlay authentication and
 wireless parameters. The adjacent report identifies the exact build. The older regression image
 `0e78e2b0bf80e29a02d8f904b45b44955ec65f57cbf6a4dd44a1a80b20437c64`
