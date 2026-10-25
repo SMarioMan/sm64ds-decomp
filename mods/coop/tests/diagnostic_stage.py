@@ -83,6 +83,14 @@ def heap_status(ds):
     return result
 
 
+def check_connected_party(ds):
+    states=[{'console':console,'net':ds.word(console,0x0209fc68),
+             'radio':ds.word(console,0x020a0f94)} for console in range(ds.count)]
+    if any(state['net']!=4 or state['radio']!=(3 if state['console']==0 else 4) for state in states):
+        snapshot(ds,'diagnostic-party-disconnected')
+        raise RuntimeError(f'Diagnostic party is no longer in wireless gameplay: {states}')
+
+
 def check_living_party(ds):
     for console in range(ds.count):
         health=struct.unpack('<'+'h'*ds.count,ds.read(console,0x02092144,ds.count*2))
@@ -101,6 +109,7 @@ def check_stage(ds, level):
         snapshot(ds,'diagnostic-stage-arrival-transition')
         raise ControllerRouteFailure(
             f'Native arrival left stage {level} before controller checks: {actual}')
+    check_connected_party(ds)
     characters=check_characters(ds)
     assert_party_synchronized(ds,'diagnostic-stage-entry')
     check_living_party(ds)
@@ -143,6 +152,7 @@ def check_stage(ds, level):
     heaps=heap_status(ds)
     start(0)
     if any(paused()):raise RuntimeError('Host resume did not reach the diagnostic party')
+    check_connected_party(ds)
     assert_party_synchronized(ds,'diagnostic-stage-resume')
     check_living_party(ds)
     snapshot(ds,'diagnostic-stage-passed')
@@ -192,7 +202,7 @@ def next_stage(ds):
             raise RuntimeError(f'Native Crash() during stage transition on consoles {crashed}')
         ready=True
         for console in range(ds.count):
-            if ds.word(console,0x0209fc68)==6:
+            if ds.word(console,0x0209fc68) in (0,6):
                 snapshot(ds,'diagnostic-transition-connection-failed')
                 raise RuntimeError('Native wireless failed during a diagnostic stage transition')
             scene=ds.word(console,0x0209f5c0)

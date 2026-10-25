@@ -6,6 +6,51 @@ fixes are still undergoing live validation. Physical host boot on New3DS/R4 is
 user-confirmed; campaign completion and physical wireless remain unverified. Read the current regressions first; later sections preserve
 historical checkpoints and failures rather than release acceptance.
 
+## Active reliability follow-up after full42–51 pass
+
+- All10 stages42..51 PASS on the combined cannon-pitch diagnostic image
+  `cannon-pitch-stage42-cycle-host.nds`, SHA256
+  `a6cc9723e233676327937eb450e4e672e06902c34e36657852fe936dd3a1d6ee`.
+  Results: `cannon-pitch-stage42-wireless/diagnostic-cycle.json`, plus initial42.
+  Movement, matching-input-tick comparisons and shared pause/resume passed.
+- The retained party later ended during a long idle interval. A continuation
+  could not request51→1 because all consoles already had NET0/radio0,
+  coopEnabled0, coopSessionEnded3, native error0x101. Private captures:
+  `stage51-idle-loss-inspection/result.json` and RAM/ITCM/register dumps.
+  The frontend logged REPLY FIFO OVERFLOW warnings after the completed checks.
+  Do not infer that stage51 caused the loss or that this is resolved. Native
+  SDK/transport versus frontend pacing needs isolation. Ended party shut down.
+- `cannon-pitch-stage1-through40-continuation/result.json` remains FAILED;
+  no additional stage passed in that continuation. Diagnostic tests now require
+  NET4 and the native radio role (host3, guests4), and reject NET0 as well as6
+  during transitions. The new guard rejected the actual ended party and
+  accepted all23 retained stage checkpoints (28..32,33..40,42..51), all4
+  consoles, using their actual captured RAM. Audit:
+  `completed-stage-wireless-state-audit.json`.
+- A fresh cold run then FAILED before gameplay:
+  `cannon-pitch-stage1-through40-cold/result.json`. One signed Download Station
+  guest displayed connection lost while the other two received menus; parent
+  peer phases0/4/4, closed-entry acknowledgments0x1005. Preserve this failure:
+  it is evidence that earlier successful repeat batches do not prove stable
+  startup. Its cores were shut down after capturing RAM, WiFi and screens.
+- ACTIVE fresh retry with packet logging:
+  `/workspace/runtime/cannon-pitch-stage1-cold-retry/`, exec83694.
+  Native1..40 cycle requested (39 transitions); packet trace packets.bin,
+  frozen corrected driver in driver/, failure socket same path plus`.sock`.
+  ROM `cannon-pitch-stage1-cycle-host.nds`, SHA256
+  `3f1720278c5521e3ec440c416e8b65aabf1ad8795e13a839e79138ada7e9b29a`.
+  This is a separate attempt, not a replacement for either failed run. It has
+  now completed signed startup and stage1 with the new connection guard; the
+  rest of1..40 remains running. Failed-parent RAM shows stationRestarted1 and
+  stationAssociations0xE, so the menu failure was not simply an old parent
+  preventing restart. Do not patch that hypothesis without further evidence.
+- The queued connected-continuation runner30298 exited without touching the
+  cold party after detecting the unexpected menu failure. There is only one
+  active wireless party. Current native source remains0abb880b9/e20f35da5;
+  only the connection-validation driver and this handoff changed since then.
+  Normal combined image was rebuilt identically again as
+  `cannon-echoed-pitch-final-host.nds` (64b5c9cc...).
+
 ## Additional user requirement: variable party size in one build
 
 The user can currently test3 physical systems and will follow up with results.

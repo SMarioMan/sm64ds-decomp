@@ -58,8 +58,13 @@ not establish campaign completion or real-hardware compatibility.
   build-time requirement pending this change. Verify the identical ROM at all
   three party sizes, delayed joins, lobby departures and repeat sessions.
 - [ ] Recheck simultaneous and delayed Download Play selections, guest/host
-  disconnects, and repeat sessions. Use protocol acknowledgments, not a required
-  human timing window. Keep standard green/red/blue/yellow Yoshi palettes.
+  disconnects, and repeat sessions. A later cold start lost one signed loader
+  before its menu while two others succeeded; earlier5/5 and3/3 batches do not
+  establish stable startup. Preserve that failure and inspect the packet-logged
+  retry. A retained paused party also ended after a long idle interval with
+  native error0x101 and melonDS reply FIFO overflow warnings; isolate native
+  SDK/transport from frontend pacing. Do not suppress genuine radio failures
+  or require a human timing window. Keep standard Yoshi palettes.
 - [ ] Verify actual boss victories, character and castle unlocks, shared course
   collectibles, and the ending with four consoles. Synthetic stage selection
   does not prove earned progression. Physical 100-coin-star collection remains
