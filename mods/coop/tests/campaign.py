@@ -112,6 +112,37 @@ def snapshot(ds, name):
             ds.command(f'dumpitcm {console} {ds.output/(name+"-"+str(console)+".itcm")}')
         ds.command(f'dump7 {console} {ds.output/(name+"-"+str(console)+".arm7")}')
         ds.command(f'regs {console}')
+    if os.environ.get('COOP_PERF_SAMPLES'):
+        from performance import capture_performance
+        capture_performance(ds,name)
+    # Decode the captured images, rather than adding live reads that could
+    # perturb a failing wireless session. These counters exist only in stage
+    # diagnostic builds and never change the normal cartridge image.
+    module=getattr(ds,'runtime_module',None) or {}
+    diagnostic_fields={
+        'coopDiagnosticConnectionFailure':module.get('connectionFailureFields'),
+        'coopDiagnosticGameplayRead':module.get('gameplayReadFields'),
+        'coopDiagnosticSlowGameplayRead':module.get('gameplayReadFields'),
+    }
+    if not any(diagnostic_fields.values()):return
+    diagnostics=[]
+    for console in range(ds.count):
+        ram=(ds.output/(name+'-'+str(console)+'.ram')).read_bytes()
+        if struct.unpack_from('<I',ram,0x4180)[0]!=0x31504f43:
+            diagnostics.append({'console':console,'runtimeInstalled':False})
+            continue
+        base=struct.unpack_from('<I',ram,0x4184)[0]-int(module['entryOffset'],16)
+        values={'console':console}
+        for symbol,fields in diagnostic_fields.items():
+            if not fields:continue
+            offset=base+module['diagnosticOffsets'][symbol]-0x02000000
+            if offset<0 or offset+len(fields)*4>len(ram):
+                values[symbol]={'captureAddressInvalid':hex(base+module['diagnosticOffsets'][symbol])}
+                continue
+            values[symbol]=dict(zip(fields,struct.unpack_from('<'+'I'*len(fields),ram,offset)))
+        diagnostics.append(values)
+    if diagnostics:
+        (ds.output/(name+'-runtime.json')).write_text(json.dumps(diagnostics,indent=2)+'\n')
 
 
 def _same_tick_party(ds, name):
@@ -504,6 +535,8 @@ def check_first_course(ds):
                     ready=False
         if ready:
             ds.command('keys 0 fff')
+            if os.environ.get('COOP_CAPTURE_COURSE_ARRIVAL'):
+                snapshot(ds,'first-course-initial-arrival')
             finish_messages(ds)
             assert_party_synchronized(ds,'first-course-arrival')
             for console in range(ds.count):

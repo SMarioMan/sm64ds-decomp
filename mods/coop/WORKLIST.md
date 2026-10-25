@@ -3,6 +3,33 @@
 The mod is experimental. A passing unit test or stage-entry diagnostic does
 not establish campaign completion or real-hardware compatibility.
 
+- [ ] Fix intermittent missing objects/model parts on individual consoles.
+  The user observes this on physical hardware and melonDS, including a Yoshi
+  head disappearing immediately on entry to Bob-omb Battlefield, with no
+  first-person view used. Moving around may restore it. Target that ordinary
+  all-Yoshi course entrance first. Capture each view at the same game/input
+  tick and compare model visibility, personal first-person/head hiding,
+  animation state, resource ownership/lifetime, texture/palette state and
+  native geometry limits. No cause is established yet. Add movement, camera
+  and crowded/effect-heavy scenes to rendering acceptance; performance
+  optimizations must preserve complete models and intended visibility.
+- [ ] PRIORITY: optimize steady gameplay speed and eliminate significant
+  hitches on real hardware across every level and supported party size.
+  The user tested the pinned89505d400 normal ROM, SHA-256
+  `aea94b7bc8a51986b02c258cb779934bd200f269e05ad4d193282237be4baedf`,
+  and reports functional physical multiplayer with parity to melonDS behavior,
+  but significant slowdown and occasional hitches on both, worse on hardware.
+  Record this as physical multiplayer evidence for that exact image; the
+  tested system count and campaign coverage were not specified. Profile
+  native frame/VBlank cadence, worst-frame stalls, CPU/render work and
+  synchronous wireless reads before selecting optimizations. Compare against
+  retail single-player cadence in the same scenes; do not use host emulator
+  wall-clock speed as proof of full-speed DS gameplay. Evaluate cold and warm
+  assets, moving cameras, enemies, effects, pause/resume and repeated course
+  transitions. Preserve synchronization, original content and standard colors.
+  Require final combined-image physical performance acceptance as well as
+  stock-core emulator regression coverage. See [PERFORMANCE.md](PERFORMANCE.md)
+  for measurement definitions and the traced animation-read latency.
 - [x] Fix the reported white screen before the title screen on real hardware.
   Original failing commit: `419afe72b1f9d133bd26bb03bcd71ebe4d687869`,
   cartridge `sm64ds-haxxstation-game-handoff.nds`.
@@ -41,12 +68,14 @@ not establish campaign completion or real-hardware compatibility.
   The all-Yoshi1..40 continuation found an ordinary stage3 celebration/tally
   deadlock. Guests2/3 were stuck while wireless stayed active. Reserving the
   ordinary celebration8 for the leader now passes the same four-console3
-  regression; the current1..40 cycle remains active. Native captured model/
+  regression; the later run passed stages1..12. Native captured model/
   ground initializer checks pass, and movement/death/flight poses stay intact.
   That run later passed1..12 but crashed all3 guests on12→13 while allocating
   a native9600-byte painting mesh. The new pressure-triggered common-source
   release passes captured native allocation/cleanup checks and the live12→13
-  regression. The new12..40 matrix is active; its later-stage results are pending.
+  regression. The new12..40 matrix passed12..25, then lost the native wireless
+  connection while resuming the stage26 pause menu. First-cause error and
+  synchronous gameplay file-read diagnostics are investigating this regression.
 - [ ] Validate source-cache release and bounded particle reservations across
   all native stages, mission variants, repeated transitions, and teardown.
   Preserve native particle counts, individual array contiguity, heap ownership,

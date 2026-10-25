@@ -2,8 +2,11 @@
 
 The mod remains unfinished. Four-player gameplay works on an unmodified
 melonDS core, with acknowledged startup now passing repeat tests. Later-stage memory
-fixes are still undergoing live validation. Physical host boot on New3DS/R4 is
-user-confirmed; campaign completion and physical wireless remain unverified. Read the current regressions first; later sections preserve
+fixes are still undergoing live validation. The user reports functional physical
+multiplayer with emulator parity on89505d400/aea94b7b, but significant slowdown
+and occasional hitches, worse on hardware. Prioritize native performance across
+all levels. The tested party size and campaign coverage were not specified;
+newer-image physical acceptance and campaign completion remain open. Read the current regressions first; later sections preserve
 historical checkpoints and failures rather than release acceptance.
 
 ## Current candidate: painting mesh allocation pressure
@@ -33,23 +36,47 @@ historical checkpoints and failures rather than release acceptance.
   mCells store and CleanupResources; preserve cell bytes and heap integrity;
   and cover cache-fit/offline/private-heap and matching/nonmatching overlay
   guards. Existing copied-member/cache-lifetime checks also pass.
-- ACTIVE4-console12..40 run:
-  `painting-cache-stage12-through40-wireless/`, exec6152, actual driverPID110998.
-  Native12 and the formerly failing13 now PASS four-controller movement,
-  matching-input-tick synchronization, active NET/radio roles, shared pause
-  and resume. The remainder is still running. This direct-stage diagnostic
-  retains the native character fixture [Yoshi,Luigi,Wario,Yoshi], not earned
-  progression. Failure socket same path plus`.sock`. Frozen driver under
-  driver/; packet trace is capped at100000 records. ROM
-  `painting-cache-stage12-cycle-host.nds`, SHA256
+- The4-console12..40 run `painting-cache-stage12-through40-wireless/`
+  PASSED12..25, then FAILED26 during host pause/resume. Entry, movement and
+  matching-input-tick checks had passed26 before resume. All consoles later
+  showed NET0/radio0, error0x101, menu-closing pause2. There were no reply FIFO
+  overflow warnings in this run. Native heap-integrity audit of completed
+  captures passes (`native-heap-integrity-audit.json`). The failed party was
+  captured in `stage26-pause-inspection/` and shut down before the next run.
+  ROM `painting-cache-stage12-cycle-host.nds`, SHA256
   `b69979acd2324dc7ea5bc8b2d6b344ebe9da22c4c31fa2c8b25ea09c50b5a977`.
-- QUEUED normal guest-star/save run `painting-normal-guest-star/`, launcher
-  `/workspace/runtime/queue-painting-normal-star.py`, exec89297. It requires
-  this matrix to PASS AND its actual driver process to exit before launching.
-  It then uses normal3500 image, previously controller-earned key-only fixture,
-  guest2 coin, guest1 star, Save & Continue and consecutive Save & Quit. The
-  previous castle-owner queue is BLOCKED by its retained matrix failure and
-  has exited. There is only one active wireless party. Do not start another.
+- The normal guest-star/save queue `painting-normal-guest-star/` is BLOCKED
+  by that failure and has exited. It has not tested a coin, star or save.
+- Diagnostic26 trace `pause-io-trace-stage26-wireless/` is testing first-cause
+  connection errors and synchronous gameplay read/burst durations measured by
+  native SDK VBlank time. This is observation only: the original gameplay
+  reader remains synchronous. ROM `pause-io-trace-stage26-host.nds`, SHA256
+  `09f6e864bd2cfb2a2eacbef7e767f5ca592d35825ef3e647c25101d72f91d425`.
+  It starts26 directly, so cannot establish earned campaign progression.
+  Diagnostic counters are compiled out of normal images; independent rebuild
+  `painting-normal-final-diagnostic-proof-host.nds` still reproduces3500 above.
+  A controller stress checks50 host pause/resume cycles after initial
+  checks, stopping on the first actual native wireless failure. See
+  `pause-io-trace-stage26-stress-ready/result.json`.
+  The ready-state controller stress PASSED all50 cycles. The earlier stress
+  stopped because it pressed START during the native post-resume cooldown;
+  NET/radio and player synchronization remained healthy. That failed driver
+  attempt is preserved separately; it does not reproduce the prior disconnect.
+  Continuation `pause-io-trace-stage27-through26-wireless/` PASSED27..38,
+  then FAILED the39 request: the party reached native stage1 instead, still
+  NET4/radio3,4,4,4 and with no recorded connection failure. Do not count39
+  or the intended remainder as tested. This party was captured and shut down.
+- ACTIVE normal baseline reproduction `bob-head-aea94-baseline/`, socket
+  `bob-head-aea94-baseline.sock`, uses the exact user-tested aea94 image,
+  controller-earned key-only fixture and normal four-Yoshi course navigation.
+  Frozen sources include native-cadence and geometry observations in the
+  stock-core test frontend. `COOP_CAPTURE_COURSE_ARRIVAL=1` takes screenshots,
+  RAM and performance counters before first-course movement checks. Target
+  missing heads immediately on Bob-omb Battlefield entry, with no first-person
+  view. Performance/rendering causes are unproved. See PERFORMANCE.md for
+  read-only measurement definitions; never clear native overflow flags or
+  change core limits to make a test pass. There is one live wireless party.
+  Each run retains frozen driver hashes.
 
 ## Current candidate: ordinary castle celebration ownership
 

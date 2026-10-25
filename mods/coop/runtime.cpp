@@ -248,6 +248,12 @@ extern u32 coopResourceFallbacks;
 extern u32 coopStreamedNarcReads;
 extern u32 coopResourceFallbacksLive;
 extern u32 coopResourceFallbacksPeak;
+#ifdef COOP_DIAGNOSTIC_STAGE_CYCLE
+u32 coopDiagnosticConnectionFailure[8]={0,0,0,0,0,0,0,0};
+u32 coopDiagnosticGameplayRead[20]={0};
+u32 coopDiagnosticSlowGameplayRead[20]={0};
+extern u32 coopFileWaiting;
+#endif
 
 void CoopStartMatch(void *) {
     unsigned count = data_0209fc50;
@@ -272,6 +278,11 @@ void CoopStartMatch(void *) {
     coopResourceFallbacksPeak=coopResourceFallbacksLive;
 #ifdef COOP_DIAGNOSTIC_STAGE_CYCLE
     coopDiagnosticChordHeld=false;
+    for (unsigned field=0;field<8;++field)coopDiagnosticConnectionFailure[field]=0;
+    for (unsigned field=0;field<20;++field) {
+        coopDiagnosticGameplayRead[field]=0;
+        coopDiagnosticSlowGameplayRead[field]=0;
+    }
 #endif
     coopSaveState=coopSavePage=0;
     coopSaveEpoch=0;
@@ -492,6 +503,19 @@ static void CoopSessionEndedScreen() {
 }
 
 static void CoopConnectionLost() {
+#ifdef COOP_DIAGNOSTIC_STAGE_CYCLE
+    if (coopEnabled) {
+        // Preserve the first native reason before SDK teardown can replace it.
+        coopDiagnosticConnectionFailure[0]=data_020a0f1c;
+        coopDiagnosticConnectionFailure[1]=data_020a0f94;
+        coopDiagnosticConnectionFailure[2]=data_0209fc68;
+        coopDiagnosticConnectionFailure[3]=data_020a1154[0];
+        coopDiagnosticConnectionFailure[4]=data_0209f2f8;
+        coopDiagnosticConnectionFailure[5]=*(volatile u8 *)0x0209f2c4;
+        coopDiagnosticConnectionFailure[6]=*(volatile u32 *)0x0209d50c;
+        coopDiagnosticConnectionFailure[7]=coopFileWaiting;
+    }
+#endif
     // Story rules bypass the retail VS disconnection branch. End the file
     // server before entering its resident error screen, including when the
     // loss interrupts a synchronous WFS read during a scene transition.
@@ -689,6 +713,52 @@ int CoopStageInit(void *scene) {
 u32 coopFileWaiting = 0;
 
 int CoopReadFile(void *file, void *destination, int size, int async) {
+#ifdef COOP_DIAGNOSTIC_STAGE_CYCLE
+    if (coopEnabled && data_0209fc68==4 && !async && !coopFileWaiting &&
+        data_020a613c==data_020a621c && !coopSceneInitializing &&
+        !coopTitleLoading && data_02092664==0x187 &&
+        !(*(volatile u16 *)0x020a104c&0x4000)) {
+        // Observe the existing synchronous gameplay path without changing it.
+        // SDK VBlank time keeps advancing while the main thread waits for WFS.
+        u32 *words=(u32 *)file;
+        u32 start=*(volatile u32 *)0x027ffc3c;
+        if (!coopDiagnosticGameplayRead[0] ||
+            coopDiagnosticGameplayRead[14]!=data_020a1154[0]) {
+            coopDiagnosticGameplayRead[14]=data_020a1154[0];
+            coopDiagnosticGameplayRead[15]=start;
+            coopDiagnosticGameplayRead[17]=0;
+            coopDiagnosticGameplayRead[18]=0;
+            coopDiagnosticGameplayRead[19]=0;
+        }
+        ++coopDiagnosticGameplayRead[0];
+        ++coopDiagnosticGameplayRead[17];
+        coopDiagnosticGameplayRead[18]+=size;
+        coopDiagnosticGameplayRead[1]=size;
+        coopDiagnosticGameplayRead[2]=words[0x20/4];
+        coopDiagnosticGameplayRead[3]=words[0x28/4];
+        coopDiagnosticGameplayRead[4]=*(volatile u8 *)0x0209f2c4;
+        coopDiagnosticGameplayRead[5]=start;
+        coopDiagnosticGameplayRead[7]=1;
+        coopDiagnosticGameplayRead[8]=data_020a1154[0];
+        coopDiagnosticGameplayRead[11]=*(volatile u16 *)0x020a104c;
+        coopDiagnosticGameplayRead[12]=*(volatile u32 *)0x0209d50c;
+        coopDiagnosticGameplayRead[13]=data_02092664;
+        int observed=CoopOriginalReadFile(file,destination,size,async);
+        coopDiagnosticGameplayRead[6]=*(volatile u32 *)0x027ffc3c;
+        coopDiagnosticGameplayRead[7]=0;
+        coopDiagnosticGameplayRead[9]=data_020a1154[0];
+        coopDiagnosticGameplayRead[10]=observed;
+        coopDiagnosticGameplayRead[16]=coopDiagnosticGameplayRead[6];
+        u32 elapsed=coopDiagnosticGameplayRead[6]-start;
+        if (elapsed>coopDiagnosticGameplayRead[19])coopDiagnosticGameplayRead[19]=elapsed;
+        if (coopDiagnosticGameplayRead[16]-coopDiagnosticGameplayRead[15]>
+            coopDiagnosticSlowGameplayRead[16]-coopDiagnosticSlowGameplayRead[15])
+            for (unsigned field=0;field<20;++field)
+                coopDiagnosticSlowGameplayRead[field]=coopDiagnosticGameplayRead[field];
+        return observed;
+    }
+#endif
+
     // SDK overlay-table and overlay-image reads call this shared reader
     // directly, before a replacement scene reaches BeforeInitResources.
     // Cover those main-thread waits as well as ordinary FS_ReadFile callers.

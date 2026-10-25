@@ -59,6 +59,62 @@ struct PartySample {
     std::array<s32,12> positions{};
     std::array<u8,64> progress{};
 };
+// Native SDK VBlank intervals between completed game input ticks measure
+// emulated DS cadence, independently of host wall time and frontend pacing.
+// Stage initialization/pumped NET ticks are excluded. This observer never
+// changes a console, packet, clock or scheduling decision.
+struct PerformanceBucket {
+    u64 observations=0, intervals=0, vblanks=0, discontinuities=0;
+    u32 longest=0;
+    u64 geometryOverflowFlagSamples=0, geometryOverflowFlagRises=0;
+    u32 maxRenderedPolygons=0, maxBuildingPolygons=0, maxBuildingVertices=0;
+    std::array<u64,257> histogram{};
+    std::array<u64,16> phases{};
+};
+struct PerformanceSamples {
+    std::array<PerformanceBucket,208> buckets{};
+    bool previous=false;
+    bool overflowFlag=false;
+    unsigned category=0;
+    u32 tick=0, vblank=0;
+    void observe(NDS& ds) {
+        const bool flag=(ds.GPU.GPU3D.DispCnt&(1<<13))!=0;
+        const bool flagRose=flag && !overflowFlag;
+        overflowFlag=flag;
+        auto word=[&](unsigned offset){u32 v;std::memcpy(&v,ds.MainRAM+offset,4);return v;};
+        const u32 scene=word(0x9f5c0);
+        const unsigned level=ds.MainRAM[0x9f2f8];
+        const unsigned pause=ds.MainRAM[0x9f2c4]!=0;
+        const u32 net=word(0x9fc68);
+        const bool wireless=net==4;
+        if((!wireless && !(net==0 && ds.MainRAM[0x9fc50]<=1)) || level>=52 || scene<0x02000000 || scene>0x023fffec ||
+           ds.MainRAM[scene-0x02000000+0xc]!=3 ||
+           (ds.MainRAM[scene-0x02000000+0x13]&1) || (ds.MainRAM[0xa104d]&0x40)) {
+            previous=false;return;
+        }
+        const unsigned current=unsigned(wireless)*104+level*2+pause;
+        auto& bucket=buckets[current];
+        ++bucket.observations;
+        bucket.geometryOverflowFlagSamples+=flag;
+        bucket.geometryOverflowFlagRises+=flagRose;
+        bucket.maxRenderedPolygons=std::max(bucket.maxRenderedPolygons,ds.GPU.GPU3D.RenderNumPolygons);
+        bucket.maxBuildingPolygons=std::max(bucket.maxBuildingPolygons,ds.GPU.GPU3D.NumPolygons);
+        bucket.maxBuildingVertices=std::max(bucket.maxBuildingVertices,ds.GPU.GPU3D.NumVertices);
+        const u32 phase=word(0x9d50c);
+        if(phase<bucket.phases.size())++bucket.phases[phase];
+        const u32 nowTick=word(0xa1040), nowVblank=word(0x3ffc3c);
+        if(previous && category==current && nowTick==tick)return;
+        if(previous && category==current) {
+            if(nowTick-tick==1) {
+                const u32 elapsed=nowVblank-vblank;
+                ++bucket.intervals;bucket.vblanks+=elapsed;
+                bucket.longest=std::max(bucket.longest,elapsed);
+                ++bucket.histogram[std::min(elapsed,256u)];
+            } else ++bucket.discontinuities;
+        }
+        previous=true;category=current;tick=nowTick;vblank=nowVblank;
+    }
+};
 static bool sampleParty(NDS& ds, PartySample& out) {
     auto valid=[](u32 a,unsigned size){return a>=0x02000000 && a<=0x02400000-size;};
     auto word=[&](u32 a){u32 v;std::memcpy(&v,ds.MainRAM+(a-0x02000000),4);return v;};
@@ -135,6 +191,8 @@ int main(int argc,char** argv) try {
     std::vector<std::mutex> locks(consoles.size());
     LiveWorkers live;
     const bool sampleFrames=std::getenv("COOP_FRAME_SAMPLES")!=nullptr;
+    const bool samplePerformance=std::getenv("COOP_PERF_SAMPLES")!=nullptr;
+    std::vector<PerformanceSamples> performance(consoles.size());
     std::vector<std::deque<PartySample>> partyHistory(consoles.size());
     std::mutex historyMutex;
     const bool realtime=std::getenv("COOP_LIVE")!=nullptr;
@@ -170,6 +228,10 @@ int main(int argc,char** argv) try {
                 std::lock_guard lock(locks[i]);
                 if(consoles[i]->IsRunning()){
                     consoles[i]->RunFrame();++frames[i];
+                    if(samplePerformance) {
+                        std::lock_guard historyLock(historyMutex);
+                        performance[i].observe(*consoles[i]);
+                    }
                     PartySample sample;
                     if(sampleFrames && sampleParty(*consoles[i],sample)) {
                         std::lock_guard historyLock(historyMutex);
@@ -194,7 +256,31 @@ int main(int argc,char** argv) try {
     while(std::getline(std::cin,line)) {
         if(line.empty()||line[0]=='#')continue;
         std::istringstream s(line);std::string cmd;s>>cmd;
-        if(cmd=="mptimeout") {
+        if(cmd=="performance" || cmd=="performance-reset") {
+            if(!samplePerformance)throw std::runtime_error("Set COOP_PERF_SAMPLES before starting the frontend");
+            std::lock_guard historyLock(historyMutex);
+            if(cmd=="performance-reset") {
+                for(auto& samples:performance)samples=PerformanceSamples{};
+            } else for(size_t console=0;console<performance.size();++console) {
+                for(unsigned category=0;category<208;++category) {
+                    const auto& bucket=performance[console].buckets[category];
+                    if(!bucket.observations)continue;
+                    std::cout<<"PERFORMANCE "<<console<<' '<<category/104<<' '<<(category%104)/2<<' '<<category%2
+                             <<' '<<bucket.observations<<' '<<bucket.intervals<<' '
+                             <<bucket.vblanks<<' '<<bucket.longest<<' '<<bucket.discontinuities<<'\n';
+                    std::cout<<"CADENCE "<<console<<' '<<category/104<<' '<<(category%104)/2<<' '<<category%2;
+                    for(unsigned bin=0;bin<bucket.histogram.size();++bin)
+                        if(bucket.histogram[bin])std::cout<<' '<<bin<<':'<<bucket.histogram[bin];
+                    std::cout<<"\nPHASES "<<console<<' '<<category/104<<' '<<(category%104)/2<<' '<<category%2;
+                    for(unsigned phase=0;phase<bucket.phases.size();++phase)
+                        if(bucket.phases[phase])std::cout<<' '<<phase<<':'<<bucket.phases[phase];
+                    std::cout<<"\nGEOMETRY "<<console<<' '<<category/104<<' '<<(category%104)/2<<' '<<category%2
+                             <<' '<<bucket.maxRenderedPolygons<<' '<<bucket.maxBuildingPolygons
+                             <<' '<<bucket.maxBuildingVertices<<' '<<bucket.geometryOverflowFlagSamples
+                             <<' '<<bucket.geometryOverflowFlagRises<<'\n';
+                }
+            }
+        } else if(cmd=="mptimeout") {
             int timeout;if(!(s>>timeout)||timeout<0||timeout>10000)throw std::runtime_error("Bad MP timeout");
             // LocalMP's setting is not atomic. Change it only while every
             // console is between frames, without modifying the core or packets.
@@ -261,7 +347,13 @@ int main(int argc,char** argv) try {
             } else {
             std::vector<std::thread> workers;
             std::barrier gate(static_cast<std::ptrdiff_t>(consoles.size()));
-            for(size_t i=0;i<consoles.size();i++)workers.emplace_back([&,i]{for(unsigned f=0;f<n;f++){if(consoles[i]->IsRunning()){consoles[i]->RunFrame();++frames[i];}gate.arrive_and_wait();}});
+            for(size_t i=0;i<consoles.size();i++)workers.emplace_back([&,i]{for(unsigned f=0;f<n;f++){
+                if(consoles[i]->IsRunning()){
+                    consoles[i]->RunFrame();++frames[i];
+                    if(samplePerformance)performance[i].observe(*consoles[i]);
+                }
+                gate.arrive_and_wait();
+            }});
             for(auto& t:workers)t.join();
             }
         } else if(cmd=="partyhistory") {

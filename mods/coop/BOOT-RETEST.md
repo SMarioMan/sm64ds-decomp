@@ -4,8 +4,12 @@ This is an experimental, normal-game cartridge for the reported New Nintendo
 3DS / R4 SDHC 2022 / Wood white screen before the title screen. The user built
 this candidate from commit `89505d4009e862e4c561798b901cf45e4992c665` and confirmed:
 “The ROM now boots on the R4 card.” The reported boot issue is resolved on that
-setup. Full campaign and physical wireless acceptance are still incomplete;
-see [WORKLIST.md](WORKLIST.md).
+setup. The user subsequently tested the exact ROM hash below and reported
+functional physical multiplayer with parity to melonDS, alongside significant
+slowdown and occasional hitches, worse on hardware. Performance is a priority;
+the tested party size and campaign coverage were not specified. This physical
+evidence applies to this pinned image. Newer images and full campaign/performance
+acceptance remain incomplete; see [WORKLIST.md](WORKLIST.md).
 
 This candidate supersedes the previously linked `retail-boot-local-camera-host.nds`
 (`ce3cdcda3dd12f1c...`). It includes the same boot-layout correction plus the

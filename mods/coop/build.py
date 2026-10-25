@@ -428,6 +428,12 @@ def main():
                                                         'coopSessionEnded','coopDeathTriggered','coopGuestTutorialSkips',
                                                         'coopNarcOpenDiagnostic','coopStageCacheEvictions','coopStreamedLzReads','coopStreamedNarcReads','coopParticleFallbacks','coopParticleSplitFallbacks','coopParticleSegmentCount','coopResourceFallbacks',
                                                         'coopResourceFallbacksLive','coopResourceFallbacksPeak')}
+        if args.diagnostic_stage_cycle:
+            module_report['diagnosticOffsets']['coopDiagnosticConnectionFailure']=emitted['coopDiagnosticConnectionFailure']-PAYLOAD_ADDRESS
+            module_report['connectionFailureFields']=['errors','radio','net','tick','level','pause','loopPhase','fileWaiting']
+            for name in ('coopDiagnosticGameplayRead','coopDiagnosticSlowGameplayRead'):
+                module_report['diagnosticOffsets'][name]=emitted[name]-PAYLOAD_ADDRESS
+            module_report['gameplayReadFields']=['count','size','romTop','position','pause','vblankBegin','vblankEnd','active','tickBegin','tickEnd','result','ownFlags','loopPhase','sceneEvent','burstTick','burstVblankBegin','burstVblankEnd','burstReads','burstBytes','burstLongestRead']
         patches.append({'purpose':'ROOT module loader in unused VS result routines','address':hex(CAVE_START),
                         'size':CAVE_END-CAVE_START,'installerBytes':len(installer)})
     output=root/('baseline.nds' if args.baseline else 'sm64ds-coop-experimental.nds')

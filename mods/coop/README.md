@@ -10,7 +10,11 @@ loading checks, and actor initialization randomness. A four-console33–40 stage
 cycle passes movement, shared pause/resume and matching-input-tick comparisons;
 136 applicable isolated checks pass, including native cannon launch arithmetic
 with per-player echoed pitch. Campaign saving on this combined image,
-remaining camera cases, boss victories and physical Download Play remain open.
+remaining camera cases and boss victories remain open. The user reports
+functional physical multiplayer on the pinned89505d400 image (SHA256
+`aea94b7b...be4baedf`), with significant slowdown and occasional hitches that
+also appear in melonDS. Optimizing full-speed gameplay across all levels is
+a priority; newer-image physical acceptance and campaign completion remain open.
 See [the worklist](WORKLIST.md) for current acceptance gaps and
 [the emulator handoff](tests/EMULATOR-HANDOFF.md) for exact image hashes.
 

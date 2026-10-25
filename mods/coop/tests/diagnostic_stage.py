@@ -99,6 +99,42 @@ def check_living_party(ds):
             raise ControllerRouteFailure(f'Diagnostic input route killed a player: {health}')
 
 
+def toggle_pause(ds, console=0):
+    """Press START after the native menu/input cooldown, using real input.
+
+    A resumed menu temporarily rejects another START. Observe that state
+    instead of assuming an elapsed delay is sufficient for the next press.
+    """
+    def paused():return [ds.read(i,0x0209f2c4,1)[0] for i in range(ds.count)]
+    expected=not bool(paused()[0])
+    check_connected_party(ds)
+    if not console:
+        for _ in range(180):
+            ready=True
+            for peer in range(ds.count):
+                if (ds.read(peer,0x0209f300,2)!=b'\0\0' or
+                        ds.read(peer,0x0209f22c,1)!=b'\0' or
+                        (not expected and ds.read(peer,0x0209f248,1)[0] not in (1,3,11))):
+                    ready=False
+            if ready:break
+            check_connected_party(ds)
+            ds.run(1)
+        else:raise RuntimeError('Native pause menu/input cooldown did not finish')
+    ds.set_input(console,0xff7)
+    wait_controller_buttons(ds,console,8,held=True)
+    ds.set_input(console,0xfff)
+    wait_controller_buttons(ds,console,8)
+    if console:
+        ds.run(12)
+        return
+    for _ in range(180):
+        check_connected_party(ds)
+        if all(bool(value)==expected for value in paused()):return
+        ds.run(1)
+    snapshot(ds,'diagnostic-pause-state-failed')
+    raise RuntimeError('Host START did not change the shared pause state')
+
+
 def check_stage(ds, level):
     resume_stage(ds)
     # Some native entrance-0 records are star-return arrivals and open the
@@ -122,35 +158,13 @@ def check_stage(ds, level):
             snapshot(ds,'diagnostic-stage-unexpected-transition')
             raise RuntimeError('Diagnostic movement left the selected stage')
     def paused():return [ds.read(i,0x0209f2c4,1)[0] for i in range(ds.count)]
-    def start(console):
-        expected=not bool(paused()[0])
-        if not console and not expected:
-            for _ in range(180):
-                ready=True
-                for peer in range(ds.count):
-                    if (ds.read(peer,0x0209f300,2)!=b'\0\0' or
-                            ds.read(peer,0x0209f22c,1)!=b'\0' or
-                            ds.read(peer,0x0209f248,1)[0] not in (1,3,11)):
-                        ready=False
-                if ready:break
-                ds.run(1)
-            else:raise RuntimeError('Native pause menu did not finish opening')
-        ds.set_input(console,0xff7)
-        wait_controller_buttons(ds,console,8,held=True)
-        ds.set_input(console,0xfff)
-        wait_controller_buttons(ds,console,8)
-        if not console:
-            for _ in range(60):
-                if all(bool(value)==expected for value in paused()):break
-                ds.run(1)
-        else:ds.run(12)
     for console in range(1,ds.count):
-        start(console)
+        toggle_pause(ds,console)
         if any(paused()):raise RuntimeError('Guest changed shared pause in a diagnostic stage')
-    start(0)
+    toggle_pause(ds,0)
     if not all(paused()):raise RuntimeError('Host pause did not reach the diagnostic party')
     heaps=heap_status(ds)
-    start(0)
+    toggle_pause(ds,0)
     if any(paused()):raise RuntimeError('Host resume did not reach the diagnostic party')
     check_connected_party(ds)
     assert_party_synchronized(ds,'diagnostic-stage-resume')
@@ -168,12 +182,7 @@ def resume_stage(ds):
     states=[bool(ds.read(i,0x0209f2c4,1)[0]) for i in range(ds.count)]
     if len(set(states))!=1:raise RuntimeError('Party pause flags differ before a diagnostic check')
     if states[0]:
-        ds.set_input(0,0xff7)
-        ds.run(24)
-        ds.set_input(0,0xfff)
-        ds.run(90)
-        if any(ds.read(i,0x0209f2c4,1)[0] for i in range(ds.count)):
-            raise RuntimeError('Host could not resume the retained diagnostic party')
+        toggle_pause(ds,0)
 
 
 def next_stage(ds):
@@ -182,11 +191,7 @@ def next_stage(ds):
     expected=current+1
     if expected==41:expected+=1
     if expected>=52:expected=1
-    if ds.read(0,0x0209f2c4,1)[0]:
-        ds.set_input(0,0xff7)
-        ds.run(24)
-        ds.set_input(0,0xfff)
-        ds.run(90)
+    resume_stage(ds)
     chord=getattr(ds,'runtime_module',{}).get('diagnosticStageChord',0x304)
     ds.set_input(0,0xfff^chord)
     ds.run(24)
@@ -201,6 +206,7 @@ def next_stage(ds):
             snapshot(ds,'diagnostic-transition-native-crash')
             raise RuntimeError(f'Native Crash() during stage transition on consoles {crashed}')
         ready=True
+        arrived=[]
         for console in range(ds.count):
             if ds.word(console,0x0209fc68) in (0,6):
                 snapshot(ds,'diagnostic-transition-connection-failed')
@@ -217,7 +223,16 @@ def next_stage(ds):
                     any(not 0x02000000<=ds.word(console,0x0209f394+4*s)<0x023ff000
                         for s in range(ds.count))):
                 ready=False
+            if (actor==3 and not ds.read(console,scene+0x13,1)[0]&1 and
+                    not ds.read(console,0x02092778,1)[0] and
+                    all(0x02000000<=ds.word(console,0x0209f394+4*s)<0x023ff000
+                        for s in range(ds.count))):
+                arrived.append(ds.read(console,0x0209f2f8,1)[0])
         if ready:return expected
+        if len(arrived)==ds.count and len(set(arrived))==1 and arrived[0] not in (current,expected):
+            snapshot(ds,'diagnostic-transition-unexpected-arrival')
+            raise ControllerRouteFailure(
+                f'Native arrival reached stage {arrived[0]} while requesting {expected} from {current}')
         ds.run(30)
     snapshot(ds,'diagnostic-transition-failed')
     raise RuntimeError(f'Diagnostic host chord did not enter stage {expected}')
