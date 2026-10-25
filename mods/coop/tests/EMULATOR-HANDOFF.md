@@ -6,6 +6,51 @@ fixes are still undergoing live validation. Physical host boot on New3DS/R4 is
 user-confirmed; campaign completion and physical wireless remain unverified. Read the current regressions first; later sections preserve
 historical checkpoints and failures rather than release acceptance.
 
+## Current candidate: painting mesh allocation pressure
+
+- The f14 all-stage run passed1..12, then FAILED12→13 with native Crash()
+  on all3 guests: `castle-owner-stage1-through40-wireless/cycle-12/`.
+  Captured actor307 is daPicGate_c (overlay80), with20x20 native cells.
+  Its9600-byte mesh allocation had only4084 contiguous ROOT bytes available;
+  the321KB common archive source was still resident. The normal campaign
+  queue correctly stopped instead of starting another wireless party. Failed
+  matrix party was captured and shut down.
+- New normal image `painting-cache-pressure-host.nds`, SHA256
+  `3500c6f00096639373c6af38132b93d56b028af726fdb1a6cbc8e2c7ab145110`.
+  `painting-cache-pressure-rebuilt-host.nds` independently reproduces it.
+  The mesh allocation releases that source cache only if ROOT cannot fit the
+  original allocation. This call precedes PicGate's texture load; prior file
+  views have closed and models own their copies. Later archive members use
+  the already verified streaming path. Mesh dimensions, native allocator and
+  native ROOT cleanup remain intact. No additional heap or smaller mesh.
+- Object overlays overlap addresses. Builder checks the entire16-byte mesh
+  call signature is UNIQUE to overlay80 among all ROM overlays; runtime checks
+  it before installing the call after object overlays load. Other resident
+  overlays and offline/private-heap allocations keep native behavior.
+- Full isolated suite PASS:140 discovered,136 executed,4 obsolete prefix-only
+  skips (`painting-cache-pressure-all-tests.log`). Seven new checks reproduce
+  the native allocation failure; execute retail size calculation, allocation,
+  mCells store and CleanupResources; preserve cell bytes and heap integrity;
+  and cover cache-fit/offline/private-heap and matching/nonmatching overlay
+  guards. Existing copied-member/cache-lifetime checks also pass.
+- ACTIVE4-console12..40 run:
+  `painting-cache-stage12-through40-wireless/`, exec6152, actual driverPID110998.
+  Native12 and the formerly failing13 now PASS four-controller movement,
+  matching-input-tick synchronization, active NET/radio roles, shared pause
+  and resume. The remainder is still running. This direct-stage diagnostic
+  retains the native character fixture [Yoshi,Luigi,Wario,Yoshi], not earned
+  progression. Failure socket same path plus`.sock`. Frozen driver under
+  driver/; packet trace is capped at100000 records. ROM
+  `painting-cache-stage12-cycle-host.nds`, SHA256
+  `b69979acd2324dc7ea5bc8b2d6b344ebe9da22c4c31fa2c8b25ea09c50b5a977`.
+- QUEUED normal guest-star/save run `painting-normal-guest-star/`, launcher
+  `/workspace/runtime/queue-painting-normal-star.py`, exec89297. It requires
+  this matrix to PASS AND its actual driver process to exit before launching.
+  It then uses normal3500 image, previously controller-earned key-only fixture,
+  guest2 coin, guest1 star, Save & Continue and consecutive Save & Quit. The
+  previous castle-owner queue is BLOCKED by its retained matrix failure and
+  has exited. There is only one active wireless party. Do not start another.
+
 ## Current candidate: ordinary castle celebration ownership
 
 - Normal cartridge `castle-celebration-owner-host.nds`, SHA256
@@ -25,7 +70,7 @@ historical checkpoints and failures rather than release acceptance.
   the ORIGINAL model and ground initializer in the actual captured castle RAM,
   without adapting callees: old guest enters8/work5, corrected guests2/3 enter
   grounded0/work2 on the actual floor, host retains8/work5.
-- ACTIVE four-console run `castle-owner-stage1-through40-wireless/`, exec73107,
+- Historical four-console run `castle-owner-stage1-through40-wireless/`, exec73107,
   driver frozen under driver/, packets.bin records real traffic (frontend trace
   is capped at100000 packets). It has passed stages1,2 AND the previously
   deadlocked3, including all4 movements, same-input-tick synchronization and

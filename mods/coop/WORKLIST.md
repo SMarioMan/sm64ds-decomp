@@ -43,6 +43,10 @@ not establish campaign completion or real-hardware compatibility.
   ordinary celebration8 for the leader now passes the same four-console3
   regression; the current1..40 cycle remains active. Native captured model/
   ground initializer checks pass, and movement/death/flight poses stay intact.
+  That run later passed1..12 but crashed all3 guests on12→13 while allocating
+  a native9600-byte painting mesh. The new pressure-triggered common-source
+  release passes captured native allocation/cleanup checks and the live12→13
+  regression. The new12..40 matrix is active; its later-stage results are pending.
 - [ ] Validate source-cache release and bounded particle reservations across
   all native stages, mission variants, repeated transitions, and teardown.
   Preserve native particle counts, individual array contiguity, heap ownership,

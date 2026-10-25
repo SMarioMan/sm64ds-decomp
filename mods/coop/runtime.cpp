@@ -28,6 +28,7 @@ extern "C" {
 void PrepareVsMode(void);
 void SetPlayerGlobals(void);
 void SetNumPlayers(int count);
+void *_ZN6Memory13operator_new2Ej(u32 size);
 void UnloadOverlay(int index);
 int CoopOriginalEntryCleanup(void *scene);
 void CoopOriginalLoadLevelOverlays(int level);
@@ -330,6 +331,14 @@ void CoopLoadLevelOverlays(int level) {
     }
     CoopOriginalLoadLevelOverlays(level);
     if (coopEnabled) {
+        extern void *CoopAllocatePaintingMesh(u32);
+        // Object overlays reuse these addresses. Match the verified PicGate
+        // allocation sequence before touching overlay80's resident code.
+        if (*(u32 *)0x02126e08==0xe3a00018 &&
+            *(u32 *)0x02126e0c==0xe0000091 &&
+            *(u32 *)0x02126e10==0xebfc5770 &&
+            *(u32 *)0x02126e14==0xe58401a0)
+            PatchCall(0x02126e10,(void *)CoopAllocatePaintingMesh);
         // Overlay 2 stays authenticated on disk. Patch native story camera
         // reads and state helpers only after the authenticated loader runs.
         extern void CoopCameraFlagsRead(void);
@@ -1012,16 +1021,20 @@ u32 coopStreamedNarcReads=0;
 u32 coopNarcOpenDiagnostic[6]={0,0,0,0,0,0};
 u32 coopStageCacheEvictions=0;
 
+static void CoopReleaseStageSourceCache(void) {
+    if (coopEnabled && data_0209fc68 && data_0208ecf4[0].image) {
+        UnloadArchive(0);
+        ++coopStageCacheEvictions;
+    }
+}
+
 void CoopLoadSkybox(void *scene) {
     // Native SharedFilePtr/LoadFile copy or decompress cached members into
     // their own buffers and close their file views. All stage model/object
     // loads have returned at this boundary. Drop the 321 KB common source
     // cache before skybox/particle/arrival peaks; later members stream through
     // the uncached NARC path rather than pinning the whole archive again.
-    if (coopEnabled && data_0209fc68 && data_0208ecf4[0].image) {
-        UnloadArchive(0);
-        ++coopStageCacheEvictions;
-    }
+    CoopReleaseStageSourceCache();
     CoopOriginalLoadSkybox(scene);
 }
 
@@ -1100,6 +1113,18 @@ static u32 CoopAlignedFree(mHeap::Heap_t *heap,int align) {
     ExpandingHeapAllocator *allocator=*(ExpandingHeapAllocator **)
         ((u8 *)heap+sizeof(mHeap::Heap_t));
     return allocator->MaxAllocatableSize(align);
+}
+
+void *CoopAllocatePaintingMesh(u32 size) {
+    // PicGate allocates its cells before opening its texture. Prior synchronous
+    // resource reads have closed their source views and own their model copies.
+    // Release the common NARC source only when ROOT cannot fit the full mesh;
+    // later members can use the verified streaming path. Keep native mesh
+    // dimensions, allocator and cleanup ownership unchanged.
+    if (coopEnabled && data_0209fc68 && Memory::defaultHeapPtr==data_020a0e9c &&
+        CoopAlignedFree(Memory::defaultHeapPtr,4)<size)
+        CoopReleaseStageSourceCache();
+    return _ZN6Memory13operator_new2Ej(size);
 }
 
 void *CoopAllocateAlignedResource(u32 size,int align) {

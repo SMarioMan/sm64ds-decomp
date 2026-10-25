@@ -177,6 +177,15 @@ def main():
         arm9 = ndspy.codeCompression.decompress(rom.arm9)
         overlay = rom.loadArm9Overlays()[75]
         player_overlay = rom.loadArm9Overlays()[2]
+        painting_signature=bytes.fromhex('1800a0e3910000e07057fceba00184e5')
+        painting_matches=[]
+        for overlay_id,candidate in rom.loadArm9Overlays().items():
+            offset=0x02126e08-candidate.ramAddress
+            if offset>=0 and candidate.data[offset:offset+16]==painting_signature:
+                painting_matches.append(overlay_id)
+        if painting_matches!=[80]:
+            raise RuntimeError('Painting mesh hook is not unique to native overlay80')
+
         for address in (0x020c4364, 0x020c4b34):
             offset = address-player_overlay.ramAddress
             if player_overlay.data[offset:offset+8] != struct.pack('<2I',0xe5900154,0xe2100902):
@@ -372,7 +381,7 @@ def main():
                (game['func_0200d0ac'],'CoopCameraFar'),(game['func_0200d064'],'CoopCameraNear'),
                (game['_ZN9dCamera_c14GoBehindPlayerEj'],'CoopCameraBehind'),(game['func_0200ca14'],'CoopCameraFov'),
                (game['func_0200d3f8'],'CoopCameraLookTarget'),(game['func_0200d7e0'],'CoopCameraFirstPerson'),(game['func_0200d81c'],'CoopCameraNormal'),
-               (0x020cae10,'CoopPlayerHeadLook'),(0x02024d40,'CoopCameraInputFlagsRead'),(0x020df6a0,'CoopPersonalCameraFlagsRead'),(0x020def88,'CoopCannonPitchRead'),
+               (0x020cae10,'CoopPlayerHeadLook'),(0x02024d40,'CoopCameraInputFlagsRead'),(0x020df6a0,'CoopPersonalCameraFlagsRead'),(0x020def88,'CoopCannonPitchRead'),(0x02126e10,'CoopAllocatePaintingMesh'),
                (game['_ZN7Message6UpdateEv'],'CoopMessageUpdate'),
                (game['KillPlayer'],'CoopKillPlayer'),(game['HitDeathPlane'],'CoopHitDeathPlane'),
                (ov_symbols['_ZN10dScEntry_c16CleanupResourcesEv'],'CoopEntryCleanup'),
@@ -396,6 +405,7 @@ def main():
         module_report['streamCompressedDiskFiles']=True
         module_report['nativeTeardownResetDeduplicated']=True
         module_report['evictCommonStageSourceCache']=True
+        module_report['evictStageCacheForPaintingMesh']=True
         module_report['localCameraControls']=True
         module_report['nativeFlightEntranceMarioCaps']=True
         module_report['loadingChecksumTransitionGrace']=True
