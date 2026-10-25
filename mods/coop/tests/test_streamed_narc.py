@@ -5,6 +5,7 @@ policy and original allocator execute as ARM; this is not wireless evidence.
 """
 import struct
 import unittest
+from pathlib import Path
 
 import ndspy.narc
 from unicorn import UC_HOOK_CODE
@@ -25,9 +26,12 @@ class StreamedNarcTests(HeapHarness,unittest.TestCase):
         self.handles={}
         self.original_calls=[]
         self.physical_opens=0
+        self.read_sizes=[]
         self.arc_table=self.game['data_0208ecf4']
-        fat=struct.unpack_from('<I',self.stock.save(),0x48)[0]
-        original=self.stock.save()
+        # ndspy.save() repacks files and changes their physical offsets. The
+        # mod preserves the original FAT extents, so this ROM adapter must too.
+        original=Path('/workspace/inputs/sm64ds-eu.nds').read_bytes()
+        fat=struct.unpack_from('<I',original,0x48)[0]
         self.archives={}
         for i in range(13):
             row=self.arc_table+i*20
@@ -51,6 +55,7 @@ class StreamedNarcTests(HeapHarness,unittest.TestCase):
                     self.write(args[0]+offset,value)
                 self.physical_opens+=1;result=1
             elif address==self.game['FS_ReadFile']:
+                self.read_sizes.append(args[2])
                 file_id,top,bottom,data=self.handles[args[0]]
                 position=self.word(args[0]+40)
                 count=min(args[2],self.word(args[0]+36)-position)
@@ -98,6 +103,8 @@ class StreamedNarcTests(HeapHarness,unittest.TestCase):
         expected=ndspy.narc.NARC(self.archives['/ARCHIVE/ar1.narc'][3]).files[6]
         before=(self.largest(self.root),self.largest(self.game_heap))
         self.assertEqual(self.call('CoopOpenFile',self.file,0x9c06),1)
+        self.assertEqual(self.physical_opens,0)
+        self.assertEqual(self.read_sizes,[])
         self.assertEqual(self.word(self.file+36)-self.word(self.file+32),len(expected))
         self.assertEqual(self.call(self.game['FS_ReadFile'],self.file,self.buffer,len(expected)),len(expected))
         self.assertEqual(bytes(self.cpu.mem_read(self.buffer,len(expected))),expected)

@@ -8,19 +8,18 @@ runs it; the automated test frontend does not modify the emulation core.
 Verified four-console behavior includes separate controls, the original
 green/red/blue/yellow Yoshi palettes, shared pause, the castle key, castle
 interiors, Bob-omb Battlefield, course exit, guest death with party recovery,
-and ordered Save & Quit. Three staggered story cold starts passed at
-`/workspace/runtime/restored-story-repeats/result.json`; guests selected their
-menus at different times. Startup uses protocol acknowledgments rather than a
-human timing window. Later cold starts still exposed intermittent signed-loader
-failures, so reliable startup remains an open acceptance requirement.
+and ordered Save & Quit. Startup now closes association entry, advertises the
+closure, and waits for both native SDK acknowledgments before booting guests.
+It then recreates the game parent and reopens entry. This is the default
+`closed-restart-parent` strategy; it requires no human timing window.
 
-An opt-in startup change closes wireless association entry and advertises that
-closure before allowing firmware clients to boot, then waits for both SDK
-acknowledgments. It passed five four-console signed-menu cold boots at
-`/workspace/runtime/closed-entry-v2-menu-repeats/result.json`. Full payload and
-staggered course-return repetitions are still running; this is not yet the
-default. To build that experiment, add `--close-entry-before-boot` and a separate
-`--output` to the integrated command below.
+That startup path passed five acknowledged four-console signed-menu cold boots
+at `/workspace/runtime/closed-entry-v2-menu-repeats/result.json` and three full
+story/course-return cold starts at
+`/workspace/runtime/closed-entry-course-return-repeats/result.json`. The latter
+used guest selection delays [0,0,0], [0,600,1800], and [1800,0,600] frames.
+The legacy `restart-parent` strategy remains available as an experimental
+control; its repeat failed overall (two passes, one startup failure).
 
 A later fix gives the host ownership of the shared star/key return and
 progression dialogs. Without it, several players could reopen one shared
@@ -40,17 +39,69 @@ trigger. These unit checks do not establish a wireless 100-coin-star pass.
 Red-coin and silver-star totals retain their native aggregate behavior. The
 combined candidate has passed actual guest coin pickups with all four totals
 mirrored; guest star collection, Save & Continue, Castle controls, and a consecutive
-Save & Quit have also passed on the earlier resource-high cartridge. The newest
-raw-resource candidate is undergoing its own cold-boot/course-return repetitions.
+Save & Quit have also passed on the earlier resource-high cartridge. The newer allocator and archive changes still need their own guest-star/save
+regression.
 
 Four-console stage cycling exposed ROOT heap exhaustion entering Hazy Maze
 Cave after stages 7–12. The current source preserves native resource sizes
 and uses spare GAME heap for particle pools and shared/plain-file buffers when
-ROOT cannot fit, tracking the owning heap for release. Seven particle and
+ROOT cannot fit, tracking the owning heap for release. Ten particle and
 twelve model/resource and four plain-file ARM checks reproduce the captured failures and verify fallback,
 alignment, model resizing, and release. Live four-console HMC entry, controls, synchronization, and shared pause now
 pass. Transitions into the next two stages also pass and release all tracked
 resource owners. The wider later-stage cycle remains in progress.
+
+Rainbow Ride exposed another memory peak: neither heap could hold the native
+particle arena contiguously, and guests loaded an entire 43 KB NARC for one
+member. The current source preserves native particle counts and allocates
+whole manager arrays across owner-tracked segments when needed. Uncached NARC
+members use direct ROM filesystem views. Six compiled ARM checks cover each
+change, including the actual native particle manager/resource parser and every
+member of all thirteen archives. All67 isolated checks pass. Physical filesystem
+calls in the archive tests use a ROM adapter; actual wireless archive reads are
+now proven for four direct reads on every console. That run then exposed a
+fragmented particle allocation: the 17408-byte particle array and 10272-byte
+resource table could not both fit contiguously. Reserving the entire arena
+early moved the failure to skybox decompression. The current source reserves
+only the resource table before stage loading, and protects the particle array
+from smaller native requests during initialization. Compressed disk loads use
+a bounded 512-byte input window instead of holding the entire compressed file
+beside its output. Five ARM checks reproduce the native skybox failure, compare
+the exact decoded model, and verify repeated release and policy delegation.
+Actual wireless acceptance of this combination is in progress.
+
+A real guest coin/star run passed pickup, the shared coin total, star collection
+on its first physical route, Save & Continue, and castle return. Its following
+Save & Quit FAILED: the host reached title while guests retained native radio
+state 4. The current source continues the native teardown and allows only one
+Reset request through its asynchronous Reset/Disable/End callback chain.
+Native ARM callback tests and the new wireless quit run from the previously
+earned star save pass. Do not treat the earlier complete save/quit pass as proof of
+this newer combination or report a stable release.
+
+The current normal candidate preserves the retail host ARM9, ARM7, secure
+area, and secure-area metadata. Its parent loader lives in the lobby overlay.
+This addresses an overwritten secure-area BIOS-wrapper region in the reported
+white-screen cartridge. BIOS/firmware boot and four layout checks pass; the
+older cartridge also boots under emulation, so physical R4 compatibility still
+requires a retest. The reported setup and remaining tasks are recorded in
+[WORKLIST.md](WORKLIST.md).
+
+Camera hooks now select the local player's zoom, recenter, field of view,
+first-person mode, and return to normal view. Head look uses each player's
+wirelessly echoed pitch so shared look-up triggers can remain deterministic.
+Eleven compiled ARM camera checks pass. The current normal cartridge also passes
+twelve physical-input zoom transitions across four consoles, including first-person
+and normal return, with foreign cameras unchanged and synchronized player state.
+Recenter, turn, and other personal movement camera modes still need wireless checks.
+
+The default ROOT runtime now releases copied common-archive source data before
+skybox loading and opens uncached members through ROM-verified offsets. The
+four-console diagnostic passed Rainbow Ride (28), stages 29 and 30, including
+movement, shared pause, and matching-input-tick synchronization. At stage 31,
+controller movement returned all consoles to stage 1 without a native crash;
+the remaining cycle is incomplete. The former low-RAM placement experiment
+remains historical and is not the current candidate.
 
 Separate diagnostic builds can enter a later native stage for compatibility
 checks. Single-console tests have passed multiple course areas, underwater
@@ -99,6 +150,9 @@ that dialogue pass nor the local route proves reliable startup or a completed
 campaign.
 
 ## Build and inspect
+
+For the New3DS/R4 white-screen report, use the exact command and expected hash
+in [BOOT-RETEST.md](BOOT-RETEST.md).
 
 The integrated build takes the personal EU revision-0 game and USA Download
 Station Volume 1 dumps and creates the host cartridge plus its matching

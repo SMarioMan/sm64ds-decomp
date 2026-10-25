@@ -17,6 +17,7 @@ import struct
 import subprocess
 
 import ndspy.codeCompression
+import ndspy.narc
 import ndspy.rom
 from elftools.elf.elffile import ELFFile
 
@@ -104,10 +105,45 @@ def pad_blz(compressed, size, expected):
     return result
 
 
+def narc_member_index(rom, arm9, original):
+    """Index immutable member extents without runtime metadata reads over WFS."""
+    rows,extents=bytearray(),bytearray()
+    fat=struct.unpack_from('<I',original,0x48)[0]
+    for archive in range(13):
+        record=0x0208ecf4-rom.arm9RamAddress+archive*20
+        first,limit=struct.unpack_from('<HH',arm9,record+8)
+        path=struct.unpack_from('<I',arm9,record+16)[0]-rom.arm9RamAddress
+        name=bytes(arm9[path:arm9.index(0,path)]).decode().lstrip('/')
+        file_id=rom.filenames.idOf(name)
+        top,bottom=struct.unpack_from('<II',original,fat+file_id*8)
+        data=bytes(rom.files[file_id])
+        if len(data)!=bottom-top or data[:4]!=b'NARC':raise ValueError('Unexpected NARC extent')
+        position,blocks=struct.unpack_from('<HH',data,12)
+        members=None;image=None
+        for _ in range(blocks):
+            kind,size=struct.unpack_from('<4sI',data,position)
+            if size<8 or position+size>len(data):raise ValueError('Invalid NARC block')
+            if kind==b'BTAF':
+                count=struct.unpack_from('<H',data,position+8)[0]
+                members=[struct.unpack_from('<II',data,position+12+i*8) for i in range(count)]
+            elif kind==b'GMIF':image=position+8
+            position+=size
+        if members is None or image is None or len(members)!=limit-first:
+            raise ValueError('NARC table differs from native virtual file range')
+        expected=ndspy.narc.NARC(data).files
+        rows+=struct.pack('<HHIII',first,limit,file_id,top,13*16+len(extents))
+        for i,(start,end) in enumerate(members):
+            if data[image+start:image+end]!=expected[i]:raise ValueError('NARC member index mismatch')
+            extents+=struct.pack('<II',image+start,image+end)
+    return bytes(rows+extents)
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('rom', type=Path)
     parser.add_argument('--baseline', action='store_true', help='Copy the verified retail control')
+    parser.add_argument('--runtime-placement',choices=('root','prefix'),default='root',
+                        help='Experimental prefix placement uses free RAM below retail ARM9')
     parser.add_argument('--save-slot',choices=('A','B','C'),
                         help='Experimental: load and save this host adventure slot; default keeps progress in RAM')
     parser.add_argument('--diagnostic-start-level',type=int,choices=range(1,52),
@@ -168,9 +204,23 @@ def main():
             ('CoopOriginalGiveCoins',game['GiveCoins'],bytes.fromhex('00402de9')),
             ('CoopOriginalTrimModel',game['func_02017060'],bytes.fromhex('30402de9')),
             ('CoopOriginalResolveFile',game['func_020186c0'],bytes.fromhex('70402de9')),
-            ('CoopOriginalOpenFile',game['func_020185c0'],bytes.fromhex('f0412de9'))]
+            ('CoopOriginalOpenFile',game['func_020185c0'],bytes.fromhex('f0412de9')),
+            ('CoopOriginalLoadDiskFile',game['func_0201834c'],bytes.fromhex('f0412de9')),
+            ('CoopOriginalWirelessReset',game['func_02062200'],bytes.fromhex('10402de9')),
+            ('CoopOriginalLoadSkybox',game['_ZN10dScStage_c10LoadSkyboxEv'],bytes.fromhex('30402de9')),
+            ('CoopOriginalCameraFar',game['func_0200d0ac'],bytes.fromhex('00402de9')),
+            ('CoopOriginalCameraNear',game['func_0200d064'],bytes.fromhex('00402de9')),
+            ('CoopOriginalCameraBehind',game['_ZN9dCamera_c14GoBehindPlayerEj'],bytes.fromhex('10402de9')),
+            ('CoopOriginalCameraFirstPerson',game['func_0200d7e0'],bytes.fromhex('00402de9')),
+            ('CoopOriginalCameraNormal',game['func_0200d81c'],bytes.fromhex('00402de9')),
+            ('CoopOriginalPlayerHeadLook',0x020cae10,bytes.fromhex('f0412de9'))]
+        fov=game['func_0200ca14']-rom.arm9RamAddress
+        if arm9[fov:fov+60]!=bytes.fromhex('30309fe50030d3e5030051e11eff2f11000052e3551f8002000091050208800300008105551f80120000911501088013000081151eff2fe150f20902'):
+            raise RuntimeError('Unexpected native player camera FOV helper')
         imports = dict(game, **{name:PAYLOAD_ADDRESS+0x1800+i*8
                                for i,(name,_,_) in enumerate(trampolines)})
+        imports['coopNarcIndex']=PAYLOAD_ADDRESS+0x1800
+        narc_index=narc_member_index(rom,arm9,original)
         defines=[f'COOP_SAVE_SLOT={ord(args.save_slot)-ord("A") if args.save_slot else -1}']
         if args.diagnostic_start_level is not None:
             defines.append(f'COOP_DIAGNOSTIC_START_LEVEL={args.diagnostic_start_level}')
@@ -179,6 +229,7 @@ def main():
         runtime, emitted = link(REPO/'mods/coop/runtime.cpp',root/'runtime',PAYLOAD_ADDRESS,imports,launcher,cc,ld,defines)
         body_size = len(runtime)
         imports.update({name:PAYLOAD_ADDRESS+body_size+i*8 for i,(name,_,_) in enumerate(trampolines)})
+        imports['coopNarcIndex']=PAYLOAD_ADDRESS+body_size+len(trampolines)*8
         runtime, emitted = link(REPO/'mods/coop/runtime.cpp',root/'runtime',PAYLOAD_ADDRESS,imports,launcher,cc,ld,defines)
         if len(runtime)!=body_size:
             raise RuntimeError('Unstable runtime module size')
@@ -191,6 +242,7 @@ def main():
                 raise RuntimeError('Unexpected prologue for '+name)
             source=PAYLOAD_ADDRESS+len(runtime)
             runtime+=prologue+branch(source+4,address+4)
+        runtime+=narc_index
         after = game['_ZN8dScene_c13AfterBehaviorEj']-rom.arm9RamAddress
         if arm9[after:after+12]!=struct.pack('<3I',0xe59fc000,0xe12fff1c,game['_ZN7fBase_c13AfterBehaviorEj']):
             raise RuntimeError('Unexpected scene behavior completion wrapper')
@@ -214,8 +266,10 @@ def main():
         blob=pack(PAYLOAD_ADDRESS,runtime,emitted['CoopRuntimeDispatch'],sorted(records))
         (root/'runtime-relocatable.bin').write_bytes(blob)
         module_id=len(rom.files)
+        if args.runtime_placement=='prefix' and (rom.arm9RamAddress!=0x02004000 or len(runtime)>0x3f00):
+            raise RuntimeError('Runtime cannot fit the verified free ARM9 prefix')
         installer,install_symbols=link(REPO/'mods/coop/install.cpp',root/'install',CAVE_START,game,launcher,cc,ld,
-                                       [f'COOP_RUNTIME_FILE={module_id}'])
+                                       [f'COOP_RUNTIME_FILE={module_id}',*(['COOP_RUNTIME_PREFIX=1'] if args.runtime_placement=='prefix' else [])])
         if CAVE_START+len(installer)>CAVE_END-8:
             raise RuntimeError('Runtime loader exceeds reserved result-code span')
         data,base=bytearray(overlay.data),overlay.ramAddress
@@ -285,7 +339,11 @@ def main():
             offset=address-rom.arm9RamAddress
             if arm9[offset:offset+4]!=branch(address,target)[:3]+b'\xeb':
                 raise RuntimeError(f'Unexpected native memory allocation/free call at {address:#x}')
-        pairs=[(game['func_020186c0'],'CoopResolveFile'),(game['func_020185c0'],'CoopOpenFile'),(game['func_02023178'],'CoopAllocateParticleChunk'),(game['func_02017060'],'CoopTrimResourceModel'),(game['NumCoins'],'CoopNumCoins'),(game['GiveCoins'],'CoopGiveCoins'),(game[SAVE_CURRENT],'CoopSaveCurrentFile'),(game['_Z17LoadLevelOverlaysi'],'CoopLoadLevelOverlays'),
+        pairs=[(game['_ZN10dScStage_c10LoadSkyboxEv'],'CoopLoadSkybox'),(game['func_02062200'],'CoopWirelessReset'),(game['func_0201834c'],'CoopLoadDiskFile'),(game['func_020186c0'],'CoopResolveFile'),(game['func_020185c0'],'CoopOpenFile'),(game['func_02023178'],'CoopAllocateParticleChunk'),(game['func_02017060'],'CoopTrimResourceModel'),(game['NumCoins'],'CoopNumCoins'),(game['GiveCoins'],'CoopGiveCoins'),(game[SAVE_CURRENT],'CoopSaveCurrentFile'),(game['_Z17LoadLevelOverlaysi'],'CoopLoadLevelOverlays'),
+               (game['func_0200d0ac'],'CoopCameraFar'),(game['func_0200d064'],'CoopCameraNear'),
+               (game['_ZN9dCamera_c14GoBehindPlayerEj'],'CoopCameraBehind'),(game['func_0200ca14'],'CoopCameraFov'),
+               (game['func_0200d7e0'],'CoopCameraFirstPerson'),(game['func_0200d81c'],'CoopCameraNormal'),
+               (0x020cae10,'CoopPlayerHeadLook'),
                (game['_ZN7Message6UpdateEv'],'CoopMessageUpdate'),
                (game['KillPlayer'],'CoopKillPlayer'),(game['HitDeathPlane'],'CoopHitDeathPlane'),
                (ov_symbols['_ZN10dScEntry_c16CleanupResourcesEv'],'CoopEntryCleanup'),
@@ -299,10 +357,20 @@ def main():
                        'entryOffset':hex(emitted['CoopRuntimeDispatch']-PAYLOAD_ADDRESS),'fixups':len(records),
                        'sha256':hashlib.sha256(blob).hexdigest(),'cacheAddress':'0x02004180'}
         module_report['sharedCourseCoins']=True
+        module_report['runtimePlacement']=args.runtime_placement
+        if args.runtime_placement=='prefix':module_report['residentAddress']='0x02000100'
         module_report['particlePoolFallback']=True
         module_report['particleSplitFallback']=True
+        module_report['particleTableReserveBeforeStageResources']=True
         module_report['sharedResourceFallback']=True
         module_report['streamUncachedNarcMembers']=True
+        module_report['streamCompressedDiskFiles']=True
+        module_report['nativeTeardownResetDeduplicated']=True
+        module_report['evictCommonStageSourceCache']=True
+        module_report['localCameraControls']=True
+        module_report['cameraPitchUserBytes']=[7,8]
+        module_report['narcIndexBytes']=len(narc_index)
+        module_report['narcIndexSha256']=hashlib.sha256(narc_index).hexdigest()
         if args.diagnostic_start_level is not None:
             module_report['diagnosticStartLevel']=args.diagnostic_start_level
             module_report['diagnosticStageCycle']=args.diagnostic_stage_cycle
@@ -310,9 +378,9 @@ def main():
         module_report['diagnosticOffsets']={name:emitted[name]-PAYLOAD_ADDRESS
                                            for name in ('coopEnabled','coopSaveState','coopSavePage',
                                                         'coopSaveEpoch','coopStageLoading','coopMenuLoading',
-                                                        'coopSceneInitializing','coopTitleLoading','coopFileWaiting',
+                                                        'coopSceneInitializing','coopTitleLoading','coopTitleRadioResetPending','coopFileWaiting',
                                                         'coopSessionEnded','coopDeathTriggered','coopGuestTutorialSkips',
-                                                        'coopStreamedNarcReads','coopParticleFallbacks','coopParticleSplitFallbacks','coopParticleSegmentCount','coopResourceFallbacks',
+                                                        'coopNarcOpenDiagnostic','coopStageCacheEvictions','coopStreamedLzReads','coopStreamedNarcReads','coopParticleFallbacks','coopParticleSplitFallbacks','coopParticleSegmentCount','coopResourceFallbacks',
                                                         'coopResourceFallbacksLive','coopResourceFallbacksPeak')}
         patches.append({'purpose':'ROOT module loader in unused VS result routines','address':hex(CAVE_START),
                         'size':CAVE_END-CAVE_START,'installerBytes':len(installer)})

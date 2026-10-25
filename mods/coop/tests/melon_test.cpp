@@ -127,7 +127,8 @@ int main(int argc,char** argv) try {
         }
         ds->Reset();
         ds->RTC.SetDateTime(2026,10,21,12,0,0);
-        if(std::string(argv[i])!="-")ds->SetupDirectBoot(argv[i]);
+        if(std::string(argv[i])!="-" && !(i==1 && std::getenv("COOP_HOST_FIRMWARE_BOOT")))
+            ds->SetupDirectBoot(argv[i]);
         ds->Start();
         consoles.push_back(std::move(ds));running[i-1]=true;
     }

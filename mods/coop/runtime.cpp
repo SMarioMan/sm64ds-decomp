@@ -72,6 +72,16 @@ void Crash(void);
 extern u8 *data_0209ee78;
 void *CoopOriginalResolveFile(u32 fileID);
 int CoopOriginalOpenFile(void *file,u32 fileID);
+void CoopOriginalLoadSkybox(void *scene);
+int CoopOriginalCameraFar(void *camera,unsigned player);
+void CoopOriginalCameraNear(void *camera,unsigned player);
+void CoopOriginalCameraBehind(void *camera,unsigned player);
+void CoopOriginalCameraFirstPerson(void *camera,unsigned player);
+void CoopOriginalCameraNormal(void *camera,unsigned player);
+void CoopOriginalPlayerHeadLook(void *player);
+void *CoopOriginalLoadDiskFile(void *file,int flush);
+int func_02018568(void *data);
+void func_02018770(void);
 void FS_InitFile(void *file);
 int FS_ReadFile(void *file,void *dst,int size);
 int FS_CloseFile(void *file);
@@ -81,6 +91,8 @@ int func_0205d5e8(void *file,void *archive,u32 top,u32 bottom,u32 index);
 extern mHeap::Heap_t *data_020a0e9c;
 int func_0205d3f4(void *file);
 void func_0201ffcc(void);
+void func_02040724(void);
+int CoopOriginalWirelessReset(void *callback);
 void func_02042778(void);
 void func_0201fe08(void);
 void func_0201a428(void);
@@ -104,6 +116,7 @@ extern u8 data_0209fc50;
 extern u8 data_0209f21c;
 extern s16 data_0209f358[];
 extern s8 data_02092124;
+extern s8 data_02092110;
 extern u8 data_0209f228[];
 extern void *data_0209f394[];
 extern s16 data_02092144[];
@@ -118,6 +131,7 @@ extern dCamera_c *data_0209f318;
 void _ZN4CP1526InvalidateInstructionCacheEjj(u32 address, u32 size);
 void _ZN4CP1514FlushDataCacheEv(void);
 void _ZN4CP1514FlushDataCacheEjj(u32 address, u32 size);
+void _ZN4CP1527FlushAndInvalidateDataCacheEjj(u32 address,u32 size);
 
 
 // Kept with the executable module in ROOT, across scene/overlay changes.
@@ -219,6 +233,9 @@ extern u32 coopDeathTriggered;
 extern u32 coopGuestTutorialSkips;
 extern u32 coopParticleFallbacks;
 extern u32 coopParticleSplitFallbacks;
+extern u32 coopStreamedLzReads;
+extern u32 coopTitleRadioResetPending;
+extern u32 coopStageCacheEvictions;
 extern u32 coopResourceFallbacks;
 extern u32 coopStreamedNarcReads;
 extern u32 coopResourceFallbacksLive;
@@ -234,6 +251,7 @@ void CoopStartMatch(void *) {
     coopEntryRetired=0;
     coopStageLoading=coopMenuLoading=coopSceneInitializing=0;
     coopTitleLoading=0;
+    coopTitleRadioResetPending=0;
     coopSessionEnded=0;
     coopDeathTriggered=0;
     coopGuestTutorialSkips=0;
@@ -241,6 +259,8 @@ void CoopStartMatch(void *) {
     coopParticleSplitFallbacks=0;
     coopResourceFallbacks=0;
     coopStreamedNarcReads=0;
+    coopStreamedLzReads=0;
+    coopStageCacheEvictions=0;
     coopResourceFallbacksPeak=coopResourceFallbacksLive;
 #ifdef COOP_DIAGNOSTIC_STAGE_CYCLE
     coopDiagnosticChordHeld=false;
@@ -310,9 +330,11 @@ void CoopLoadLevelOverlays(int level) {
         extern int CoopStarTutorial(void *);
         extern int CoopCourseTutorial(void *);
         extern int CoopLevelEnterInit(void *);
+        extern void CoopPlayerHeadLook(void *);
         Patch(0x020c6e14,(void *)CoopStarTutorial);
         Patch(0x020c44c4,(void *)CoopCourseTutorial);
         Patch(0x020c7838,(void *)CoopLevelEnterInit);
+        Patch(0x020cae10,(void *)CoopPlayerHeadLook);
         u32 target = (u32)CoopCameraFlagsRead;
         *(volatile u32 *)0x020c4364 = 0xeb000000 | ((target-0x020c436c)>>2 & 0x00ffffff);
         *(volatile u32 *)0x020c4b34 = 0xeb000000 | ((target-0x020c4b3c)>>2 & 0x00ffffff);
@@ -457,6 +479,27 @@ static void CoopConnectionLost() {
     func_020199a4();
 }
 
+u32 coopTitleRadioResetPending=0;
+static void (*coopTitleResetCallback)(void *)=0;
+
+void CoopTitleResetDone(void *event) {
+    // The native callback continues through Disable and End. Keep the reset
+    // marked in flight through that entire chain, until radio state is zero.
+    if (((u16 *)event)[1])coopTitleRadioResetPending=0;
+    if (coopTitleResetCallback)coopTitleResetCallback(event);
+}
+
+int CoopWirelessReset(void *callback) {
+    if (!coopEnabled || !coopTitleLoading || !callback)
+        return CoopOriginalWirelessReset(callback);
+    if (coopTitleRadioResetPending)return 2; // Native async request accepted.
+    coopTitleResetCallback=(void (*)(void *))callback;
+    coopTitleRadioResetPending=1;
+    int result=CoopOriginalWirelessReset((void *)CoopTitleResetDone);
+    if (result!=2)coopTitleRadioResetPending=0;
+    return result;
+}
+
 int CoopSceneBeforeInit(dScene_c *scene) {
     if (coopEnabled && data_0209fc68==6)CoopConnectionLost();
     if ((scene->actorID==1 || scene->actorID==8) && coopEnabled) {
@@ -465,6 +508,7 @@ int CoopSceneBeforeInit(dScene_c *scene) {
             // before shutting WFS down. Keep normal input sharing alive:
             // the native loading barrier suspends these user-byte records.
             coopTitleLoading=1;
+            coopTitleRadioResetPending=0;
             coopTitleGuest=data_020a0f10!=0;
             coopMenuLoading=1;
             data_020a1052[6]=0x50;
@@ -489,7 +533,19 @@ int CoopSceneBeforeInit(dScene_c *scene) {
             coopMenuLoading=5;
             return 0;
         }
-        if (coopTitleLoading && data_020a0f94!=0)return 0;
+        if (coopTitleLoading && data_020a0f94!=0) {
+            if (coopMenuLoading==5 && data_020a0f94==1) {
+                CoopConnectionLost(); // Native failure must not leave a waiting screen.
+                return 0;
+            }
+            // A parent disconnect can put a child back into native state 4
+            // after the first mode-change update. Keep driving the native
+            // teardown state machine without resubmitting an accepted async
+            // reset while its native Reset/Disable/End callbacks are pending.
+            if (coopMenuLoading==5 && !coopTitleRadioResetPending)func_02040724();
+            return 0;
+        }
+        coopTitleRadioResetPending=0;
         coopEnabled=coopTitleLoading=coopMenuLoading=0;
         coopSaveState=coopSavePage=0;
         data_020a1052[6]=0;
@@ -540,6 +596,8 @@ void CoopSceneAfterInit(dScene_c *scene, u32 success) {
     if (scene->actorID==1 && success==2 && !data_0209fc68)coopEnabled=0;
 }
 
+static void CoopReserveParticlePool(unsigned level);
+
 int CoopStageInit(void *scene) {
     dScStage_c *stage = (dScStage_c *)scene;
     if (!coopEnabled)
@@ -567,6 +625,10 @@ int CoopStageInit(void *scene) {
         if (!(data_020a1160[0] & 0x2000))
             return -1;
     }
+    if (!stage->mWaitingForLoad)
+        // Keep the native resource table contiguous before model loading.
+        // Reserve the larger particle array only after temporary files free.
+        CoopReserveParticlePool((u8)data_02092110);
     coopStageLoading = 2;
     int result = CoopOriginalStageInit(scene);
     coopStageLoading = 0;
@@ -722,6 +784,11 @@ struct CoopParticleSegment {
 static CoopParticleSegment coopParticleSegments[8];
 u32 coopParticleSegmentCount=0;
 static u32 coopParticleBudget=0,coopParticleUsed=0;
+static u32 coopParticleReservedSize=0;
+static u32 coopParticleReservedArena=0,coopParticlePendingArray=0;
+static void *coopParticleReservedTable=0;
+static mHeap::Heap_t *coopParticleTableHeap=0;
+extern u8 data_02075f14[];
 
 void *CoopAllocateParticlePool(u32 size) {
     if (!coopEnabled || !data_0209fc68)
@@ -731,15 +798,42 @@ void *CoopAllocateParticlePool(u32 size) {
     u32 available=owner->MaxAllocationUnitSize();
     u32 spare=game && game!=owner ? game->MaxAllocationUnitSize() : 0;
     coopParticleSegmentCount=0;
+    if (coopParticleReservedArena) {
+        if (size!=coopParticleReservedArena) { Crash(); return 0; }
+        // These are the native manager's only two large indexed arrays.
+        // Protect the particle array from earlier small callback requests;
+        // the resource table was reserved before stage loading fragmented it.
+        u32 particleBytes=(size==0xa800 ? 320u : 256u)*0x44;
+        if (available<particleBytes && spare>=particleBytes)owner=game;
+        void *pool=owner->Allocate(particleBytes);
+        coopParticleHeap=owner;
+        coopParticlePool=pool;
+        coopParticleSegments[0].heap=owner;
+        coopParticleSegments[0].ptr=(u8 *)pool;
+        coopParticleSegments[0].cursor=coopParticleSegments[0].end=(u8 *)pool+particleBytes;
+        coopParticleSegments[1].heap=coopParticleTableHeap;
+        coopParticleSegments[1].ptr=(u8 *)coopParticleReservedTable;
+        coopParticleSegments[1].cursor=coopParticleSegments[1].end=
+            (u8 *)coopParticleReservedTable+coopParticleReservedSize;
+        coopParticleSegmentCount=2;
+        coopParticlePendingArray=particleBytes;
+        coopParticleReservedArena=0;
+        coopParticleBudget=size;
+        coopParticleUsed=0;
+        return pool;
+    }
     bool split=false;
     u32 allocated=size;
     if (available<size && spare>=size) {
         owner=game;
         ++coopParticleFallbacks;
-    } else if (available<size && available+spare>=size) {
+    } else if (available<size && owner->VMemoryLeft()+
+               (game && game!=owner ? game->VMemoryLeft() : 0)>=size) {
         // The native manager requests separate contiguous arrays through its
         // bump callback. Keep those arrays/counts intact across heap segments
         // when neither heap can hold the entire conservative arena reserve.
+        // More than one free block in either heap can contribute. Comparing
+        // only the two largest blocks rejects valid fragmented guest heaps.
         if (spare>available) { owner=game; available=spare; }
         allocated=available;
         split=true;
@@ -761,6 +855,13 @@ void *CoopAllocateParticlePool(u32 size) {
     return pool;
 }
 
+static void CoopReserveParticlePool(unsigned level) {
+    coopParticleReservedSize=*(u16 *)(data_02075f14+8)*32u;
+    coopParticleTableHeap=Memory::defaultHeapPtr;
+    coopParticleReservedTable=coopParticleTableHeap->Allocate(coopParticleReservedSize,-4);
+    coopParticleReservedArena=(level==0x24 || level==0x26 || level==0x28) ? 0xa800 : 0x8c00;
+}
+
 void *CoopAllocateParticleChunk(u32 size) {
     if (!coopParticleSegmentCount) {
         // Native func_02023178 is just this pointer bump. Its first LDR is
@@ -770,6 +871,17 @@ void *CoopAllocateParticleChunk(u32 size) {
         return result;
     }
     if (size>coopParticleBudget-coopParticleUsed) { Crash(); return 0; }
+    int reserved=-1;
+    if (coopParticlePendingArray && size==coopParticlePendingArray) {
+        reserved=0; coopParticlePendingArray=0;
+    } else if (coopParticleReservedSize && size==coopParticleReservedSize) {
+        reserved=1; coopParticleReservedSize=0;
+    }
+    if (reserved>=0) {
+        coopParticleUsed+=size;
+        data_0209ee78=coopParticleSegments[reserved].end;
+        return coopParticleSegments[reserved].ptr;
+    }
     for (unsigned pass=0;pass<2;++pass) {
         for (unsigned i=0;i<coopParticleSegmentCount;++i) {
             CoopParticleSegment *segment=&coopParticleSegments[i];
@@ -782,10 +894,22 @@ void *CoopAllocateParticleChunk(u32 size) {
             }
         }
         if (pass || coopParticleSegmentCount==8)break;
+        // Return unusable tails before extending the arena. Otherwise a
+        // fragmented callback request can reserve more than the native pool,
+        // even though every individual allocation stays inside its segment.
+        for (unsigned i=0;i<coopParticleSegmentCount;++i) {
+            CoopParticleSegment *segment=&coopParticleSegments[i];
+            if (segment->cursor<segment->end) {
+                u32 used=segment->cursor-segment->ptr;
+                u32 actual=segment->heap->Reallocate(segment->ptr,used);
+                if (actual)segment->end=segment->ptr+actual;
+            }
+        }
         mHeap::Heap_t *owner=Memory::defaultHeapPtr;
         mHeap::Heap_t *game=(mHeap::Heap_t *)data_020a0eac;
         u32 available=owner->MaxAllocationUnitSize();
-        u32 remaining=coopParticleBudget-coopParticleUsed;
+        u32 remaining=coopParticleBudget-coopParticleUsed-
+                      coopParticlePendingArray-coopParticleReservedSize;
         if (available<remaining && game && game!=owner) {
             u32 spare=game->MaxAllocationUnitSize();
             if (spare>available) { owner=game; available=spare; }
@@ -807,6 +931,10 @@ void CoopFreeParticlePool(void *ptr) {
         mHeap::Heap_t *owner=coopParticleHeap;
         coopParticlePool=0;
         coopParticleHeap=0;
+        coopParticleReservedSize=0;
+        coopParticleReservedArena=coopParticlePendingArray=0;
+        coopParticleReservedTable=0;
+        coopParticleTableHeap=0;
         if (coopParticleSegmentCount) {
             while (coopParticleSegmentCount) {
                 CoopParticleSegment *segment=&coopParticleSegments[--coopParticleSegmentCount];
@@ -824,6 +952,21 @@ struct CoopArchiveEntry {
 };
 extern CoopArchiveEntry data_0208ecf4[];
 u32 coopStreamedNarcReads=0;
+u32 coopNarcOpenDiagnostic[6]={0,0,0,0,0,0};
+u32 coopStageCacheEvictions=0;
+
+void CoopLoadSkybox(void *scene) {
+    // Native SharedFilePtr/LoadFile copy or decompress cached members into
+    // their own buffers and close their file views. All stage model/object
+    // loads have returned at this boundary. Drop the 321 KB common source
+    // cache before skybox/particle/arrival peaks; later members stream through
+    // the uncached NARC path rather than pinning the whole archive again.
+    if (coopEnabled && data_0209fc68 && data_0208ecf4[0].image) {
+        UnloadArchive(0);
+        ++coopStageCacheEvictions;
+    }
+    CoopOriginalLoadSkybox(scene);
+}
 
 static CoopArchiveEntry *CoopUncachedArchive(u32 fileID) {
     if (!coopEnabled || !data_0209fc68 || fileID<0x8000)return 0;
@@ -843,46 +986,37 @@ void *CoopResolveFile(u32 fileID) {
     return CoopOriginalResolveFile(fileID);
 }
 
+struct CoopArchiveIndex {
+    u16 first,limit;
+    u32 fileID,romTop,extentOffset;
+};
+extern const u8 coopNarcIndex[];
+extern void *data_0209d3b4;
+
 static int CoopOpenNarcMember(void *file,CoopArchiveEntry *entry,u32 member) {
-    FS_InitFile(file);
-    if (!func_02018d98(file,entry->path))return 0;
-    u32 *fields=(u32 *)file;
-    u32 top=fields[8],length=fields[9]-top;
-    void *archive=(void *)fields[2];
-    u32 index=fields[7];
-    u32 header[4];
-    bool valid=false,haveMember=false;
-    u32 first=0,last=0,data=0;
-    if (FS_ReadFile(file,header,16)==16 && header[0]==0x4352414e &&
-        (header[1]&0xffff)==0xfffe && header[2]<=length) {
-        u32 position=header[3]&0xffff,blocks=header[3]>>16;
-        if (position>=16 && blocks<=32) {
-            for (unsigned block=0;block<blocks;++block) {
-                if (position>length || length-position<8 ||
-                    !func_0205d368(file,position,0) || FS_ReadFile(file,header,8)!=8)break;
-                u32 kind=header[0],size=header[1];
-                if (size<8 || size>length-position)break;
-                if (kind==0x46415442 && size>=12) { // BTAF, file extents.
-                    if (FS_ReadFile(file,header,4)!=4 || member>=(header[0]&0xffff) ||
-                        member>=(size-12)/8 ||
-                        !func_0205d368(file,position+12+member*8,0) ||
-                        FS_ReadFile(file,header,8)!=8)break;
-                    first=header[0];last=header[1];haveMember=true;
-                } else if (kind==0x46494d47) { // GMIF, member image.
-                    if (haveMember && first<=last && last<=size-8) {
-                        data=position+8;
-                        valid=true;
-                    }
-                    break;
-                }
-                position+=size;
-            }
-        }
+    const CoopArchiveIndex *index=(const CoopArchiveIndex *)coopNarcIndex;
+    for (unsigned i=0;i<13;++i) {
+        if (entry!=&data_0208ecf4[i])continue;
+        const CoopArchiveIndex *row=&index[i];
+        if (row->first!=entry->first || row->limit!=entry->limit ||
+            member>=(u32)(row->limit-row->first))return 0;
+        // Original native file extents are authenticated and preserved by the
+        // builder. Derive the member view from its verified immutable index;
+        // no tiny metadata transfers or whole-container reads during behavior.
+        const u32 *extent=(const u32 *)(coopNarcIndex+row->extentOffset)+member*2;
+        u32 top=row->romTop+extent[0],bottom=row->romTop+extent[1];
+        coopNarcOpenDiagnostic[0]=0x80;
+        coopNarcOpenDiagnostic[1]=member;
+        coopNarcOpenDiagnostic[2]=(u32)data_0209d3b4;
+        coopNarcOpenDiagnostic[3]=row->fileID;
+        coopNarcOpenDiagnostic[4]=top;
+        coopNarcOpenDiagnostic[5]=bottom;
+        FS_InitFile(file);
+        int opened=func_0205d5e8(file,data_0209d3b4,top,bottom,row->fileID);
+        if (opened)coopNarcOpenDiagnostic[0]=0;
+        return opened;
     }
-    FS_CloseFile(file);
-    if (!valid)return 0;
-    FS_InitFile(file);
-    return func_0205d5e8(file,archive,top+data+first,top+data+last,index);
+    return 0;
 }
 
 int CoopOpenFile(void *file,u32 fileID) {
@@ -965,6 +1099,66 @@ void CoopFreeResource(void *ptr) {
     _ZN6Memory10DeallocateEPv(ptr);
 }
 
+struct CoopLzReader {
+    void *file;
+    u32 remaining,at,count;
+    u8 storage[512+31];
+    u8 Read() {
+        u8 *buffer=(u8 *)(((u32)storage+31)&~31u);
+        if (at==count) {
+            count=remaining<512 ? remaining : 512;
+            // CARD reads may DMA into this window on hardware. Keep cache
+            // maintenance inside its own aligned storage, away from fields.
+            _ZN4CP1527FlushAndInvalidateDataCacheEjj((u32)buffer,count);
+            if (!count || FS_ReadFile(file,buffer,count)!=(int)count) {
+                Crash(); return 0;
+            }
+            remaining-=count;
+            at=0;
+        }
+        return buffer[at++];
+    }
+};
+
+u32 coopStreamedLzReads=0;
+void *CoopLoadDiskFile(void *file,int flush) {
+    if (!coopEnabled || !data_0209fc68)return CoopOriginalLoadDiskFile(file,flush);
+    u32 length=((u32 *)file)[9]-((u32 *)file)[8];
+    if (length<=512)return CoopOriginalLoadDiskFile(file,flush);
+    u32 header[2];
+    if (FS_ReadFile(file,header,8)!=8) { Crash(); return 0; }
+    if (!func_02018568(header) || (header[1]&255)!=0x10) {
+        func_0205d368(file,0,0);
+        return CoopOriginalLoadDiskFile(file,flush);
+    }
+    // Native LoadFile keeps the entire compressed file beside its output.
+    // Decode its ordinary LZ10 stream with a bounded input window instead.
+    u32 size=header[1]>>8;
+    if (!size || size>0x400000) { Crash(); return 0; }
+    u8 *output=(u8 *)CoopAllocateResource(size);
+    CoopLzReader input;
+    input.file=file;
+    input.remaining=length-8;
+    input.at=input.count=0;
+    u32 written=0;
+    while (written<size) {
+        unsigned flags=input.Read();
+        for (unsigned bit=0x80;bit && written<size;bit>>=1) {
+            if (flags&bit) {
+                unsigned first=input.Read(),second=input.Read();
+                unsigned count=(first>>4)+3,distance=((first&15)<<8)+second+1;
+                if (distance>written || count>size-written) { Crash(); return 0; }
+                while (count--) { output[written]=output[written-distance]; ++written; }
+            } else output[written++]=input.Read();
+        }
+    }
+    FS_CloseFile(file);
+    func_02018770();
+    if (flush)_ZN4CP1514FlushDataCacheEjj((u32)output,size);
+    ++coopStreamedLzReads;
+    return output;
+}
+
 s16 CoopNumCoins(void) {
     if (CoopSharedCoins())return data_0209f358[0];
     // Preserve the native sum outside story co-op. Its first instruction is
@@ -1002,6 +1196,70 @@ void CoopMessageUpdate(void) {
     gActivePlayerSlot=previous;
 }
 
+static u8 CoopCameraOwner(void) {
+    return coopEnabled && data_0209fc68 ? data_020a0f10 : data_0209f250;
+}
+
+int CoopCameraFar(void *camera,unsigned player) {
+    u8 previous=data_0209f250;
+    data_0209f250=CoopCameraOwner();
+    int result=CoopOriginalCameraFar(camera,player);
+    data_0209f250=previous;
+    return result;
+}
+
+void CoopCameraNear(void *camera,unsigned player) {
+    u8 previous=data_0209f250;
+    data_0209f250=CoopCameraOwner();
+    CoopOriginalCameraNear(camera,player);
+    data_0209f250=previous;
+}
+
+void CoopCameraBehind(void *camera,unsigned player) {
+    u8 previous=data_0209f250;
+    data_0209f250=CoopCameraOwner();
+    CoopOriginalCameraBehind(camera,player);
+    data_0209f250=previous;
+}
+
+void CoopCameraFirstPerson(void *camera,unsigned player) {
+    u8 previous=data_0209f250;
+    data_0209f250=CoopCameraOwner();
+    CoopOriginalCameraFirstPerson(camera,player);
+    data_0209f250=previous;
+}
+
+void CoopCameraNormal(void *camera,unsigned player) {
+    u8 previous=data_0209f250;
+    data_0209f250=CoopCameraOwner();
+    CoopOriginalCameraNormal(camera,player);
+    data_0209f250=previous;
+}
+
+void CoopPlayerHeadLook(void *player) {
+    unsigned slot=*((u8 *)player+0x6d8);
+    if (!coopEnabled || !data_0209fc68 || !data_0209f318 || slot>=4) {
+        CoopOriginalPlayerHeadLook(player);
+        return;
+    }
+    // Head pitch also controls the castle's look-up entrance. Each replica
+    // must use this player's echoed pitch, independent of its displayed view.
+    u8 previous=data_0209f250;
+    s16 pitch=data_0209f318->mAngleX;
+    data_0209f250=(u8)slot;
+    data_0209f318->mAngleX=(s16)(data_020a1166[slot*36+7] |
+                               data_020a1166[slot*36+8]<<8);
+    CoopOriginalPlayerHeadLook(player);
+    data_0209f318->mAngleX=pitch;
+    data_0209f250=previous;
+}
+
+void CoopCameraFov(dCamera_c *camera,u8 player,int mode) {
+    // Native func_0200ca14 starts with a PC-relative literal load. Preserve
+    // its complete flag semantics rather than relocating that instruction.
+    if (player==CoopCameraOwner())camera->mFlags|=mode ? 0x10000 : 0x20000;
+}
+
 int CoopSceneBefore(void *scene) {
     if (coopEnabled && data_0209fc68==6)CoopConnectionLost();
     // Keep the cartridge on the same menu until downloaded clients have
@@ -1024,8 +1282,15 @@ int CoopSceneBefore(void *scene) {
         // Native story flags occupy NET user bytes 0..4 and 16. Byte 5
         // carries the host camera's completion status; every replica,
         // including the host, consumes the same echoed packet below.
-        if (data_0209f318)
+        if (data_0209f318) {
             data_020a1052[5] = (data_0209f318->mFlags & 0x8000) != 0;
+            // Initial host-file transfer owns bytes7..15 only while scenes
+            // are held at initialization. In gameplay7..8 carry local pitch.
+            if (COOP_SAVE_SLOT<0 || coopSaveState==1) {
+                data_020a1052[7]=(u8)data_0209f318->mAngleX;
+                data_020a1052[8]=(u8)(data_0209f318->mAngleX>>8);
+            }
+        }
 #ifdef COOP_DIAGNOSTIC_STAGE_CYCLE
         // Explicit test builds only: the host's synchronized L+R+X
         // requests the next native stage. Use the normal transition/loader,
@@ -1167,6 +1432,15 @@ void CoopRuntimeDispatch(unsigned operation, u32 argument) {
     Patch(0x02017060,(void *)CoopTrimResourceModel);
     Patch(0x020186c0,(void *)CoopResolveFile);
     Patch(0x020185c0,(void *)CoopOpenFile);
+    Patch(0x0201834c,(void *)CoopLoadDiskFile);
+    Patch(0x02062200,(void *)CoopWirelessReset);
+    Patch(0x0202b0fc,(void *)CoopLoadSkybox);
+    Patch(0x0200d0ac,(void *)CoopCameraFar);
+    Patch(0x0200d064,(void *)CoopCameraNear);
+    Patch(0x0200d304,(void *)CoopCameraBehind);
+    Patch(0x0200ca14,(void *)CoopCameraFov);
+    Patch(0x0200d7e0,(void *)CoopCameraFirstPerson);
+    Patch(0x0200d81c,(void *)CoopCameraNormal);
     Patch(0x02023178,(void *)CoopAllocateParticleChunk);
     PatchCall(0x02022f88,(void *)CoopAllocateParticlePool);
     PatchCall(0x020231bc,(void *)CoopFreeParticlePool);

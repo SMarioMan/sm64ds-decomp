@@ -1,82 +1,231 @@
 # Download Play handoff investigation
 
 The mod remains unfinished. Four-player gameplay works on an unmodified
-melonDS core, but intermittent signed-loader startup and later-stage memory
-failures remain under investigation. Campaign completion and physical hardware
+melonDS core, with acknowledged startup now passing repeat tests. Later-stage memory
+fixes are still undergoing live validation. Campaign completion and physical hardware
 remain unverified. Read the current regressions first; later sections preserve
 historical checkpoints and failures rather than release acceptance.
 
-## Latest active runs and driver corrections
+## Current checkpoint: retail boot preservation and local cameras
 
-- Closed-entry V2 is still opt-in. Five acknowledged menu cold boots pass.
-  Full course-return repeat 1 passed with simultaneous selections [0,0,0];
-  repeat 2 is testing actual delays [0,600,1800] and is still running. Do not
-  describe the first run as staggered. Session 4131 owns the 3-run repeat.
-- Old-default raw-resource course-return finished FAILED overall: 2/3 passed,
-  one signed-menu failure. This confirms the original startup path remains
-  unreliable; do not promote it or call the mod complete.
-- The initial fast pause driver failed locally because it requested resume
-  during the native menu's opening fade. It now observes fade 0x0209f300==0,
-  debounce 0x0209f22c==0 and ready menu state 1/3 before sending START.
-  `/workspace/runtime/healthy-thi-menu-ready-rerun/result.json` passes on the
-  exact same local stage-24 image that failed the earlier driver.
-- The direct four-player stage-24 run failed a character comparison. Read-only
-  pause inspection at `/workspace/runtime/thi-character-inspection/characters.json`
-  shows all replicas identical: a real Wario cap loss converted slot 2 to
-  Yoshi. Sequential reads straddled the change. The driver now reads each
-  console atomically and retries transient character changes briefly.
-- The same party then PASSED healthy four-console stage 24 with the corrected
-  driver: `/workspace/runtime/healthy-thi-wireless-continuation/diagnostic-stage.json`.
-  Its attempt to continue into 25 FAILED after the party returned to Castle 1;
-  do not count 25. There was no Crash flag or exception, and the prior stage-24
-  snapshot has slot 2 at health 640. The party has been shut down cleanly.
-- A fresh direct-25 run eliminates the prior stage's hazard/queued-death issue:
-  `/workspace/runtime/closed-entry-stage25-matrix/`, session 15502, failure socket
-  `/workspace/runtime/closed-entry-stage25-matrix.sock`. It runs 15 further
-  transitions through 40. Cartridge `closed-entry-stage25-cycle-host.nds` SHA256
-  `7c896c841ec4bf0ea316574e01283fbcbc2dc5412768e469628658e314992e08`.
-- Remaining secret/castle/early stages 42..51,1..12 (21 transitions) are running
-  at `/workspace/runtime/closed-entry-secret-castle-matrix/`, session 1302,
-  failure socket `/workspace/runtime/closed-entry-secret-castle-matrix.sock`.
-  Cartridge `closed-entry-secret-castle-cycle-host.nds` SHA256
-  `b05072ff262af30c74fca819c18d5c8a9993c87ce47ac7ec13f5a09c3852ffdb`.
-  Both new runs use frozen drivers and replace blind diagnostic 180-frame
-  idle with a short initialization step followed by actual readiness checks.
-- No agents, no core patches, no live emulated-memory writes. Do not interrupt
-  pending RemoteEmulators RPCs. Source archive includes every untracked test.
+This section supersedes the historical experiments below. No campaign-complete
+or physical-hardware acceptance is claimed.
 
-## Current work: acknowledged entry closure and healthy stage checks
+- Current normal candidate: `/workspace/runtime/retail-boot-full-local-camera-host.nds`,
+  SHA256 `aea94b7bc8a51986b02c258cb779934bd200f269e05ad4d193282237be4baedf`.
+  Default ROOT placement; acknowledged closed-entry startup; bounded particle
+  reservations; streamed LZ; ROM-indexed NARC views; common source-cache release;
+  callback-driven teardown; local zoom/recenter/FOV/first-person/normal camera;
+  echoed per-player head pitch. Build artifacts currently match this candidate.
+- Host parent loader moved out of retail secure-area BIOS wrappers to overlay75's
+  reserved result cave. ARM9, ARM7, first16KiB secure area and metadata stay retail.
+  Four boot-layout checks PASS: `retail-boot-layout-tests.log`.
+- True BIOS/firmware boot PASS: `retail-control-firmware-boot/result.json` and
+  `retail-boot-local-camera-firmware-rerun/result.json`. The old secure-loader
+  image ALSO passes: `previous-secure-loader-firmware-boot/result.json`.
+  Therefore this does not reproduce or prove resolution of the physical white screen.
+  User setup: New3DS + R4 SDHC2022 + latest Wood; original commit419afe72b.
+- Boot-only physical retest requested for `retail-boot-local-camera-host.nds`,
+  SHA256 `ce3cdcda3dd12f1c2c3a55a3efcf639066180b74e28ffdfa8552ec818dbf327b`.
+  That earlier candidate lacks later first-person/head-pitch hooks and indexed NARC.
+  User cannot download this artifact and requested a GitHub push plus local
+  build steps. [BOOT-RETEST.md](../BOOT-RETEST.md) instead identifies the newer
+  normal candidate aea94b7b above; a fresh rebuild exactly reproduced that hash
+  (`github-boot-retest-build.log`). Physical result remains pending.
+- Full current ROOT suite:90 discovered,86PASS,4prefix-only skips;
+  `/workspace/runtime/full-local-camera-all-tests.log`.
+- Eleven compiled native ARM camera tests PASS: `full-local-camera-arm-tests.log`.
+  New normal four-console run: `/workspace/runtime/full-local-camera-story/`,
+  frozen source under driver/; controller socket at that path plus `.sock`.
+  This normal cartridge PASSed Download Play castle grounds, original Yoshi
+  palettes and four independent movement controls. Party is retained paused.
+  `full-local-camera-zoom-cycle/camera-controls.json`:12 physical-input transitions
+  PASS (far/first-person/normal,4controllers), foreign view unchanged, shared
+  player choices and matching-input-tick positions/progress synchronized.
+  Reproduce with `COOP_BATCH_INPUT=1 COOP_FRAME_SAMPLES=1 python
+  mods/coop/tests/wireless_camera.py --socket SOCKET --output NEW_DIRECTORY`.
+  Test copy/hash and cartridge hash saved in that output directory. The current
+  party began this check in far zoom following a successful one-tap probe on
+  each console (`full-local-camera-input-probe-buttons.log`). Original touchscreen
+  probe stopped on Standard mode0; this mode uses the physical X button.
+  Recenter/turn/movement modes and fresh combined guest-star/save remain pending.
+- Indexed archive diagnostic image SHA256
+  `b1a096fa85f8f491cbf681684b8cfa85e8454a78c7df57b71ab2eed1976d0896`:
+  `/workspace/runtime/indexed-narc-retail-boot-rainbow-matrix/`.
+  Stage28 Rainbow Ride,29,30 PASS movement/shared pause/same-input-tick sync.
+  Stage31 movement left the selected stage: all4 captured level1, crash0,
+  exception0. Cycle incomplete; retained party shut down cleanly. This image
+  precedes first-person/head-pitch hooks. Do not equate stage entry with earned progress.
+- ROM index covers all13 archives and is independently checked against ndspy.
+  Six native ARM archive tests PASS: `indexed-narc-arm-tests.log`.
+  Four native cache-lifetime tests PASS: `stage-cache-release-arm-tests.log`.
+  Earlier failed runtime metadata read captured at
+  `narc-read-diagnostic-rainbow-matrix/dialogue-native-fault-*`; party shut down.
+- Earlier fresh prefix normal run PASSED guest coin/star, Save & Continue,
+  castle controls and consecutive Save & Quit:
+  `prefix-runtime-normal-guest-star/result.json`. Star required route2;
+  route1 bot failure retained. This image precedes later allocator/index/camera
+  changes; do not transfer its acceptance to the latest candidate.
+- Prefix placement is an abandoned opt-in experiment; the latest indexed body
+  exceeds its16KiB capacity. Default ROOT is current. Four prefix-only installer
+  tests skip on ROOT. Keep older logs as historical evidence only.
+- Remaining acceptance is tracked in [WORKLIST.md](../WORKLIST.md).
 
-The mod is still experimental. Do not report a stable/complete release.
-The normal memory-fix cartridge `raw-resource-host.nds` failed the first of
-three new course-return cold starts before one signed menu. Run 2 passed the
-full course-return check; run 3 is still running at
-`/workspace/runtime/raw-resource-course-return-repeats/` (exec session 39667).
-An opt-in bootstrap now closes associations with WM_SetEntry(0), publishes
-closed ENTRY in the MB beacon through WM_SetGameInfo, and waits for both ARM7
-acknowledgments before sending the firmware's remaining BOOT requests. It
-keeps native BEACON_SENT handling from replacing the pending callback. New
-parent recreation then restores ordinary entry acceptance. This tests the
-race where a signed app associates while the old parent is being shut down.
+## Historical bounded-reservation regression
 
-`--close-entry-before-boot` requires restart-parent and a separate output;
-it is NOT the default. Its first version only gated phase 1 and never ran,
-because the control hook starts in phase 3. Three menu passes for that image
-are NOT proof of entry closure: `/workspace/runtime/closed-entry-menu-repeats/`.
-V2 gates the old parent in phase 1 or 3, before recreation; debug[31]=0x1005
-proves both acknowledgments. The smoke check now requires that marker when
-this option is enabled. V2 PASSED all five real four-console menu cold starts:
-`/workspace/runtime/closed-entry-v2-menu-repeats/result.json`; immutable driver
-`/workspace/runtime/closed-entry-v2-driver/`. Cartridge
-`/workspace/runtime/closed-entry-host-v2.nds` SHA256
-`5b98cafa0a72a96c95e91743cfa12a6a0f7b80cd21d0e004d66c472f3043644c`.
-A default reproduction after adding the opt-in feature is byte-identical to
-raw-resource (`/workspace/runtime/default-entry-experiment-control.nds`).
+- Source now fixes an additional physical-budget bug: extending a split arena
+  previously ignored protected arrays/unusable tails and could reserve far
+  more than the native35840/43008 bytes. Unusable tails now shrink through the
+  correct heap before growth; pending protected arrays are excluded from the
+  growth budget. Native manager/parser checks assert physical segment capacity
+  never exceeds that native budget. All18particle tests and all71tests PASS:
+  `/workspace/runtime/bounded-particle-prefix-all-tests.log`.
+- Prefix placement DID install on all4consoles at02000100 and get past the
+  skybox allocation. Its old unbounded particle build later crashed on map
+  allocation while finishing entrance messages:
+  `/workspace/runtime/prefix-runtime-rainbow-matrix/dialogue-failed-*`.
+  This was a native Crash(), not a dialogue bug. Failed party shut down.
+  Message helper now checks native fault flags before waiting for conversation.
+- Current four-console run uses the bounded allocator and cache-safe loader:
+  `/workspace/runtime/bounded-particle-prefix-rainbow-matrix/`, exec52176;
+  failure socket `/workspace/runtime/bounded-particle-prefix-rainbow-matrix.sock`.
+  Image `bounded-particle-prefix-rainbow-cycle-host.nds` SHA256
+  `86906c9cc585f198fd7cd46ea375b739ede88d0cf158af9243c1a1868eee3171`.
+  Frozen driver in driver/. Requests28..40; no acceptance claimed yet.
+- Prefix installer now aligns its64-word fixup input window and flushes/
+  invalidates it before physical reads, as does the512-byte LZ input window.
+  Body input gets cache maintenance before IO. Four loader checks include
+  these calls, bounds, exact relocation, cached reuse and rejection paths.
+- The older normal prefix guest-star run remains active in exec52192. It
+  precedes physical-budget correction and installer-input cache maintenance;
+  do not attribute its campaign result to the newest bounded image.
+- Canonical integrated output remains OLD. Prefix is still opt-in; do not
+  promote it until current live load/controls and normal campaign checks pass.
 
-V2 full payload/story/course-return is running for 3 cold starts with staggered
-signed-menu selection at `/workspace/runtime/closed-entry-course-return-repeats/`,
-exec session 4131; frozen drivers `/workspace/runtime/closed-entry-campaign-driver/`.
-Do not promote the option until full game handoff and repetitions pass.
+## Newest results and active experiment
+
+- All71 isolated checks PASS on the prefix build:
+  `/workspace/runtime/prefix-runtime-all-tests.log`. Earlier67-check result:
+  `/workspace/runtime/streamed-lz-cache-safe-all-tests.log`.
+  Teardown's actual loaded-star wireless Save & Quit PASS:
+  `/workspace/runtime/acknowledged-teardown-loaded-star/result.json`.
+  HostTitle and all3guest SessionEnded verified. This used the actual earned
+  guest star backup; it did not collect a new star in that run.
+- Streaming LZ in ROOT placement still FAILED guest Rainbow skybox result33336:
+  `/workspace/runtime/streamed-lz-rainbow-matrix/story-entry-native-crash-1`.
+  Eight streamed LZ reads completed per guest, nine on host; NARC reads4each.
+  ROOT largest20584,total29220; GAME largest23436. Failed party shut down.
+- NEW OPT-IN --runtime-placement prefix puts the module at02000100..02004000,
+  outside retail ARM9 (begins02004000), preserving first256bootstrap diagnostic
+  bytes. Body15168 fits the16128-byte bound. Guard capacity and expected stock
+  ARM9 base at build time; loader also checks capacity before copying. Fixups
+  stream in64-word chunks, so no heap allocation or resident fixup tail.
+  Four compiled ARM installer checks PASS at
+  `/workspace/runtime/prefix-installer-arm-tests.log`: exact relocation/body,
+  cached second install, oversized rejection, invalid fixup rejection; preserve
+  diagnostics and first256retail ARM9 bytes. FS operations are unit adapters.
+  Prefix is NOT the default until live acceptance.
+- Current live Rainbow28..40 prefix run:
+  `/workspace/runtime/prefix-runtime-rainbow-matrix/`, exec43921;
+  failure socket `/workspace/runtime/prefix-runtime-rainbow-matrix.sock`.
+  Image `prefix-runtime-rainbow-cycle-host.nds` SHA256
+  `d37a6836d008a2db8279c94938e9314cbf89e078f494bf16ed7c42c2d94035ce`.
+  Frozen drivers in driver/. Includes cache-safe512-byte LZ window, partial
+  particle reservation, and full teardown fix including radio1 error screen.
+- Fresh normal prefix guest coin/star/consecutive-save run is active:
+  `/workspace/runtime/prefix-runtime-normal-guest-star/`, exec52192;
+  failure socket `/workspace/runtime/prefix-runtime-normal-guest-star.sock`.
+  Image `prefix-runtime-normal-host.nds` SHA256
+  `c04f676b02aedcd357e78092558887c2a0e55143720e9c3a9085ac8abad7243e`.
+  Frozen drivers in driver/. This run earns fresh key/coin/star; it has no
+  preexisting save fixture. Source recovery includes all3new unit test files.
+- Latest default ROOT-placement normal image (not prefix):
+  `streamed-lz-cache-safe-normal-host.nds` SHA256
+  `94452af860dfbb1fd6a723801d634d6d87d85e915eb54dc6f83ce6f73ee00089`.
+  It includes input cache maintenance and the full teardown error branch.
+  Do not treat the ROOT variant as Rainbow-compatible.
+
+
+## Current checkpoint (supersedes historical runs below)
+
+- Default startup is `closed-restart-parent`; entry closure and beacon update
+  must both acknowledge before BOOT. Debug[31]==0x1005 proves execution.
+  Five signed-menu boots and three complete story/course-return cold starts
+  PASS. Course-return schedules [0,0,0], [0,600,1800], [1800,0,600] are at
+  `/workspace/runtime/closed-entry-course-return-repeats/result.json`.
+  Legacy restart-parent failed overall2/3; the phase1-only prototype did not
+  exercise closure. Do not revive either as the default.
+- Native particles retain full 40/256 or Bowser64/320 counts. Split arrays
+  preserve each individual contiguous allocation and track heap owners.
+  Total free bytes, rather than just each heap's largest block, gate splitting.
+  But guest Rainbow has ROOT largest9264/total17736, GAME largest23436: its
+  17408-byte particle array and 10272-byte resource array cannot both fit late.
+  Captures `/workspace/runtime/streamed-narc-rainbow-inspection/load-failed-*`.
+  Native ARM parser reproduces safe rejection, not an overwrite.
+- Reserving the full arena early FAILED host skybox raw LoadFile: compressed
+  scratch23607 plus result33336 exceeded contiguous free space. Reserving only
+  the resource table at ROOT's high end also FAILED that temporary peak:
+  `/workspace/runtime/reserved-table-rainbow-matrix/story-entry-native-crash-0`.
+  ROOT total35260/largest26688; GAME largest23436. FAT64a is
+  `data/vrbox/vr02.bmd`. These parties were shut down cleanly.
+- Current policy reserves ONLY the native10272-byte resource table before stage
+  resources; during native arena initialization, it reserves/protects the
+  17408/21760-byte particle array before smaller callback requests. Both remain
+  part of the original native35840/43008-byte budget. Owner-aware teardown
+  frees all segments; real native manager+resource parser tests pass.
+- Uncached NARC member views completed four actual reads per console before
+  the later particle failure. Unit tests compare every member of all13NARCs
+  with ndspy. Their physical FS APIs are ROM adapters, not wireless substitutes.
+- NEW raw compressed-file hook at0201834c reads LZ10 with a512-byte input window,
+  avoiding the full scratch copy beside its output. Five ARM tests PASS:
+  exact33336-byte skybox vs ndspy, native OOM reproduction, bounded reads,
+  eight releases without leaks, offline/uncompressed delegation. Tests use a
+  private captured heap and stub physical file reads; no live memory writes.
+- Current Rainbow wireless run: `/workspace/runtime/streamed-lz-rainbow-matrix/`,
+  exec62560; failure socket `/workspace/runtime/streamed-lz-rainbow-matrix.sock`.
+  Image `streamed-lz-rainbow-cycle-host.nds` SHA256
+  `f160a47d8175bc5e4c7cf8a894e64f9f296406c24d15336b76fa215c189ad14d`.
+  Frozen drivers in driver/. Diagnostic chord L+R+X (0x700), metadata describes
+  it; old images use Select (0x304). It requests28..40; no pass claimed yet.
+- Normal run `/workspace/runtime/streamed-narc-normal-guest-star/` PASSED real
+  guest coin0→1 on every console, three acknowledged guest jumps, actual guest
+  Chomp star on FIRST physical route, Save & Continue with persistence, castle
+  controls. BUT subsequent Save & Quit FAILED: hostTitle, guests native radio4,
+  menuLoading5/sessionEnded0. Star is actually saved; `earned-star.sav` retained.
+  Image SHA2566c657e5765e2e5db8a85ab679c912346a3fab49502eb193d3847821e0bccc7c9.
+  Failed party was shut down cleanly after read-only inspection.
+- NEW teardown retry calls native02040724 while waiting for radio shutdown.
+  SDK Reset02062200 is wrapped only during co-op title handoff: accepted Reset
+  is deduplicated until the native Reset→Disable→End chain completes. Preserve
+  the actual native callback. Pending flag is set BEFORE SDK submission; a
+  rejected request does not claim an asynchronous operation. Native radio1
+  is FAILURE, not "pending"; it exits the wait through the resident error screen.
+- Four native ARM teardown checks exercise the real polling/callback chain,
+  with SDK command submission stubbed. `/workspace/runtime/final-teardown-arm-tests.log`.
+  The first66-test suite PASSED at `/workspace/runtime/streamed-lz-teardown-all-tests.log`;
+  the latest error-screen branch PASSED targeted4teardown+7image checks.
+- New quit wireless run from the controller-earned star backup:
+  `/workspace/runtime/acknowledged-teardown-loaded-star/`, exec68959;
+  failure socket `/workspace/runtime/acknowledged-teardown-loaded-star.sock`.
+  Normal image `acknowledged-teardown-normal-host.nds` SHA256
+  `e72f866d8b21189326145ff0912a0b3fca0fe4ceb1caa7eb87bd3ce8078166b0`.
+  It includes compressed streaming/table reservation/reset deduplication, but
+  precedes the extra radio1 error-screen branch. Flag --quit-loaded-save is
+  explicit: this run does not earn a new star. Frozen drivers in driver/.
+- Recovered old diagnostic party PASSED3..12 after46..51,1,2. Same-tick rerun
+  corrected the false stage6 serial-read floor-adjustment failure. Evidence:
+  `/workspace/runtime/luigi-early-same-tick-continuation/diagnostic-cycle.json`.
+  This party is shut down. Always set COOP_FRAME_SAMPLES=1 on Remote drivers.
+  Earlier healthy coverage13..23, fresh24, fresh25..27,42..45 does not establish
+  the new memory policy's compatibility, boss victories, or earned progression.
+- Canonical integrated bootstrap output is OLD. Latest build/coop module is a
+  standalone normal module including the radio1 branch; its matching integrated
+  host has not been rebuilt yet. Do not offer an old cartridge as current.
+- No agents/core patches/live RAM writes. Stock melonDS1.1 core git clean at
+  b86390e4428bf38ce4c1ce0e9ca446d6d25955e8. Readonly frontend adds ITCM/banked
+  registers. Do not interrupt pending RemoteEmulators requests.
+
+## Historical diagnostics and driver corrections
 
 The raw-resource HMC diagnostic passed stages 13–23 with all four controllers,
 same-tick synchronization and shared pause. Final saved snapshots show full

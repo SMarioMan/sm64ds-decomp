@@ -224,6 +224,11 @@ def finish_messages(ds, level_clear_choice=None):
                 if ds.read(console,actor+0x709,1)[0] or ds.read(console,actor+0x71e,1)[0]:return False
         return True
     for step in range(120):
+        for console in range(ds.count):
+            crash,exception=ds.readv(console,((0x0209d4d8,1),(0x0209cddc,4)))
+            if crash!=b'\0' or int.from_bytes(exception,'little'):
+                snapshot(ds,'dialogue-native-fault')
+                raise RuntimeError(f'Native fault while finishing shared messages on console {console}')
         if level_clear_choice is not None and ds.read(0,0x0209f2d4,1)==b'\x03':
             ds.touch(0,*level_clear_choice)
             ds.run(120)

@@ -159,5 +159,35 @@ class ParticleHeapTests(HeapHarness,unittest.TestCase):
         with self.assertRaises(NativeAllocationFailure):
             self.call('CoopAllocateParticlePool',0x80000)
 
+    def test_reserved_table_is_used_by_the_native_resource_parser(self):
+        from test_particle_segments import ParticleSegmentTests
+        before=(self.largest(self.root),self.largest(self.game_heap))
+        self.call('CoopReserveParticlePool',13)
+        reserved=self.word(self.runtime['coopParticleReservedTable'])
+        self.assertEqual(self.word(self.runtime['coopParticleReservedSize']),10272)
+        pool,manager=ParticleSegmentTests.setup_native_manager(self)
+        self.assertEqual(self.word(manager+0x1c),reserved)
+        self.assertEqual(self.word(self.runtime['coopParticleReservedSize']),0)
+        self.call('CoopFreeParticlePool',pool)
+        self.assertEqual((self.largest(self.root),self.largest(self.game_heap)),before)
+
+    def test_bowser_reservation_keeps_the_native_larger_arrays(self):
+        from test_particle_segments import ParticleSegmentTests
+        before=(self.largest(self.root),self.largest(self.game_heap))
+        self.call('CoopReserveParticlePool',36)
+        self.assertEqual(self.word(self.runtime['coopParticleReservedArena']),0xa800)
+        pool,manager=ParticleSegmentTests.setup_native_manager(self,0xa800,64,320)
+        self.call('CoopFreeParticlePool',pool)
+        self.assertEqual((self.largest(self.root),self.largest(self.game_heap)),before)
+
+    def test_wrong_native_request_cannot_overrun_a_reservation(self):
+        self.call('CoopReserveParticlePool',13)
+        with self.assertRaises(NativeAllocationFailure):
+            self.call('CoopAllocateParticlePool',0xa800)
+        pool=self.call('CoopAllocateParticlePool',0x8c00)
+        self.call('CoopFreeParticlePool',pool)
+        self.assertTrue(self.intact(self.root))
+        self.assertTrue(self.intact(self.game_heap))
+
 
 if __name__=='__main__':unittest.main()

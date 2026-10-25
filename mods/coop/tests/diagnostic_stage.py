@@ -49,6 +49,10 @@ def heap_status(ds):
             console,base+module['diagnosticOffsets']['coopParticleFallbacks'])}
         if module.get('streamUncachedNarcMembers'):
             state['streamedNarcReads']=ds.word(console,base+module['diagnosticOffsets']['coopStreamedNarcReads'])
+        if module.get('streamCompressedDiskFiles'):
+            state['streamedLzReads']=ds.word(console,base+module['diagnosticOffsets']['coopStreamedLzReads'])
+        if module.get('evictCommonStageSourceCache'):
+            state['stageCacheEvictions']=ds.word(console,base+module['diagnosticOffsets']['coopStageCacheEvictions'])
         if module.get('particleSplitFallback'):
             for key,symbol in (('particleSplitFallbacks','coopParticleSplitFallbacks'),
                                ('particleSegments','coopParticleSegmentCount')):

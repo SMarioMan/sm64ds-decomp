@@ -20,6 +20,7 @@ def main():
     parser.add_argument('rom',type=Path,help='Super Mario 64 DS Europe revision 0')
     parser.add_argument('--station',type=Path,required=True,help='Personal Download Station Volume 1 USA dump')
     parser.add_argument('--save-slot',choices=('A','B','C'),default='A',help='Host adventure file, default A')
+    parser.add_argument('--runtime-placement',choices=('root','prefix'),default='root')
     parser.add_argument('--diagnostic-start-level',type=int,choices=range(1,52),
                         help='TEST ONLY: enter a native stage directly, not a campaign progression check')
     parser.add_argument('--diagnostic-stage-cycle',action='store_true',
@@ -40,6 +41,8 @@ def main():
         parser.error('--diagnostic-stage-cycle requires --diagnostic-start-level')
     if args.diagnostic_start_level is not None and args.output==ROOT/'build/coop/bootstrap/sm64ds-haxxstation-game-handoff.nds':
         parser.error('Diagnostic builds require --output to keep the normal cartridge separate')
+    if args.runtime_placement=='prefix' and args.output==ROOT/'build/coop/bootstrap/sm64ds-haxxstation-game-handoff.nds':
+        parser.error('Experimental prefix placement requires a separate --output')
     for path in (args.rom,args.station):
         if not path.is_file():parser.error(f'Input ROM does not exist: {path}')
     if args.close_entry_before_boot and args.station_handoff not in ('closed-restart-parent','restart-parent'):
@@ -61,7 +64,7 @@ def main():
            '--beacon-period',args.beacon_period,'--station',args.station)
     diagnostic=('--diagnostic-start-level',args.diagnostic_start_level) if args.diagnostic_start_level is not None else ()
     if args.diagnostic_stage_cycle:diagnostic+=('--diagnostic-stage-cycle',)
-    run('build.py',args.rom,'--save-slot',args.save_slot,*diagnostic)
+    run('build.py',args.rom,'--save-slot',args.save_slot,'--runtime-placement',args.runtime_placement,*diagnostic)
     run('bootstrap/build_probe.py','--station',args.station)
     # The provisional parent fixes the final WFS table extents before the
     # executable-only client is packaged. Nothing from this stage is played.

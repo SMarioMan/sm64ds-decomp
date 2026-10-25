@@ -127,19 +127,23 @@ def main():
                    0x80000000 | (len(body)-4)])
     blob = pack(base,body,exports['CoopBootstrapInit'],sorted(fixups))
     (root/'host-relocatable.bin').write_bytes(blob)
-    # This variant offers the station's signed SRL, so the parent's unused
-    # secure-area padding need not retain the stock SM64DS boot signature.
-    # ENTRY uses this loader only before the resident story runtime installs.
-    # Keep 0x02004100 free for the downloaded client's pre-crt0 descriptor stub.
-    loader_address = 0x02004200
+    # Secure-area bytes include real BIOS veneers and are processed by retail
+    # and flashcart boot loaders. Keep ARM9/ARM7 and secure-area metadata
+    # untouched; place this loader after the existing resident-module loader
+    # in ENTRY's reserved result-code cave instead.
+    installer=(ROOT/'build/coop/install.bin').read_bytes()
+    loader_address=(CAVE_START+len(installer)+3)&~3
     trampoline = CAVE_END-8
     game['CoopOriginalEntryInit'] = trampoline
     loader, _ = link(ROOT/'mods/coop/bootstrap/heap_loader.cpp',root/'heap-loader',loader_address,
                      game,launcher,cc,ld,[f'COOP_BOOTSTRAP_FILE={ids[0]}'])
-    if loader_address+len(loader)>0x02004800:
-        raise ValueError('Heap loader exceeds the pre-crt0 padding')
+    if loader_address+len(loader)>trampoline:
+        raise ValueError('Heap loader overlaps the ENTRY trampoline')
     overlay = rom.loadArm9Overlays()[75]
     data = bytearray(overlay.data)
+    if data[CAVE_START-overlay.ramAddress:CAVE_START-overlay.ramAddress+len(installer)]!=installer:
+        raise ValueError('ENTRY does not contain the matching resident-module loader')
+    data[loader_address-overlay.ramAddress:loader_address-overlay.ramAddress+len(loader)]=loader
     entry = overlay_symbols['_ZN10dScEntry_c13InitResourcesEv']
     first = data[entry-overlay.ramAddress:entry-overlay.ramAddress+4]
     if first != bytes.fromhex('30402de9'):
@@ -165,12 +169,6 @@ def main():
     output+=b'\xff'*(fat-len(output))
     output+=original[old_fat:old_fat+old_fat_size]+bytes(len(ids)*8)
     struct.pack_into('<II',output,0x48,fat,fat_size)
-    arm9_offset=struct.unpack_from('<I',original,0x20)[0]
-    loader_offset=loader_address-rom.arm9RamAddress
-    if ndspy.codeCompression.decompress(rom.arm9)[loader_offset:loader_offset+len(loader)]!=rom.arm9[loader_offset:loader_offset+len(loader)]:
-        raise ValueError('Parent loader storage is not in the uncompressed ARM9 prefix')
-    output[arm9_offset+loader_offset:arm9_offset+loader_offset+len(loader)]=loader
-    struct.pack_into('<H',output,0x6c,_common.crc16(output[arm9_offset:arm9_offset+0x4000]))
     start,end = struct.unpack_from('<II',output,fat+overlay.fileID*8)
     output[start:end]=replacement
     assets = [blob,signed,menu,probe]
@@ -186,6 +184,8 @@ def main():
     struct.pack_into('<H',output,0x15e,_common.crc16(output[:0x15e]))
     output+=b'\xff'*(capacity-len(output))
     checked=ndspy.rom.NintendoDSRom(output)
+    if checked.arm9!=rom.arm9 or checked.arm7!=rom.arm7 or output[0x6c:0x70]!=original[0x6c:0x70]:
+        raise ValueError('Parent boot images or secure-area metadata changed')
     changed_native=[i for i,data in enumerate(rom.files) if checked.files[i]!=data]
     if changed_native!=[overlay.fileID] or len(checked.files)!=len(rom.files)+len(ids):
         raise ValueError('Unexpected native file changes: '+str(changed_native))
@@ -204,6 +204,8 @@ def main():
             'fixedRadioChannel':args.channel,
             'fixedBeaconPeriodTu':args.beacon_period,
             'originalFileCount':len(rom.files),'preservedNativeArchives':True,
+            'bootImagesUnchanged':True,'secureAreaUnchanged':True,
+            'bootstrapLoaderStorage':'overlay75',
             'wirelessFilesystemHeader':filesystem_header.hex(),
             'files':dict(zip(('bootstrap','signedClient','menu','unsignedPayload'),ids)),
             'loaderAddress':hex(loader_address),'loaderBytes':len(loader),'bodyBytes':len(body),'fixups':len(fixups),
