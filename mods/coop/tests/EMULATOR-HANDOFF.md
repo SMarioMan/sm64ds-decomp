@@ -6,6 +6,19 @@ fixes are still undergoing live validation. Physical host boot on New3DS/R4 is
 user-confirmed; campaign completion and physical wireless remain unverified. Read the current regressions first; later sections preserve
 historical checkpoints and failures rather than release acceptance.
 
+## Additional user requirement: variable party size in one build
+
+The user can currently test3 physical systems and will follow up with results.
+For their pinned af50a63b7 test they were told to add --clients2 (host plus2
+Download Play guests), so the output hash differs from the four-system f641
+image. They also requested eventual support for2–4 players with one build.
+This is now an explicit worklist item; it is NOT implemented or verified.
+Audit found hardcoded COOP_EXPECTED_CLIENTS gates in bootstrap/host.cpp for
+lobby readiness, BOOT, restart, transfer and native roster restoration. A proper
+change needs a host-selected ready bitmap frozen before closing association
+entry, with every later barrier consuming that roster and handling AID reuse.
+Do not turn the current expected count into a timing-based automatic start.
+
 ## Current follow-up: cannon aim synchronization
 
 - New normal image `/workspace/runtime/cannon-echoed-pitch-host.nds`, SHA256
@@ -25,8 +38,10 @@ historical checkpoints and failures rather than release acceptance.
   Wireless cannon firing is still unverified.
 - Full suite PASS:129 discovered,125 executed,4 obsolete prefix-only skips,
   `cannon-echoed-pitch-all-tests.log`. This does not establish campaign completion.
-- ACTIVE four-console28..32 cycle: `cannon-pitch-stage28-wireless/`, failure
-  socket same path plus`.sock`, driver frozen under driver/. Diagnostic ROM
+- Four-console28..32 cycle PASS: `cannon-pitch-stage28-wireless/`, all5
+  stages passed four-controller movement, exact horizontal same-input-tick
+  synchronization and shared pause/resume. Party exited normally. Driver frozen
+  under driver/. Diagnostic ROM
   `cannon-pitch-stage28-cycle-host.nds`, SHA256
   `d57d51fd2c8a84d5effd4f65def03124ba40c7ae9b61642357962a7a3fb038a5`.
 - The f641 normal party passed a key-only Save & Quit after repeated BOB exits:

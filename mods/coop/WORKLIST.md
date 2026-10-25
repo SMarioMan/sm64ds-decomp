@@ -31,12 +31,12 @@ not establish campaign completion or real-hardware compatibility.
   fix. Real wireless cannon firing and remaining movement modes are unverified.
 - [ ] Complete the Rainbow Ride memory and wireless filesystem regressions.
   ROM-verified member extents now avoid the failing runtime metadata reads.
-  Four-console Rainbow Ride (28), stages29 and30 passed on the earlier image.
-  Flight31 and transition32 now pass with native Mario caps and a narrowly
-  scoped loading checksum fix. Deterministic actor initialization resolves the
+  The combined cannon-pitch candidate now passes four-console Rainbow Ride28
+  through32, including native Mario-cap flight and the asymmetric loading
+  checksum fix. Deterministic actor initialization resolves the
   captured stage33 enemy/pause divergence; the latest33..40 cycle passes all
-  controls and synchronization checks. Retest28..32 on the combined candidate,
-  then finish the remaining stages and mission variants. These are diagnostic
+  controls and synchronization checks on the prior image. Finish the remaining
+  stages and mission variants, then repeat final combined acceptance. These are diagnostic
   entries, not evidence of earned progression or boss victories.
 - [ ] Validate source-cache release and bounded particle reservations across
   all native stages, mission variants, repeated transitions, and teardown.
@@ -46,6 +46,17 @@ not establish campaign completion or real-hardware compatibility.
   on the final combined cartridge. Preserve both host backup banks and other
   adventure files. Earlier successful cartridges are separately identified in
   the emulator handoff; do not transfer their acceptance to a newer build.
+- [ ] Support2–4 total players with one normal cartridge build. The host
+  explicitly starts a ready party of1–3 guests; joining earlier must not
+  automatically start the transfer or require a particular timing window.
+  Freeze that ready roster before the acknowledged entry-close handshake,
+  then use its actual association bitmap/count for firmware BOOT, payload
+  readiness/completion, parent restart, native MAC roster restoration and
+  gameplay/save barriers. Handle abandoned/reused AIDs rather than assuming
+  every roster occupies consecutive radio slots. Current bootstrap/host.cpp
+  gates still use COOP_EXPECTED_CLIENTS throughout; --clients1/2/3 remains a
+  build-time requirement pending this change. Verify the identical ROM at all
+  three party sizes, delayed joins, lobby departures and repeat sessions.
 - [ ] Recheck simultaneous and delayed Download Play selections, guest/host
   disconnects, and repeat sessions. Use protocol acknowledgments, not a required
   human timing window. Keep standard green/red/blue/yellow Yoshi palettes.
