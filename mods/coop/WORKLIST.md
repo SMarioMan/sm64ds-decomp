@@ -40,6 +40,11 @@ not establish campaign completion or real-hardware compatibility.
   Require final combined-image physical performance acceptance as well as
   stock-core emulator regression coverage. See [PERFORMANCE.md](PERFORMANCE.md)
   for measurement definitions and the traced animation-read latency.
+  The isolated timer-reset experiment14ab0ad99 showed no useful matched BoB
+  gain and was removed. Main phase4 dominates steady samples but contains both
+  behavior and rendering; new read-only process histograms distinguish those.
+  Camera acceptance now uses native player slots even when guest association
+  order differs from console order.
 - [x] Fix the reported white screen before the title screen on real hardware.
   Original failing commit: `419afe72b1f9d133bd26bb03bcd71ebe4d687869`,
   cartridge `sm64ds-haxxstation-game-handoff.nds`.

@@ -40,6 +40,7 @@ def check_zoom(ds):
         for console in range(ds.count):
             for step in range(3):
                 before=observe(ds)
+                slot=before[console]['slot']
                 mode=before[console]['mode']
                 if mode==0:
                     # Standard mode maps the physical X button to native zoom.
@@ -62,19 +63,20 @@ def check_zoom(ds):
                     if peer!=console and any(after[peer][key]!=before[peer][key]
                                              for key in ('far','state')):
                         raise RuntimeError('A foreign zoom button changed the local camera')
-                if choices[console]==1:
+                if choices[slot]==1:
                     if not after[console]['far']:raise RuntimeError('Local far zoom did not engage')
-                elif choices[console]==2:
+                elif choices[slot]==2:
                     if after[console]['state']!='0x209b098':
                         raise RuntimeError('Local first-person camera did not engage')
-                elif choices[console]==0:
+                elif choices[slot]==0:
                     if after[console]['far'] or after[console]['state']!='0x209b008':
                         raise RuntimeError('Local normal camera did not return')
                 else:raise RuntimeError('Invalid native zoom choice')
-                if choices[console]==before[console]['choices'][console]:
+                if choices[slot]==before[console]['choices'][slot]:
                     raise RuntimeError('Native zoom button did not change its player choice')
                 assert_party_synchronized(ds,f'camera-zoom-{console}-{step}')
-            if observe(ds)[console]['choices'][console]!=baseline[console]['choices'][console]:
+            slot=baseline[console]['slot']
+            if observe(ds)[console]['choices'][slot]!=baseline[console]['choices'][slot]:
                 raise RuntimeError('Complete zoom cycle did not restore the native choice')
         report['status']='passed'
         ds.screens('camera-controls-')

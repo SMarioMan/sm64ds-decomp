@@ -152,15 +152,13 @@ def main():
                         help='TEST ONLY: synchronized L+R+X requests the next native stage')
     parser.add_argument('--diagnostic-render-cost',action='store_true',
                         help='TEST ONLY: drain geometry to measure terrain/body/head polygon costs; changes timing')
-    parser.add_argument('--experimental-wireless-frame-clock',action='store_true',
-                        help='EXPERIMENTAL: count wireless wait toward the native frame budget')
     args = parser.parse_args()
     if args.baseline and args.diagnostic_start_level is not None:
         parser.error('--baseline cannot select a diagnostic stage')
     if args.diagnostic_stage_cycle and args.diagnostic_start_level is None:
         parser.error('--diagnostic-stage-cycle requires --diagnostic-start-level')
-    if args.baseline and (args.diagnostic_render_cost or args.experimental_wireless_frame_clock):
-        parser.error('--baseline cannot enable experimental runtime options')
+    if args.baseline and args.diagnostic_render_cost:
+        parser.error('--baseline cannot enable render diagnostics')
     original = args.rom.read_bytes()
     if hashlib.sha256(original).hexdigest() != ROM_SHA256:
         parser.error('Expected verified Europe revision-0 ROM; other revisions are unsupported')
@@ -274,11 +272,6 @@ def main():
             defines.append(f'COOP_DIAGNOSTIC_START_LEVEL={args.diagnostic_start_level}')
         if args.diagnostic_stage_cycle:
             defines.append('COOP_DIAGNOSTIC_STAGE_CYCLE=1')
-        if args.experimental_wireless_frame_clock:
-            defines.append('COOP_EXPERIMENTAL_WIRELESS_FRAME_CLOCK=1')
-            offset=0x02019924-rom.arm9RamAddress
-            if arm9[offset:offset+4]!=bytes.fromhex('00508005'):
-                raise RuntimeError('Unexpected native conditional frame clock reset')
         if args.diagnostic_render_cost:
             defines.append('COOP_DIAGNOSTIC_RENDER_COST=1')
             for address,target,data,base in (
@@ -439,9 +432,6 @@ def main():
         module_report['perPlayerCameraInputGuards']=True
         module_report['perPlayerCannonPitch']=True
         module_report['deterministicActorInitialization']=True
-        if args.experimental_wireless_frame_clock:
-            module_report['experimentalWirelessFrameClock']=True
-            module_report['frameClockResetHook']='0x02019924'
         module_report['localShadowVisibility']=True
         module_report['shadowVisibilityReads']=[{'address':hex(address),
             'originalWord':'0xe59000b0','targetOffset':hex(emitted['CoopShadowFlagsRead']-PAYLOAD_ADDRESS)}

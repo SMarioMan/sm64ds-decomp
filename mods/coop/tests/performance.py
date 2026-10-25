@@ -11,7 +11,7 @@ def capture_performance(ds, name):
     rows={}
     for line in lines:
         fields=line.split()
-        if not fields or fields[0] not in ('PERFORMANCE','CADENCE','PHASES','GEOMETRY'):continue
+        if not fields or fields[0] not in ('PERFORMANCE','CADENCE','PHASES','GEOMETRY','PROCESS_PHASES','PROCESS_ACTORS'):continue
         key=tuple(map(int,fields[1:5]))
         row=rows.setdefault(key,dict(zip(('console','wireless','level','paused'),key)))
         if fields[0]=='PERFORMANCE':
@@ -21,13 +21,18 @@ def capture_performance(ds, name):
             row.update(zip(('maxRenderedPolygons','maxBuildingPolygons','maxBuildingVertices',
                             'geometryOverflowFlagSamples','geometryOverflowFlagRises'),map(int,fields[5:])))
         else:
-            row['cadenceHistogram' if fields[0]=='CADENCE' else 'phaseObservations']={
+            row[{'CADENCE':'cadenceHistogram','PHASES':'phaseObservations',
+                 'PROCESS_PHASES':'processPhaseObservations','PROCESS_ACTORS':'processActorObservations'}[fields[0]]]={
                 int(bin):int(count) for bin,count in (item.split(':') for item in fields[5:])}
     result={'measurement':'emulated-sdk-vblanks-per-native-outgoing-input-tick',
             'hardwareAcceptance':False,'renderedFpsMeasured':False,
             'initializingScenesExcluded':True,'loadingFlagExcluded':True,
             'overflowHistogramBin':256,'rows':list(rows.values())}
     for row in result['rows']:
+        if 'processActorObservations' in row:
+            row['processActors']=[{'phase':key>>16 if key>=65536 else key//354,
+                'actorID':key&65535 if key>=65536 else key%354,'observations':count}
+                for key,count in sorted(row.pop('processActorObservations').items())]
         intervals=row['intervals']
         histogram=row['cadenceHistogram']
         if sum(histogram.values())!=intervals:

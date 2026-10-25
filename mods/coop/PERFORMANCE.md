@@ -132,30 +132,47 @@ before/after native calls, changing scheduling. Use normal images with the
 read-only frontend for cadence/performance acceptance. The ROM diagnostic is
 only for attributing geometry use and never raises the DS rendering limits.
 
-## Native frame clock experiment (not enabled by default)
+## Rejected native frame clock experiment
 
-A controller-only unmodified EU0 retail Adventure/file-A castle measurement
-records299 consecutive input intervals, all exactly2 SDK VBlanks, over600
-observed frames (`retail-cadence-baseline/retail-adventure-cadence.json`).
-The offline unpaced frontend measures emulated cadence, not wall-clock speed.
-An earlier automated replay entered VS practice instead of Adventure and is
-explicitly marked invalid as an Adventure baseline.
+Unmodified EU0 retail Adventure/file-A castle measurement records299
+consecutive input intervals, all exactly2 SDK VBlanks, over600 observed frames
+(`retail-cadence-baseline/retail-adventure-cadence.json`). The offline unpaced
+frontend measures emulated cadence, not wall-clock speed. An earlier automated
+VS-practice replay is explicitly invalid as an Adventure baseline.
 
-The native render IRQ resets the frame timer at presentation. The main loop
-then performs its synchronous NET exchange and normally resets the timer
-again at02019924, discarding radio elapsed time. Experimental option
-`--experimental-wireless-frame-clock --output OTHER.nds` retains that elapsed
-time during active co-op gameplay only. Disabled/offline, loading, scene/menu/
-title transitions and session teardown retain the native reset. The native
-flag0x10 that already skips the reset still skips the hook. The native frame
-budget, unconditional render sleep, IRQ wake/readiness check, exchange order,
-wireless packets and connection error handling are unchanged. Long frames
-still wait for a real render IRQ; there is no catch-up simulation loop.
+Commit14ab0ad99 contains the isolated optional frame-clock experiment,
+SHA256 `afa982ae47982e0bc344e7c50db54c5b71f10b4369b145e22f883b5a4bda87ee`.
+It retains elapsed NET time instead of the main loop's second timer reset.
+Five actual ARM reset-block/IRQ tests and the full147-test suite passed.
+The default image remained byte-identical fbb2262d. The four-console normal
+route passes startup, movement, castle entry and BoB entry. But matched BoB
+measurements show NO meaningful improvement: median/p95 remain3 VBlanks;
+mean including cold reads3.588 versus3.577 for the shadow-fix baseline.
+A fresh600-frame steady BoB sample has202 intervals at about3.005 VBlanks;
+almost all phase observations fall within main phase4. Castle medians were
+already2 on the baseline, so they do not demonstrate improvement either.
+The option and its runtime/test code were removed from the current build.
+The historical commit and frozen run sources preserve reproducibility.
 
-The builder checks the exact original conditional store before patching it.
-Five isolated ARM tests execute the original reset block and VBlank handler,
-checking gameplay retention, fallback reset, native flag condition, render
-budget/readiness and long-delay single wake. These tests require an explicitly
-experimental build; default builds skip them. Four-console normal BoB route
-validation with32-phase read-only measurements is in progress under
-`bob-wireless-frame-clock/`. No physical performance acceptance is claimed.
+Main phase4 covers multiple process lists, including both actor Behavior and
+Render; it is not a CPU profile of Behavior alone. The updated read-only
+frontend additionally records native process phases and actor profile IDs:
+phase2 initialization,3 behavior,4 cleanup,5 render,1 scene-tree traversal.
+Only process phases2..5 use the current node's owner, with RAM bounds and
+profile ID checks against the391-entry native registry. The initial frontend
+encoded IDs0..353 with stride354; reports accept that older encoding as well
+as the current16-bit phase/profile encoding. Histograms are frame-boundary observations, not call counts
+or CPU cycle costs. They preserve the stock core and do not install ROM hooks.
+Earlier frontend reports do not contain these additional histograms. Actual
+retail Adventure replay with the new observer again records299 intervals all2
+VBlanks; its300 observations within main phase4 are all process phase5 (Render).
+Normal four-console fbb run `bob-native-process-profile/` is in progress.
+
+The same run exposed a camera-check driver bug: association order0,1,3,2 was
+incorrectly treated as console order. Zoom assertions now index synchronized
+choices using each console's actual native player slot. Earlier failed reports
+are retained. Corrected physical-input zoom/mixed camera checks and20 shared
+pause cycles pass on the isolated image. A subsequent guest3 coin route failed
+without a pickup, ending above the lower-floor target; a north-approach probe
+also failed navigation. Neither grants coin/transition acceptance. That party
+is now closed. These checks do not establish normal-image release acceptance.

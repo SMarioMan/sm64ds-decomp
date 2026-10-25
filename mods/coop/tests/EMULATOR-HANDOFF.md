@@ -9,25 +9,46 @@ all levels. The tested party size and campaign coverage were not specified;
 newer-image physical acceptance and campaign completion remain open. Read the current regressions first; later sections preserve
 historical checkpoints and failures rather than release acceptance.
 
-## Active performance experiment
+## Current performance investigation
 
 - Normal candidate remains fbb2262d below. Default rebuild
   `frame-clock-default-unchanged-host.nds` reproduces it byte-for-byte.
-- Retail Adventure/file-A castle reference:299 intervals all exactly2 native
-  VBlanks,600 observed frames. Earlier automated VS-practice replay is NOT an
-  Adventure baseline. See `retail-cadence-baseline/retail-adventure-cadence.json`.
-- Experimental flag `--experimental-wireless-frame-clock --output OTHER.nds`
-  retains radio elapsed time in the existing render frame budget. Original
-  render wait/IRQ, NET order and native errors remain unchanged. Scene/loading/
-  teardown/offline paths keep the original reset. Five actual ARM reset-block/
-  IRQ tests pass. Full experimental suite151 discovered,147 executed,4 obsolete
-  prefix skips PASS (`wireless-frame-clock-all-tests.log`).
-- ACTIVE four-console normal route `bob-wireless-frame-clock/`, exec35559,
-  socket `bob-wireless-frame-clock.sock`, image
-  `afa982ae47982e0bc344e7c50db54c5b71f10b4369b145e22f883b5a4bda87ee`.
-  Frozen sources/hashes, key-only fixture, stock core,32-phase frontend.
-  Do not start a second wireless party before closing this one. Startup and
-  normal course movement/performance validation are pending. Not promoted.
+- Retail Adventure/file-A castle:299 intervals all exactly2 native VBlanks.
+  Earlier VS-practice automation is invalid as an Adventure baseline.
+- REJECTED timer experiment14ab0ad99/afa982ae: no useful matched BoB gain.
+  BoB median/p95 remain3 VBlanks; cold-inclusive mean3.588 versus baseline3.577.
+  Steady600-frame sample has202 intervals averaging~3.005, predominantly main
+  phase4, which includes BOTH behavior and rendering. Do not label it a pure
+  Behavior CPU profile. Optional runtime/builder/test code is removed; historical
+  commit and frozen test sources retain the experiment.
+- CLOSED experimental party `bob-wireless-frame-clock/`, image afa982ae.
+  Normal startup, independent inputs, castle/BoB entry and warm locomotion PASS.
+  Fresh600-frame steady BoB capture in `wireless-frame-clock-regression/`.
+  Zoom initially falsely failed because slots0,1,3,2 were treated as console
+  indexes; the first correction also missed two assertions. Corrected
+  `wireless-frame-clock-camera-fixed/` PASSES all zoom/mixed controls and20
+  shared pause cycles. Fresh guest3 coin FAILED: no pickup, totals remain0;
+  the controller ended above the lower-floor coin atY347.7. Subsequent
+  `coin-north-approach/` also FAILED navigation; no pickup acceptance. Native
+  state0211013c resolves to St_Walk, not a confirmed ledge/hang state. The party
+  was shut down cleanly afterward. Course exit/reentry checks did not execute.
+- ACTIVE NORMAL party `bob-native-process-profile/`, exec61040, socket
+  `bob-native-process-profile.sock`, image fbb2262d. Frozen source snapshot,
+  key-only fixture and stock core. The process-observer frontend records native
+  process phase/current owner profile within main phase4. This initial build
+  records IDs0..353 with stride354; BoB profile observations are supported.
+  Current source/full-profiles binary supports the391-entry registry using
+  high16 phase/low16 profile keys; Python also accepts the older stride format.
+  Never start another wireless party before closing the active one.
+- New full-profiles frontend builds successfully; actual offline retail
+  Adventure/file-A castle replay remains299 intervals all2 VBlanks. The300
+  samples within main phase4 are ALL process phase5 (Render), proving main
+  phase4 alone must not be classified as Behavior. Actual output and parser
+  results: `performance-processes-retail/retail-adventure-full-profiles-performance.json`.
+- Current normal isolated suite PASS:146 discovered,142 executed,4 obsolete
+  prefix skips (`slot-aware-camera-all-tests.log`). Default game code/runtime
+  is restored to the independently verified fbb candidate; timer experiment
+  removal affects only experimental builds.
 
 ## Current candidate: local shadow visibility and geometry exhaustion
 

@@ -1808,28 +1808,7 @@ static void PatchCall(u32 address, void *target) {
     _ZN4CP1526InvalidateInstructionCacheEjj(address,4);
 }
 
-#ifdef COOP_EXPERIMENTAL_WIRELESS_FRAME_CLOCK
-// The native render IRQ already resets this clock at presentation. Normally
-// the main loop resets it again after NET, discarding the radio wait. Retain
-// that elapsed time during active story play; keep the original sleep, IRQ
-// wake condition, input exchange order and error handling. Long frames still
-// sleep for a real render IRQ instead of running catch-up simulation ticks.
-void CoopResetFrameClock(volatile u32 *clock) {
-    if (!coopEnabled || data_0209fc68!=4 || coopStageLoading ||
-        coopMenuLoading || coopSceneInitializing || coopTitleLoading ||
-        coopSessionEnded || (*(volatile u16 *)0x020a104c&0x4000))
-        *clock=0;
-}
-#endif
-
 void CoopRuntimeDispatch(unsigned operation, u32 argument) {
-#ifdef COOP_EXPERIMENTAL_WIRELESS_FRAME_CLOCK
-    PatchCall(0x02019924,(void *)CoopResetFrameClock);
-    // Original STREQ runs only when the native NET flag0x10 is clear.
-    *(volatile u32 *)0x02019924 &= 0x0fffffff;
-    _ZN4CP1514FlushDataCacheEjj(0x02019924,4);
-    _ZN4CP1526InvalidateInstructionCacheEjj(0x02019924,4);
-#endif
     PatchCall(0x02010ba4,(void *)CoopShadowFlagsRead);
     PatchCall(0x02010bf0,(void *)CoopShadowFlagsRead);
 #ifdef COOP_DIAGNOSTIC_RENDER_COST

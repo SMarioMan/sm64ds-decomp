@@ -18,6 +18,7 @@
 #include <filesystem>
 #include <array>
 #include <deque>
+#include <map>
 
 using namespace melonDS;
 namespace melonDS::Platform { void SetMPRecvTimeout(int timeout); }
@@ -69,6 +70,8 @@ struct PerformanceBucket {
     u64 geometryOverflowFlagSamples=0, geometryOverflowFlagRises=0;
     u32 maxRenderedPolygons=0, maxBuildingPolygons=0, maxBuildingVertices=0;
     std::array<u64,257> histogram{};
+    std::array<u64,6> processPhases{};
+    std::map<u32,u64> processActors; // key = process phase in high16 bits, profile ID in low16.
     std::array<u64,32> phases{}; // Native NET is phase0x15, callbacks use0x16/0x17.
 };
 struct PerformanceSamples {
@@ -102,6 +105,19 @@ struct PerformanceSamples {
         bucket.maxBuildingVertices=std::max(bucket.maxBuildingVertices,ds.GPU.GPU3D.NumVertices);
         const u32 phase=word(0x9d50c);
         if(phase<bucket.phases.size())++bucket.phases[phase];
+        if(phase==4) {
+            const u32 process=word(0x99f24), node=word(0xa4b68);
+            if(process<bucket.processPhases.size()) {
+                ++bucket.processPhases[process];
+                if(process>=2 && node>=0x02000000 && node<=0x023ffff4) {
+                    const u32 actor=word(node-0x02000000+8);
+                    if(actor>=0x02000000 && actor<=0x023ffff0) {
+                        const u32 id=word(actor-0x02000000+12)&0xffff;
+                        if(id<391)++bucket.processActors[(process<<16)|id];
+                    }
+                }
+            }
+        }
         const u32 nowTick=word(0xa1040), nowVblank=word(0x3ffc3c);
         if(previous && category==current && nowTick==tick)return;
         if(previous && category==current) {
@@ -274,6 +290,11 @@ int main(int argc,char** argv) try {
                     std::cout<<"\nPHASES "<<console<<' '<<category/104<<' '<<(category%104)/2<<' '<<category%2;
                     for(unsigned phase=0;phase<bucket.phases.size();++phase)
                         if(bucket.phases[phase])std::cout<<' '<<phase<<':'<<bucket.phases[phase];
+                    std::cout<<"\nPROCESS_PHASES "<<console<<' '<<category/104<<' '<<(category%104)/2<<' '<<category%2;
+                    for(unsigned phase=0;phase<bucket.processPhases.size();++phase)
+                        if(bucket.processPhases[phase])std::cout<<' '<<phase<<':'<<bucket.processPhases[phase];
+                    std::cout<<"\nPROCESS_ACTORS "<<console<<' '<<category/104<<' '<<(category%104)/2<<' '<<category%2;
+                    for(const auto& [key,count]:bucket.processActors)std::cout<<' '<<key<<':'<<count;
                     std::cout<<"\nGEOMETRY "<<console<<' '<<category/104<<' '<<(category%104)/2<<' '<<category%2
                              <<' '<<bucket.maxRenderedPolygons<<' '<<bucket.maxBuildingPolygons
                              <<' '<<bucket.maxBuildingVertices<<' '<<bucket.geometryOverflowFlagSamples
