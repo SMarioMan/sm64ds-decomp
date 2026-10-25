@@ -69,7 +69,7 @@ struct PerformanceBucket {
     u64 geometryOverflowFlagSamples=0, geometryOverflowFlagRises=0;
     u32 maxRenderedPolygons=0, maxBuildingPolygons=0, maxBuildingVertices=0;
     std::array<u64,257> histogram{};
-    std::array<u64,16> phases{};
+    std::array<u64,32> phases{}; // Native NET is phase0x15, callbacks use0x16/0x17.
 };
 struct PerformanceSamples {
     std::array<PerformanceBucket,208> buckets{};

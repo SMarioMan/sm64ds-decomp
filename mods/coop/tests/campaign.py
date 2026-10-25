@@ -124,7 +124,8 @@ def snapshot(ds, name):
         'coopDiagnosticGameplayRead':module.get('gameplayReadFields'),
         'coopDiagnosticSlowGameplayRead':module.get('gameplayReadFields'),
     }
-    if not any(diagnostic_fields.values()):return
+    render_cost=module.get('diagnosticRenderCost')
+    if not any(diagnostic_fields.values()) and not render_cost:return
     diagnostics=[]
     for console in range(ds.count):
         ram=(ds.output/(name+'-'+str(console)+'.ram')).read_bytes()
@@ -140,6 +141,18 @@ def snapshot(ds, name):
                 values[symbol]={'captureAddressInvalid':hex(base+module['diagnosticOffsets'][symbol])}
                 continue
             values[symbol]=dict(zip(fields,struct.unpack_from('<'+'I'*len(fields),ram,offset)))
+        if render_cost:
+            offsets=module['diagnosticOffsets']
+            count=struct.unpack_from('<I',ram,base+offsets['coopDiagnosticRenderCount']-0x02000000)[0]
+            fields=render_cost['fields']
+            capacity=render_cost['capacity']
+            samples=[]
+            # The oldest slot may already be receiving its next uncommitted
+            # sample when a frame-boundary RAM capture interrupts the draw.
+            for sequence in range(max(0,count-capacity+1),count):
+                offset=base+offsets['coopDiagnosticRenderCosts']-0x02000000+(sequence%capacity)*len(fields)*4
+                samples.append(dict(zip(fields,struct.unpack_from('<'+'I'*len(fields),ram,offset))))
+            values['renderCosts']={'completed':count,'changesScheduling':True,'samples':samples}
         diagnostics.append(values)
     if diagnostics:
         (ds.output/(name+'-runtime.json')).write_text(json.dumps(diagnostics,indent=2)+'\n')

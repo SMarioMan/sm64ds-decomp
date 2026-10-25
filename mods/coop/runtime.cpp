@@ -11,6 +11,9 @@
 #include "dCamera_c.h"
 #include "LVL_Overlay.h"
 #include "ExpandingHeapAllocator.h"
+#ifdef COOP_DIAGNOSTIC_RENDER_COST
+#include "dExtSimpleModel_c.h"
+#endif
 
 namespace Memory { extern mHeap::Heap_t *defaultHeapPtr; }
 
@@ -255,6 +258,74 @@ u32 coopDiagnosticSlowGameplayRead[20]={0};
 extern u32 coopFileWaiting;
 #endif
 
+#ifdef COOP_DIAGNOSTIC_RENDER_COST
+u32 coopDiagnosticRenderCount=0;
+u32 coopDiagnosticRenderCosts[64][12]={{0}};
+
+static void CoopDiagnosticGeometryIdle() {
+    // Measurement builds drain pending geometry before reading hardware RAM
+    // counts. This changes scheduling: never use their cadence as a benchmark.
+    while (*(volatile u32 *)0x04000600&0x08000000) {}
+}
+
+static u32 *CoopDiagnosticRenderBegin(unsigned kind,unsigned slot) {
+    CoopDiagnosticGeometryIdle();
+    u32 *row=coopDiagnosticRenderCosts[coopDiagnosticRenderCount&63];
+    row[0]=*(volatile u32 *)0x020a1040;
+    row[1]=kind;
+    row[2]=slot;
+    row[3]=*(volatile u16 *)0x04000604;
+    row[5]=*(volatile u16 *)0x04000606;
+    row[7]=(*(volatile u16 *)0x04000060>>13)&1;
+    row[9]=*(volatile u32 *)0x027ffc3c;
+    row[11]=data_020a0f10;
+    return row;
+}
+
+static void CoopDiagnosticRenderFinish(u32 *row) {
+    CoopDiagnosticGeometryIdle();
+    row[4]=*(volatile u16 *)0x04000604;
+    row[6]=*(volatile u16 *)0x04000606;
+    row[8]=(*(volatile u16 *)0x04000060>>13)&1;
+    row[10]=*(volatile u32 *)0x027ffc3c;
+    ++coopDiagnosticRenderCount;
+}
+
+static unsigned CoopDiagnosticModelSlot(void *model,unsigned part) {
+    for (unsigned slot=0;slot<4;++slot) {
+        u8 *actor=(u8 *)data_0209f394[slot];
+        if ((u32)actor<0x02000000 || (u32)actor>=0x023ff800)continue;
+        void **models=(void **)(actor+(part==2 ? 0xdc : 0x154));
+        for (unsigned index=0;index<(part==2 ? 5 : 8);++index)
+            if (models[index]==model)return slot;
+    }
+    return 0xffffffff;
+}
+
+static void CoopDiagnosticPlayerPart(void *model,const Vector3 *scale,unsigned part) {
+    u32 *row=coopEnabled && data_0209fc68==4 ?
+        CoopDiagnosticRenderBegin(part,CoopDiagnosticModelSlot(model,part)) : 0;
+    ((dExtSimpleModel_c *)model)->dExtSimpleModel_c::Render(scale);
+    if (row)CoopDiagnosticRenderFinish(row);
+}
+void CoopDiagnosticBodyRender(void *model,const Vector3 *scale) {
+    CoopDiagnosticPlayerPart(model,scale,2);
+}
+void CoopDiagnosticHeadRender(void *model,const Vector3 *scale) {
+    CoopDiagnosticPlayerPart(model,scale,3);
+}
+void CoopDiagnosticOpaqueRender(dScStage_c *scene) {
+    u32 *row=coopEnabled && data_0209fc68==4 ? CoopDiagnosticRenderBegin(0,0xffffffff) : 0;
+    scene->RenderModel();
+    if (row)CoopDiagnosticRenderFinish(row);
+}
+void CoopDiagnosticTransparentRender(dScStage_c *scene) {
+    u32 *row=coopEnabled && data_0209fc68==4 ? CoopDiagnosticRenderBegin(1,0xffffffff) : 0;
+    scene->RenderModelTransparent();
+    if (row)CoopDiagnosticRenderFinish(row);
+}
+#endif
+
 void CoopStartMatch(void *) {
     unsigned count = data_0209fc50;
     if (count < 1 || count > 4)
@@ -276,6 +347,9 @@ void CoopStartMatch(void *) {
     coopStreamedLzReads=0;
     coopStageCacheEvictions=0;
     coopResourceFallbacksPeak=coopResourceFallbacksLive;
+#ifdef COOP_DIAGNOSTIC_RENDER_COST
+    coopDiagnosticRenderCount=0;
+#endif
 #ifdef COOP_DIAGNOSTIC_STAGE_CYCLE
     coopDiagnosticChordHeld=false;
     for (unsigned field=0;field<8;++field)coopDiagnosticConnectionFailure[field]=0;
@@ -376,6 +450,10 @@ void CoopLoadLevelOverlays(int level) {
         // palette gates; changing the global VS rule would alter gameplay.
         *(volatile u32 *)0x020e3ae8 = 0xe3a00001; // mov r0, #1 (body)
         *(volatile u32 *)0x020e3c88 = 0xe3a00001; // mov r0, #1 (head)
+#ifdef COOP_DIAGNOSTIC_RENDER_COST
+        PatchCall(0x020e3b4c,(void *)CoopDiagnosticBodyRender);
+        PatchCall(0x020e3cfc,(void *)CoopDiagnosticHeadRender);
+#endif
         _ZN4CP1514FlushDataCacheEv();
         _ZN4CP1526InvalidateInstructionCacheEjj(0x020c4364, 0x7d4);
         _ZN4CP1526InvalidateInstructionCacheEjj(0x020e3ae8, 0x1a4);
@@ -1601,6 +1679,28 @@ u32 coopBehaviorVisibility = 0;
 static u32 coopBehaviorHealthSaved = 0;
 static u8 coopBehaviorHealth = 0;
 
+u32 CoopShadowActorFlags(dActor_c *actor) {
+    u32 flags=actor->mFlags;
+    if (coopEnabled && data_0209fc68 && coopBehaviorActor==(u32)actor)
+        // AI sees consistent visibility during Behavior, but native shadow
+        // registration must still reject actors beyond this camera's range.
+        // Keep any additional shadow suppression set by the actor itself.
+        flags|=coopBehaviorVisibility&0x10;
+    return flags;
+}
+
+// Replace only each native shadow helper's flags load. Its following ANDS,
+// early return, scale arguments and native list registration remain intact.
+__asm void CoopShadowFlagsRead(void) {
+    stmfd sp!, {r1-r3, r12, lr}
+    mrs r1, cpsr
+    stmfd sp!, {r1}
+    bl CoopShadowActorFlags
+    ldmfd sp!, {r1}
+    msr cpsr_f, r1
+    ldmfd sp!, {r1-r3, r12, pc}
+}
+
 static void CoopSeedActor(dActor_c *actor,u32 frame) {
     u32 identity=actor->uniqueID-coopStageIdentity;
     u32 seed=frame^(identity*0x9e3779b9);
@@ -1709,6 +1809,12 @@ static void PatchCall(u32 address, void *target) {
 }
 
 void CoopRuntimeDispatch(unsigned operation, u32 argument) {
+    PatchCall(0x02010ba4,(void *)CoopShadowFlagsRead);
+    PatchCall(0x02010bf0,(void *)CoopShadowFlagsRead);
+#ifdef COOP_DIAGNOSTIC_RENDER_COST
+    PatchCall(0x0202b998,(void *)CoopDiagnosticOpaqueRender);
+    PatchCall(0x0202b9a4,(void *)CoopDiagnosticTransparentRender);
+#endif
     Patch(0x02017060,(void *)CoopTrimResourceModel);
     Patch(0x020186c0,(void *)CoopResolveFile);
     Patch(0x020185c0,(void *)CoopOpenFile);

@@ -9,6 +9,64 @@ all levels. The tested party size and campaign coverage were not specified;
 newer-image physical acceptance and campaign completion remain open. Read the current regressions first; later sections preserve
 historical checkpoints and failures rather than release acceptance.
 
+## Current candidate: local shadow visibility and geometry exhaustion
+
+- User reports exact pinned89505d400/aea94 baseline physical multiplayer is
+  functional with emulator parity, but significant slowdown/hitches, worse on
+  hardware. User also reports missing objects/parts immediately on BoB entry,
+  including a Yoshi head, with no first-person view; movement may restore it.
+- Exact baseline reproduction `bob-head-aea94-baseline/` reaches native2048
+  polygons and raises geometry overflow on every console. Normal four-Yoshi
+  entry uses controller-earned key-only fixture, not synthetic stage entry.
+- Native diagnostic d31380ff `bob-native-render-cost/` traces terrain/body/head
+  draws with FIFO drains (NOT a cadence benchmark). About365 opaque terrain
+  polygons are followed by953 shadow polygons,6 transparent polygons, then
+  bodies125–128 and heads80–89 each. Slot3 body fills remaining RAM; its head
+  submits0 polygons.99 stage shadows were registered. Both native shadow
+  helpers check actor flags10, which AI synchronization temporarily clears.
+- New normal `local-shadow-visibility-host.nds`, SHA256
+  `fbb2262d6dbacd6c92e8f585bde99941d587ed8e323bde280f598e91e69abd2d`,
+  independently reproduced by `local-shadow-visibility-rebuilt-host.nds`.
+  Only the two native shadow flags reads recover the saved local far clip;
+  AI still sees neutral flags. Native early returns, shadow shape/scale,
+  original model/level assets, and boot/secure bytes remain intact.
+- Native suite PASS:146 discovered,142 executed,4 obsolete prefix-only skips
+  (`local-shadow-all-tests.log`). Six new ARM checks reproduce unwanted far
+  shadow registration and verify both retail helpers, visible matrix/scales/
+  stack opacity, offline/disabled/other-actor parity, explicit actor suppression
+  and argument/CPSR preservation. Read-hook instructions/signatures are checked
+  against the verified input. FIFO-drain measurement code is compiled out of
+  normal images.
+- Normal `bob-local-shadow-visibility/` passes startup, independent controls,
+  castle/BoB entry and movement with matching input ticks. All four heads are
+  visible. Entry shadows99→8, entry peak1621 polygons, movement peak1796;
+  no observed overflow on any console. Cadence remains similar (~3.58 VBlanks
+  per input tick including cold reads). Do not claim performance completion.
+- ACTIVE continuation `local-shadow-guest-star-save/`, exec60302, uses that
+  same party/socket `bob-local-shadow-visibility.sock`. Fresh guest2 coin PASS.
+  Guest1 star/save/quit FAILED navigation: attempt1 missed(-1500,5500), then
+  attempts2/3 missed(-4000,4500) while re-establishing coins after real exits.
+  Captures show NET4/radio3,4,4,4, no message/celebration lock and all players
+  alive. No new star or save acceptance. The physically paused party is retained
+  for controller-route inspection. Never start another before actual shutdown.
+  Frozen driver sources/hashes are retained. The parent's frontend still has
+ 16 phase counters; the new32-phase executable is for subsequent sessions.
+- Baseline aea94, planar-quad prototype02a8a8e1 and native-cost d31380ff parties
+  were captured and shut down before each successor. The planar prototype still
+  overflowed and had similar cadence; no optimized level/model assets are in
+  the normal candidate. Its source/tests are archived privately under
+  `planar-quad-experiment-source/`.
+- Independent `painting-normal-render-observer-proof-host.nds` reproduces the
+  prior3500 image before adding the shadow fix. Optional native render-cost
+  instrumentation alone therefore does not change normal cartridge bytes.
+- See PERFORMANCE.md for native-cadence/overflow definitions and remaining
+  synchronous animation-read stalls. No full-speed hardware acceptance yet;
+  campaign completion, newer-image physical wireless, remaining stage/mission
+  regressions and one-build2–4-player support remain open.
+
+The sections below are historical checkpoints; their ACTIVE labels have been
+superseded by the current single party above.
+
 ## Current candidate: painting mesh allocation pressure
 
 - The f14 all-stage run passed1..12, then FAILED12→13 with native Crash()

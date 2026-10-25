@@ -79,3 +79,55 @@ Also profile native radio synchronization waits, actor/animation updates,
 rendering, collision and effects in representative expensive scenes. Require
 repeated transitions and final combined-image physical performance tests before
 closing the worklist item.
+
+
+## Bob-omb Battlefield geometry regression
+
+The exact aea94 baseline reproduces overflow at normal all-Yoshi course entry
+on all four consoles (`bob-head-aea94-baseline/`). A subsequent diagnostic
+image d31380ff drains geometry to measure native draws: it is NOT a cadence
+benchmark. Its `bob-native-render-cost/first-course-initial-arrival-runtime.json`
+shows about365 opaque terrain polygons,953 shadow polygons, then6 transparent
+terrain polygons. Player bodies contribute about125–128 and heads80–89 each.
+Slot3's body hits2048 partway through; its head then contributes0 polygons.
+All99 stage shadows were registered, including distant actors.
+
+The synchronization guard neutralizes actor visibility while running AI. Native
+DropShadowRadHeight/DropShadowScaleXYZ also read that flag, so they registered
+shadows which the camera should suppress. New normal image
+`local-shadow-visibility-host.nds`, SHA256
+`fbb2262d6dbacd6c92e8f585bde99941d587ed8e323bde280f598e91e69abd2d`,
+restores only those native flags reads from the saved local visibility. Actor
+AI still sees the neutral flags. Native ANDS/early return, shadow geometry,
+scale/opacity, original models and level assets remain intact. Both helpers,
+offline/disabled/other-actor cases, explicit suppression and the read-hook ABI
+pass six isolated ARM checks. Full suite:146 discovered,142 executed,4 obsolete
+prefix-only skips. Independent normal rebuild reproduces the hash. Normal
+`bob-local-shadow-visibility/` validation passes four-controller entry/movement
+and matching input ticks. All four heads are visible. Registered entry shadows
+fall from99 to8; entry geometry peaks at1621 polygons and movement at1796,
+with no observed overflow on any console. Level/model assets are unchanged.
+This is targeted emulator acceptance; broader scenes and physical retest remain.
+
+Input cadence is still similar: the movement checkpoint averages about3.58
+VBlanks per outgoing input tick, including cold reads, versus3.57 on aea94.
+Do not claim full-speed gameplay or a measured cadence improvement from this
+fix. Synchronous asset-read stalls and native network/frame pacing remain open.
+The first frontend counted phases0..15 only, missing native NET phase0x15 and
+callbacks0x16/0x17. Updated frontend counters cover32 phases; reports also expose
+unclassified phase observations. Earlier cadence/geometry counters remain
+valid, but those earlier phase histograms are incomplete.
+
+A private planar-quad prototype02a8a8e1 combined80 source strips, saving81
+source polygons without moving vertices/UVs. It still overflowed at entry and
+had similar input cadence, so it is not included in the normal candidate.
+The experimental optimizer and its11 tests are archived under
+`planar-quad-experiment-source/`; later guards also exclude translucent/shadow
+and alpha-texture lists. The original prototype predates those extra guards.
+Do not present it as a rendering fix or transfer its acceptance to production.
+
+`build_download_play.py --diagnostic-render-cost --output OTHER.nds` enables
+the optional terrain/body/Yoshi-head cost recorder. It drains the geometry FIFO
+before/after native calls, changing scheduling. Use normal images with the
+read-only frontend for cadence/performance acceptance. The ROM diagnostic is
+only for attributing geometry use and never raises the DS rendering limits.

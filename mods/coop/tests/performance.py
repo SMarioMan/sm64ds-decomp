@@ -33,6 +33,7 @@ def capture_performance(ds, name):
         if sum(histogram.values())!=intervals:
             raise RuntimeError('Incomplete native cadence histogram')
         row['meanVblanksPerInputTick']=row['vblanks']/intervals if intervals else None
+        row['unclassifiedPhaseObservations']=row['observations']-sum(row['phaseObservations'].values())
         row['intervalsOverTwoVblanks']=sum(count for bin,count in histogram.items() if bin>2)
         for percentile in (50,95,99):
             cumulative=0

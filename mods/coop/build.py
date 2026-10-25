@@ -150,11 +150,15 @@ def main():
                         help='TEST ONLY: start in this native stage; does not validate campaign progression')
     parser.add_argument('--diagnostic-stage-cycle',action='store_true',
                         help='TEST ONLY: synchronized L+R+X requests the next native stage')
+    parser.add_argument('--diagnostic-render-cost',action='store_true',
+                        help='TEST ONLY: drain geometry to measure terrain/body/head polygon costs; changes timing')
     args = parser.parse_args()
     if args.baseline and args.diagnostic_start_level is not None:
         parser.error('--baseline cannot select a diagnostic stage')
     if args.diagnostic_stage_cycle and args.diagnostic_start_level is None:
         parser.error('--diagnostic-stage-cycle requires --diagnostic-start-level')
+    if args.baseline and args.diagnostic_render_cost:
+        parser.error('--baseline cannot enable render diagnostics')
     original = args.rom.read_bytes()
     if hashlib.sha256(original).hexdigest() != ROM_SHA256:
         parser.error('Expected verified Europe revision-0 ROM; other revisions are unsupported')
@@ -175,6 +179,10 @@ def main():
         ov_symbols = symbols(REPO / 'config/arm9/overlays/ov075/symbols.txt')
         rom = ndspy.rom.NintendoDSRom(original)
         arm9 = ndspy.codeCompression.decompress(rom.arm9)
+        for address in (0x02010ba4,0x02010bf0):
+            offset=address-rom.arm9RamAddress
+            if arm9[offset:offset+8]!=struct.pack('<II',0xe59000b0,0xe2100010):
+                raise RuntimeError(f'Unexpected native drop-shadow flags read at {address:#x}')
         overlay = rom.loadArm9Overlays()[75]
         player_overlay = rom.loadArm9Overlays()[2]
         painting_signature=bytes.fromhex('1800a0e3910000e07057fceba00184e5')
@@ -264,6 +272,15 @@ def main():
             defines.append(f'COOP_DIAGNOSTIC_START_LEVEL={args.diagnostic_start_level}')
         if args.diagnostic_stage_cycle:
             defines.append('COOP_DIAGNOSTIC_STAGE_CYCLE=1')
+        if args.diagnostic_render_cost:
+            defines.append('COOP_DIAGNOSTIC_RENDER_COST=1')
+            for address,target,data,base in (
+                    (0x0202b998,game['_ZN10dScStage_c11RenderModelEv'],arm9,rom.arm9RamAddress),
+                    (0x0202b9a4,game['_ZN10dScStage_c22RenderModelTransparentEv'],arm9,rom.arm9RamAddress),
+                    (0x020e3b4c,game['_ZN17dExtSimpleModel_c6RenderEPK7Vector3'],player_overlay.data,player_overlay.ramAddress),
+                    (0x020e3cfc,game['_ZN17dExtSimpleModel_c6RenderEPK7Vector3'],player_overlay.data,player_overlay.ramAddress)):
+                if data[address-base:address-base+4]!=branch(address,target)[:3]+b'\xeb':
+                    raise RuntimeError(f'Unexpected native render diagnostic call at {address:#x}')
         runtime, emitted = link(REPO/'mods/coop/runtime.cpp',root/'runtime',PAYLOAD_ADDRESS,imports,launcher,cc,ld,defines)
         body_size = len(runtime)
         imports.update({name:PAYLOAD_ADDRESS+body_size+i*8 for i,(name,_,_) in enumerate(trampolines)})
@@ -415,6 +432,10 @@ def main():
         module_report['perPlayerCameraInputGuards']=True
         module_report['perPlayerCannonPitch']=True
         module_report['deterministicActorInitialization']=True
+        module_report['localShadowVisibility']=True
+        module_report['shadowVisibilityReads']=[{'address':hex(address),
+            'originalWord':'0xe59000b0','targetOffset':hex(emitted['CoopShadowFlagsRead']-PAYLOAD_ADDRESS)}
+            for address in (0x02010ba4,0x02010bf0)]
         module_report['narcIndexBytes']=len(narc_index)
         module_report['narcIndexSha256']=hashlib.sha256(narc_index).hexdigest()
         if args.diagnostic_start_level is not None:
@@ -434,6 +455,13 @@ def main():
             for name in ('coopDiagnosticGameplayRead','coopDiagnosticSlowGameplayRead'):
                 module_report['diagnosticOffsets'][name]=emitted[name]-PAYLOAD_ADDRESS
             module_report['gameplayReadFields']=['count','size','romTop','position','pause','vblankBegin','vblankEnd','active','tickBegin','tickEnd','result','ownFlags','loopPhase','sceneEvent','burstTick','burstVblankBegin','burstVblankEnd','burstReads','burstBytes','burstLongestRead']
+        if args.diagnostic_render_cost:
+            for name in ('coopDiagnosticRenderCount','coopDiagnosticRenderCosts'):
+                module_report['diagnosticOffsets'][name]=emitted[name]-PAYLOAD_ADDRESS
+            module_report['diagnosticRenderCost']={'changesScheduling':True,'capacity':64,
+                'kinds':['terrain-opaque','terrain-transparent','player-body','yoshi-head'],
+                'fields':['tick','kind','slot','polygonsBefore','polygonsAfter','verticesBefore',
+                          'verticesAfter','overflowBefore','overflowAfter','vblankBegin','vblankEnd','localSlot']}
         patches.append({'purpose':'ROOT module loader in unused VS result routines','address':hex(CAVE_START),
                         'size':CAVE_END-CAVE_START,'installerBytes':len(installer)})
     output=root/('baseline.nds' if args.baseline else 'sm64ds-coop-experimental.nds')

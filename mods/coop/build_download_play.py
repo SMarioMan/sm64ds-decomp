@@ -25,6 +25,8 @@ def main():
                         help='TEST ONLY: enter a native stage directly, not a campaign progression check')
     parser.add_argument('--diagnostic-stage-cycle',action='store_true',
                         help='TEST ONLY: synchronized L+R+X requests the next native stage')
+    parser.add_argument('--diagnostic-render-cost',action='store_true',
+                        help='TEST ONLY: measure geometry costs with FIFO drains; not a performance benchmark')
     parser.add_argument('--clients',type=int,choices=(1,2,3),default=3)
     parser.add_argument('--channel',type=int,choices=(1,7,13),default=1)
     parser.add_argument('--beacon-period',type=int,default=100)
@@ -39,7 +41,7 @@ def main():
     args.output=args.output.resolve()
     if args.diagnostic_stage_cycle and args.diagnostic_start_level is None:
         parser.error('--diagnostic-stage-cycle requires --diagnostic-start-level')
-    if args.diagnostic_start_level is not None and args.output==ROOT/'build/coop/bootstrap/sm64ds-haxxstation-game-handoff.nds':
+    if (args.diagnostic_start_level is not None or args.diagnostic_render_cost) and args.output==ROOT/'build/coop/bootstrap/sm64ds-haxxstation-game-handoff.nds':
         parser.error('Diagnostic builds require --output to keep the normal cartridge separate')
     if args.runtime_placement=='prefix' and args.output==ROOT/'build/coop/bootstrap/sm64ds-haxxstation-game-handoff.nds':
         parser.error('Experimental prefix placement requires a separate --output')
@@ -64,6 +66,7 @@ def main():
            '--beacon-period',args.beacon_period,'--station',args.station)
     diagnostic=('--diagnostic-start-level',args.diagnostic_start_level) if args.diagnostic_start_level is not None else ()
     if args.diagnostic_stage_cycle:diagnostic+=('--diagnostic-stage-cycle',)
+    if args.diagnostic_render_cost:diagnostic+=('--diagnostic-render-cost',)
     run('build.py',args.rom,'--save-slot',args.save_slot,'--runtime-placement',args.runtime_placement,*diagnostic)
     run('bootstrap/build_probe.py','--station',args.station)
     # The provisional parent fixes the final WFS table extents before the

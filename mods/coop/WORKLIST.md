@@ -10,7 +10,17 @@ not establish campaign completion or real-hardware compatibility.
   all-Yoshi course entrance first. Capture each view at the same game/input
   tick and compare model visibility, personal first-person/head hiding,
   animation state, resource ownership/lifetime, texture/palette state and
-  native geometry limits. No cause is established yet. Add movement, camera
+  native geometry limits. Exact aea94 reproduction reaches2048 polygons on
+  every console. Native per-part tracing shows slot3's body filling RAM and
+  its head submitting0 polygons.99 shadows are registered across the whole
+  stage: the deterministic AI visibility guard also disabled native far-shadow
+  suppression. A new flags-read hook restores the saved local shadow decision
+  without changing AI flags. Six isolated checks execute both retail shadow
+  helpers and verify clipping, visible scales/opacity, offline parity and ABI.
+  The fbb2262d normal candidate passes the four-console BoB entry/movement
+  regression: all heads visible, shadows99→8, entry peak1621 polygons,
+  movement peak1796 and no observed overflow. Other scenes/parts and physical
+  retest remain open. Add movement, camera
   and crowded/effect-heavy scenes to rendering acceptance; performance
   optimizations must preserve complete models and intended visibility.
 - [ ] PRIORITY: optimize steady gameplay speed and eliminate significant
@@ -41,7 +51,8 @@ not establish campaign completion or real-hardware compatibility.
   `aea94b7bc8a51986b02c258cb779934bd200f269e05ad4d193282237be4baedf`.
   The fix preserves retail ARM9/ARM7, secure-area bytes and metadata by moving
   the parent loader into overlay 75. BIOS/firmware startup and four image-layout
-  checks also pass. Physical Download Play and campaign acceptance remain open.
+  checks also pass. The user also reports functional physical multiplayer
+  on this pinned image. Newer-image physical and campaign acceptance remain open.
 - [ ] Give each player independent camera controls and state, including zoom,
   recentering, and personal movement camera modes. Keep shared story decisions
   synchronized without consuming player 1's camera controls on other consoles.
