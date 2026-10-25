@@ -190,3 +190,12 @@ pause cycles pass on the isolated image. A subsequent guest3 coin route failed
 without a pickup, ending above the lower-floor target; a north-approach probe
 also failed navigation. Neither grants coin/transition acceptance. That party
 is now closed. These checks do not establish normal-image release acceptance.
+
+The controller driver's analog-stick setup also used a fixed24-video-frame
+wait. Native CheckInput initializes it over five actual synchronized input
+updates; the new isolated ARM test proves that24 SDK VBlanks without input
+updates do not advance that delay. The driver now acknowledges release and
+waits for native touching/delay readiness before reading its real origin.
+It does not require exact calibrated pixel coordinates. Live confirmation is
+in progress under `native-input-readiness-regression/`; loading stalls and
+prior navigation failures remain open until those checks pass.

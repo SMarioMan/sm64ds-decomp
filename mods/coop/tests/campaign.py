@@ -336,9 +336,29 @@ def touch_walk_to(ds, x, z, tolerance=30, limit=160, console=0, jump=False, run=
     initial_level=ds.read(console,0x0209f2f8,1)
     if not 0x02000000<=actor<0x023ff000:
         raise PlayerUnavailable("Analog controller has no live player")
+    # The native stick initializes over five synchronized input updates.
+    # Video frames do not establish readiness during synchronous WFS stalls.
+    # First acknowledge release so a previous map/camera touch cannot carry
+    # into this new stick gesture, then wait for its actual initialization.
+    control=0x0209f498+24*slot
+    touch=0x020a0de8+4*slot
+    ds.set_input(console,0xfff)
+    for _ in range(180):
+        raw,state=ds.readv(console,((touch,4),(control+0x12,3)))
+        if not raw[0] and not state[2]:break
+        ds.run(1)
+    else:
+        snapshot(ds,'analog-touch-release-failed')
+        raise ControllerRouteFailure('Native touch release was not acknowledged')
     ds.set_input(console,0xfff,(128,96))
-    ds.run(24)
-    origin=ds.read(console,0x0209f4a8+24*slot,2)
+    for _ in range(180):
+        raw,state,origin=ds.readv(console,((touch,4),(control+0x12,3),(control+0x10,2)))
+        if raw[0] and state[2] and not state[0]:break
+        ds.run(1)
+    else:
+        ds.set_input(console,0xfff)
+        snapshot(ds,'analog-touch-initialization-failed')
+        raise ControllerRouteFailure('Native touch stick did not finish initialization')
     radius=24 if jump or run else (18 if ds.read(console,0x0209f4ae+24*slot,1)[0]==2 else 14)
     try:
         for step in range(limit):

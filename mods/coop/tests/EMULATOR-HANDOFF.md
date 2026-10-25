@@ -9,6 +9,28 @@ all levels. The tested party size and campaign coverage were not specified;
 newer-image physical acceptance and campaign completion remain open. Read the current regressions first; later sections preserve
 historical checkpoints and failures rather than release acceptance.
 
+## Active acknowledged-input regression
+
+- Latest pushed source3c44de626; uncommitted driver change waits for actual
+  native touch release, touching state and five-update initialization delay.
+  Native CheckInput ARM proof confirms that advancing24 SDK VBlanks without
+  input updates leaves its delay unchanged. No exact calibrated touch pixels
+  are required. This corrects an initial24-video-frame assumption in the test
+  driver; game loading hitches remain unresolved. Updated suite PASS:147
+  discovered,143 executed,4 obsolete prefix-only skips
+  (`native-input-readiness-all-tests.log`).
+- ACTIVE normal fbb party `acknowledged-course-return-normal/`, exec36689,
+  socket `acknowledged-course-return-normal.sock`, full-profiles frontend.
+  Startup/normal castle/BoB route frozen before this driver change.
+- ACTIVE continuation `native-input-readiness-regression/`, exec62209, waits for
+  the parent's controller socket, then measures steady/warm movement, fresh
+  guest2 coin, acknowledged pause/exit and native course reentry. Its frozen
+  source includes the new touch state waits. No live acceptance yet.
+- Earlier waiting continuations `acknowledged-course-return-regression/` and
+  `acknowledged-input-regression/` were replaced BEFORE any controller RPC;
+  result files explicitly record that status. Never run another wireless party
+  while this parent is active.
+
 ## Current performance investigation
 
 - Normal candidate remains fbb2262d below. Default rebuild
