@@ -5,6 +5,14 @@ through DS Download Play, using HaxxStation for the signed first stage. The mod
 uses the native wireless game protocol and filesystem. Standard melonDS 1.1
 runs it; the automated test frontend does not modify the emulation core.
 
+The latest candidate additionally fixes native flight entrances, asymmetric
+loading checks, and actor initialization randomness. A four-console33–40 stage
+cycle passes movement, shared pause/resume and matching-input-tick comparisons;
+120 applicable isolated checks pass. Campaign saving on this combined image,
+remaining camera cases, boss victories and physical Download Play remain open.
+See [the worklist](WORKLIST.md) for current acceptance gaps and
+[the emulator handoff](tests/EMULATOR-HANDOFF.md) for exact image hashes.
+
 Verified four-console behavior includes separate controls, the original
 green/red/blue/yellow Yoshi palettes, shared pause, the castle key, castle
 interiors, Bob-omb Battlefield, course exit, guest death with party recovery,
@@ -95,6 +103,12 @@ Eleven compiled ARM camera checks pass. The current normal cartridge also passes
 twelve physical-input zoom transitions across four consoles, including first-person
 and normal return, with foreign cameras unchanged and synchronized player state.
 Recenter, turn, and other personal movement camera modes still need wireless checks.
+The newer source also gives sixteen native movement-camera setters local-player
+guards and preserves flight/water arrivals that the guest result-pose hook had
+been replacing with a grounded arrival. All94 applicable isolated checks pass
+(four older prefix-loader checks skip). Twenty later native stage entries pass
+on one console; wireless arrival and campaign checks remain in progress. See
+the current [handoff](tests/EMULATOR-HANDOFF.md) for exact cartridge identities.
 
 The default ROOT runtime now releases copied common-archive source data before
 skybox loading and opens uncached members through ROM-verified offsets. The

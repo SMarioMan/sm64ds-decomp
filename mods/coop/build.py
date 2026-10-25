@@ -86,7 +86,7 @@ def link(source, prefix, address, game_symbols, launcher, cc, ld, defines=()):
     payload.extend(bytes(end - address - len(payload)))
     # The runtime is dynamically allocated in ROOT; the loader accepts 64 KiB.
     # Retain a tighter build bound while allowing additional story policies.
-    if not payload or end > address + 0x4000:
+    if not payload or end > address + 0x8000:
         raise RuntimeError('Invalid linked payload span')
     return payload, emitted
 
@@ -181,6 +181,11 @@ def main():
             offset = address-player_overlay.ramAddress
             if player_overlay.data[offset:offset+8] != struct.pack('<2I',0xe5900154,0xe2100902):
                 raise RuntimeError('Unexpected native camera-completion read')
+        if arm9[0x02024d40-rom.arm9RamAddress:0x02024d4c-rom.arm9RamAddress]!=bytes.fromhex('549199e5019a19e26b00000a'):
+            raise RuntimeError('Unexpected native per-player camera-input guard')
+        owl=0x020df6a0-player_overlay.ramAddress
+        if player_overlay.data[owl:owl+8]!=bytes.fromhex('540190e5020910e2'):
+            raise RuntimeError('Unexpected native owl camera-completion read')
         for address in (0x020e3ae8, 0x020e3c88):
             offset = address-player_overlay.ramAddress
             if player_overlay.data[offset:offset+8] != struct.pack('<2I',0xe5d00000,0xe3500001):
@@ -193,6 +198,7 @@ def main():
             ('CoopOriginalStageInit', game['_ZN10dScStage_c13InitResourcesEv'], bytes.fromhex('f04f2de9')),
             ('CoopOriginalSceneBefore', game['_ZN8dScene_c14BeforeBehaviorEv'], bytes.fromhex('10402de9')),
             ('CoopOriginalActorBefore', game['_ZN8dActor_c14BeforeBehaviorEv'], bytes.fromhex('10402de9')),
+            ('CoopOriginalActorBeforeInit',game['_ZN8dActor_c19BeforeInitResourcesEv'],bytes.fromhex('10402de9')),
             ('CoopOriginalReadFile', game['func_0205d688'], bytes.fromhex('f0402de9')),
             ('CoopOriginalMessageUpdate', game['_ZN7Message6UpdateEv'], bytes.fromhex('70402de9')),
             ('CoopOriginalKillPlayer', game['KillPlayer'], bytes.fromhex('00402de9')),
@@ -207,13 +213,33 @@ def main():
             ('CoopOriginalOpenFile',game['func_020185c0'],bytes.fromhex('f0412de9')),
             ('CoopOriginalLoadDiskFile',game['func_0201834c'],bytes.fromhex('f0412de9')),
             ('CoopOriginalWirelessReset',game['func_02062200'],bytes.fromhex('10402de9')),
+            ('CoopOriginalConnectionUpdate',game['func_02030e4c'],bytes.fromhex('00402de9')),
             ('CoopOriginalLoadSkybox',game['_ZN10dScStage_c10LoadSkyboxEv'],bytes.fromhex('30402de9')),
             ('CoopOriginalCameraFar',game['func_0200d0ac'],bytes.fromhex('00402de9')),
             ('CoopOriginalCameraNear',game['func_0200d064'],bytes.fromhex('00402de9')),
             ('CoopOriginalCameraBehind',game['_ZN9dCamera_c14GoBehindPlayerEj'],bytes.fromhex('10402de9')),
             ('CoopOriginalCameraFirstPerson',game['func_0200d7e0'],bytes.fromhex('00402de9')),
             ('CoopOriginalCameraNormal',game['func_0200d81c'],bytes.fromhex('00402de9')),
+            ('CoopOriginalCameraLookTarget',game['func_0200d3f8'],bytes.fromhex('00402de9')),
             ('CoopOriginalPlayerHeadLook',0x020cae10,bytes.fromhex('f0412de9'))]
+        trampolines += [
+            ('CoopOriginalCameraModeD10c',game['func_0200d10c'],bytes.fromhex('00402de9')),
+            ('CoopOriginalCameraModeD148',game['func_0200d148'],bytes.fromhex('00402de9')),
+            ('CoopOriginalCameraModeD438',game['func_0200d438'],bytes.fromhex('00402de9')),
+            ('CoopOriginalCameraModeD474',game['func_0200d474'],bytes.fromhex('00402de9')),
+            ('CoopOriginalCameraModeD508',game['func_0200d508'],bytes.fromhex('00402de9')),
+            ('CoopOriginalCameraModeD544',game['func_0200d544'],bytes.fromhex('00402de9')),
+            ('CoopOriginalCameraModeD580',game['func_0200d580'],bytes.fromhex('10402de9')),
+            ('CoopOriginalCameraModeD5c0',game['func_0200d5c0'],bytes.fromhex('00402de9')),
+            ('CoopOriginalCameraModeD5fc',game['func_0200d5fc'],bytes.fromhex('10402de9')),
+            ('CoopOriginalCameraModeD63c',game['func_0200d63c'],bytes.fromhex('00402de9')),
+            ('CoopOriginalCameraModeD678',game['func_0200d678'],bytes.fromhex('00402de9')),
+            ('CoopOriginalCameraModeD6b4',game['func_0200d6b4'],bytes.fromhex('00402de9')),
+            ('CoopOriginalCameraModeD6f0',game['func_0200d6f0'],bytes.fromhex('00402de9')),
+            ('CoopOriginalCameraModeD72c',game['func_0200d72c'],bytes.fromhex('00402de9')),
+            ('CoopOriginalCameraModeD768',game['func_0200d768'],bytes.fromhex('00402de9')),
+            ('CoopOriginalCameraModeD7a4',game['func_0200d7a4'],bytes.fromhex('00402de9')),
+        ]
         fov=game['func_0200ca14']-rom.arm9RamAddress
         if arm9[fov:fov+60]!=bytes.fromhex('30309fe50030d3e5030051e11eff2f11000052e3551f8002000091050208800300008105551f80120000911501088013000081151eff2fe150f20902'):
             raise RuntimeError('Unexpected native player camera FOV helper')
@@ -339,11 +365,11 @@ def main():
             offset=address-rom.arm9RamAddress
             if arm9[offset:offset+4]!=branch(address,target)[:3]+b'\xeb':
                 raise RuntimeError(f'Unexpected native memory allocation/free call at {address:#x}')
-        pairs=[(game['_ZN10dScStage_c10LoadSkyboxEv'],'CoopLoadSkybox'),(game['func_02062200'],'CoopWirelessReset'),(game['func_0201834c'],'CoopLoadDiskFile'),(game['func_020186c0'],'CoopResolveFile'),(game['func_020185c0'],'CoopOpenFile'),(game['func_02023178'],'CoopAllocateParticleChunk'),(game['func_02017060'],'CoopTrimResourceModel'),(game['NumCoins'],'CoopNumCoins'),(game['GiveCoins'],'CoopGiveCoins'),(game[SAVE_CURRENT],'CoopSaveCurrentFile'),(game['_Z17LoadLevelOverlaysi'],'CoopLoadLevelOverlays'),
+        pairs=[(game['func_02030e4c'],'CoopConnectionUpdate'),(game['_ZN10dScStage_c10LoadSkyboxEv'],'CoopLoadSkybox'),(game['func_02062200'],'CoopWirelessReset'),(game['func_0201834c'],'CoopLoadDiskFile'),(game['func_020186c0'],'CoopResolveFile'),(game['func_020185c0'],'CoopOpenFile'),(game['func_02023178'],'CoopAllocateParticleChunk'),(game['func_02017060'],'CoopTrimResourceModel'),(game['NumCoins'],'CoopNumCoins'),(game['GiveCoins'],'CoopGiveCoins'),(game[SAVE_CURRENT],'CoopSaveCurrentFile'),(game['_Z17LoadLevelOverlaysi'],'CoopLoadLevelOverlays'),
                (game['func_0200d0ac'],'CoopCameraFar'),(game['func_0200d064'],'CoopCameraNear'),
                (game['_ZN9dCamera_c14GoBehindPlayerEj'],'CoopCameraBehind'),(game['func_0200ca14'],'CoopCameraFov'),
-               (game['func_0200d7e0'],'CoopCameraFirstPerson'),(game['func_0200d81c'],'CoopCameraNormal'),
-               (0x020cae10,'CoopPlayerHeadLook'),
+               (game['func_0200d3f8'],'CoopCameraLookTarget'),(game['func_0200d7e0'],'CoopCameraFirstPerson'),(game['func_0200d81c'],'CoopCameraNormal'),
+               (0x020cae10,'CoopPlayerHeadLook'),(0x02024d40,'CoopCameraInputFlagsRead'),(0x020df6a0,'CoopPersonalCameraFlagsRead'),
                (game['_ZN7Message6UpdateEv'],'CoopMessageUpdate'),
                (game['KillPlayer'],'CoopKillPlayer'),(game['HitDeathPlane'],'CoopHitDeathPlane'),
                (ov_symbols['_ZN10dScEntry_c16CleanupResourcesEv'],'CoopEntryCleanup'),
@@ -351,7 +377,7 @@ def main():
                (game['_ZN8dScene_c19BeforeInitResourcesEv'],'CoopSceneBeforeInit'),
                (game['_ZN8dScene_c18AfterInitResourcesEj'],'CoopSceneAfterInit'),
                (game['_ZN8dScene_c14BeforeBehaviorEv'],'CoopSceneBefore'),(game['_ZN8dScene_c13AfterBehaviorEj'],'CoopSceneAfter'),
-               (game['_ZN8dActor_c14BeforeBehaviorEv'],'CoopActorBefore'),(game['_ZN8dActor_c13AfterBehaviorEj'],'CoopActorAfter')]
+               (game['_ZN8dActor_c19BeforeInitResourcesEv'],'CoopActorBeforeInit'),(game['_ZN8dActor_c14BeforeBehaviorEv'],'CoopActorBefore'),(game['_ZN8dActor_c13AfterBehaviorEj'],'CoopActorAfter')]
         ram_hooks=[{'address':hex(a),'targetOffset':hex(emitted[n]-PAYLOAD_ADDRESS),'symbol':n}for a,n in pairs]
         module_report={'fileID':module_id,'linkBase':hex(PAYLOAD_ADDRESS),'bodyBytes':len(runtime),
                        'entryOffset':hex(emitted['CoopRuntimeDispatch']-PAYLOAD_ADDRESS),'fixups':len(records),
@@ -368,7 +394,13 @@ def main():
         module_report['nativeTeardownResetDeduplicated']=True
         module_report['evictCommonStageSourceCache']=True
         module_report['localCameraControls']=True
+        module_report['nativeFlightEntranceMarioCaps']=True
+        module_report['loadingChecksumTransitionGrace']=True
+        module_report['localMovementCameraModes']=[33607948, 33608008, 33608760, 33608820, 33608968, 33609028, 33609088, 33609152, 33609212, 33609276, 33609336, 33609396, 33609456, 33609516, 33609576, 33609636]
         module_report['cameraPitchUserBytes']=[7,8]
+        module_report['cameraInfoUserByte']=5
+        module_report['perPlayerCameraInputGuards']=True
+        module_report['deterministicActorInitialization']=True
         module_report['narcIndexBytes']=len(narc_index)
         module_report['narcIndexSha256']=hashlib.sha256(narc_index).hexdigest()
         if args.diagnostic_start_level is not None:
@@ -376,7 +408,7 @@ def main():
             module_report['diagnosticStageCycle']=args.diagnostic_stage_cycle
             if args.diagnostic_stage_cycle:module_report['diagnosticStageChord']=0x700
         module_report['diagnosticOffsets']={name:emitted[name]-PAYLOAD_ADDRESS
-                                           for name in ('coopEnabled','coopSaveState','coopSavePage',
+                                           for name in ('coopActorInitializationsSeeded','coopStageIdentity','coopLoadingChecksumGraceClears','coopEnabled','coopSaveState','coopSavePage',
                                                         'coopSaveEpoch','coopStageLoading','coopMenuLoading',
                                                         'coopSceneInitializing','coopTitleLoading','coopTitleRadioResetPending','coopFileWaiting',
                                                         'coopSessionEnded','coopDeathTriggered','coopGuestTutorialSkips',

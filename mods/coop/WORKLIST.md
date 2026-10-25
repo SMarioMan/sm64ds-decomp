@@ -20,14 +20,21 @@ not establish campaign completion or real-hardware compatibility.
   synchronized without consuming player 1's camera controls on other consoles.
   The current normal cartridge passes twelve real-input zoom transitions:
   far, first-person, and normal view on all four consoles, with foreign cameras
-  unchanged and matching-input-tick synchronization. Recenter, turn, swimming,
-  flying, and other personal movement modes still need wireless coverage.
+  unchanged and matching-input-tick synchronization. Sixteen additional native
+  movement-camera guards now select the local player; compiled native checks
+  cover local/foreign slots and offline parity. Recenter, turn, swimming, flying,
+  look-target changes and teleport camera setup still need wireless coverage.
+  The combined candidate also passes camera-arrow drags alongside host and
+  guest first-person views, with independent yaw and matching input ticks.
 - [ ] Complete the Rainbow Ride memory and wireless filesystem regressions.
   ROM-verified member extents now avoid the failing runtime metadata reads.
-  Four-console Rainbow Ride (28), stages 29 and 30 pass controls, shared pause,
-  and matching-input-tick synchronization. The cycle stopped at stage 31 when
-  movement returned all consoles to stage 1 without a native fault. Investigate
-  that transition and finish the remaining stage/mission coverage.
+  Four-console Rainbow Ride (28), stages29 and30 passed on the earlier image.
+  Flight31 and transition32 now pass with native Mario caps and a narrowly
+  scoped loading checksum fix. Deterministic actor initialization resolves the
+  captured stage33 enemy/pause divergence; the latest33..40 cycle passes all
+  controls and synchronization checks. Retest28..32 on the combined candidate,
+  then finish the remaining stages and mission variants. These are diagnostic
+  entries, not evidence of earned progression or boss victories.
 - [ ] Validate source-cache release and bounded particle reservations across
   all native stages, mission variants, repeated transitions, and teardown.
   Preserve native particle counts, individual array contiguity, heap ownership,

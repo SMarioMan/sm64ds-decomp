@@ -22,7 +22,6 @@ namespace Memory { extern mHeap::Heap_t *defaultHeapPtr; }
 #ifdef COOP_DIAGNOSTIC_STAGE_CYCLE
 static bool coopDiagnosticChordHeld=false;
 extern "C" u16 data_020a0e58[];
-extern "C" u8 data_0209f2f8;
 #endif
 
 extern "C" {
@@ -35,6 +34,7 @@ void CoopOriginalLoadLevelOverlays(int level);
 int CoopOriginalStageInit(void *scene);
 int CoopOriginalSceneBefore(void *scene);
 int CoopOriginalActorBefore(void *actor);
+int CoopOriginalActorBeforeInit(void *actor);
 void CoopOriginalLoadEntrances(LVL_Overlay::ObjSubTable *table, int area, u32 index);
 void func_0202b0e0(void *entries, u32 count);
 void func_0203d918(void);
@@ -74,10 +74,12 @@ void *CoopOriginalResolveFile(u32 fileID);
 int CoopOriginalOpenFile(void *file,u32 fileID);
 void CoopOriginalLoadSkybox(void *scene);
 int CoopOriginalCameraFar(void *camera,unsigned player);
+void func_02012790(unsigned sound);
 void CoopOriginalCameraNear(void *camera,unsigned player);
 void CoopOriginalCameraBehind(void *camera,unsigned player);
 void CoopOriginalCameraFirstPerson(void *camera,unsigned player);
 void CoopOriginalCameraNormal(void *camera,unsigned player);
+void CoopOriginalCameraLookTarget(void *camera,unsigned player,void *target);
 void CoopOriginalPlayerHeadLook(void *player);
 void *CoopOriginalLoadDiskFile(void *file,int flush);
 int func_02018568(void *data);
@@ -93,6 +95,8 @@ int func_0205d3f4(void *file);
 void func_0201ffcc(void);
 void func_02040724(void);
 int CoopOriginalWirelessReset(void *callback);
+int CoopOriginalConnectionUpdate(void);
+extern u16 data_020a0f1c;
 void func_02042778(void);
 void func_0201fe08(void);
 void func_0201a428(void);
@@ -105,9 +109,12 @@ void LoadLevelNoReturn(int level, u32 entrance, u32 star, u32 reason);
 int LoadArchive(int index);
 void UnloadArchive(int index);
 extern u8 data_0209caa0[];
+extern u8 data_02092128[];
+extern s8 data_02092114;
 extern u8 data_0209f2d8;
 extern u8 data_0209f250;
 extern u8 data_0209f2fc;
+extern u8 data_0209f2f8;
 extern u8 data_0209f20c;
 extern u8 data_0209d660;
 extern u16 data_02092664;
@@ -326,6 +333,7 @@ void CoopLoadLevelOverlays(int level) {
         // Overlay 2 stays authenticated on disk. Patch only its two native
         // talk/event camera-completion reads after the story loader runs.
         extern void CoopCameraFlagsRead(void);
+        extern void CoopPersonalCameraFlagsRead(void);
         extern void CoopLoadEntrances(LVL_Overlay::ObjSubTable *, int, u32);
         extern int CoopStarTutorial(void *);
         extern int CoopCourseTutorial(void *);
@@ -335,6 +343,7 @@ void CoopLoadLevelOverlays(int level) {
         Patch(0x020c44c4,(void *)CoopCourseTutorial);
         Patch(0x020c7838,(void *)CoopLevelEnterInit);
         Patch(0x020cae10,(void *)CoopPlayerHeadLook);
+        PatchCall(0x020df6a0,(void *)CoopPersonalCameraFlagsRead);
         u32 target = (u32)CoopCameraFlagsRead;
         *(volatile u32 *)0x020c4364 = 0xeb000000 | ((target-0x020c436c)>>2 & 0x00ffffff);
         *(volatile u32 *)0x020c4b34 = 0xeb000000 | ((target-0x020c4b3c)>>2 & 0x00ffffff);
@@ -374,11 +383,14 @@ int CoopCourseTutorial(void *player) {
 }
 
 int CoopLevelEnterInit(void *player) {
+    u8 arrival=*((u8 *)player+0x6e3);
+    bool sharedResult=arrival==4 || arrival==8 || arrival==11 ||
+                      arrival==15 || arrival==16 || arrival==18;
     if (coopEnabled && data_0209fc68 && data_0209f2fc==1 &&
-        *((u8 *)player+0x6d8)!=0)
-        // Native normal arrival grounds this player without starting another
-        // star/key victory or loading a duplicate carried-key model.
-    {
+        *((u8 *)player+0x6d8)!=0 && sharedResult) {
+        // Only star/key return poses belong to the leader. Preserve native
+        // water, flight, falling and other arrivals: grounding a flying guest
+        // with no floor below it produces INT_MIN Y and an immediate party exit.
         *((u8 *)player+0x6e3)=0;
         GiveHealth(*((u8 *)player+0x6d8),0x880);
     }
@@ -477,6 +489,27 @@ static void CoopConnectionLost() {
     data_0209d4a8=0;
     func_02030500();
     func_020199a4();
+}
+
+u32 coopLoadingChecksumGraceClears=0;
+
+int CoopConnectionUpdate(void) {
+    if (coopEnabled && data_0209fc68>=3 && data_0209fc68<5 &&
+        (data_020a0f1c&8)) {
+        // Native NET clears the rendered wing-state checksum when this
+        // console advertises loading. A peer that receives that packet before
+        // entering its own loading phase must allow the same transition grace.
+        // Keep checksum failures fatal in gameplay, and retain every radio,
+        // timeout and membership error even during loading.
+        bool loading=(*(volatile u16 *)0x020a104c&0x4000)!=0;
+        for (unsigned slot=0;slot<data_0209fc50 && slot<4;++slot)
+            if ((data_020a1160[slot*18]&0xc000)==0xc000)loading=true;
+        if (loading) {
+            data_020a0f1c&=~8;
+            ++coopLoadingChecksumGraceClears;
+        }
+    }
+    return CoopOriginalConnectionUpdate();
 }
 
 u32 coopTitleRadioResetPending=0;
@@ -599,6 +632,7 @@ void CoopSceneAfterInit(dScene_c *scene, u32 success) {
 static void CoopReserveParticlePool(unsigned level);
 
 int CoopStageInit(void *scene) {
+    if (coopEnabled && data_0209fc68==6)CoopConnectionLost();
     dScStage_c *stage = (dScStage_c *)scene;
     if (!coopEnabled)
         return CoopOriginalStageInit(scene);
@@ -700,7 +734,24 @@ void CoopLoadEntrances(LVL_Overlay::ObjSubTable *table, int area, u32 index) {
     // doors have only one arrival record, or sit near the end of the table.
     // Retain a real four-player group when present; otherwise share the
     // selected safe arrival point, never another door or an out-of-bounds row.
+    // A native flight entrance rejects non-Mario bodies and drops them into
+    // the void. Give every entrant the ordinary Mario cap while its actor is
+    // constructed. Keep base identities and later character choices intact.
+    bool flight=data_0209fc68 && ((selected->param>>7)&15)==2;
+    u8 previousCharacters[4];
+    s8 pendingCharacter=data_02092114;
+    if (flight) {
+        for (unsigned slot=0;slot<4;++slot) {
+            previousCharacters[slot]=data_02092128[slot];
+            data_02092128[slot]=0;
+        }
+        data_02092114=-1;
+    }
     CoopOriginalLoadEntrances(&temporary, area, 0);
+    if (flight) {
+        for (unsigned slot=0;slot<4;++slot)data_02092128[slot]=previousCharacters[slot];
+        data_02092114=pendingCharacter;
+    }
     // The native loader registers its table for later warps/camera setup.
     // Restore the persistent original instead of leaving our stack registered.
     func_0202b0e0(entries, table->count);
@@ -1200,7 +1251,59 @@ static u8 CoopCameraOwner(void) {
     return coopEnabled && data_0209fc68 ? data_020a0f10 : data_0209f250;
 }
 
+static u8 CoopLocalCameraInfo(dCamera_c *camera) {
+    u8 info=(camera->mFlags&0x8000)!=0;
+    if (camera->mFlags&0x1000)info|=2;
+    if (camera->mAreaMode && (*(const u16 *)((const u8 *)camera->mAreaMode+0x26)&1))info|=4;
+    return info;
+}
+
+u32 CoopInputCameraFlags(dCamera_c *camera,unsigned player) {
+    u32 flags=camera->mFlags;
+    if (coopEnabled && data_0209fc68 && player<4)
+        flags=(flags&~0x1000u)|((data_020a1166[player*36+5]&2)<<11);
+    return flags;
+}
+
+u32 CoopPersonalCameraFlags(dCamera_c *camera) {
+    u32 flags=camera->mFlags;
+    if (coopEnabled && data_0209fc68 && gActivePlayerSlot<4)
+        flags=(flags&~0x8000u)|((data_020a1166[gActivePlayerSlot*36+5]&1)<<15);
+    return flags;
+}
+
+// CheckCameraInput has its player index in r1 and camera pointer in r9.
+// Replace its flags load while preserving every other register and CPSR.
+__asm void CoopCameraInputFlagsRead(void) {
+    stmfd sp!, {r0-r3, r12, lr}
+    mrs r2, cpsr
+    stmfd sp!, {r2-r3}
+    mov r0, r9
+    bl CoopInputCameraFlags
+    mov r9, r0
+    ldmfd sp!, {r2-r3}
+    msr cpsr_f, r2
+    ldmfd sp!, {r0-r3, r12, pc}
+}
+
+__asm void CoopPersonalCameraFlagsRead(void) {
+    stmfd sp!, {r1-r3, r12, lr}
+    bl CoopPersonalCameraFlags
+    ldmfd sp!, {r1-r3, r12, pc}
+}
+
 int CoopCameraFar(void *camera,unsigned player) {
+    if (coopEnabled && data_0209fc68 && player<4) {
+        // The native foreign-player guard returns success even when that
+        // player's own area disallows zoom. Story mode uses this result to
+        // enter first person, so all replicas must consume its echoed choice.
+        if (data_020a1166[player*36+5]&4)return 0;
+        if (player==data_020a0f10) {
+            ((dCamera_c *)camera)->mFlags|=2;
+            func_02012790(7);
+        }
+        return 1;
+    }
     u8 previous=data_0209f250;
     data_0209f250=CoopCameraOwner();
     int result=CoopOriginalCameraFar(camera,player);
@@ -1233,6 +1336,42 @@ void CoopCameraNormal(void *camera,unsigned player) {
     u8 previous=data_0209f250;
     data_0209f250=CoopCameraOwner();
     CoopOriginalCameraNormal(camera,player);
+    data_0209f250=previous;
+}
+
+// Native player-specific camera state setters include swimming, flying,
+// climbing and launched states. Their player guard must use the displayed
+// local slot even while shared actor decisions consume the host's input.
+#define COOP_LOCAL_CAMERA_MODE(suffix) \
+    void CoopOriginalCameraMode##suffix(void *,unsigned); \
+    void CoopCameraMode##suffix(void *camera,unsigned player) { \
+        u8 previous=data_0209f250; \
+        data_0209f250=CoopCameraOwner(); \
+        CoopOriginalCameraMode##suffix(camera,player); \
+        data_0209f250=previous; \
+    }
+COOP_LOCAL_CAMERA_MODE(D10c)
+COOP_LOCAL_CAMERA_MODE(D148)
+COOP_LOCAL_CAMERA_MODE(D438)
+COOP_LOCAL_CAMERA_MODE(D474)
+COOP_LOCAL_CAMERA_MODE(D508)
+COOP_LOCAL_CAMERA_MODE(D544)
+COOP_LOCAL_CAMERA_MODE(D580)
+COOP_LOCAL_CAMERA_MODE(D5c0)
+COOP_LOCAL_CAMERA_MODE(D5fc)
+COOP_LOCAL_CAMERA_MODE(D63c)
+COOP_LOCAL_CAMERA_MODE(D678)
+COOP_LOCAL_CAMERA_MODE(D6b4)
+COOP_LOCAL_CAMERA_MODE(D6f0)
+COOP_LOCAL_CAMERA_MODE(D72c)
+COOP_LOCAL_CAMERA_MODE(D768)
+COOP_LOCAL_CAMERA_MODE(D7a4)
+#undef COOP_LOCAL_CAMERA_MODE
+
+void CoopCameraLookTarget(void *camera,unsigned player,void *target) {
+    u8 previous=data_0209f250;
+    data_0209f250=CoopCameraOwner();
+    CoopOriginalCameraLookTarget(camera,player,target);
     data_0209f250=previous;
 }
 
@@ -1280,10 +1419,10 @@ int CoopSceneBefore(void *scene) {
         if (data_0209fc68)
             data_0209e650 = data_020a1154[0] ^ 0x6d2b79f5;
         // Native story flags occupy NET user bytes 0..4 and 16. Byte 5
-        // carries the host camera's completion status; every replica,
-        // including the host, consumes the same echoed packet below.
+        // carries per-player completion, input availability and zoom limits.
+        // Shared dialogs use the host's echoed completion bit.
         if (data_0209f318) {
-            data_020a1052[5] = (data_0209f318->mFlags & 0x8000) != 0;
+            data_020a1052[5] = CoopLocalCameraInfo(data_0209f318);
             // Initial host-file transfer owns bytes7..15 only while scenes
             // are held at initialization. In gameplay7..8 carry local pitch.
             if (COOP_SAVE_SLOT<0 || coopSaveState==1) {
@@ -1340,6 +1479,29 @@ u32 coopBehaviorVisibility = 0;
 static u32 coopBehaviorHealthSaved = 0;
 static u8 coopBehaviorHealth = 0;
 
+static void CoopSeedActor(dActor_c *actor,u32 frame) {
+    u32 identity=actor->uniqueID-coopStageIdentity;
+    u32 seed=frame^(identity*0x9e3779b9);
+    seed^=seed>>16;
+    seed*=0x85ebca6b;
+    data_0209e650=seed^(seed>>13);
+}
+
+u32 coopActorInitializationsSeeded=0;
+
+int CoopActorBeforeInit(dActor_c *actor) {
+    int result=CoopOriginalActorBeforeInit(actor);
+    if (result && coopEnabled && data_0209fc68 && coopStageIdentity) {
+        // Initial AI timers/headings must not inherit random draws from this
+        // console's camera, effects or differently timed wireless file reads.
+        // Initialization can occur on different NET ticks, so use level and
+        // stage-relative creation identity without the live packet clock.
+        CoopSeedActor(actor,0x6d2b79f5^((u32)data_0209f2f8*0x85ebca6b));
+        ++coopActorInitializationsSeeded;
+    }
+    return result;
+}
+
 int CoopActorBefore(void *actor) {
     coopBehaviorActor = 0;
     coopBehaviorHealthSaved = 0;
@@ -1385,11 +1547,7 @@ int CoopActorBefore(void *actor) {
         // and its stage-relative identity, rather than those local draws.
         // The title/BOOT scenes allocate different numbers of base objects;
         // subtracting STAGE's identity removes that pre-session difference.
-        u32 identity = ((dActor_c *)actor)->uniqueID - coopStageIdentity;
-        u32 seed = data_020a1154[0] ^ (identity * 0x9e3779b9);
-        seed ^= seed >> 16;
-        seed *= 0x85ebca6b;
-        data_0209e650 = seed ^ (seed >> 13);
+        CoopSeedActor((dActor_c *)actor,data_020a1154[0]);
     }
     if (!result && coopEnabled) {
         gActivePlayerSlot = data_020a0f10;
@@ -1434,13 +1592,32 @@ void CoopRuntimeDispatch(unsigned operation, u32 argument) {
     Patch(0x020185c0,(void *)CoopOpenFile);
     Patch(0x0201834c,(void *)CoopLoadDiskFile);
     Patch(0x02062200,(void *)CoopWirelessReset);
+    Patch(0x02030e4c,(void *)CoopConnectionUpdate);
     Patch(0x0202b0fc,(void *)CoopLoadSkybox);
+    PatchCall(0x02024d40,(void *)CoopCameraInputFlagsRead);
     Patch(0x0200d0ac,(void *)CoopCameraFar);
     Patch(0x0200d064,(void *)CoopCameraNear);
     Patch(0x0200d304,(void *)CoopCameraBehind);
     Patch(0x0200ca14,(void *)CoopCameraFov);
     Patch(0x0200d7e0,(void *)CoopCameraFirstPerson);
     Patch(0x0200d81c,(void *)CoopCameraNormal);
+    Patch(0x0200d3f8,(void *)CoopCameraLookTarget);
+    Patch(0x0200d10c,(void *)CoopCameraModeD10c);
+    Patch(0x0200d148,(void *)CoopCameraModeD148);
+    Patch(0x0200d438,(void *)CoopCameraModeD438);
+    Patch(0x0200d474,(void *)CoopCameraModeD474);
+    Patch(0x0200d508,(void *)CoopCameraModeD508);
+    Patch(0x0200d544,(void *)CoopCameraModeD544);
+    Patch(0x0200d580,(void *)CoopCameraModeD580);
+    Patch(0x0200d5c0,(void *)CoopCameraModeD5c0);
+    Patch(0x0200d5fc,(void *)CoopCameraModeD5fc);
+    Patch(0x0200d63c,(void *)CoopCameraModeD63c);
+    Patch(0x0200d678,(void *)CoopCameraModeD678);
+    Patch(0x0200d6b4,(void *)CoopCameraModeD6b4);
+    Patch(0x0200d6f0,(void *)CoopCameraModeD6f0);
+    Patch(0x0200d72c,(void *)CoopCameraModeD72c);
+    Patch(0x0200d768,(void *)CoopCameraModeD768);
+    Patch(0x0200d7a4,(void *)CoopCameraModeD7a4);
     Patch(0x02023178,(void *)CoopAllocateParticleChunk);
     PatchCall(0x02022f88,(void *)CoopAllocateParticlePool);
     PatchCall(0x020231bc,(void *)CoopFreeParticlePool);
@@ -1476,6 +1653,7 @@ void CoopRuntimeDispatch(unsigned operation, u32 argument) {
     Patch(0x0202e3d4, (void *)CoopSceneBefore);
     Patch(0x0202e3c8, (void *)CoopSceneAfter);
     Patch(0x0211a210, (void *)CoopEntryCleanup);
+    Patch(0x02011268,(void *)CoopActorBeforeInit);
     Patch(0x02010fd4, (void *)CoopActorBefore);
     Patch(0x02010fc8, (void *)CoopActorAfter);
     if (operation == 0) {

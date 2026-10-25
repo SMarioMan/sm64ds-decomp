@@ -15,12 +15,13 @@ The parent bootstrap loader now resides in overlay 75.
 
 ## Build
 
-From your existing checkout, with no uncommitted local edits:
+To reproduce the physically confirmed baseline exactly, start with a clean
+working tree and select its pinned commit. Later branch changes produce a
+different ROM hash; the instructions here intentionally reproduce this baseline.
 
 ```bash
 git fetch origin
-git switch co-op-multiplayer
-git pull --ff-only origin co-op-multiplayer
+git switch --detach 89505d4009e862e4c561798b901cf45e4992c665
 ```
 
 Activate your existing mod toolchain environment. The commands below assume

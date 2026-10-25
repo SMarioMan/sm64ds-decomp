@@ -6,9 +6,10 @@ area. Reads observe native state; only physical pad/touch input is submitted.
 """
 import argparse
 import json
+import struct
 from pathlib import Path
 
-from campaign import assert_party_synchronized, snapshot, wait_controller_buttons
+from campaign import assert_party_synchronized, player_position, snapshot, wait_controller_buttons
 from diagnostic_stage import resume_stage
 from session_control import RemoteEmulators
 
@@ -86,13 +87,86 @@ def check_zoom(ds):
     return report
 
 
+def check_mixed_controls(ds):
+    """Turn one view with stylus input while a different player looks around."""
+    resume_stage(ds)
+    report={'status':'running','consoles':ds.count,'events':[]}
+    path=ds.output/'mixed-camera-controls.json'
+    def save():path.write_text(json.dumps(report,indent=2)+'\n')
+    def zoom(console):
+        ds.set_input(console,0xbff)
+        wait_controller_buttons(ds,console,0x400,held=True)
+        ds.run(6)
+        ds.set_input(console,0xfff)
+        wait_controller_buttons(ds,console,0x400)
+        ds.run(90)
+    def views():
+        result=[]
+        for console in range(ds.count):
+            camera=ds.word(console,0x0209f318)
+            result.append({'yaw':struct.unpack('<h',ds.read(console,camera+0x17c,2))[0],
+                           'state':hex(ds.word(console,camera+0x138)),
+                           'flags':hex(ds.word(console,camera+0x154))})
+        return result
+    def touch_seen(console,held):
+        slot=ds.read(console,0x020a0f10,1)[0]
+        for _ in range(90):
+            if bool(ds.read(console,0x020a0de8+slot*4,1)[0])==held:return
+            ds.run(1)
+        raise RuntimeError('Stylus state was not echoed by native NET')
+    def difference(a,b):return abs((a-b+32768)%65536-32768)
+    save()
+    try:
+        for console,item in enumerate(observe(ds)):
+            if item['mode']!=0:raise RuntimeError('Mixed camera check requires native Standard controls')
+            for _ in range(3):
+                current=observe(ds)
+                if current[console]['choices'][current[console]['slot']]==0:break
+                zoom(console)
+            else:raise RuntimeError('Could not prepare normal camera controls')
+        for look,turn in ((0,1),(3,0)):
+            zoom(look);zoom(look)
+            before=views()
+            if before[look]['state']!='0x209b098':
+                raise RuntimeError('Look controller did not enter first-person mode')
+            slot=ds.read(turn,0x020a0f10,1)[0]
+            position=player_position(ds,turn,slot)
+            ds.set_input(turn,0xfff,(235,165));touch_seen(turn,True);ds.run(12)
+            ds.set_input(turn,0xfff,(250,165));ds.run(24)
+            ds.set_input(turn,0xfff);touch_seen(turn,False);ds.run(90)
+            after=views();stopped=player_position(ds,turn,slot)
+            event={'lookConsole':look,'turnConsole':turn,'before':before,'after':after,
+                   'playerBefore':position,'playerAfter':stopped}
+            report['events'].append(event);save()
+            if difference(after[turn]['yaw'],before[turn]['yaw'])<128:
+                raise RuntimeError('The native camera arrow did not turn its own view')
+            for peer in range(ds.count):
+                if peer!=turn and difference(after[peer]['yaw'],before[peer]['yaw'])>32:
+                    raise RuntimeError('A foreign camera arrow turned another view')
+            if (position[0],position[2])!=(stopped[0],stopped[2]):
+                raise RuntimeError('Dragging the camera arrow moved its player')
+            assert_party_synchronized(ds,f'mixed-camera-{look}-{turn}')
+            zoom(look)
+        report['status']='passed'
+        ds.screens('mixed-camera-controls-')
+    except Exception as error:
+        report.update(status='failed',error=f'{type(error).__name__}: {error}')
+        save();snapshot(ds,'mixed-camera-controls-failed');raise
+    finally:
+        for console in range(ds.count):ds.set_input(console,0xfff)
+        save()
+    return report
+
+
 def main():
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--socket',type=Path,required=True)
     parser.add_argument('--output',type=Path,required=True)
+    parser.add_argument('--mixed-controls',action='store_true',help='Also test camera-arrow drags alongside another first-person view')
     args=parser.parse_args()
     with RemoteEmulators(args.socket,args.output) as ds:
         check_zoom(ds)
+        if args.mixed_controls:check_mixed_controls(ds)
 
 
 if __name__=='__main__':main()

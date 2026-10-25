@@ -9,6 +9,13 @@ from campaign import (ControllerRouteFailure, PLAYER_POINTERS, PlayerUnavailable
 def walk_to_chain_field(ds, console=0):
     # Cross the level's actual ramps to the Chain Chomp field. All movement
     # uses the selected controller; no damage, health, scene or position writes.
+    slot=ds.read(console,0x020a0f10,1)[0]
+    px,py,pz=player_position(ds,console,slot)
+    if py<600 and -1500<px<1500 and 4500<pz<6500:
+        # The coin checkpoint ends below the bridge. Leave by its southern
+        # opening before heading west; the direct line hits the retaining wall.
+        walk_to(ds,-664,4500,console=console,tolerance=80,pulse_frames=6)
+        walk_to(ds,-4000,4500,console=console,tolerance=80,pulse_frames=6)
     for point in ((-5000,5200),(-4000,4500),(-1500,5500)):
         walk_to(ds,*point,console=console,tolerance=60,pulse_frames=6)
     # Keep analog steering and running traction on the sloped bridge. Slow

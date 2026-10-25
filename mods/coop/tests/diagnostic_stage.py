@@ -96,6 +96,11 @@ def check_stage(ds, level):
     # Some native entrance-0 records are star-return arrivals and open the
     # level-clear menu. Choose Continue without saving this synthetic entry.
     finish_messages(ds,level_clear_choice=(128,136))
+    actual=[ds.read(i,0x0209f2f8,1)[0] for i in range(ds.count)]
+    if actual!=[level]*ds.count:
+        snapshot(ds,'diagnostic-stage-arrival-transition')
+        raise ControllerRouteFailure(
+            f'Native arrival left stage {level} before controller checks: {actual}')
     characters=check_characters(ds)
     assert_party_synchronized(ds,'diagnostic-stage-entry')
     check_living_party(ds)

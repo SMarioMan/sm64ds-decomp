@@ -6,6 +6,161 @@ fixes are still undergoing live validation. Physical host boot on New3DS/R4 is
 user-confirmed; campaign completion and physical wireless remain unverified. Read the current regressions first; later sections preserve
 historical checkpoints and failures rather than release acceptance.
 
+## Current checkpoint: echoed camera controls and deterministic actor initialization
+
+- Normal cartridge `/workspace/runtime/seeded-actors-echoed-cameras-host.nds`,
+  SHA256 `f641c6e7927a5e088ad5e34e8fd9c23564124f4f164e6ef86ff0b55ddaab00af`.
+  An independent rebuild produces the same SHA256. Retail boot bytes remain
+  protected; physical host-boot confirmation belongs to baseline89505d400,
+  not a physical test of this newer image.
+- Full isolated suite:124 discovered,120 executed,4 obsolete prefix-only skips,
+  all passing (`seeded-actors-echoed-cameras-all-tests.log`). Coverage includes
+  original Snufit initialization, camera input parsing, loading errors and flight
+  actor construction. Private Unicorn fixtures adapt external dependencies;
+  these checks do not establish campaign completion.
+- Four-console stages33 through40 PASS controls, exact horizontal positions at
+  matching input ticks, and shared pause/resume:
+  `/workspace/runtime/seeded-actors-stage33-wireless/diagnostic-cycle.json`.
+  Diagnostic cartridge SHA256
+  `f583585d7f37a1cb3bc8d060c0fe958ee0a057e1f1612323751be90b84ea2776`.
+  Actor initialization now seeds native randomness from stage-relative identity
+  rather than local rendering/IO RNG or loading-time NET ticks. This resolves
+  the previously captured stage33 enemy/pause divergence in this regression.
+- Earlier flight31 and transition32 PASS in `loading-grace-wing-wireless/` on
+  SHA256 `252ae4a34ca28be7cfb00917f6be062057cb6816c82f53d467d18b6518a10fbc`.
+  All actors receive native Mario caps at flight entrances. Arrival state is
+  preserved except shared result poses. During asymmetric native loading,
+  only the known wing-mask checksum mismatch is ignored while an active peer
+  advertises loading. Radio, timeout, membership and gameplay errors stay fatal.
+  Each guest actually exercised21 checksum clears during31→32. Retest these
+  stages and Rainbow Ride on the final combined cartridge.
+- Camera input availability, zoom prohibition, personal owl completion and head
+  pitch are echoed per player. Shared dialogs retain host ownership. Sixteen
+  native movement-mode guards and look-target changes use the local camera.
+  Combined image f641 now passes all12 native zoom transitions and two mixed
+  first-person/camera-arrow cases, exact same-input-tick sync throughout:
+  `seeded-camera-controls-same-tick/{camera-controls,mixed-camera-controls}.json`.
+  Host and guest first-person views remain still when the other console turns;
+  camera-arrow dragging does not walk the player. Continuations must set
+  COOP_FRAME_SAMPLES=1: serial snapshots alone produced a misleading12-unit
+  vertical overlap discrepancy on the initial camera check. Teleport, movement
+  camera modes and further area restrictions still need wireless coverage.
+- Normal campaign attempt `seeded-camera-key-fixture-star/` loaded the previously
+  controller-earned key-only save (SHA256
+  `37bdc0cc4b85ed1ca875a8b6ed70b5895e08b3e2c96626bc4d8c403fdb815b58`),
+  reached BOB with four players, then failed the analog coin navigation route.
+  No coin/star/save pass is claimed. Party retained at the same path plus`.sock`
+  for read-only diagnosis and real controller continuations. Physical jump
+  pulses then cleared the lower terrain lip and collected a real guest coin:
+  `seeded-camera-coin-recovery/result.json`, all4 totals0→1 and matching ticks.
+  Star/save continuation active in `seeded-camera-guest-star-continuation/`;
+  no star or save acceptance until its results exist.
+- Historical checkpoint headings below describe older images and closed runs.
+  Their “active” labels are historical, not the current session status.
+
+## Latest active checkpoint: native flight caps
+
+- New normal image `/workspace/runtime/flight-party-native-cameras-host.nds`,
+  SHA256 `15d4d2c0a83668f8b7edcf5502ab9d224b5d325980090b183512a1f3fec423da`.
+  Builds add ordinary Mario caps to all actors at native flight entrances.
+  The per-player selection array and pending-cap global are restored after
+  spawning. Base character identities and normal entrances are unchanged.
+- All102 discovered checks PASS with4prefix-only skips (98executed):
+  `/workspace/runtime/flight-party-native-cameras-all-tests.log`. Four new
+  compiled construction-policy checks cover flight, normal, offline and disabled
+  mode, original table registration and selection restoration. Native actor
+  construction is adapted in these policy tests; live flight is still pending.
+- Preserving arrival kinds alone did NOT fix multiplayer Wing Tower31:
+  `/workspace/runtime/native-arrival-wing-tower-wireless/result.json` returned
+  all4 consoles to castle1 during arrival. Its failed party was captured and
+  shut down. Native LevelEnter_Init explicitly changes non-Mario flight arrivals
+  into a fall; those guests cannot remain in this aerial course.
+- ACTIVE four-console test:
+  `/workspace/runtime/flight-cap-party-wing-wireless/`, exec99953.
+  Source frozen in driver/. Failure socket is that path plus `.sock`.
+  It requests31..40 with real diagnostic chord transitions. ROM
+  `/workspace/runtime/flight-cap-party-wing-cycle-host.nds` SHA256
+  `52f6dc024f8290342a5ca2082a7c96b625717618c60154b72e6b021dddde6b7e`.
+  No earned progression or flight acceptance is claimed before results.
+- The fresh aea94b7b baseline party finished with an actual earned-key Save &
+  Quit PASS: `/workspace/runtime/retail-boot-combined-earned-key-save/result.json`.
+  HostTitle, three guest SessionEnded/radio0 and other adventure slots verified.
+  Backup `wireless-save-after.sav` is8192bytes, SHA256
+  `37bdc0cc4b85ed1ca875a8b6ed70b5895e08b3e2c96626bc4d8c403fdb815b58`;
+  it contains the actual earned key and no stars. The party was shut down.
+- Star navigation exhausted all3routes and did NOT earn a star on that baseline
+  run: `retail-boot-combined-native-coin-continuation/course-star-route-attempts.json`.
+  Route1 hit the under-bridge wall, route2 died at the post, route3 missed the
+  lawn waypoint. Keep the successful coin/jump/key-save checkpoints separate
+  from this failed star checkpoint. The older star/save acceptance remains tied
+  to its older cartridges. Earlier queued runners have all exited.
+
+## Work in progress: native arrivals and movement cameras
+
+- New normal image `/workspace/runtime/native-arrival-local-cameras-host.nds`,
+  SHA256 `4a8322b72a648cf67c6414aa7476be3af8f542feeb94f62f86b59d5408b9712e`.
+  Sixteen more player-guarded native camera state setters use the local slot.
+  Guest arrival normalization now applies only to shared result poses4/8/11/
+  15/16/18. It previously grounded water/flight arrivals; flight has no floor
+  under the spawn and could obtain INT_MIN Y. Do not claim wireless resolution yet.
+- Full suite PASS:98 discovered,94 executed,4prefix-only skips,
+  `/workspace/runtime/native-arrival-local-cameras-all-tests.log`. Six policy
+  checks cover all19 native arrival types, host/guest, offline and non-result
+  transitions. Two camera checks cover all16 additional setters under native
+  local/foreign guards and offline parity. Core and src/ unchanged.
+- The 16KiB build-time linked-code bound was raised to32KiB for these guards;
+  the resident loader's64KiB bound is unchanged. The appended archive index and
+  relocation tail are separate from that linked-code span.
+- `/workspace/runtime/local-movement-camera-stage31/result.json`:single-console
+  Wing Tower31 PASS; actual flight controls, not four-player acceptance.
+- Later single-console matrix `/workspace/runtime/native-arrival-later-local-matrix/`
+  PASSed all19 entries32..40,42..51. With the separate31 pass,20 later entries
+  pass locally. These are diagnostic entries, not earned access or boss wins.
+  Normal build was restored and exactly reproduced4a8322b7 at
+  `native-arrival-local-cameras-rebuild-host.nds`.
+- `/workspace/runtime/retail-boot-combined-fresh-guest-star/` is the fresh full
+  four-console guest coin/star/consecutive-save run on the physically booted
+  aea94b7b baseline (BEFORE these newest camera/arrival changes). It has earned
+  the key, entered the castle and reached Bob-omb Battlefield. Source frozen
+  under driver/. Failure socket:that path plus `.sock`.
+- New native-arrival diagnostic31..40 image
+  `/workspace/runtime/native-arrival-wing-tower-cycle-host.nds`, SHA256
+  `6ea476987bb1fdd525bddc77412670b799be76f732ac2277f9f9421fa15b7cd8`.
+  Four-console run `/workspace/runtime/native-arrival-wing-tower-wireless/`
+  is queued in exec25534 (`/workspace/runtime/run-wing-after-save.py`), waiting
+  for `retail-boot-combined-native-coin-continuation/result.json` to pass. That
+  runner shuts the old party down before launching the new one. Earlier queued
+  runners exited on the failed navigation checks; no two wireless parties ran
+  concurrently. If this continuation fails, inspect its retained party first.
+- The original fresh run reached BOB but its fixed-delay jump-height read
+  failed. An independent read-only native-tick probe showed three successful
+  jumps with peaks172/225/172 against a floor near62:
+  `jump-history-inspection/result.json`. Jump checks now use recorded trajectories
+  rather than a point read that can occur after landing. Full3jump check PASSed
+  in `retail-boot-combined-history-continuation/repeated-guest-jumps.json`.
+- That continuation collected a coin but missed its navigation endpoint; the
+  subsequent fixed-target retry was already aiming at a collected coin. Both
+  failures are preserved. The coin driver now selects a remaining native gold
+  coin from a read-only RAM capture and approaches it with the native analog
+  stick. `retail-boot-combined-native-coin-continuation/shared-coin-pickup.json`
+  PASSes actual guest pickup1->2 on all4 replicas. No state injection/reload.
+- `retail-boot-combined-native-coin-continuation/` is continuing the same fresh
+  aea94b7b party through star and consecutive Save & Quit. Star route1 could not
+  reach the western lawn from below the bridge; route2 uses an actual exit and
+  reentry. The repository driver now leaves the under-bridge coin area through
+  its southern opening before heading west; this correction is not in that
+  already-frozen running driver. Do not claim a first-route or new-camera-ROM pass.
+  The RemoteEmulators continuation did not copy the shared_course_coins driver
+  attribute; its star helper's combined coin-witness field is therefore false,
+  though the separate native coin checkpoint above passed.
+- The older retained normal party could not resume after several hours idle:
+  net/session/radio all0, no native crash or exception. Captures:
+  `/workspace/runtime/combined-camera-campaign/retained-session-failure/`.
+  Party shut down cleanly; do not count the failed resume as campaign coverage.
+- Diagnostics now check the stage again after arrival messages before calling
+  a matching-input-tick comparison. The earlier31 snapshot already showed
+  castle1 at that point; its error was reported later as movement leaving31.
+
 ## Current checkpoint: retail boot preservation and local cameras
 
 This section supersedes the historical experiments below. No campaign-complete
@@ -16,7 +171,8 @@ or full physical-wireless acceptance is claimed.
   Default ROOT placement; acknowledged closed-entry startup; bounded particle
   reservations; streamed LZ; ROM-indexed NARC views; common source-cache release;
   callback-driven teardown; local zoom/recenter/FOV/first-person/normal camera;
-  echoed per-player head pitch. Build artifacts currently match this candidate.
+  echoed per-player head pitch. This is the physically booted baseline; see
+  the newer work-in-progress section before rebuilding or running unit tests.
 - Host parent loader moved out of retail secure-area BIOS wrappers to overlay75's
   reserved result cave. ARM9, ARM7, first16KiB secure area and metadata stay retail.
   Four boot-layout checks PASS: `retail-boot-layout-tests.log`.

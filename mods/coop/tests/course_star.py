@@ -1,6 +1,7 @@
 """Collect the real Chain Chomp star, save it and regain castle control."""
 import json
 import math
+import os
 import struct
 
 from campaign import (ControllerRouteFailure, PLAYER_POINTERS, assert_party_synchronized, check_controller_movement, direction_toward,
@@ -12,11 +13,17 @@ def check_repeated_jumps(ds, controller):
     """Prove repeated physical jump edges reach the selected guest."""
     slot=ds.read(controller,0x020a0f10,1)[0]
     actor=ds.word(controller,PLAYER_POINTERS+4*slot)
+    # Native multiplayer player collisions can block a jump in the crowded
+    # course spawn. Walk onto open ground before measuring its height.
+    initial_level=ds.read(controller,0x0209f2f8,1)[0]
+    if initial_level==6:
+        walk_to(ds,-5000,5200,console=controller)
     jumps=[]
     for attempt in range(3):
         ds.set_input(controller,0xfff)
         wait_controller_buttons(ds,controller,0x102)
         before=player_position(ds,controller,slot)
+        first_tick=ds.word(controller,0x020a1154)
         ds.set_input(controller,0xffd)
         wait_controller_buttons(ds,controller,2,held=True)
         for _ in range(40):
@@ -32,12 +39,31 @@ def check_repeated_jumps(ds, controller):
         ds.set_input(controller,0xfff)
         wait_controller_buttons(ds,controller,2)
         ds.run(90)
-        if airborne[1]<=before[1]+64:
-            raise RuntimeError('The native jump did not rise above its initial floor')
-        jumps.append({'before':before,'airborne':airborne})
+        samples=[]
+        if os.environ.get('COOP_FRAME_SAMPLES'):
+            # Live cores keep running during controller RPCs. A point read
+            # after twelve requested frames can already be past landing.
+            # Measure the actual jump from read-only native input-tick history.
+            for line in ds.command('partyhistory'):
+                if not line.startswith(f'PARTY {controller} '):continue
+                fields=line.split()
+                tick,level,count=map(int,fields[2:5])
+                if tick>=first_tick and level==initial_level and count==ds.count:
+                    samples.append((tick,int(fields[6+slot*3])/4096))
+            if not samples or samples[0][0]>first_tick+2:
+                raise RuntimeError('Jump trajectory history no longer covers the acknowledged press')
+        peak=max([y for _,y in samples],default=airborne[1])
+        jumps.append({'before':before,'airbornePointRead':airborne,'peakY':peak,
+                      'nativeTickSamples':samples})
+        (ds.output/'repeated-guest-jumps.json').write_text(json.dumps({
+            'controller':controller,'slot':slot,'jumps':jumps,
+            'nativeEdgesObserved':True,'status':'running'},indent=2)+'\n')
+        if peak<=before[1]+64:
+            snapshot(ds,'repeated-jump-height-failed')
+            raise RuntimeError('The native jump trajectory did not rise above its initial floor')
     assert_party_synchronized(ds,'repeated-guest-jumps')
     (ds.output/'repeated-guest-jumps.json').write_text(json.dumps({
-        'controller':controller,'slot':slot,'jumps':jumps,'nativeEdgesObserved':True},indent=2)+'\n')
+        'controller':controller,'slot':slot,'jumps':jumps,'nativeEdgesObserved':True,'status':'passed'},indent=2)+'\n')
 
 
 def _find_stump(ds, controller=0):
