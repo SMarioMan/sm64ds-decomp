@@ -1,9 +1,11 @@
 # R4 boot retest
 
 This is an experimental, normal-game cartridge for the reported New Nintendo
-3DS / R4 SDHC 2022 / Wood white screen before the title screen. Please test
-whether it reaches the title screen first. Full campaign and physical wireless
-acceptance are still incomplete; see [WORKLIST.md](WORKLIST.md).
+3DS / R4 SDHC 2022 / Wood white screen before the title screen. The user built
+this candidate from commit `89505d4009e862e4c561798b901cf45e4992c665` and confirmed:
+“The ROM now boots on the R4 card.” The reported boot issue is resolved on that
+setup. Full campaign and physical wireless acceptance are still incomplete;
+see [WORKLIST.md](WORKLIST.md).
 
 This candidate supersedes the previously linked `retail-boot-local-camera-host.nds`
 (`ce3cdcda3dd12f1c...`). It includes the same boot-layout correction plus the
@@ -94,4 +96,5 @@ files, and melonDS are not needed to build or perform this boot check.
 Record the output hash, whether the title screen appears, and any different
 behavior after the R4 loading screen. Emulator startup does not establish that
 the physical white screen is resolved: both the old and corrected layouts boot
-in BIOS/firmware emulation.
+in BIOS/firmware emulation. The successful physical boot above is user-reported
+evidence, separate from those emulator checks.

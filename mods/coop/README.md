@@ -83,8 +83,9 @@ The current normal candidate preserves the retail host ARM9, ARM7, secure
 area, and secure-area metadata. Its parent loader lives in the lobby overlay.
 This addresses an overwritten secure-area BIOS-wrapper region in the reported
 white-screen cartridge. BIOS/firmware boot and four layout checks pass; the
-older cartridge also boots under emulation, so physical R4 compatibility still
-requires a retest. The reported setup and remaining tasks are recorded in
+older cartridge also boots under emulation. The user rebuilt commit89505d400
+and confirmed the corrected candidate now boots on the New3DS/R4 SDHC2022/Wood
+setup. Physical Download Play still needs testing. The report and remaining tasks are recorded in
 [WORKLIST.md](WORKLIST.md).
 
 Camera hooks now select the local player's zoom, recenter, field of view,
@@ -122,7 +123,7 @@ For a diagnostic Download Play build, explicitly pass both
 acceptance or release images.
 
 **The mod is still experimental.** Full campaign completion, later bosses,
-character unlocks, and physical hardware remain unverified. The checkpoint
+character unlocks, and physical wireless gameplay remain unverified. The checkpoint
 reports above do not establish a complete campaign. Detailed earlier evidence
 and failed experiments are preserved in [the emulator handoff](tests/EMULATOR-HANDOFF.md).
 

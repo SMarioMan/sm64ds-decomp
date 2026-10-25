@@ -2,14 +2,14 @@
 
 The mod remains unfinished. Four-player gameplay works on an unmodified
 melonDS core, with acknowledged startup now passing repeat tests. Later-stage memory
-fixes are still undergoing live validation. Campaign completion and physical hardware
-remain unverified. Read the current regressions first; later sections preserve
+fixes are still undergoing live validation. Physical host boot on New3DS/R4 is
+user-confirmed; campaign completion and physical wireless remain unverified. Read the current regressions first; later sections preserve
 historical checkpoints and failures rather than release acceptance.
 
 ## Current checkpoint: retail boot preservation and local cameras
 
 This section supersedes the historical experiments below. No campaign-complete
-or physical-hardware acceptance is claimed.
+or full physical-wireless acceptance is claimed.
 
 - Current normal candidate: `/workspace/runtime/retail-boot-full-local-camera-host.nds`,
   SHA256 `aea94b7bc8a51986b02c258cb779934bd200f269e05ad4d193282237be4baedf`.
@@ -31,7 +31,10 @@ or physical-hardware acceptance is claimed.
   User cannot download this artifact and requested a GitHub push plus local
   build steps. [BOOT-RETEST.md](../BOOT-RETEST.md) instead identifies the newer
   normal candidate aea94b7b above; a fresh rebuild exactly reproduced that hash
-  (`github-boot-retest-build.log`). Physical result remains pending.
+  (`github-boot-retest-build.log`). The user rebuilt the published
+  commit89505d400 and confirmed: “The ROM now boots on the R4 card.” Mark the
+  reported white-screen issue resolved on the New3DS/R4/Wood setup; physical
+  Download Play and campaign behavior are not established by this boot report.
 - Full current ROOT suite:90 discovered,86PASS,4prefix-only skips;
   `/workspace/runtime/full-local-camera-all-tests.log`.
 - Eleven compiled native ARM camera tests PASS: `full-local-camera-arm-tests.log`.

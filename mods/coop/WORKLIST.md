@@ -3,16 +3,18 @@
 The mod is experimental. A passing unit test or stage-entry diagnostic does
 not establish campaign completion or real-hardware compatibility.
 
-- [ ] Fix the reported white screen before the title screen on real hardware.
-  User-tested commit: `419afe72b1f9d133bd26bb03bcd71ebe4d687869`.
-  Cartridge: `sm64ds-haxxstation-game-handoff.nds`.
+- [x] Fix the reported white screen before the title screen on real hardware.
+  Original failing commit: `419afe72b1f9d133bd26bb03bcd71ebe4d687869`,
+  cartridge `sm64ds-haxxstation-game-handoff.nds`.
   Hardware: softmodded New Nintendo 3DS, R4 SDHC 2022, latest Wood firmware.
-  The R4 loading screen disappears, then the game stays white. Other commercial
-  games boot on this setup. Preserve the host's retail ARM9/ARM7 executables and
-  secure-area metadata; test BIOS/firmware boot as well as direct boot, and
-  obtain a physical retest of a clearly identified candidate. The boot-preserved
-  candidate passes BIOS/firmware startup and four cartridge-layout checks;
-  the older image also boots in that emulator, so a hardware fix is unproven.
+  The user rebuilt the candidate published at
+  `89505d4009e862e4c561798b901cf45e4992c665` using
+  [BOOT-RETEST.md](BOOT-RETEST.md) and confirmed: “The ROM now boots on the R4
+  card.” The documented output has expected SHA-256
+  `aea94b7bc8a51986b02c258cb779934bd200f269e05ad4d193282237be4baedf`.
+  The fix preserves retail ARM9/ARM7, secure-area bytes and metadata by moving
+  the parent loader into overlay 75. BIOS/firmware startup and four image-layout
+  checks also pass. Physical Download Play and campaign acceptance remain open.
 - [ ] Give each player independent camera controls and state, including zoom,
   recentering, and personal movement camera modes. Keep shared story decisions
   synchronized without consuming player 1's camera controls on other consoles.
