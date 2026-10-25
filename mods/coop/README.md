@@ -8,7 +8,8 @@ runs it; the automated test frontend does not modify the emulation core.
 The latest candidate additionally fixes native flight entrances, asymmetric
 loading checks, and actor initialization randomness. A four-console33–40 stage
 cycle passes movement, shared pause/resume and matching-input-tick comparisons;
-120 applicable isolated checks pass. Campaign saving on this combined image,
+125 applicable isolated checks pass, including native cannon launch arithmetic
+with per-player echoed pitch. Campaign saving on this combined image,
 remaining camera cases, boss victories and physical Download Play remain open.
 See [the worklist](WORKLIST.md) for current acceptance gaps and
 [the emulator handoff](tests/EMULATOR-HANDOFF.md) for exact image hashes.
@@ -180,6 +181,11 @@ source /workspace/setup/activate.sh
 python mods/coop/build_download_play.py /workspace/inputs/sm64ds-eu.nds \
   --station /workspace/inputs/download-station.nds --save-slot A
 ```
+
+The default requires four systems: one host and three Download Play guests.
+For three systems total, add `--clients 2`; for two systems add `--clients 1`.
+The host waits for the configured number of guests. Changing this option
+changes the output hash, so retain the adjacent build report with test results.
 
 The output is `build/coop/bootstrap/sm64ds-haxxstation-game-handoff.nds`.
 Its adjacent JSON records input hashes, client overlay authentication and

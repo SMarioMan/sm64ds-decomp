@@ -330,10 +330,11 @@ void CoopLoadLevelOverlays(int level) {
     }
     CoopOriginalLoadLevelOverlays(level);
     if (coopEnabled) {
-        // Overlay 2 stays authenticated on disk. Patch only its two native
-        // talk/event camera-completion reads after the story loader runs.
+        // Overlay 2 stays authenticated on disk. Patch native story camera
+        // reads and state helpers only after the authenticated loader runs.
         extern void CoopCameraFlagsRead(void);
         extern void CoopPersonalCameraFlagsRead(void);
+        extern void CoopCannonPitchRead(void);
         extern void CoopLoadEntrances(LVL_Overlay::ObjSubTable *, int, u32);
         extern int CoopStarTutorial(void *);
         extern int CoopCourseTutorial(void *);
@@ -344,6 +345,7 @@ void CoopLoadLevelOverlays(int level) {
         Patch(0x020c7838,(void *)CoopLevelEnterInit);
         Patch(0x020cae10,(void *)CoopPlayerHeadLook);
         PatchCall(0x020df6a0,(void *)CoopPersonalCameraFlagsRead);
+        PatchCall(0x020def88,(void *)CoopCannonPitchRead);
         u32 target = (u32)CoopCameraFlagsRead;
         *(volatile u32 *)0x020c4364 = 0xeb000000 | ((target-0x020c436c)>>2 & 0x00ffffff);
         *(volatile u32 *)0x020c4b34 = 0xeb000000 | ((target-0x020c4b3c)>>2 & 0x00ffffff);
@@ -1270,6 +1272,27 @@ u32 CoopPersonalCameraFlags(dCamera_c *camera) {
     if (coopEnabled && data_0209fc68 && gActivePlayerSlot<4)
         flags=(flags&~0x8000u)|((data_020a1166[gActivePlayerSlot*36+5]&1)<<15);
     return flags;
+}
+
+u32 CoopPersonalCameraPitch(dCamera_c *camera) {
+    if (coopEnabled && data_0209fc68 && gActivePlayerSlot<4) {
+        unsigned offset=gActivePlayerSlot*36+7;
+        return data_020a1166[offset]|(data_020a1166[offset+1]<<8);
+    }
+    return (u16)camera->mAngleX;
+}
+
+// St_Cannon_Main keeps the camera in r4. Replace only the unsigned pitch
+// load, retaining native trigonometry and every other launch calculation.
+__asm void CoopCannonPitchRead(void) {
+    stmfd sp!, {r1-r4, r12, lr}
+    mrs r1, cpsr
+    stmfd sp!, {r1-r2}
+    mov r0, r4
+    bl CoopPersonalCameraPitch
+    ldmfd sp!, {r1-r2}
+    msr cpsr_f, r1
+    ldmfd sp!, {r1-r4, r12, pc}
 }
 
 // CheckCameraInput has its player index in r1 and camera pointer in r9.

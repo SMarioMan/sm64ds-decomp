@@ -6,6 +6,39 @@ fixes are still undergoing live validation. Physical host boot on New3DS/R4 is
 user-confirmed; campaign completion and physical wireless remain unverified. Read the current regressions first; later sections preserve
 historical checkpoints and failures rather than release acceptance.
 
+## Current follow-up: cannon aim synchronization
+
+- New normal image `/workspace/runtime/cannon-echoed-pitch-host.nds`, SHA256
+  `64b5c9cc0e3d33f62c22ae3e5a337cf21914269ab9b3688cc4652f01bdd086a2`.
+  An independent rebuild matches. This supersedes f641 for further emulator
+  regressions; the user's pending physical tests explicitly target af50a63b7
+  and f641. They currently have up to3 systems available.
+- Native St_Cannon_Main used the displayed camera's pitch for launch velocity.
+  Different local views therefore produced different native trajectories.
+  The new hook replaces only its unsigned pitch read with the firing player's
+  echoed bytes7..8; native yaw/trigonometry/state handling remain intact.
+- Five private compiled/native checks reproduce the old divergence and verify
+  equal launch velocities across4 different views, independent aim per player,
+  offline parity, unsigned pitch, register/condition preservation and unchanged
+  displayed pitch. Tests replace the final return before presentation and
+  explicitly invalidate Unicorn's translated block after patching the fixture.
+  Wireless cannon firing is still unverified.
+- Full suite PASS:129 discovered,125 executed,4 obsolete prefix-only skips,
+  `cannon-echoed-pitch-all-tests.log`. This does not establish campaign completion.
+- ACTIVE four-console28..32 cycle: `cannon-pitch-stage28-wireless/`, failure
+  socket same path plus`.sock`, driver frozen under driver/. Diagnostic ROM
+  `cannon-pitch-stage28-cycle-host.nds`, SHA256
+  `d57d51fd2c8a84d5effd4f65def03124ba40c7ae9b61642357962a7a3fb038a5`.
+- The f641 normal party passed a key-only Save & Quit after repeated BOB exits:
+  `seeded-camera-key-save-quit/result.json`. Host title/radio0, all3 guest session
+  endings, both host key backups and other adventure slots verified. It then
+  shut down. No new star was earned: the bot missed the lower exit, lawn and
+  castle door routes. Do not report a star/save-continuation pass.
+- A proposed general waypoint pulse change did not solve the narrow-door route
+  and was reverted. Real analog movement crossed that doorway but missed its
+  overly precise endpoint; captures remain in `seeded-camera-analog-door/`.
+  Keep this input-navigation limitation separate from native/wireless faults.
+
 ## Current checkpoint: echoed camera controls and deterministic actor initialization
 
 - Normal cartridge `/workspace/runtime/seeded-actors-echoed-cameras-host.nds`,
@@ -53,8 +86,9 @@ historical checkpoints and failures rather than release acceptance.
   for read-only diagnosis and real controller continuations. Physical jump
   pulses then cleared the lower terrain lip and collected a real guest coin:
   `seeded-camera-coin-recovery/result.json`, all4 totals0→1 and matching ticks.
-  Star/save continuation active in `seeded-camera-guest-star-continuation/`;
-  no star or save acceptance until its results exist.
+  Star/save continuation in `seeded-camera-guest-star-continuation/` failed
+  navigation before earning a star. Party subsequently saved its existing key
+  and closed, as recorded in the follow-up above.
 - Historical checkpoint headings below describe older images and closed runs.
   Their “active” labels are historical, not the current session status.
 

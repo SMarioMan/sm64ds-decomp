@@ -26,6 +26,9 @@ not establish campaign completion or real-hardware compatibility.
   look-target changes and teleport camera setup still need wireless coverage.
   The combined candidate also passes camera-arrow drags alongside host and
   guest first-person views, with independent yaw and matching input ticks.
+  Cannon launch now reads the firing player's echoed pitch; five native
+  arithmetic checks reproduce the original divergent trajectory and verify the
+  fix. Real wireless cannon firing and remaining movement modes are unverified.
 - [ ] Complete the Rainbow Ride memory and wireless filesystem regressions.
   ROM-verified member extents now avoid the failing runtime metadata reads.
   Four-console Rainbow Ride (28), stages29 and30 passed on the earlier image.

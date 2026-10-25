@@ -183,6 +183,9 @@ def main():
                 raise RuntimeError('Unexpected native camera-completion read')
         if arm9[0x02024d40-rom.arm9RamAddress:0x02024d4c-rom.arm9RamAddress]!=bytes.fromhex('549199e5019a19e26b00000a'):
             raise RuntimeError('Unexpected native per-player camera-input guard')
+        cannon=0x020def88-player_overlay.ramAddress
+        if player_overlay.data[cannon:cannon+12]!=bytes.fromhex('be07d0e10060a0e31919a0e3'):
+            raise RuntimeError('Unexpected native cannon pitch read')
         owl=0x020df6a0-player_overlay.ramAddress
         if player_overlay.data[owl:owl+8]!=bytes.fromhex('540190e5020910e2'):
             raise RuntimeError('Unexpected native owl camera-completion read')
@@ -369,7 +372,7 @@ def main():
                (game['func_0200d0ac'],'CoopCameraFar'),(game['func_0200d064'],'CoopCameraNear'),
                (game['_ZN9dCamera_c14GoBehindPlayerEj'],'CoopCameraBehind'),(game['func_0200ca14'],'CoopCameraFov'),
                (game['func_0200d3f8'],'CoopCameraLookTarget'),(game['func_0200d7e0'],'CoopCameraFirstPerson'),(game['func_0200d81c'],'CoopCameraNormal'),
-               (0x020cae10,'CoopPlayerHeadLook'),(0x02024d40,'CoopCameraInputFlagsRead'),(0x020df6a0,'CoopPersonalCameraFlagsRead'),
+               (0x020cae10,'CoopPlayerHeadLook'),(0x02024d40,'CoopCameraInputFlagsRead'),(0x020df6a0,'CoopPersonalCameraFlagsRead'),(0x020def88,'CoopCannonPitchRead'),
                (game['_ZN7Message6UpdateEv'],'CoopMessageUpdate'),
                (game['KillPlayer'],'CoopKillPlayer'),(game['HitDeathPlane'],'CoopHitDeathPlane'),
                (ov_symbols['_ZN10dScEntry_c16CleanupResourcesEv'],'CoopEntryCleanup'),
@@ -400,6 +403,7 @@ def main():
         module_report['cameraPitchUserBytes']=[7,8]
         module_report['cameraInfoUserByte']=5
         module_report['perPlayerCameraInputGuards']=True
+        module_report['perPlayerCannonPitch']=True
         module_report['deterministicActorInitialization']=True
         module_report['narcIndexBytes']=len(narc_index)
         module_report['narcIndexSha256']=hashlib.sha256(narc_index).hexdigest()
