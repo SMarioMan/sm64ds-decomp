@@ -44,7 +44,8 @@ def check_shared_coin_pickup(ds, controller):
     # The lower approach has a terrain lip that slow walking cannot clear.
     # Native jump pulses cross it; land near the real coin before checking
     # the shared total. This path is controller input, not a position write.
-    touch_walk_to(ds,*target,console=controller,tolerance=60,limit=400,jump=True)
+    touch_walk_to(ds,*target,console=controller,tolerance=60,limit=400,jump=True,
+                  stop_when=lambda:counters()[0][0]>before[0][0])
     ds.run(120)
     after=counters()
     if len(set(after))!=1 or len(set(after[0]))!=1 or after[0][0]<=before[0][0]:

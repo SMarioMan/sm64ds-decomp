@@ -34,6 +34,20 @@ historical checkpoints and failures rather than release acceptance.
   `3bdd721417bf3b84e12ed208020af039d276712ad407ee4edb8f578a3f084ea6`.
   Failure socket same output path plus`.sock`. Do not run another wireless party
   concurrently or overwrite this run. Earlier runners are closed.
+- QUEUED normal campaign regression: `castle-owner-normal-guest-star/`, launcher
+  `/workspace/runtime/queue-castle-owner-normal-star.py`, exec40203. It waits
+  for the matrix's PASSED result and the actual previous driver PID100824 to
+  exit before creating another wireless party. If the matrix fails it exits
+  blocked instead. It uses normal f14 image, the previously earned key-only
+  save (37bdc0cc...), real guest2 coin, guest1 Chain Chomp star, Save & Continue
+  and consecutive host Save & Quit. Frozen driver and fixture provenance are
+  already saved. Do not treat waiting/running as a pass or start another party.
+- Two small controller-driver refinements await that normal regression: analog
+  walking can stop after an observed native pickup (still requiring equal
+  increased totals afterward), and the narrow castle-door route stops once it
+  actually reaches the next room instead of insisting on a blocked endpoint.
+  Native ROM source is published at6137000fd; these driver changes do not
+  change f14 cartridge bytes.
 - Normal-game star/save, boss wins, unlocks, ending, physical Download Play,
   the intermittent signed-menu failure and long-idle loss remain unverified or
   unresolved. Do not label this candidate complete/stable.

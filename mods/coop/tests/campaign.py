@@ -284,7 +284,7 @@ def walk_to(ds, x, z, tolerance=100, limit=160, pulse_frames=12, stop_when=None,
     raise ControllerRouteFailure(f'Controller route could not reach {(x,z)}')
 
 
-def touch_walk_to(ds, x, z, tolerance=30, limit=160, console=0, jump=False, run=False):
+def touch_walk_to(ds, x, z, tolerance=30, limit=160, console=0, jump=False, run=False, stop_when=None):
     # Keep the real stylus held through native NET updates. Batched reads
     # observe position and camera together; no scene or position is written.
     slot=ds.read(console,0x020a0f10,1)[0]
@@ -298,6 +298,7 @@ def touch_walk_to(ds, x, z, tolerance=30, limit=160, console=0, jump=False, run=
     radius=24 if jump or run else (18 if ds.read(console,0x0209f4ae+24*slot,1)[0]==2 else 14)
     try:
         for step in range(limit):
+            if stop_when is not None and stop_when():return
             position,yaw_data,level,live_actor=ds.readv(console,(
                 (actor+0x5c,12),(0x020a1050,2),(0x0209f2f8,1),
                 (PLAYER_POINTERS+slot*4,4)))
@@ -473,7 +474,7 @@ def check_first_course(ds):
         # an obsolete approach point and orbiting the door.
         through_door=lambda: player_position(ds)[0]<-3100
         walk_to(ds,-2850,-825,tolerance=45,limit=600,pulse_frames=2,stop_when=through_door)
-        walk_to(ds,-3350,-825,tolerance=60,limit=600,pulse_frames=2)
+        walk_to(ds,-3350,-825,tolerance=60,limit=600,pulse_frames=2,stop_when=through_door)
     walk_to(ds,-4500,-450)
     previous_scene_state=None
     for step in range(300):
