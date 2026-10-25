@@ -38,6 +38,11 @@ not establish campaign completion or real-hardware compatibility.
   controls and synchronization checks on the prior image. Finish the remaining
   stages and mission variants, then repeat final combined acceptance. These are diagnostic
   entries, not evidence of earned progression or boss victories.
+  The all-Yoshi1..40 continuation found an ordinary stage3 celebration/tally
+  deadlock. Guests2/3 were stuck while wireless stayed active. Reserving the
+  ordinary celebration8 for the leader now passes the same four-console3
+  regression; the current1..40 cycle remains active. Native captured model/
+  ground initializer checks pass, and movement/death/flight poses stay intact.
 - [ ] Validate source-cache release and bounded particle reservations across
   all native stages, mission variants, repeated transitions, and teardown.
   Preserve native particle counts, individual array contiguity, heap ownership,

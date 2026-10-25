@@ -388,11 +388,15 @@ int CoopLevelEnterInit(void *player) {
     u8 arrival=*((u8 *)player+0x6e3);
     bool sharedResult=arrival==4 || arrival==8 || arrival==11 ||
                       arrival==15 || arrival==16 || arrival==18;
-    if (coopEnabled && data_0209fc68 && data_0209f2fc==1 &&
-        *((u8 *)player+0x6d8)!=0 && sharedResult) {
-        // Only star/key return poses belong to the leader. Preserve native
-        // water, flight, falling and other arrivals: grounding a flying guest
-        // with no floor below it produces INT_MIN Y and an immediate party exit.
+    bool leaderResult=(data_0209f2fc==1 && sharedResult) ||
+                      (data_0209f2fc==0 && arrival==8);
+    if (coopEnabled && data_0209fc68 && leaderResult &&
+        *((u8 *)player+0x6d8)!=0) {
+        // Some castle entrances use celebration pose8 even for an ordinary
+        // transition. Multiple celebrations can freeze the remaining entrants
+        // behind the shared tally. Keep that pose with the leader as well.
+        // Preserve native water, flight, falling and other arrivals. Grounding
+        // a flying guest with no floor produces INT_MIN Y and a party exit.
         *((u8 *)player+0x6e3)=0;
         GiveHealth(*((u8 *)player+0x6d8),0x880);
     }

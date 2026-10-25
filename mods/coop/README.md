@@ -8,7 +8,7 @@ runs it; the automated test frontend does not modify the emulation core.
 The latest candidate additionally fixes native flight entrances, asymmetric
 loading checks, and actor initialization randomness. A four-console33–40 stage
 cycle passes movement, shared pause/resume and matching-input-tick comparisons;
-125 applicable isolated checks pass, including native cannon launch arithmetic
+129 applicable isolated checks pass, including native cannon launch arithmetic
 with per-player echoed pitch. Campaign saving on this combined image,
 remaining camera cases, boss victories and physical Download Play remain open.
 See [the worklist](WORKLIST.md) for current acceptance gaps and

@@ -6,6 +6,38 @@ fixes are still undergoing live validation. Physical host boot on New3DS/R4 is
 user-confirmed; campaign completion and physical wireless remain unverified. Read the current regressions first; later sections preserve
 historical checkpoints and failures rather than release acceptance.
 
+## Current candidate: ordinary castle celebration ownership
+
+- Normal cartridge `castle-celebration-owner-host.nds`, SHA256
+  `f14f4e3a6b61ac036a708d39ccd65aa56943d772c7adeaa36a8efb037103112a`.
+  `castle-celebration-owner-rebuilt-host.nds` independently reproduces it.
+- The packet-logged cannon-pitch retry passed startup and stages1..2, then
+  FAILED stage3 (`cannon-pitch-stage1-cold-retry/cycle-02/dialogue-failed-*`).
+  NET4 and radios remained active; guests2/3 stayed in native celebration8
+  with control disabled, while a shared tally was open. The ordinary entrance
+  had transition reason0, so the previous result-only normalization did not
+  apply. This failed party was captured and shut down normally.
+- New policy additionally reserves celebration8 for the leader on ordinary
+  reason0 transitions. Other ordinary poses, death, water, flight and offline
+  arrivals are preserved. The leader retains the native celebration.
+- Full isolated suite PASS:133 discovered,129 executed,4 obsolete prefix-only
+  skips (`castle-celebration-native-all-tests.log`). Three new checks execute
+  the ORIGINAL model and ground initializer in the actual captured castle RAM,
+  without adapting callees: old guest enters8/work5, corrected guests2/3 enter
+  grounded0/work2 on the actual floor, host retains8/work5.
+- ACTIVE four-console run `castle-owner-stage1-through40-wireless/`, exec73107,
+  driver frozen under driver/, packets.bin records real traffic (frontend trace
+  is capped at100000 packets). It has passed stages1,2 AND the previously
+  deadlocked3, including all4 movements, same-input-tick synchronization and
+  shared pause/resume. The rest of1..40 is still running, not a pass.
+  Diagnostic ROM `castle-owner-stage1-cycle-host.nds`, SHA256
+  `3bdd721417bf3b84e12ed208020af039d276712ad407ee4edb8f578a3f084ea6`.
+  Failure socket same output path plus`.sock`. Do not run another wireless party
+  concurrently or overwrite this run. Earlier runners are closed.
+- Normal-game star/save, boss wins, unlocks, ending, physical Download Play,
+  the intermittent signed-menu failure and long-idle loss remain unverified or
+  unresolved. Do not label this candidate complete/stable.
+
 ## Active reliability follow-up after full42–51 pass
 
 - All10 stages42..51 PASS on the combined cannon-pitch diagnostic image

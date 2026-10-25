@@ -48,16 +48,52 @@ class ArrivalPolicyTests(HeapHarness,unittest.TestCase):
         for kind in range(19):self.assertEqual(self.enter(kind),kind)
         self.assertEqual(self.heals,0)
 
-    def test_non_result_transition_keeps_guest_arrivals(self):
+    def test_ordinary_and_death_transitions_preserve_native_movement_arrivals(self):
         for reason in (0,2):
             self.cpu.mem_write(0x0209f2fc,bytes([reason]))
-            for kind in range(19):self.assertEqual(self.enter(kind),kind)
-        self.assertEqual(self.heals,0)
+            for kind in range(19):
+                expected=0 if reason==0 and kind==8 else kind
+                self.assertEqual(self.enter(kind),expected)
+        self.assertEqual(self.heals,1)
+
+    def test_ordinary_castle_celebrations_belong_to_only_the_leader(self):
+        self.cpu.mem_write(0x0209f2fc,b'\0')
+        for slot in range(4):
+            self.cpu.mem_write(self.player+0x6d8,bytes([slot]))
+            self.assertEqual(self.enter(8),8 if slot==0 else 0)
+        self.assertEqual(self.heals,3)
 
     def test_offline_arrivals_are_unchanged(self):
         self.write(self.runtime['coopEnabled'],0)
         for kind in range(19):self.assertEqual(self.enter(kind),kind)
         self.assertEqual(self.heals,0)
+
+
+class NativeCastleArrivalTests(HeapHarness,unittest.TestCase):
+    # Actual four-Yoshi stage3 failure: execute the original model/ground
+    # initializer in a private captured RAM mapping, without adapted callees.
+    fixture_variable='COOP_CASTLE_ENTRANCE_FIXTURE'
+    default_fixture='/workspace/runtime/cannon-pitch-stage1-cold-retry/cycle-02/dialogue-failed-0'
+
+    def enter_native(self,slot,hook):
+        player=self.word(0x0209f394+4*slot)
+        self.cpu.mem_write(0x0209f2fc,b'\0')
+        self.cpu.mem_write(player+0x6e3,b'\x08')
+        self.assertEqual(self.call(hook,player),1)
+        return (self.cpu.mem_read(player+0x6e3,1)[0],
+                self.cpu.mem_read(player+0x6e5,1)[0],
+                struct.unpack('<i',self.cpu.mem_read(player+0x60,4))[0])
+
+    def test_original_initializer_enters_the_shared_celebration_even_without_a_star_return(self):
+        self.assertEqual(self.enter_native(2,'CoopOriginalLevelEnterInit'),(8,5,0))
+
+    def test_actual_ground_and_model_initialization_releases_both_stalled_guests(self):
+        for slot in (2,3):
+            with self.subTest(slot=slot):
+                self.assertEqual(self.enter_native(slot,'CoopLevelEnterInit'),(0,2,0))
+
+    def test_leader_retains_the_original_celebration_initializer(self):
+        self.assertEqual(self.enter_native(0,'CoopLevelEnterInit'),(8,5,0))
 
 
 class FlightPartyTests(HeapHarness,unittest.TestCase):
