@@ -32,14 +32,27 @@ historical checkpoints and failures rather than release acceptance.
   `coin-north-approach/` also FAILED navigation; no pickup acceptance. Native
   state0211013c resolves to St_Walk, not a confirmed ledge/hang state. The party
   was shut down cleanly afterward. Course exit/reentry checks did not execute.
-- ACTIVE NORMAL party `bob-native-process-profile/`, exec61040, socket
+- CLOSED NORMAL party `bob-native-process-profile/`, exec61040, socket
   `bob-native-process-profile.sock`, image fbb2262d. Frozen source snapshot,
   key-only fixture and stock core. The process-observer frontend records native
   process phase/current owner profile within main phase4. This initial build
   records IDs0..353 with stride354; BoB profile observations are supported.
   Current source/full-profiles binary supports the391-entry registry using
   high16 phase/low16 profile keys; Python also accepts the older stride format.
-  Never start another wireless party before closing the active one.
+  Continuation `bob-native-process-steady/`, exec31506, PASSES600-frame steady
+  BoB, warm movement on all four consoles and fresh guest2 shared coin. Course
+  return then FAILED to open pause on all four consoles; captured NET4/radio
+  healthy, pause flags0, no shared dialogue. Fixed24-frame START pulse does not
+  prove native input acknowledgement/menu readiness. Course-return driver now
+  uses the same readiness/echo-based toggle helper as the20-cycle check; live
+  course-return retest is still required. No course reentry acceptance. The
+  continuation shut the party down cleanly; NO wireless party is active.
+  Steady sample:204 intervals, mean3.010 VBlanks. Main phase4 process samples
+  include behavior283,render249,scene-tree79. Profile191 is verified PLAYER
+  from the original overlay descriptor (factory020e6c0c,render order18).
+  Player Behavior has204 boundary observations; stage Render104; other actors
+  contribute to both phases. These are periodic samples, not CPU cycle costs.
+  Warm movement mean3.628 includes cold stalls.
 - New full-profiles frontend builds successfully; actual offline retail
   Adventure/file-A castle replay remains299 intervals all2 VBlanks. The300
   samples within main phase4 are ALL process phase5 (Render), proving main

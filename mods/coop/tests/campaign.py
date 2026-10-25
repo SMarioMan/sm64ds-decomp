@@ -574,10 +574,13 @@ def check_first_course(ds):
 
 def check_course_return(ds):
     """Exit through the host's actual pause menu and check the reloaded party."""
-    ds.command('keys 0 ff7') # START
-    ds.run(24)
-    ds.command('keys 0 fff')
-    ds.run(120)
+    # Await the native menu cooldown and echoed press/release, as in the
+    # repeated pause check. A fixed-duration pulse can fall inside a cold
+    # synchronous asset read and disappear before the next input exchange.
+    from diagnostic_stage import toggle_pause
+    if any(ds.read(i,0x0209f2c4,1)[0] for i in range(ds.count)):
+        raise RuntimeError('Course return check must start in active gameplay')
+    toggle_pause(ds,0)
     if not all(ds.read(i,0x0209f2c4,1)[0] for i in range(ds.count)):
         snapshot(ds,'course-return-pause-failed')
         raise RuntimeError('Course pause did not open on every console')

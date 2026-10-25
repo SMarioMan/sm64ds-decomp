@@ -166,7 +166,21 @@ or CPU cycle costs. They preserve the stock core and do not install ROM hooks.
 Earlier frontend reports do not contain these additional histograms. Actual
 retail Adventure replay with the new observer again records299 intervals all2
 VBlanks; its300 observations within main phase4 are all process phase5 (Render).
-Normal four-console fbb run `bob-native-process-profile/` is in progress.
+Normal four-console fbb run `bob-native-process-profile/` and continuation
+`bob-native-process-steady/` are now closed. They pass native entry,600 steady
+frames, four-console warm movement and fresh guest2 coin. Steady sample has204
+intervals averaging3.010 VBlanks; process samples include behavior283,render249,
+scene-tree79. Player profile191 is verified from the original overlay descriptor;
+its Behavior accounts for204 boundary samples, stage Render for104. Samples
+can alias periodic work and do not quantify exclusive CPU time. Warm movement
+mean3.628 includes cold stalls. Native func02059650 reads the existing SDK
+Timer0 clock without reprogramming it; targeted elapsed-time instrumentation
+could distinguish costs more precisely, but is NOT implemented yet.
+
+The following fixed24-frame START pulse failed to open course pause despite a
+healthy party. The driver now uses the existing menu-readiness/input-echo toggle
+helper, already exercised by20 repeated cycles. A live course-return retest is
+still required; do not transfer the helper's acceptance to that transition.
 
 The same run exposed a camera-check driver bug: association order0,1,3,2 was
 incorrectly treated as console order. Zoom assertions now index synchronized
