@@ -31,13 +31,48 @@ not establish campaign completion or real-hardware compatibility.
   from34 to4 VBlanks, but steady cadence remains approximately3 VBlanks.
   It is not enabled by default and needs wider stage/memory/physical coverage.
   An optional existing-SDK-clock profiler measures Player Behavior/body/head
-  and whole Stage Render without FIFO drains; seven ARM checks pass. Use it
+  and whole Stage Render without FIFO drains; eight ARM checks pass. Use it
   to quantify the remaining steady-play bottleneck before selecting changes.
   Completed native elapsed profiles identify whole Stage Render at~11.4ms
   versus~4.2ms for all four Player Behavior updates in steady BoB. Split its
-  terrain/shadow/collision spans next. An optional conservative cylinder axis
-  broadphase passes six native parity/ABI checks; live speed measurement is
-  running. Retail Adventure BoB baseline is now confirmed near2 VBlanks.
+  terrain/shadow/collision spans: collision takes9.4–9.7ms per frame. The
+  optional leaf cylinder guard passes six native and live movement/pause checks
+  but saves only~0.1ms and leaves cadence near3 VBlanks. Keep it disabled.
+  Investigate ordered spatial candidates to avoid scanning distant pairs;
+  isolated native replay matches contact/list state, with final ROM memory,
+  callback and performance validation still required. Retail Adventure BoB
+  baseline is confirmed near2 VBlanks.
+- [ ] Replace long black loading periods with visible, animated loading
+  feedback on the host and guests. Keep a resident indicator responsive during
+  Download Play handoff, wireless file reads and stage changes. Show real byte
+  or phase progress where measurable; use an animated indicator when no honest
+  total is available. Validate that feedback preserves native loading barriers,
+  input acknowledgments, geometry/VRAM ownership and the retail hardware boot fix.
+- [ ] Improve loading performance as well as steady gameplay speed. Measure
+  cold/warm boot, castle/course transitions and guest file reads separately.
+  Investigate redundant archive loading, repeated resource reads, prefetch and
+  safe reuse/batching while preserving bounded memory, native authentication,
+  file extents and synchronization. Record actual loading-time comparisons on
+  hardware; animated feedback alone does not satisfy this requirement.
+- [ ] Replace player-1-only doors and dialogue with shared interaction access.
+  Allow eligible guests to initiate doors and advance shared dialogue. Select
+  one synchronized owner per interaction and arbitrate simultaneous requests so
+  transitions, rewards and dialogue advances occur exactly once. Test guests
+  interacting with different doors/NPCs at once, disconnects and repeated inputs;
+  preserve party synchronization without requiring the host to do every action.
+- [ ] Let each player select a specific character through its native character
+  door. Enforce exclusive Mario/Luigi/Wario assignments and retain each player's
+  reserved standard multiplayer Yoshi color whenever they return to Yoshi.
+  Resolve simultaneous requests deterministically and handle occupied characters
+  without duplicate assignments. Verify character/door unlocks, occupied doors,
+  transformations/cap states, course changes and returning to Yoshi on all peers.
+- [ ] Replace the repurposed VS-level menu with the host's three real adventure
+  saves A/B/C. Make its fourth option a distinct100% test session for unrestricted
+  exploration. Label the choices clearly and synchronize the selected progress
+  to guests before loading. Keep the100% fixture separate from the three real
+  files so merely selecting it cannot overwrite normal progress. Verify all
+  three actual file selections and the full-progress test option through native
+  menu input, including empty files, unlocks and save/quit behavior.
 - [ ] Fix intermittent missing objects/model parts on individual consoles.
   The user observes this on physical hardware and melonDS, including a Yoshi
   head disappearing immediately on entry to Bob-omb Battlefield, with no

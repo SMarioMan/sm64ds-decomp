@@ -71,9 +71,20 @@ This is the ONLY wireless party. Check result.json and close before another.
 Six native guard checks, eight timing checks and full suite179 discovered/175
 executed/4 obsolete prefix skips PASS. Independent all-disabled normal rebuild
 reproduces fbb2262d (`collision-leaf-disabled-default-host.nds`).
-The latest published source b20e59ca3 currently contains only the cache and
-original four-span profiler; newest changes are not default-enabled. No live
+The published source49882d6e5 contains the optional leaf guard and expanded
+profiler; neither optimization is enabled by default. No live
 RAM writes, savestate restores or packet substitutions are used.
+
+Latest leaf continuation `animation-cache-collision-leaf-cost-profile/` PASSES
+steady/warm/paused checks; party70122 remains retained paused at its socket.
+Speed result is insufficient: collision9.33–9.55ms versus control9.44–9.67ms,
+steady3 VBlanks plus one4-frame interval. Keep the optional guard disabled.
+Private `probe-collision-pair-plan.py` replays the captured160-node BoB list in
+Unicorn ONLY, with the retail norm call explicitly restored. Native contact
+state matches:80 spatial candidates/12720 possible pairs, native instructions
+253813->6332 and sqrt424->5. Counts exclude plan-building/hook/hardware overhead.
+No spatial-plan ROM exists yet. See `collision-candidate-plan-proof.json` and
+`bob-native-cylinder-census.json`. The leaf party remains the only live party.
 
 Historical entries below retain prior states and must not be taken as the
 current active-session inventory.

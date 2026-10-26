@@ -352,3 +352,24 @@ running the normal four-console route. Six guard tests, eight timing tests and
 full suite179 discovered/175 executed/4 obsolete prefix skips pass. Independent
 all-disabled build reproduces fbb2262d. This experiment remains disabled by
 default pending live speed, repeatability and gameplay acceptance.
+
+
+The56ac474f leaf run PASSES normal four-console startup, castle/BoB entry,
+steady600 frames, warm movement on all four consoles and paused600 frames.
+It does not provide a useful steady-speed gain: collision averages9.33–9.55ms
+versus control9.44–9.67ms; steady206 input intervals include205 at3 VBlanks and
+one at4. Keep it disabled. Its party is retained paused for further inspection.
+
+A read-only captured-list census finds160 native colliders,12720 pairs and2269
+compatible-mask pairs.2263 of those compatible pairs are already separated on
+X or Z;424 survive the height test. All nodes use the three verified pure
+native position/owner getter implementations. The norm guard therefore acts
+late in the expensive walk. A private isolated candidate-plan replay against
+actual native Process preserves every collider's contact/list state while
+considering80 spatial candidates instead of12720 pairs. It executes6332 native
+instructions versus253813, and5 square roots versus424. These counts exclude
+plan construction, ARM hook overhead and physical hardware waits; the replay
+is not a working ROM implementation or evidence of gameplay speed. Any native
+notification invalidates that frozen plan before calling into player code.
+Next work is a bounded candidate plan preserving original pair order, with
+safe callback invalidation, memory-pressure fallback and native parity tests.
