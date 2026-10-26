@@ -32,7 +32,9 @@ class PlayerCostTests(HeapHarness,unittest.TestCase):
             if address==self.game['func_02059650']:
                 cpu.reg_write(UC_ARM_REG_R0,next(self.ticks))
                 cpu.reg_write(UC_ARM_REG_R1,0)
-            elif address in (self.runtime['CoopOriginalStageRender'],self.game['_ZN17dExtSimpleModel_c6RenderEPK7Vector3']):
+            elif address in (self.runtime['CoopOriginalStageRender'],self.game['_ZN17dExtSimpleModel_c6RenderEPK7Vector3'],
+                self.game['_ZN10dScStage_c11RenderModelEv'],self.game['_ZN10dScStage_c22RenderModelTransparentEv'],
+                self.game['_ZN17dExtShadowModel_c9RenderAllEv'],self.game['_ZN5dCc_c7ProcessEv']):
                 self.delegates.append((cpu.reg_read(UC_ARM_REG_R0),cpu.reg_read(UC_ARM_REG_R1)))
                 if self.change:self.change()
                 cpu.reg_write(UC_ARM_REG_R0,0xabcdef01)
@@ -41,7 +43,7 @@ class PlayerCostTests(HeapHarness,unittest.TestCase):
         self.cpu.hook_add(UC_HOOK_CODE,adapter)
 
     def rows(self):
-        return [struct.unpack('<6I',self.cpu.mem_read(self.runtime['coopPlayerCosts']+i*24,24)) for i in range(8)]
+        return [struct.unpack('<6I',self.cpu.mem_read(self.runtime['coopPlayerCosts']+i*24,24)) for i in range(16)]
 
     def test_stage_delegate_arguments_return_and_elapsed_ticks(self):
         self.assertEqual(self.call('CoopCostStageRender',0x023f0000),0xabcdef01)
@@ -61,11 +63,11 @@ class PlayerCostTests(HeapHarness,unittest.TestCase):
         self.write(0x0209f1ec,3)
         self.ticks=iter((0xfffffff0,0x20))
         self.call('CoopCostStageRender',1)
-        self.assertEqual(self.rows()[7],(2,1,48,0,48,48))
-        self.write(self.runtime['coopPlayerCosts']+7*24+8,0xfffffff0)
+        self.assertEqual(self.rows()[11],(2,1,48,0,48,48))
+        self.write(self.runtime['coopPlayerCosts']+11*24+8,0xfffffff0)
         self.ticks=iter((50,150))
         self.call('CoopCostStageRender',1)
-        self.assertEqual(self.rows()[7],(4,2,84,1,100,48))
+        self.assertEqual(self.rows()[11],(4,2,84,1,100,48))
 
     def test_changed_stage_resets_and_does_not_mix_costs(self):
         self.call('CoopCostStageRender',1)
@@ -85,7 +87,7 @@ class PlayerCostTests(HeapHarness,unittest.TestCase):
                 self.cpu.mem_write(address,value.to_bytes(width,'little'))
                 self.ticks=iter(()) # A clock access would fail this check.
                 self.assertEqual(self.call('CoopCostStageRender',1),0xabcdef01)
-                self.assertEqual(self.rows(),[(0,)*6]*8)
+                self.assertEqual(self.rows(),[(0,)*6]*16)
                 self.cpu.mem_write(address,old)
 
     def test_spans_crossing_tick_stage_or_loading_are_discarded(self):
@@ -96,7 +98,7 @@ class PlayerCostTests(HeapHarness,unittest.TestCase):
                 self.change=lambda:self.cpu.mem_write(address,value.to_bytes(width,'little'))
                 self.ticks=iter((100,150))
                 self.call('CoopCostStageRender',1)
-                self.assertEqual(self.rows(),[(0,)*6]*8)
+                self.assertEqual(self.rows(),[(0,)*6]*16)
                 self.cpu.mem_write(address,old)
 
     def test_successful_player_behavior_scope_counts_once_and_restores_context(self):
@@ -115,3 +117,12 @@ class PlayerCostTests(HeapHarness,unittest.TestCase):
         self.ticks=iter(())
         self.call('CoopActorAfter',actor,1)
         self.assertEqual(self.rows()[0],(2,1,50,0,50,50))
+
+    def test_stage_subspans_delegate_and_keep_independent_elapsed_buckets(self):
+        for kind,symbol in enumerate(('CoopCostOpaqueRender','CoopCostShadowRender',
+                                      'CoopCostTransparentRender','CoopCostCollisionProcess'),4):
+            self.ticks=iter((100,100+kind))
+            self.call(symbol,0x023f0000)
+            self.assertEqual(self.rows()[kind],(2,1,kind,0,kind,kind))
+        self.assertEqual(self.delegates[0][0],0x023f0000)
+        self.assertEqual(self.delegates[2][0],0x023f0000)

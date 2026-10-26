@@ -3,26 +3,6 @@
 The mod is experimental. A passing unit test or stage-entry diagnostic does
 not establish campaign completion or real-hardware compatibility.
 
-- [ ] Fix intermittent missing objects/model parts on individual consoles.
-  The user observes this on physical hardware and melonDS, including a Yoshi
-  head disappearing immediately on entry to Bob-omb Battlefield, with no
-  first-person view used. Moving around may restore it. Target that ordinary
-  all-Yoshi course entrance first. Capture each view at the same game/input
-  tick and compare model visibility, personal first-person/head hiding,
-  animation state, resource ownership/lifetime, texture/palette state and
-  native geometry limits. Exact aea94 reproduction reaches2048 polygons on
-  every console. Native per-part tracing shows slot3's body filling RAM and
-  its head submitting0 polygons.99 shadows are registered across the whole
-  stage: the deterministic AI visibility guard also disabled native far-shadow
-  suppression. A new flags-read hook restores the saved local shadow decision
-  without changing AI flags. Six isolated checks execute both retail shadow
-  helpers and verify clipping, visible scales/opacity, offline parity and ABI.
-  The fbb2262d normal candidate passes the four-console BoB entry/movement
-  regression: all heads visible, shadows99→8, entry peak1621 polygons,
-  movement peak1796 and no observed overflow. Other scenes/parts and physical
-  retest remain open. Add movement, camera
-  and crowded/effect-heavy scenes to rendering acceptance; performance
-  optimizations must preserve complete models and intended visibility.
 - [ ] PRIORITY: optimize steady gameplay speed and eliminate significant
   hitches on real hardware across every level and supported party size.
   The user tested the pinned89505d400 normal ROM, SHA-256
@@ -53,6 +33,31 @@ not establish campaign completion or real-hardware compatibility.
   An optional existing-SDK-clock profiler measures Player Behavior/body/head
   and whole Stage Render without FIFO drains; seven ARM checks pass. Use it
   to quantify the remaining steady-play bottleneck before selecting changes.
+  Completed native elapsed profiles identify whole Stage Render at~11.4ms
+  versus~4.2ms for all four Player Behavior updates in steady BoB. Split its
+  terrain/shadow/collision spans next. An optional conservative cylinder axis
+  broadphase passes six native parity/ABI checks; live speed measurement is
+  running. Retail Adventure BoB baseline is now confirmed near2 VBlanks.
+- [ ] Fix intermittent missing objects/model parts on individual consoles.
+  The user observes this on physical hardware and melonDS, including a Yoshi
+  head disappearing immediately on entry to Bob-omb Battlefield, with no
+  first-person view used. Moving around may restore it. Target that ordinary
+  all-Yoshi course entrance first. Capture each view at the same game/input
+  tick and compare model visibility, personal first-person/head hiding,
+  animation state, resource ownership/lifetime, texture/palette state and
+  native geometry limits. Exact aea94 reproduction reaches2048 polygons on
+  every console. Native per-part tracing shows slot3's body filling RAM and
+  its head submitting0 polygons.99 shadows are registered across the whole
+  stage: the deterministic AI visibility guard also disabled native far-shadow
+  suppression. A new flags-read hook restores the saved local shadow decision
+  without changing AI flags. Six isolated checks execute both retail shadow
+  helpers and verify clipping, visible scales/opacity, offline parity and ABI.
+  The fbb2262d normal candidate passes the four-console BoB entry/movement
+  regression: all heads visible, shadows99→8, entry peak1621 polygons,
+  movement peak1796 and no observed overflow. Other scenes/parts and physical
+  retest remain open. Add movement, camera
+  and crowded/effect-heavy scenes to rendering acceptance; performance
+  optimizations must preserve complete models and intended visibility.
 - [x] Fix the reported white screen before the title screen on real hardware.
   Original failing commit: `419afe72b1f9d133bd26bb03bcd71ebe4d687869`,
   cartridge `sm64ds-haxxstation-game-handoff.nds`.

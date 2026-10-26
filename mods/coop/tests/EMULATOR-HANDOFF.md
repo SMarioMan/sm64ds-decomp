@@ -27,17 +27,53 @@ Current full suite with cache+profiler:172 discovered,168 executed,4 obsolete
 prefix skips PASS, `animation-cache-player-cost-all-tests.log`. Independent
 both-disabled build reproduces fbb2262d. The cache remains optional.
 
-ACTIVE elapsed profiler image dc04637cff4017ea4c9ad313de48f0821251e7e78da8f5a25a625ea9165ddbad:
-parent `bob-animation-cache-player-cost/`, exec74505, socket
-`/workspace/runtime/bob-animation-cache-player-cost.sock`. Normal castle/BoB
-route is running; continuation `animation-cache-player-cost-profile/`, exec47996,
-waits to measure steady/warm/paused spans and retains the party afterward.
-Seven isolated native timing checks pass. This is the ONLY wireless party;
-check result.json and shut it down before launching another. Separately, one
-OFFLINE unmodified-retail console is measuring the normal castle/BoB route at
-`retail-bob-cadence-baseline/`, exec79400. It creates no wireless session.
-See PERFORMANCE.md for scope, memory guards and build options. No live RAM
-writes, savestate restores or packet substitutions are used.
+CLOSED elapsed profiler image dc04637cff4017ea4c9ad313de48f0821251e7e78da8f5a25a625ea9165ddbad:
+parent `bob-animation-cache-player-cost/` and continuation
+`animation-cache-player-cost-profile/` PASS normal castle/BoB, steady/warm
+movement and pause. Native elapsed costs/frame: players~4.2ms, body/head~2.7ms,
+Stage Render~11.4ms. Steady3 VBlanks, paused2. See PERFORMANCE.md for full context.
+OFFLINE retail `retail-adventure-bob-cadence/` is also CLOSED and PASSES normal
+Adventure castle/BoB entry and600steady frames:300 intervals/599VBlanks/max2.
+Its earlier legacy-VS-script attempt is FAILED and is not the retail baseline.
+
+CLOSED FAILED image bbe4e14626c50fdcac00c7247513c5b8340c7142dd60db85fe7d80f20b39a702:
+cache + optional cylinder axis broadphase + expanded elapsed profiler. Parent
+`bob-animation-cache-collision-cost/` passed startup/independent movement but
+failed its first castle waypoint after wireless ended. Captures show NET0,
+radio0, errors0x101 on all consoles, outgoing tick6705. Continuation also fails
+its initial connected-party check. No course-speed result or live acceptance.
+Six broadphase native checks pass, including updated contact masks; whole-list
+state matches while sqrt calls2399->102. Eight timing tests pass. Full suite179
+discovered/175 executed/4 obsolete prefix skips passes, disabled normal build
+reproduces fbb2262d. The native failure bit1 is from an exhausted input exchange;
+there is no captured first-cause checksum proof. Do not attribute it solely to
+the collision change or dismiss it as an emulator issue without controls.
+
+CLOSED PASSED control image6339b8c0ba03a5d0a5378d12fe636892c60c935294b0900aba95efd6c4a78569:
+cache + expanded elapsed profiler WITHOUT the collision optimization. Normal
+castle/BoB route, steady600/warm all-four/paused600 checks PASS at
+`animation-cache-expanded-cost-control-profile/`. Collision costs9.44–9.67ms
+per call in the steady delta, opaque terrain0.98–1.04ms, shadows0.48–0.55ms.
+The collision routine is the dominant measured stage-render cost. Steady
+cadence remains3 VBlanks; paused2. This one passing control does not establish
+the cause of the previous wireless failure.
+
+ACTIVE image56ac474fdb57549526712d9b4f551e87934b41e0721aa783c848164ef8259ded:
+cache + leaf ARM cylinder guard + expanded elapsed profiler. The first C++
+guard increased isolated instructions295796->326287 despite sqrt2399->102.
+The leaf removes helper-call overhead:299060 instructions, same native contact
+state and sqrt2399->102. These counts do not model elapsed cycles/hardware waits.
+Parent `bob-animation-cache-collision-leaf-cost/`, exec70122, socket
+`/workspace/runtime/bob-animation-cache-collision-leaf-cost.sock`; continuation
+`animation-cache-collision-leaf-cost-profile/`, exec81143, waits for normal
+castle/BoB then measures steady/warm/paused spans, retaining the party afterward.
+This is the ONLY wireless party. Check result.json and close before another.
+Six native guard checks, eight timing checks and full suite179 discovered/175
+executed/4 obsolete prefix skips PASS. Independent all-disabled normal rebuild
+reproduces fbb2262d (`collision-leaf-disabled-default-host.nds`).
+The latest published source b20e59ca3 currently contains only the cache and
+original four-span profiler; newest changes are not default-enabled. No live
+RAM writes, savestate restores or packet substitutions are used.
 
 Historical entries below retain prior states and must not be taken as the
 current active-session inventory.

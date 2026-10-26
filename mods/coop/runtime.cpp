@@ -13,6 +13,8 @@
 #include "ExpandingHeapAllocator.h"
 #if defined(COOP_DIAGNOSTIC_RENDER_COST) || defined(COOP_DIAGNOSTIC_PLAYER_COST)
 #include "dExtSimpleModel_c.h"
+#include "dExtShadowModel_c.h"
+#include "dCc_c.h"
 #endif
 
 namespace Memory { extern mHeap::Heap_t *defaultHeapPtr; }
@@ -42,6 +44,10 @@ unsigned long long func_02059650(void);
 int CoopOriginalStageRender(void *scene);
 void CoopCostBodyRender(void *model,const Vector3 *scale);
 void CoopCostHeadRender(void *model,const Vector3 *scale);
+#endif
+#ifdef COOP_EXPERIMENTAL_COLLISION_BROADPHASE
+// local extern: no typed shared header declares this native vector function.
+int Vec3_HorzLen(const Vector3 *vector);
 #endif
 int CoopOriginalSceneBefore(void *scene);
 int CoopOriginalActorBefore(void *actor);
@@ -1936,7 +1942,8 @@ __asm void CoopShadowFlagsRead(void) {
 // SDK Timer0 is initialized by retail. Observe it; never reconfigure it.
 // Elapsed ticks include interrupts and native I/O/GPU waits, not CPU cycles.
 u32 coopPlayerCostStage=0;
-u32 coopPlayerCosts[8][6]={{0}};
+enum { COOP_COST_KINDS=8 };
+u32 coopPlayerCosts[COOP_COST_KINDS*2][6]={{0}};
 struct CoopCostScope { u32 active,start,stage,tick,bucket; };
 static CoopCostScope coopPlayerBehaviorCost={0,0,0,0,0};
 static void *coopPlayerCostActor=0;
@@ -1951,13 +1958,13 @@ static void CoopCostBegin(CoopCostScope *scope,unsigned kind) {
     scope->active=0;
     if (!CoopCostReady())return;
     if (coopPlayerCostStage!=coopStageIdentity) {
-        for (unsigned row=0;row<8;++row)
+        for (unsigned row=0;row<COOP_COST_KINDS*2;++row)
             for (unsigned field=0;field<6;++field)coopPlayerCosts[row][field]=0;
         coopPlayerCostStage=coopStageIdentity;
     }
     scope->stage=coopStageIdentity;
     scope->tick=data_020a1154[0];
-    scope->bucket=kind+(*(volatile u32 *)0x0209f1ec==3 ? 4 : 0);
+    scope->bucket=kind+(*(volatile u32 *)0x0209f1ec==3 ? COOP_COST_KINDS : 0);
     scope->active=1;
     scope->start=(u32)func_02059650();
 }
@@ -1985,6 +1992,22 @@ static void CoopCostPlayerPart(void *model,const Vector3 *scale,unsigned kind) {
 }
 void CoopCostBodyRender(void *model,const Vector3 *scale) { CoopCostPlayerPart(model,scale,1); }
 void CoopCostHeadRender(void *model,const Vector3 *scale) { CoopCostPlayerPart(model,scale,2); }
+void CoopCostOpaqueRender(dScStage_c *scene) {
+    CoopCostScope scope; CoopCostBegin(&scope,4);
+    scene->RenderModel(); CoopCostFinish(&scope);
+}
+void CoopCostShadowRender() {
+    CoopCostScope scope; CoopCostBegin(&scope,5);
+    dExtShadowModel_c::RenderAll(); CoopCostFinish(&scope);
+}
+void CoopCostTransparentRender(dScStage_c *scene) {
+    CoopCostScope scope; CoopCostBegin(&scope,6);
+    scene->RenderModelTransparent(); CoopCostFinish(&scope);
+}
+void CoopCostCollisionProcess() {
+    CoopCostScope scope; CoopCostBegin(&scope,7);
+    dCc_c::Process(); CoopCostFinish(&scope);
+}
 int CoopCostStageRender(void *scene) {
     CoopCostScope scope;
     CoopCostBegin(&scope,3);
@@ -2103,6 +2126,50 @@ void CoopActorAfter(dActor_c *actor, u32 success) {
     actor->fBase_c::AfterBehavior(success);
 }
 
+#ifdef COOP_EXPERIMENTAL_COLLISION_BROADPHASE
+__asm void CoopCollisionHorizontalRead(void) {
+    // This replaces only the norm call in the native cylinder pair walk.
+    // r4 points to its current head, r8 is the other node, r0 separation.
+    // Scratch r0-r3/r12 match the original norm's ABI; saved registers and
+    // the caller's stack are untouched. No helper-call overhead on rejection.
+    ldr r1,=coopEnabled
+    ldr r1,[r1]
+    cmp r1,#0
+    beq nativeLength
+    ldr r1,=0x0209fc68
+    ldr r1,[r1]
+    cmp r1,#4
+    bne nativeLength
+    ldr r1,[r4]
+    ldr r1,[r1,#4]
+    tst r1,#0xe0000000
+    bne nativeLength
+    ldr r2,[r8,#4]
+    tst r2,#0xe0000000
+    bne nativeLength
+    add r1,r1,r2
+    cmp r1,#0
+    beq nativeLength
+    ldr r2,[r0]
+    ldr r3,[r0,#8]
+    cmp r2,#0
+    rsbmi r2,r2,#0
+    cmp r3,#0
+    rsbmi r3,r3,#0
+    orr r12,r2,r3
+    // Both axes must be inside the original signed-result sqrt domain,
+    // even if only one axis suffices to establish a separated pair.
+    tst r12,#0xe0000000
+    bne nativeLength
+    cmp r2,r1
+    cmplo r3,r1
+    movhs r0,r1
+    bxhs lr
+nativeLength:
+    b Vec3_HorzLen
+}
+#endif
+
 static void Patch(u32 address, void *target) {
     *(volatile u32 *)address = 0xea000000 | (((u32)target-address-8)>>2 & 0x00ffffff);
     // Invalidate every installed branch, including SDK hooks outside the
@@ -2118,8 +2185,15 @@ static void PatchCall(u32 address, void *target) {
 }
 
 void CoopRuntimeDispatch(unsigned operation, u32 argument) {
+#ifdef COOP_EXPERIMENTAL_COLLISION_BROADPHASE
+    PatchCall(0x02014bb4,(void *)CoopCollisionHorizontalRead);
+#endif
 #ifdef COOP_DIAGNOSTIC_PLAYER_COST
     Patch(0x0202b8a4,(void *)CoopCostStageRender);
+    PatchCall(0x0202b998,(void *)CoopCostOpaqueRender);
+    PatchCall(0x0202b99c,(void *)CoopCostShadowRender);
+    PatchCall(0x0202b9a4,(void *)CoopCostTransparentRender);
+    PatchCall(0x0202ba14,(void *)CoopCostCollisionProcess);
 #endif
 #ifdef COOP_EXPERIMENTAL_ANIMATION_CACHE
     Patch(0x0203c6cc,(void *)CoopAnimationHeapAllocate);

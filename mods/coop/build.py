@@ -154,6 +154,8 @@ def main():
                         help='TEST ONLY: drain geometry to measure terrain/body/head polygon costs; changes timing')
     parser.add_argument('--diagnostic-player-cost',action='store_true',
                         help='TEST ONLY: elapsed SDK ticks for player behavior/models and stage rendering')
+    parser.add_argument('--experimental-collision-broadphase',action='store_true',
+                        help='EXPERIMENTAL: conservative axis rejection before native cylinder distance')
     parser.add_argument('--experimental-animation-cache',action='store_true',
                         help='EXPERIMENTAL: expendable ROOT cache for compressed animation reads')
     args = parser.parse_args()
@@ -161,7 +163,7 @@ def main():
         parser.error('--baseline cannot select a diagnostic stage')
     if args.diagnostic_stage_cycle and args.diagnostic_start_level is None:
         parser.error('--diagnostic-stage-cycle requires --diagnostic-start-level')
-    if args.baseline and (args.diagnostic_render_cost or args.diagnostic_player_cost or args.experimental_animation_cache):
+    if args.baseline and (args.diagnostic_render_cost or args.diagnostic_player_cost or args.experimental_animation_cache or args.experimental_collision_broadphase):
         parser.error('--baseline cannot enable render diagnostics')
     if args.diagnostic_player_cost and args.diagnostic_render_cost:
         parser.error('Elapsed timing cannot be combined with FIFO-draining geometry diagnostics')
@@ -281,6 +283,15 @@ def main():
                     raise RuntimeError('Unexpected expanding-heap capacity query')
         if args.diagnostic_player_cost:
             trampolines += [('CoopOriginalStageRender',game['_ZN10dScStage_c6RenderEv'],bytes.fromhex('f0402de9'))]
+        if args.experimental_collision_broadphase:
+            # Pin the working-register/collider layout, original vector call,
+            # coincident case and radius-overlap comparison as one block.
+            begin=0x02014b90-rom.arm9RamAddress
+            expected=bytes.fromhex('002090e5001099e5011042e008108de5082090e5081099e508008de2011042e010108de5')
+            expected+=branch(0x02014bb4,game['Vec3_HorzLen'])[:3]+b'\xeb'
+            expected+=bytes.fromhex('0070b0e104709d05001094e50700a00108008d05040098e5042091e5000082e0076040e0000056e3c80000da')
+            if arm9[begin:begin+len(expected)]!=expected:
+                raise RuntimeError('Unexpected native cylinder pair distance/overlap block')
         imports = dict(game, **{name:PAYLOAD_ADDRESS+0x1800+i*8
                                for i,(name,_,_) in enumerate(trampolines)})
         imports['coopNarcIndex']=PAYLOAD_ADDRESS+0x1800
@@ -305,8 +316,16 @@ def main():
             defines.append(f'COOP_DIAGNOSTIC_START_LEVEL={args.diagnostic_start_level}')
         if args.diagnostic_stage_cycle:
             defines.append('COOP_DIAGNOSTIC_STAGE_CYCLE=1')
+        if args.experimental_collision_broadphase:
+            defines.append('COOP_EXPERIMENTAL_COLLISION_BROADPHASE=1')
         if args.diagnostic_player_cost:
             defines.append('COOP_DIAGNOSTIC_PLAYER_COST=1')
+        if args.diagnostic_player_cost:
+            for address,target in ((0x0202b99c,game['_ZN17dExtShadowModel_c9RenderAllEv']),
+                                   (0x0202ba14,game['_ZN5dCc_c7ProcessEv'])):
+                offset=address-rom.arm9RamAddress
+                if arm9[offset:offset+4]!=branch(address,target)[:3]+b'\xeb':
+                    raise RuntimeError('Unexpected native stage-cost callsite')
         if args.diagnostic_render_cost or args.diagnostic_player_cost:
             if args.diagnostic_render_cost:defines.append('COOP_DIAGNOSTIC_RENDER_COST=1')
             for address,target,data,base in (
@@ -519,9 +538,14 @@ def main():
                 'clockHz':33513982/64,'exclusiveCpuCycles':False,'drainsGeometry':False,
                 'costsOffset':emitted['coopPlayerCosts']-PAYLOAD_ADDRESS,
                 'stageOffset':emitted['coopPlayerCostStage']-PAYLOAD_ADDRESS,
-                'kinds':['player-behavior','player-body','yoshi-head','stage-render'],
+                'kinds':['player-behavior','player-body','yoshi-head','stage-render',
+                         'terrain-opaque','shadows','terrain-transparent','actor-collision'],
                 'fields':['sequence','count','totalTicksLow','totalTicksHigh','maxTicks','minTicks'],
-                'buckets':8,'resetOnStageIdentity':True}
+                'buckets':16,'resetOnStageIdentity':True}
+        if args.experimental_collision_broadphase:
+            module_report['experimentalCollisionBroadphase']={
+                'callsite':'0x02014bb4','preservesPairOrder':True,
+                'coordinateLimit':0x1fffffff,'defaultEnabled':False}
         patches.append({'purpose':'ROOT module loader in unused VS result routines','address':hex(CAVE_START),
                         'size':CAVE_END-CAVE_START,'installerBytes':len(installer)})
     output=root/('baseline.nds' if args.baseline else 'sm64ds-coop-experimental.nds')

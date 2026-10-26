@@ -23,8 +23,9 @@ acceptance remain open. See [PERFORMANCE.md](PERFORMANCE.md) for measurements.
 Optional performance experiments are documented in
 [PERFORMANCE.md](PERFORMANCE.md): `--experimental-animation-cache` targets
 repeated synchronous animation reads, and `--diagnostic-player-cost` measures
-elapsed native work. Both require a separate `--output`; neither is enabled
-in the normal candidate. The cache reduces observed warm BoB hitches in the
+elapsed native work. `--experimental-collision-broadphase` evaluates an axis
+rejection before native cylinder distance calculations. These options require
+a separate `--output`; none is enabled in the normal candidate. The cache reduces observed warm BoB hitches in the
 current four-console check, while steady slowdown remains unresolved.
 
 See [the worklist](WORKLIST.md) for current acceptance gaps and

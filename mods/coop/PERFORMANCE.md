@@ -255,7 +255,7 @@ its results must not be reported as guest-cache acceptance.
 The elapsed profiler reads retail's already-initialized SDK Timer0 via
 func02059650; it never initializes or reprograms the timer. Four spans cover
 actual Player Behavior, body rendering, Yoshi head rendering and whole Stage
-Render. Eight buckets separate active and paused spans. Rows record completed
+Render. Sixteen buckets separate active and paused spans, including stage subspans. Rows record completed
 count,64-bit total, maximum and minimum ticks with an update sequence so RAM
 observers can skip incomplete records. Counters reset on stage identity change;
 spans crossing shared input ticks, loading or stage changes are discarded.
@@ -263,11 +263,11 @@ SDK ticks are approximately33.514MHz/64 and INCLUDE interrupt, filesystem and
 GPU waits. They are not exclusive CPU cycles. The wrappers preserve native
 arguments/returns, call the original model render directly and never drain
 geometry. `campaign.snapshot` decodes saved RAM to `*-runtime.json`, including
-milliseconds per span. Seven isolated ARM tests cover ABI, actual before/after
+milliseconds per span. Eight isolated ARM tests cover ABI, actual before/after
 scope, pause buckets, low32 wrap,64-bit carry, stage reset and readiness/span
 rejection. The full combined suite passes172 discovered/168 executed tests with4 obsolete
 prefix-only skips. Independent normal builds still reproduce fbb2262d.
-Live cost attribution is still pending.
+Live cost attribution on the original four-span image is recorded below.
 
 
 The completed274084aa continuation also passes a fresh guest2 shared coin,
@@ -276,3 +276,79 @@ have205 active intervals all3 VBlanks and304 paused intervals averaging2.013
 VBlanks, on every console. Active gameplay work is a concrete next lead, but
 this comparison alone cannot separate collision, animation, rendering and
 synchronization costs. It is not proof of exclusive CPU saturation.
+
+
+## Steady-play costs and conservative cylinder-pair experiment
+
+Image dc04637cff4017ea4c9ad313de48f0821251e7e78da8f5a25a625ea9165ddbad
+passes the native four-console castle/BoB route, steady600 frames, warm movement
+on all consoles, and a600-frame pause check. The party is CLOSED. Subtracting
+`before-steady-runtime.json` from `steady-bob-runtime.json` avoids mixing cold
+asset reads into steady averages. Per stage-render call, Player Behavior totals
+4.23–4.27ms, bodies1.81ms, Yoshi heads0.93ms and whole Stage Render11.37–11.52ms.
+Stage Render includes collision processing and other work as well as geometry;
+these categories are elapsed spans and must not be added as exclusive costs.
+Steady input intervals remain3 VBlanks. Paused stage render averages1.67–1.69ms
+and input intervals are2 VBlanks. The split profiler now adds terrain opaque,
+shadows, terrain transparent and actor-collision spans (16 active/pause buckets).
+
+An actual unmodified-retail Adventure/file-A replay now reaches BoB through
+normal castle doors/painting: `retail-adventure-bob-cadence/` PASSES. Its600-frame
+steady capture records300 input intervals,599 VBlanks, maximum2. This establishes
+an emulated same-level retail target near2 VBlanks. The earlier attempt at
+`retail-bob-cadence-baseline/` used a legacy command script which selects VS
+practice; it failed to leave its locked castle and is not an Adventure baseline.
+Always verify native story mode0, level1 and offline NET0 after file selection.
+
+The optional `--experimental-collision-broadphase --output /your/path/test.nds`
+changes only the cylinder pair walk's exact horizontal-distance callsite. After
+the native flags/owner/height tests, a separated X or Z axis can prove that
+cylinders do not overlap. Such a pair returns its positive radius sum so the
+unchanged native overlap test rejects it. Every possible overlapping pair
+continues through the original horizontal norm, SDK square root, pushback and
+notifications. Pair order, collision masks and original game geometry remain.
+
+The guard is restricted to playing co-op NET4 and nonnegative radii and absolute
+axis coordinates at most0x1fffffff. This domain keeps the original SDK square
+root's shifted64-bit input and signed result within range. Unusual/overflow
+cases and offline/disabled/loading/disconnected states delegate unchanged.
+The builder validates the native working-register and radius-overlap block,
+and its small ARM adapter preserves stack alignment and saved registers.
+Six isolated ARM checks execute actual native vector/sqrt/list code against a
+hardware SQRT result adapter, including randomized pairs, touching/coincident/
+diagonal cases, overflow/offline delegation and complete96-node list/contact
+state parity. The initial native test removes2297 of2399 square roots, but this
+is an isolated call-count result, not a hardware timing or gameplay-speed claim.
+Live cadence and broader campaign/physical acceptance remain pending. This
+optimization is disabled by default and is not a finished performance fix.
+
+
+The first broadphase+split-profiler live imagebbe4e146 PASSES native startup and
+independent movement, then loses wireless before the first castle waypoint.
+The retained capture has errors0x101, NET0/radio0 on every console, tick6705.
+Native bit1 is set when the input-exchange loop exhausts its attempts; this is
+not a captured first-cause checksum diagnosis. The party is closed. There is
+NO course-speed result for this optimization. A cache+split-profiler control
+without the collision optimization (6339b8c0) is running to distinguish the
+change from instrumentation or existing intermittent wireless loss. Keep the
+optimization disabled pending repeat/control, speed and gameplay acceptance.
+
+
+The6339b8c0 control PASSES native castle/BoB entry, steady600 frames, warm
+movement on all four consoles and paused600 frames. Snapshot deltas give
+actor-collision9.44–9.67ms/call, opaque terrain0.98–1.04ms and shadows0.48–0.55ms.
+This identifies collision as the dominant measured stage-render cost. Steady
+cadence is still3 VBlanks; paused2. A single passing control does not identify
+the previous wireless failure's cause.
+
+The initial C++ guard increased isolated ARM instruction count295796->326287,
+despite sqrt2399->102. Its replacement is a leaf ARM routine at the same norm
+callsite: caller-saved scratch registers match the original norm ABI, no saved
+registers or stack words change, and rejection needs no helper call. Native
+contact state still matches; isolated instruction count is299060 and sqrt102.
+Instruction counts omit hardware wait cycles; speed improvement must be measured.
+New image56ac474fdb57549526712d9b4f551e87934b41e0721aa783c848164ef8259ded is
+running the normal four-console route. Six guard tests, eight timing tests and
+full suite179 discovered/175 executed/4 obsolete prefix skips pass. Independent
+all-disabled build reproduces fbb2262d. This experiment remains disabled by
+default pending live speed, repeatability and gameplay acceptance.

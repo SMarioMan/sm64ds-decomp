@@ -154,7 +154,7 @@ def snapshot(ds, name):
                 row=dict(zip(player_cost['fields'],struct.unpack_from('<6I',ram,offset+bucket*24)))
                 if row['sequence']&1:continue
                 total=row['totalTicksLow']+(row['totalTicksHigh']<<32)
-                row.update(kind=player_cost['kinds'][bucket%4],paused=bucket>=4,
+                row.update(kind=player_cost['kinds'][bucket%len(player_cost['kinds'])],paused=bucket>=len(player_cost['kinds']),
                            totalMs=total*1000/player_cost['clockHz'],
                            meanMs=total*1000/player_cost['clockHz']/row['count'] if row['count'] else None,
                            maxMs=row['maxTicks']*1000/player_cost['clockHz'])
