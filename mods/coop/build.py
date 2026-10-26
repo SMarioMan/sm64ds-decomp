@@ -510,6 +510,13 @@ def main():
                 'entriesOffset':emitted['coopAnimationReadEntries']-PAYLOAD_ADDRESS,'entryWords':6,
                 'fields':['hits','misses','stores','evictions','payloadBytes','entries','peakBytes','flushes'],
                 'eligibleMaskSha256':hashlib.sha256(animation_mask).hexdigest()}
+        if args.experimental_animation_cache and args.diagnostic_stage_cycle:
+            module_report['diagnosticAnimationFlushes']={
+                'countOffset':emitted['coopDiagnosticAnimationFlushCount']-PAYLOAD_ADDRESS,
+                'rowsOffset':emitted['coopDiagnosticAnimationFlushes']-PAYLOAD_ADDRESS,
+                'capacity':16,'fields':['sequence','reason','level','net','payloadBytes','entries','vblank','loopPhase'],
+                'reasons':['unknown','entry-cleanup','ended-scene','root-growth','root-capacity-query',
+                           'root-total-memory-query','connection-loss','new-match','planned-session-end','stage-cleanup']}
         module_report['sharedCourseCoins']=True
         module_report['runtimePlacement']=args.runtime_placement
         if args.runtime_placement=='prefix':module_report['residentAddress']='0x02000100'
@@ -576,7 +583,7 @@ def main():
                 'coordinateLimit':0x1fffffff,'defaultEnabled':False}
         if args.experimental_collision_plan:
             module_report['experimentalCollisionPlan']={
-                'capacity':192,'minimumNodes':48,'pairCheckBudget':1024,'envelopeMargin':32*4096,'maximumEnvelopeMargin':2048*4096,'velocityEnvelopeFactor':32,'defaultEnabled':False,
+                'capacity':192,'minimumNodes':48,'pairCheckBudget':1024,'axisPolicy':'bounded-alternate-if-primary-window-exceeds-budget','envelopeMargin':32*4096,'maximumEnvelopeMargin':2048*4096,'velocityEnvelopeFactor':32,'defaultEnabled':False,
                 'reusesOffset':emitted['coopCollisionPlanReuses']-PAYLOAD_ADDRESS,
                 'refreshesOffset':emitted['coopCollisionPlanRefreshes']-PAYLOAD_ADDRESS,'refreshShiftBudget':256,
                 'validatedCallbacksOffset':emitted['coopCollisionValidatedCallbacks']-PAYLOAD_ADDRESS,

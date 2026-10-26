@@ -219,6 +219,26 @@ class AnimationReadCacheTests(HeapHarness,unittest.TestCase):
         self.assertEqual(self.invoke('CoopAnimationStageCleanup',0x023f8000),17)
         self.assertEqual(calls,[0x023f8000])
 
+    def test_flush_trace_records_actual_root_query_eviction_without_changing_query_result(self):
+        if 'coopDiagnosticAnimationFlushCount' not in self.runtime:
+            self.skipTest('requires stage-cycle cache diagnostics')
+        expected=self.call(self.game['_ZN5mHeap9ExpHeap_t19VMaxAllocatableSizeEv'],self.root)
+        self.load()
+        before=self.stats()[4:6]
+        count=self.word(self.runtime['coopDiagnosticAnimationFlushCount'])
+        self.invoke('CoopAnimationMaxMemory',self.game_heap)
+        self.assertEqual(self.word(self.runtime['coopDiagnosticAnimationFlushCount']),count)
+        self.assertEqual(self.invoke('CoopAnimationMaxMemory',self.root),expected)
+        self.assertEqual(self.stats()[4:6],(0,0))
+        self.assertEqual(self.word(self.runtime['coopDiagnosticAnimationFlushCount']),count+1)
+        row=struct.unpack('<8I',self.cpu.mem_read(
+            self.runtime['coopDiagnosticAnimationFlushes']+(count%16)*32,32))
+        self.assertEqual(row[:2],(count+1,4))
+        self.assertEqual(row[3:6],(4,*before))
+        self.invoke('CoopAnimationMaxMemory',self.root)
+        self.assertEqual(self.word(self.runtime['coopDiagnosticAnimationFlushCount']),count+1)
+        self.assertTrue(self.intact(self.root))
+
     def test_persistent_transition_retains_owned_bytes_and_reuses_native_file_cursor(self):
         if 'CoopAnimationTransitionCleanup' not in self.runtime:
             self.skipTest('requires --experimental-persistent-animation-cache')

@@ -60,6 +60,15 @@ not establish campaign completion or real-hardware compatibility.
   Both cache and spatial planning remain
   optional; broader stage/party-size/physical validation and full-game performance
   acceptance are still required. Retail Adventure BoB cadence is near2 VBlanks.
+  The four-console persistent-cache diagnostic passes short checks on6–23;
+  level24 stops on a fatal controller route. Retention alone does not fix cold
+  reads: a native ROOT capacity query is confirmed to evict30828 bytes in a
+  three-system trace. Level14 also exposes repeated spatial preparation aborts.
+  A bounded alternate-axis preflight and null-plan assembly fast path now pass
+  31 native collision tests and203 applicable full-suite checks. Three-system
+  direct14–16/exit/save/quit passes; normal four-console BoB speed is under test.
+  Native frozen-list replay preserves contacts but full construction alone is
+  more instructions than native; evaluate reuse, not square-root counts alone.
 - [ ] Replace long black loading periods with visible, animated loading
   feedback on the host and guests. Keep a resident indicator responsive during
   Download Play handoff, wireless file reads and stage changes. Show real byte

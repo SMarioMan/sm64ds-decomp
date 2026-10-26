@@ -158,6 +158,17 @@ def snapshot(ds, name):
                 if field in collision_plan:
                     values['collisionPlan'][key]=struct.unpack_from('<I',ram,
                         base+collision_plan[field]-0x02000000)[0]
+        flushes=module.get('diagnosticAnimationFlushes')
+        if flushes:
+            count=struct.unpack_from('<I',ram,base+flushes['countOffset']-0x02000000)[0]
+            events=[]
+            for sequence in range(max(1,count-flushes['capacity']+1),count+1):
+                offset=base+flushes['rowsOffset']-0x02000000+((sequence-1)%flushes['capacity'])*32
+                row=dict(zip(flushes['fields'],struct.unpack_from('<8I',ram,offset)))
+                if row['sequence']==sequence:
+                    row['reasonName']=flushes['reasons'][row['reason']]
+                    events.append(row)
+            values['animationFlushes']={'count':count,'events':events}
         if player_cost:
             offset=base+player_cost['costsOffset']-0x02000000
             samples=[]

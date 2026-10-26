@@ -130,6 +130,11 @@ void *CoopOriginalHeapAllocate(mHeap::Heap_t *heap,u32 size,int align);
 int CoopOriginalStageCleanup(void *scene);
 u32 CoopOriginalHeapReallocate(mHeap::Heap_t *heap,void *ptr,u32 size);
 void CoopFlushAnimationReadCache(void);
+#ifdef COOP_DIAGNOSTIC_STAGE_CYCLE
+void CoopTraceAnimationFlush(unsigned reason);
+#else
+#define CoopTraceAnimationFlush(reason) ((void)0)
+#endif
 #ifdef COOP_EXPERIMENTAL_PERSISTENT_ANIMATION_CACHE
 void CoopAnimationTransitionCleanup(void);
 #endif
@@ -365,6 +370,7 @@ void CoopDiagnosticTransparentRender(dScStage_c *scene) {
 
 void CoopStartMatch(void *) {
 #ifdef COOP_EXPERIMENTAL_PERSISTENT_ANIMATION_CACHE
+    CoopTraceAnimationFlush(7);
     CoopFlushAnimationReadCache();
 #elif defined(COOP_EXPERIMENTAL_COLLISION_PLAN)
     CoopReleaseCollisionPlan(0);
@@ -434,6 +440,7 @@ int CoopEntryCleanup(void *scene) {
 #ifdef COOP_EXPERIMENTAL_PERSISTENT_ANIMATION_CACHE
     CoopAnimationTransitionCleanup();
 #elif defined(COOP_EXPERIMENTAL_ANIMATION_CACHE)
+    CoopTraceAnimationFlush(1);
     CoopFlushAnimationReadCache();
 #endif
     int result = CoopOriginalEntryCleanup(scene);
@@ -646,6 +653,7 @@ static void CoopConnectionLost() {
     }
 #endif
 #ifdef COOP_EXPERIMENTAL_ANIMATION_CACHE
+    CoopTraceAnimationFlush(6);
     CoopFlushAnimationReadCache();
 #endif
     // Story rules bypass the retail VS disconnection branch. End the file
@@ -751,6 +759,7 @@ int CoopSceneBeforeInit(dScene_c *scene) {
         }
         coopTitleRadioResetPending=0;
 #ifdef COOP_EXPERIMENTAL_PERSISTENT_ANIMATION_CACHE
+        CoopTraceAnimationFlush(8);
         CoopFlushAnimationReadCache();
 #endif
         coopEnabled=coopTitleLoading=coopMenuLoading=0;
@@ -1337,6 +1346,24 @@ static u32 coopAnimationReadClock=0;
 // hits, misses, stores, evictions, payload bytes, entries, peak bytes, flushes.
 u32 coopAnimationCacheStats[8]={0};
 extern const u8 coopAnimationCacheMask[];
+#ifdef COOP_DIAGNOSTIC_STAGE_CYCLE
+u32 coopDiagnosticAnimationFlushCount=0;
+u32 coopDiagnosticAnimationFlushes[16][8]={{0}};
+void CoopTraceAnimationFlush(unsigned reason) {
+    u32 irq=_ZN3IRQ7DisableEv();
+    if (coopAnimationCacheStats[5]) {
+        u32 sequence=++coopDiagnosticAnimationFlushCount;
+        volatile u32 *row=coopDiagnosticAnimationFlushes[(sequence-1)&15];
+        row[0]=0;
+        row[1]=reason;row[2]=data_0209f2f8;row[3]=data_0209fc68;
+        row[4]=coopAnimationCacheStats[4];row[5]=coopAnimationCacheStats[5];
+        row[6]=*(volatile u32 *)0x027ffc3c;row[7]=*(volatile u32 *)0x0209d50c;
+        row[0]=sequence;
+    }
+    _ZN3IRQ7RestoreEj(irq);
+}
+#endif
+
 
 static unsigned CoopOldestAnimationRead() {
     unsigned oldest=32;
@@ -1395,7 +1422,10 @@ u32 CoopAnimationHeapReallocate(mHeap::Heap_t *heap,void *ptr,u32 size) {
     // Even with ample total free memory, a cached block could obstruct an
     // adjacent in-place grow. Restore the native layout before attempting it.
     if (heap==data_020a0e9c && coopAnimationCacheStats[5] && ptr &&
-        size>(u32)heap->_Sizeof(ptr))CoopFlushAnimationReadCache();
+        size>(u32)heap->_Sizeof(ptr)) {
+        CoopTraceAnimationFlush(3);
+        CoopFlushAnimationReadCache();
+    }
     return CoopOriginalHeapReallocate(heap,ptr,size);
 }
 
@@ -1405,7 +1435,10 @@ u32 CoopAnimationMaxMemory(mHeap::Heap_t *heap) {
 #endif
     // Native callers sometimes choose a heap or reject a request before they
     // allocate. Optional cache storage must not lower those capacity queries.
-    if (heap==data_020a0e9c && coopAnimationCacheStats[5])CoopFlushAnimationReadCache();
+    if (heap==data_020a0e9c && coopAnimationCacheStats[5]) {
+        CoopTraceAnimationFlush(4);
+        CoopFlushAnimationReadCache();
+    }
     return CoopAlignedFree(heap,4);
 }
 
@@ -1413,7 +1446,10 @@ u32 CoopAnimationMemoryLeft(mHeap::Heap_t *heap) {
 #ifdef COOP_EXPERIMENTAL_COLLISION_PLAN
     if (heap==data_020a0e9c)CoopReleaseCollisionPlan(1);
 #endif
-    if (heap==data_020a0e9c && coopAnimationCacheStats[5])CoopFlushAnimationReadCache();
+    if (heap==data_020a0e9c && coopAnimationCacheStats[5]) {
+        CoopTraceAnimationFlush(5);
+        CoopFlushAnimationReadCache();
+    }
     ExpandingHeapAllocator *allocator=*(ExpandingHeapAllocator **)
         ((u8 *)heap+sizeof(mHeap::Heap_t));
     return allocator->MemoryLeft();
@@ -1429,7 +1465,10 @@ void CoopAnimationTransitionCleanup() {
     // pressure/queries still reclaim them before any game decision. Flush
     // ended/offline sessions, retaining bytes only across live stage changes.
     if (!coopEnabled || !data_0209fc68 || data_0209fc68==6 ||
-        coopTitleLoading || coopSessionEnded)CoopFlushAnimationReadCache();
+        coopTitleLoading || coopSessionEnded) {
+        CoopTraceAnimationFlush(2);
+        CoopFlushAnimationReadCache();
+    }
 }
 #endif
 
@@ -1437,6 +1476,7 @@ int CoopAnimationStageCleanup(void *scene) {
 #ifdef COOP_EXPERIMENTAL_PERSISTENT_ANIMATION_CACHE
     CoopAnimationTransitionCleanup();
 #else
+    CoopTraceAnimationFlush(9);
     CoopFlushAnimationReadCache();
 #endif
     return CoopOriginalStageCleanup(scene);
@@ -1652,6 +1692,40 @@ static void CoopCollisionSift(CoopCollisionRecord *records,unsigned count,unsign
         root=child;
     }
 }
+static void CoopCollisionSort(CoopCollisionRecord *records,unsigned count) {
+    for (unsigned root=count/2;root;--root)CoopCollisionSift(records,count,root-1);
+    for (unsigned end=count-1;end;--end) {
+        CoopCollisionRecord temp=records[0];records[0]=records[end];records[end]=temp;
+        CoopCollisionSift(records,end,0);
+    }
+}
+static bool CoopCollisionWindowFits(CoopCollisionRecord *records,unsigned count,int *ends) {
+    // Sorted starts plus a min-heap of active ends count exact 1D overlap
+    // windows in bounded O(n log n), without first walking rejected pairs.
+    // The unpublished candidate bitmap provides scratch for at most192 ends.
+    unsigned active=0,checks=0;
+    for (unsigned index=0;index<count;++index) {
+        while (active && ends[0]<=records[index].minX) {
+            int tail=ends[--active];unsigned root=0;
+            while (root*2+1<active) {
+                unsigned child=root*2+1;
+                if (child+1<active && ends[child+1]<ends[child])++child;
+                if (tail<=ends[child])break;
+                ends[root]=ends[child];root=child;
+            }
+            if (active)ends[root]=tail;
+        }
+        checks+=active;
+        if (checks>1024)return false;
+        int value=records[index].maxX;unsigned position=active++;
+        while (position && ends[(position-1)/2]>value) {
+            ends[position]=ends[(position-1)/2];position=(position-1)/2;
+        }
+        ends[position]=value;
+    }
+    return true;
+}
+
 static bool CoopCollisionPlanCoversRange(CoopCollisionPlan *plan,unsigned begin) {
     if (plan->stage!=coopStageIdentity || begin>=plan->count)return false;
     void **nodes=(void **)((u8 *)plan+plan->nodesOffset);
@@ -1805,7 +1879,6 @@ static void CoopPrepareCollisionPlan() {
     void **nodes=(void **)((u8 *)plan+plan->nodesOffset);
     int *envelopes=(int *)((u8 *)plan+plan->envelopesOffset);
     CoopCollisionRecord *records=(CoopCollisionRecord *)((u8 *)plan+liveBytes);
-    for (unsigned word=0;word<count*words;++word)rows[word]=0;
     node=head;
     bool valid=true;
     int minX=0x7fffffff,maxX=-0x7fffffff,minZ=0x7fffffff,maxZ=-0x7fffffff;
@@ -1840,11 +1913,20 @@ static void CoopPrepareCollisionPlan() {
         int value=records[index].minX;records[index].minX=records[index].minZ;records[index].minZ=value;
         value=records[index].maxX;records[index].maxX=records[index].maxZ;records[index].maxZ=value;
     }
-    for (unsigned root=count/2;root;--root)CoopCollisionSift(records,count,root-1);
-    for (unsigned end=count-1;end;--end) {
-        CoopCollisionRecord temp=records[0];records[0]=records[end];records[end]=temp;
-        CoopCollisionSift(records,end,0);
+    CoopCollisionSort(records,count);
+    if (!CoopCollisionWindowFits(records,count,(int *)rows)) {
+        plan->axis^=1;
+        for (unsigned index=0;index<count;++index) {
+            int value=records[index].minX;records[index].minX=records[index].minZ;records[index].minZ=value;
+            value=records[index].maxX;records[index].maxX=records[index].maxZ;records[index].maxZ=value;
+        }
+        CoopCollisionSort(records,count);
+        if (!CoopCollisionWindowFits(records,count,(int *)rows)) {
+            owner->Deallocate(plan);++coopCollisionPlanStats[1];++coopCollisionPlanStats[7];
+            _ZN3IRQ7RestoreEj(irq);return;
+        }
     }
+    for (unsigned word=0;word<count*words;++word)rows[word]=0;
     u16 *sorted=(u16 *)((u8 *)plan+plan->sortedOffset);
     for (unsigned index=0;index<count;++index)sorted[index]=(u16)records[index].index;
     unsigned candidates=0,checks=0;
@@ -1937,6 +2019,13 @@ void CoopCollisionProcess() {
     // resources. The next frame validates fresh nodes/bounds before any reuse.
 }
 __asm void CoopCollisionPairRead(void) {
+    // Missing/evicted plans retain the native walk without calling the C++
+    // selector for every pair. A later eviction is still rechecked under IRQs
+    // by CoopCollisionCandidate before it dereferences any workspace.
+    ldr r0,=coopCollisionPlan
+    ldr r0,[r0]
+    cmp r0,#0
+    beq nativePair
     stmfd sp!, {r1-r3,r12,lr}
     sub sp,sp,#4
     ldr r0,[r4]
@@ -1947,6 +2036,7 @@ __asm void CoopCollisionPairRead(void) {
     ldmfd sp!, {r1-r3,r12,lr}
     cmp r8,#0
     beq CoopCollisionPairDone
+nativePair:
     ldr r0,[r4]
     b CoopCollisionPairContinue
 }

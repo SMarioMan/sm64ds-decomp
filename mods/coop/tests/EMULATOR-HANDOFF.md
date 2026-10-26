@@ -9,45 +9,46 @@ all levels. The tested party size and campaign coverage were not specified;
 newer-image physical acceptance and campaign completion remain open. Read the current regressions first; later sections preserve
 historical checkpoints and failures rather than release acceptance.
 
-## Current persistent-cache comparison (supersedes all older active parties)
+## Current normal four-console regression (supersedes all older parties)
 
-All previous wireless parties are CLOSED. The unprofiled f4ade5d3 level sweep
-passed entrance/short-motion controls, synchronization and shared pause on6–11,
-then was deliberately stopped to compare cache retention. It is not a completed
-50-stage run. Reports: `incremental-unprofiled-performance-corrected/`.
-Its original controller route failure is retained separately; corrected entry
-was a labeled diagnostic transition into interior2 and normal painting to BoB.
-Level7 first movement has a33-VBlank hitch:2219-byte native read at2158424,
-31 VBlanks on each guest. Per-stage cache clearing is a concrete next target.
+All previous wireless parties are CLOSED. Last three-system image2f28eca2
+passes direct diagnostic14–16, controls/pause, steady16, real course return,
+castle controls and Save & Quit with other files unchanged:
+`three-system-stage16-return-save/result.json`. Its character fixture is M/L/W.
+Cache tracing confirms ROOT capacity queries evict30828 bytes at level16.
+The earlier four-console ef284c95 sweep passes6–23 and FAILS on a fatal controller
+route in24. It is not a full campaign pass. Persistent cache does not fix the
+31-VBlank cold reads. Larger-span-only axis selection failed12 native tests and
+was rejected. Read PERFORMANCE.md for the bounded alternate-axis replacement,
+null-plan assembly fast path, and full native replay results/limitations.
 
-ONLY ACTIVE party: unprofiled persistent-cache cycle image
-ef284c955abef54446d2bf668f0e255f68231a59eb8b21197c0ad50d1b86aa93.
-Parent `persistent-incremental-matrix/`, exec17166, socket
-`/workspace/runtime/persistent-incremental-matrix.sock`.
-Continuation `persistent-incremental-performance/`, exec52370, waits for
-native castle readiness, uses the same diagnostic interior/normal painting route,
-then measures cadence and short motion before native diagnostic transitions.
-Check result.json before further RPCs. No competing RPCs/second wireless party.
-Close it and verify parent exit before starting another. Frozen driver sources
-and hashes retained. No live RAM/packet changes, savestates or custom core.
-This remains entrance/short-motion coverage, not full-level/campaign acceptance.
+ONLY ACTIVE party: normal optional performance image
+3413b38922738c64c2b5c9c1ac71a1f016d2cdaa2b9baddd560a0206cb94b418.
+Parent `bob-bounded-axis-normal/`, exec47209, socket
+`/workspace/runtime/bob-bounded-axis-normal.sock`.
+Continuation `bounded-axis-normal-profile/`, exec73291, waits for the normal
+castle/painting/BoB route then measures steady/warm/paused cadence. CPU timing
+and diagnostic stage entry are disabled. No competing RPCs/second wireless party;
+check result.json first. Sources/hashes frozen in driver directories. No live
+RAM/packet writes, savestate restores or custom core. Close and verify parent
+exit before another party. Tool session IDs can disappear after reconnect;
+check real process state and control-session.json before recovering.
 
-Full persistent/instrumented build passes210 discovered/200 executed tests,
-10 documented skips (`persistent-animation-profile-all-tests.log`). Unprofiled
-configuration passes192/210 with18 skips (extra eight timing tests not applicable).
-The isolated fixture now maps the captured shared firmware page; earlier15
-unmapped-read errors were harness errors, retained in their failed log. Profiler
-pause buckets now read0209f2c4, not native menu state3.
-Independent builds reproduce default fbb2262d, cache-only274084aa, normal optional
-spatial64dc499b and persistent diagnostic ef284c95. Duplicate generated
-verification ROMs were removed after hashing to free469762048 bytes; build logs,
-reports and unique original images remain. Do not delete supplied inputs.
+Current source passes213 discovered/203 executed tests, ten documented skips
+(`collision-bounded-axis-all-tests.log`), and all31 native collision cases.
+Private187-node level14 replay preserves native contacts/list/notification order;
+full preparation295625 instructions vs native269184, so it is not a cold-frame
+speed claim. Reuse and cheaper fallback still require live measurement.
+Independent default fbb2262d/cache274084aa/three-system2f28 images reproduce.
+Duplicate verification/rejected unplayed ROMs were removed after hashing to
+free disk space; supplied inputs, unique played images and logs are preserved.
 
-Latest published HEAD bc1c0c564. Automatic approval review blocked commit/push
-because of its usage limit, not an unsafe-action finding. Current changes LOCAL.
-Source-only recovery: `/workspace/runtime/spatial-plan-source-recovery/`;
-refresh after edits. No ROM/BIOS/RAM/compiler bundled. Builds and unit tests
-serialize through `/workspace/runtime/coop-bootstrap-build.lock`.
+Published performance base10ee1c79a; subsequent diagnostics/axis/fallback changes
+and measurement notes may still be local pending the next push. The earlier
+approval usage limit cleared. Source-only recovery:
+`/workspace/runtime/spatial-plan-source-recovery/`; refresh after edits.
+No ROM/BIOS/RAM/compiler bundled. Serialize builds/tests through
+`/workspace/runtime/coop-bootstrap-build.lock`.
 
 ## Latest spatial-plan work (supersedes older active-party entries)
 

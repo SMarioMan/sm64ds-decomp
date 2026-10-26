@@ -40,8 +40,9 @@ A further opt-in `--experimental-persistent-animation-cache` (together with
 `--experimental-animation-cache`) retains owned compressed animation bytes
 across live stage transitions. ROOT pressure, capacity queries and buffer growth
 still reclaim them; ended sessions flush them. This targets traced cold reads
-after each stage change. Its native checks pass; live performance and broader
-acceptance are pending. It is not enabled in the normal build.
+after each stage change. Native checks pass, but the live comparison still has cold-read hitches because
+ROOT queries and pressure reclaim those bytes. It is not a demonstrated hitch
+fix and is not enabled in the normal build.
 
 See [the worklist](WORKLIST.md) for current acceptance gaps and
 [the emulator handoff](tests/EMULATOR-HANDOFF.md) for exact image hashes.

@@ -548,3 +548,58 @@ pass. Independent builds reproduce fbb2262d,274084aa,64dc499b and ef284c95;
 this retention option remains disabled by default pending live speed and memory
 acceptance. Duplicate verification ROM copies were removed to free space after
 hashing; reports/logs and unique source images are retained.
+
+## Bounded alternate-axis probe and cheap native fallback
+
+The ef284c95 four-console diagnostic sweep passes entrance/short-motion
+controls, synchronization and shared pause on levels6–23. Level24 fails because
+the controller route kills a player; retain the failure, not a full-sweep pass.
+Its attempted stage-cleanup cache retention does NOT remove the traced31-VBlank
+guest read or33-VBlank movement hitch. Native ROOT queries/pressure still evict
+private copies. It remains an opt-in investigation, not a demonstrated fix.
+
+Level14 is a separate steady-speed problem:97 aborted preparations/native
+fallbacks in the sampled steady delta, with many4/5-VBlank intervals. A private
+RAM checkpoint contains a fully populated, freed187-node construction block
+whose stage UID matches the current scene. Its X window count is1317 and Z965;
+X exceeds1024 while Z fits. Choosing the larger span alone regresses existing
+BoB native tests and was rejected. The current algorithm preserves the original
+first choice, then counts exact one-dimensional overlap windows using a bounded
+min-heap of interval ends. If needed it probes the other axis before performing
+at most1024 actual candidate comparisons. Both overly dense axes retain native
+processing. Scratch reuses the unpublished bitmap; no extra allocation, I/O or
+game callback occurs under the IRQ guard. The min-heap work is bounded by192 nodes.
+
+The assembly read hook now checks for a null/evicted plan before calling the
+C++ pair selector. Native fallback no longer pays that wrapper/IRQ call on every
+pair. The protected selector still rechecks any later pressure eviction before
+using a pointer. A native-contact regression verifies no C++ selector calls in
+disabled fallback. A synthetic near-square layout reproduces the rejected X
+window and verifies successful Z planning with native contact parity. All31
+collision cases pass, along with the full213-discovered/203-executed suite and
+ten documented skips (`collision-bounded-axis-all-tests.log`).
+
+An isolated replay reconstructs the187-node captured list in private Unicorn
+memory only. Native contact/list state and notification order match exactly.
+The new full construction considers320 candidates and uses four square roots
+versus346 natively; however it executes295625 instructions versus269184,
+INCLUDING construction and hooks. This is not a cold-frame CPU improvement;
+reuse and avoiding repeated fallback are essential. No live RAM, packets or
+save states are changed, and instruction counts are not hardware timing.
+
+Diagnostic-only cache-eviction records now distinguish capacity/total-memory
+queries, in-place growth, scene cleanup and session termination. A three-system
+native run confirms a ROOT capacity query discards30828 bytes/ten entries at
+level16. Native allocation decisions remain unchanged. Three-system image
+2f28eca295181c0a0486f788ed01591666d1ce74e695293b7e333cf72a1d6b1b passes
+native Download Play, direct diagnostic levels14–16, controls/shared pause,
+600 steady level16 frames, real course exit, restored castle controls, and
+Save & Quit with unchanged other files. The diagnostic character fixture is
+Mario/Luigi/Wario, not the normal all-Yoshi campaign start. Cold animation hitches
+remain in these observations; do not claim full-speed or campaign acceptance.
+
+Independent rebuilds reproduce normal fbb2262d, cache-only274084aa and the2f28
+three-system image. The new normal four-console optional spatial image is
+3413b38922738c64c2b5c9c1ac71a1f016d2cdaa2b9baddd560a0206cb94b418;
+its fresh ordinary castle/BoB speed run is in progress, without elapsed timing
+or diagnostic stage entry. All experiments remain disabled in the default ROM.

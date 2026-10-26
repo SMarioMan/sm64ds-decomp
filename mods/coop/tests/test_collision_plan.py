@@ -280,6 +280,31 @@ class CollisionPlanTests(HeapHarness,unittest.TestCase):
         self.assertEqual(self.stats()[1],1);self.assertEqual(self.stats()[7],1)
         self.assertEqual(self.raw_free(),before);self.assertTrue(self.intact(self.root))
 
+    def test_native_fallback_skips_cpp_pair_selector_and_preserves_contacts(self):
+        self.write(self.runtime['coopEnabled'],0)
+        calls=[]
+        def selector(cpu,address,size,user):
+            if address==self.runtime['CoopCollisionCandidate']:calls.append(address)
+        self.cpu.hook_add(UC_HOOK_CODE,selector)
+        specs=[(i*1000*4096,0,0,43*4096,200*4096,2,2,i+1,0) for i in range(64)]
+        specs[-1]=(20*4096,0,0,43*4096,200*4096,2,2,64,0)
+        self.compare_synthetic(specs)
+        self.assertEqual(calls,[])
+        self.assertEqual(self.stats()[1],1)
+        self.assertEqual(self.stats()[0],0)
+
+    def test_nearly_equal_spans_choose_z_and_avoid_a_dense_x_window(self):
+        # Both axes span almost the same distance. X columns exceed the
+        # comparison budget while distributed Z bounds fit; two bodies touch.
+        specs=[((i%2)*7000*4096,0,i*73*4096,43*4096,200*4096,0,0,i+1,0)
+               for i in range(100)]
+        specs[0]=(0,0,0,43*4096,200*4096,2,2,1,0)
+        specs[-1]=(20*4096,0,20*4096,43*4096,200*4096,2,2,100,0)
+        self.compare_synthetic(specs)
+        self.assertEqual(self.stats()[0],1)
+        self.assertEqual(self.stats()[1],0)
+        self.assertEqual(self.stats()[7],0)
+
     def test_narrow_z_aligned_layout_uses_the_spread_axis_and_keeps_native_contacts(self):
         specs=[(0,0,i*500*4096,40*4096,200*4096,2,2,i+1,2) for i in range(64)]
         self.compare_synthetic(specs)
