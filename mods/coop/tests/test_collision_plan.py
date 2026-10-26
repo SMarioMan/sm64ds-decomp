@@ -392,6 +392,77 @@ class CollisionPlanTests(HeapHarness,unittest.TestCase):
         self.call(self.game['_ZN5mHeap6Heap_t10DeallocateEPv'],self.game_heap,self.synthetic_arena)
         self.assertTrue(self.intact(self.root));self.assertTrue(self.intact(self.game_heap))
 
+    def test_one_escaped_node_refreshes_without_allocating_root_scratch(self):
+        nodes=self.synthetic([(i*1000*4096,0,0,40*4096,200*4096,2,2,i+1,0) for i in range(64)])
+        self.prepare();plan=self.workspace();self.assertTrue(plan);reserves=[]
+        while self.raw_largest()>=64:
+            pointer=self.call('CoopCollisionVAllocate',self.root,self.raw_largest(),4)
+            self.assertTrue(pointer);reserves.append(pointer)
+        self.assertEqual(self.workspace(),plan)
+        before=self.raw_free()
+        self.write(self.synthetic_positions[10],(10000+80)*4096)
+        self.prepare()
+        self.assertEqual(self.workspace(),plan)
+        self.assertEqual(self.word(self.runtime['coopCollisionPlanEdgeRefreshes']),1)
+        self.assertEqual(self.raw_free(),before)
+        self.call('CoopReleaseCollisionPlan',0)
+        for pointer in reserves:self.call(self.game['_ZN5mHeap6Heap_t10DeallocateEPv'],self.root,pointer)
+        self.assertTrue(self.intact(self.root))
+
+    def test_eight_escaped_nodes_refresh_exact_bits_count_and_native_contacts(self):
+        nodes=self.synthetic([(i*500*4096,0,0,40*4096,200*4096,2,2,i+1,2) for i in range(64)])
+        self.install();self.prepare();plan=self.workspace();self.assertTrue(plan)
+        for index in range(1,9):self.write(self.synthetic_positions[index],index*15*4096)
+        initial=bytes(self.cpu.mem_read(0x02000000,0x400000))
+        self.write(0x02014b0c,0xe5940000);self.cpu.ctl_remove_cache(0x02014b0c,0x02014b10)
+        self.call(self.game['_ZN5dCc_c7ProcessEv'])
+        expected=[bytes(self.cpu.mem_read(node,0x50)) for node in nodes]
+        self.cpu.mem_write(0x02000000,initial);self.cpu.ctl_remove_cache(0x02014b0c,0x02014b10)
+        self.call('CoopCollisionProcess')
+        self.assertEqual([bytes(self.cpu.mem_read(node,0x50)) for node in nodes],expected)
+        self.assertEqual(self.workspace(),plan)
+        self.assertEqual(self.word(self.runtime['coopCollisionPlanEdgeRefreshes']),1)
+        count=self.word(plan+4);words=self.word(plan+8)
+        rows=struct.unpack('<'+'I'*(count*words),self.cpu.mem_read(plan+self.word(plan+24),count*words*4))
+        boxes=[struct.unpack('<4i',self.cpu.mem_read(plan+self.word(plan+32)+i*16,16)) for i in range(count)]
+        pairs=0
+        for i,a in enumerate(boxes):
+            for j in range(i+1,count):
+                b=boxes[j];overlap=a[0]<b[1] and b[0]<a[1] and a[2]<b[3] and b[2]<a[3]
+                self.assertEqual(bool(rows[i*words+j//32]&(0x80000000>>(j%32))),overlap)
+                pairs+=overlap
+        self.assertEqual(self.word(plan+48),pairs)
+        self.call('CoopReleaseCollisionPlan',0)
+
+    def test_few_node_shift_budget_discards_partial_private_updates_and_recovers(self):
+        nodes=self.synthetic([(i*300*4096,0,0,40*4096,200*4096,2,2,i+1,0) for i in range(160)])
+        self.prepare();self.assertTrue(self.workspace())
+        for index in range(4):self.write(self.synthetic_positions[index],(48000+index*10)*4096)
+        self.prepare()
+        self.assertEqual(self.workspace(),0)
+        self.assertEqual(self.native_nodes(),nodes)
+        self.assertEqual(self.word(self.runtime['coopCollisionPlanEdgeRefreshes']),0)
+        self.prepare();self.assertTrue(self.workspace())
+        self.call('CoopReleaseCollisionPlan',0);self.assertTrue(self.intact(self.root))
+
+    def test_edge_node_and_pair_limits_use_full_refresh_without_losing_the_plan(self):
+        for count,movers in ((64,9),(192,6)):
+            with self.subTest(count=count,movers=movers):
+                nodes=self.synthetic([(i*300*4096,0,0,40*4096,200*4096,2,2,i+1,0) for i in range(count)])
+                self.prepare();plan=self.workspace();self.assertTrue(plan)
+                refreshes=self.word(self.runtime['coopCollisionPlanRefreshes'])
+                edges=self.word(self.runtime['coopCollisionPlanEdgeRefreshes'])
+                for index in range(movers):
+                    self.write(self.synthetic_positions[index],(index*300+80)*4096)
+                self.prepare()
+                self.assertEqual(self.workspace(),plan)
+                self.assertEqual(self.word(self.runtime['coopCollisionPlanRefreshes']),refreshes+1)
+                self.assertEqual(self.word(self.runtime['coopCollisionPlanEdgeRefreshes']),edges)
+                self.assertEqual(self.native_nodes(),nodes)
+                self.call('CoopReleaseCollisionPlan',0)
+                self.call(self.game['_ZN5mHeap6Heap_t10DeallocateEPv'],self.game_heap,self.synthetic_arena)
+                self.assertTrue(self.intact(self.root));self.assertTrue(self.intact(self.game_heap))
+
     def test_cleanup_releases_retained_plan_before_native_stage_resources(self):
         before=self.raw_free();self.prepare();self.assertTrue(self.workspace());calls=[]
         def cleanup(cpu,address,size,user):

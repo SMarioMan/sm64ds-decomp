@@ -154,7 +154,7 @@ def snapshot(ds, name):
             if 'reusesOffset' in collision_plan:
                 values['collisionPlan']['reusedFrames']=struct.unpack_from('<I',ram,
                     base+collision_plan['reusesOffset']-0x02000000)[0]
-            for key,field in (('validatedCallbacks','validatedCallbacksOffset'),('callbackAllocations','callbackAllocationsOffset'),('incrementalRefreshes','refreshesOffset')):
+            for key,field in (('validatedCallbacks','validatedCallbacksOffset'),('callbackAllocations','callbackAllocationsOffset'),('incrementalRefreshes','refreshesOffset'),('edgeRefreshes','edgeRefreshesOffset')):
                 if field in collision_plan:
                     values['collisionPlan'][key]=struct.unpack_from('<I',ram,
                         base+collision_plan[field]-0x02000000)[0]

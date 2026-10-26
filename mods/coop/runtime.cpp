@@ -1600,13 +1600,14 @@ struct CoopCollisionPlan {
     mHeap::Heap_t *owner;
     u32 count,words,outer,next;
     void *last;
-    u32 rowsOffset,nodesOffset,envelopesOffset,stage,sortedOffset,axis;
+    u32 rowsOffset,nodesOffset,envelopesOffset,stage,sortedOffset,axis,candidateCount;
 };
 CoopCollisionPlan *volatile coopCollisionPlan=0;
 // prepared, fallback, candidates, dispatched, notifications, pressure, peak, abort.
 u32 coopCollisionPlanStats[8]={0};
 u32 coopCollisionPlanReuses=0;
 u32 coopCollisionPlanRefreshes=0;
+u32 coopCollisionPlanEdgeRefreshes=0;
 u32 coopCollisionCallbackDepth=0;
 u32 coopCollisionValidatedCallbacks=0;
 u32 coopCollisionCallbackAllocations=0;
@@ -1746,6 +1747,81 @@ static bool CoopCollisionPlanCoversRange(CoopCollisionPlan *plan,unsigned begin)
     }
     return node==0;
 }
+// Returns -1 to use the full refresh, 0 to retain native processing after
+// bounded work, or 1 after updating only escaped nodes. Caller holds IRQs.
+static int CoopRefreshCollisionEdges(CoopCollisionPlan *plan) {
+    void **nodes=(void **)((u8 *)plan+plan->nodesOffset);
+    int *bounds=(int *)((u8 *)plan+plan->envelopesOffset);
+    u16 changed[8];unsigned changes=0;
+    for (unsigned index=0;index<plan->count;++index) {
+        Vector3 *pos=CoopCollisionPosition(nodes[index]);
+        int radius=*(int *)((u8 *)nodes[index]+4);
+        if (!pos || (u32)pos<0x02000000 || (u32)pos>=0x023ffff4 ||
+            CoopCollisionAbs(pos->x)>0x0fffffff || CoopCollisionAbs(pos->z)>0x0fffffff ||
+            (u32)radius>0x1fffffff)return 0;
+        if (pos->x-radius<bounds[index*4] || pos->x+radius>bounds[index*4+1] ||
+            pos->z-radius<bounds[index*4+2] || pos->z+radius>bounds[index*4+3]) {
+            if (changes==8)return -1;
+            changed[changes++]=(u16)index;
+        }
+    }
+    if (changes*(plan->count-1)>1024)return -1;
+    u16 *sorted=(u16 *)((u8 *)plan+plan->sortedOffset);
+    u32 *rows=(u32 *)((u8 *)plan+plan->rowsOffset);
+    unsigned shifts=0;
+    for (unsigned change=0;change<changes;++change) {
+        unsigned index=changed[change];
+        Vector3 *pos=CoopCollisionPosition(nodes[index]);
+        int radius=*(int *)((u8 *)nodes[index]+4);
+        int margin=CoopCollisionEnvelopeMargin(nodes[index]);
+        int *box=bounds+index*4;
+        box[0]=pos->x-radius-margin;box[1]=pos->x+radius+margin;
+        box[2]=pos->z-radius-margin;box[3]=pos->z+radius+margin;
+        // Change one key at a time so the other sorted keys stay ordered.
+        unsigned position=0;
+        while (position<plan->count && sorted[position]!=index)++position;
+        if (position==plan->count)return 0;
+        int key=box[plan->axis*2];
+        while (position) {
+            unsigned previous=sorted[position-1];
+            if (previous>=plan->count)return 0;
+            if (bounds[previous*4+plan->axis*2]<=key)break;
+            if (++shifts>256)return 0;
+            sorted[position]=previous;--position;
+        }
+        while (position+1<plan->count) {
+            unsigned next=sorted[position+1];
+            if (next>=plan->count)return 0;
+            if (bounds[next*4+plan->axis*2]>=key)break;
+            if (++shifts>256)return 0;
+            sorted[position]=next;++position;
+        }
+        sorted[position]=(u16)index;
+        // Unchanged envelopes retain their edges. A pair changed twice is
+        // recomputed after each endpoint, so its final bit uses both new boxes.
+        for (unsigned other=0;other<plan->count;++other) {
+            if (other==index)continue;
+            const int *b=bounds+other*4;
+            bool overlap=box[0]<b[1] && b[0]<box[1] && box[2]<b[3] && b[2]<box[3];
+            unsigned first=index,second=other;
+            if (first>second) { unsigned swap=first;first=second;second=swap; }
+            u32 *word=rows+first*plan->words+second/32;
+            u32 mask=0x80000000u>>(second&31);
+            if (overlap) {
+                if (!(*word&mask))++plan->candidateCount;
+                *word|=mask;
+            } else if (*word&mask) {
+                *word&=~mask;--plan->candidateCount;
+            }
+        }
+    }
+    if (plan->candidateCount>1024)return 0;
+    plan->outer=0xffffffff;plan->next=0;plan->last=0;
+    coopCollisionPlanStats[2]+=plan->candidateCount;
+    ++coopCollisionPlanRefreshes;++coopCollisionPlanEdgeRefreshes;
+    return 1;
+}
+
 // Returns -1 before doing work if a fresh construction is required, 0 after
 // bounded work if this frame must retain retail, or 1 after an in-place refresh.
 static int CoopRefreshCollisionPlan(CoopCollisionPlan *plan) {
@@ -1757,6 +1833,8 @@ static int CoopRefreshCollisionPlan(CoopCollisionPlan *plan) {
         node=*(void **)((u8 *)node+0x2c);
     }
     if (node)return -1;
+    int edges=CoopRefreshCollisionEdges(plan);
+    if (edges>=0)return edges;
     mHeap::Heap_t *owner=plan->owner;
     u32 size=plan->count*sizeof(CoopCollisionRecord);
     if (CoopAlignedFree(owner,32)<size)return -1;
@@ -1818,6 +1896,7 @@ static int CoopRefreshCollisionPlan(CoopCollisionPlan *plan) {
     if (valid) {
         for (unsigned index=0;index<plan->count;++index)sorted[index]=(u16)records[index].index;
         plan->outer=0xffffffff;plan->next=0;plan->last=0;
+        plan->candidateCount=candidates;
         coopCollisionPlanStats[2]+=candidates;++coopCollisionPlanRefreshes;
     }
     owner->Deallocate(records);
@@ -1870,7 +1949,7 @@ static void CoopPrepareCollisionPlan() {
         ++coopCollisionPlanStats[1];_ZN3IRQ7RestoreEj(irq);return;
     }
     plan->owner=owner;plan->count=count;plan->words=words;
-    plan->outer=0xffffffff;plan->next=0;plan->last=0;
+    plan->outer=0xffffffff;plan->next=0;plan->last=0;plan->candidateCount=0;
     plan->rowsOffset=sizeof(CoopCollisionPlan);
     plan->nodesOffset=plan->rowsOffset+count*words*4;
     plan->envelopesOffset=plan->nodesOffset+count*4;plan->stage=coopStageIdentity;
@@ -1951,6 +2030,7 @@ static void CoopPrepareCollisionPlan() {
     // Shrink away construction records before the native game runs. A failed
     // shrink still leaves a valid optional block, reclaimed before native pressure.
     owner->Reallocate(plan,liveBytes);
+    plan->candidateCount=candidates;
     coopCollisionPlan=plan;
     ++coopCollisionPlanStats[0];coopCollisionPlanStats[2]+=candidates;
     if (count>coopCollisionPlanStats[6])coopCollisionPlanStats[6]=count;

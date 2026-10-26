@@ -9,48 +9,56 @@ all levels. The tested party size and campaign coverage were not specified;
 newer-image physical acceptance and campaign completion remain open. Read the current regressions first; later sections preserve
 historical checkpoints and failures rather than release acceptance.
 
-## Current normal four-console regression (supersedes all older parties)
+## Current bounded edge-refresh regression (supersedes older parties)
 
-All previous wireless parties are CLOSED. Last three-system image2f28eca2
-passes direct diagnostic14–16, controls/pause, steady16, real course return,
-castle controls and Save & Quit with other files unchanged:
-`three-system-stage16-return-save/result.json`. Its character fixture is M/L/W.
-Cache tracing confirms ROOT capacity queries evict30828 bytes at level16.
-The earlier four-console ef284c95 sweep passes6–23 and FAILS on a fatal controller
-route in24. It is not a full campaign pass. Persistent cache does not fix the
-31-VBlank cold reads. Larger-span-only axis selection failed12 native tests and
-was rejected. Read PERFORMANCE.md for the bounded alternate-axis replacement,
-null-plan assembly fast path, and full native replay results/limitations.
+The small edge-refresh changes are based on published be682ed7f.
+The next commit publishes this source, its35 native cases and measured results. All previous wireless parties, including106ba5d5 and3413b389,
+are CLOSED. The3413 ordinary four-console BoB run passes controls/pause, guest2
+coin and native exit/reentry. Its warm cadence is339 intervals at2 VBlanks/22 at3.
+The106 first small-refresh profile passes steady/warm/paused observations, with
+345 warm intervals at2/17 at3; coin/return was not run on that exact image.
 
-ONLY ACTIVE party: normal optional performance image
-3413b38922738c64c2b5c9c1ac71a1f016d2cdaa2b9baddd560a0206cb94b418.
-Parent `bob-bounded-axis-normal/`, exec47209, socket
-`/workspace/runtime/bob-bounded-axis-normal.sock`.
-Continuation `bounded-axis-normal-profile/`, exec73291, waits for the normal
-castle/painting/BoB route then measures steady/warm/paused cadence. CPU timing
-and diagnostic stage entry are disabled. No competing RPCs/second wireless party;
-check result.json first. Sources/hashes frozen in driver directories. No live
-RAM/packet writes, savestate restores or custom core. Close and verify parent
-exit before another party. Tool session IDs can disappear after reconnect;
-check real process state and control-session.json before recovering.
+NO ACTIVE wireless party. Exact47a149ce elapsed-profile image
+47a149ce5c27b1a918e33c42762e6d9d0e44aefaef2b0e5e1de2dc063331a9fd
+PASSES steady600 frames, all four controllers and paused600 frames at
+`edge-budget-cost-profile/result.json`. Host collision2.40ms steady/2.45ms moving;
+warm cadence339 intervals at2 VBlanks,18 at3, one at4. This is not a further
+cadence gain over the first four-node run or hardware/full-speed acceptance.
+`edge-budget-gameplay-regression/result.json` separately PASSES guest2 shared
+coin, native course exit/restored castle controls and native course reentry.
+Parent `bob-edge-budget-cost/` was explicitly shut down after both results.
+Check actual process state/control-session.json before starting another party.
+The leftover old melon-test-jit entries are zombies, not running parties.
+No live RAM/packet changes or savestates were used. Frozen driver sources and
+hashes remain under the independent run directories.
 
-Current source passes213 discovered/203 executed tests, ten documented skips
-(`collision-bounded-axis-all-tests.log`), and all31 native collision cases.
-Private187-node level14 replay preserves native contacts/list/notification order;
-full preparation295625 instructions vs native269184, so it is not a cold-frame
-speed claim. Reuse and cheaper fallback still require live measurement.
-Independent default fbb2262d/cache274084aa/three-system2f28 images reproduce.
-Duplicate verification/rejected unplayed ROMs were removed after hashing to
-free disk space; supplied inputs, unique played images and logs are preserved.
+Current source passes217 discovered/207 executed tests, ten documented skips
+(`collision-edge-budget-all-tests-v2.log`), and35 native collision cases including
+node/pair budget fallback and partial-private-update recovery. Instrumented
+verification image f02773ce is unplayed. Unprofiled optional four-console image
+870b7dd1ea6066df6d51c5e384bc77dee469eeaf2d6bef97db795e3870e8c7c0 is built
+but not played. Independent default fbb2262d/cache274084aa images reproduce.
+The optional planner changes are NOT enabled in the normal ROM.
 
-Published performance base10ee1c79a; subsequent diagnostics/axis/fallback changes
-and measurement notes may still be local pending the next push. The earlier
-approval usage limit cleared. Source-only recovery:
-`/workspace/runtime/spatial-plan-source-recovery/`; refresh after edits.
-No ROM/BIOS/RAM/compiler bundled. Serialize builds/tests through
-`/workspace/runtime/coop-bootstrap-build.lock`.
+Previous three-system2f28 passes diagnostic14–16/return/save/quit, with native
+M/L/W character fixture. Four-console ef284c95 passes short checks6–23, FAILS
+on a fatal controller route in24. It is not a campaign pass. Retention alone
+fails to remove cold reads: ROOT queries evict cached bytes. Offline WFS parsing
+confirms512-byte packets/498 data payload, requiring at least five packets for
+the traced2219-byte read. Native transfer scheduling still needs investigation.
+Unmodified retail four-console VS cadence reference passes; see PERFORMANCE.md.
 
-## Latest spatial-plan work (supersedes older active-party entries)
+Source-only recovery: `/workspace/runtime/spatial-plan-source-recovery/`;
+refresh after edits. No ROM/BIOS/RAM/compiler bundled. Serialize every build and
+native test through `/workspace/runtime/coop-bootstrap-build.lock`; use `set -e`
+before build+test commands so a failed compile cannot test an old ROM/new ELF.
+Disk space is tight; preserve supplied inputs, unique played images and fixtures.
+Closed106ba5d5 RAM/ITCM/DTCM/ARM7 snapshots were losslessly gzip-compressed;
+`edge-refresh-closed-snapshot-compression.json` records hashes and restore paths.
+No fixture used by the native tests was compressed.
+Rebuildable unplayed/duplicate ROMs may be removed after recording their hashes.
+
+## Historical spatial-plan work (superseded by the current section above)
 
 Published HEAD bc1c0c564. Automatic approval review blocked the subsequent
 commit/push because its usage limit was reached, explicitly not an unsafe-action

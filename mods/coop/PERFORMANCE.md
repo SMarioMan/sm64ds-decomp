@@ -600,6 +600,86 @@ remain in these observations; do not claim full-speed or campaign acceptance.
 
 Independent rebuilds reproduce normal fbb2262d, cache-only274084aa and the2f28
 three-system image. The new normal four-console optional spatial image is
-3413b38922738c64c2b5c9c1ac71a1f016d2cdaa2b9baddd560a0206cb94b418;
-its fresh ordinary castle/BoB speed run is in progress, without elapsed timing
-or diagnostic stage entry. All experiments remain disabled in the default ROM.
+3413b38922738c64c2b5c9c1ac71a1f016d2cdaa2b9baddd560a0206cb94b418.
+Its ordinary castle/BoB run passes four controllers, shared pause, guest2 coin
+pickup and native course exit/reentry. Steady host cadence has282 intervals at2,
+15 at3 and two at4 VBlanks. Warm movement has339 at2 and22 at3. These are
+emulator observations, not full-speed hardware acceptance. Reports are in
+`bounded-axis-normal-profile/` and `bounded-axis-normal-gameplay-regression/`.
+All experiments remain disabled in the default ROM.
+
+## Updating only escaped collision envelopes
+
+The optional planner can now refresh just the nodes that escape their cached
+envelopes. It first checks the complete fresh native list and all actual bounds.
+At most eight changed nodes and1024 changed-node/other-node comparisons use
+the small refresh; larger changes take the existing full refresh. Each changed
+envelope updates its sorted position and symmetric candidate bits in native
+list order. Total sort shifts remain bounded at256. Candidate totals above1024
+or unsafe geometry discard the private plan before native processing resumes.
+This path allocates no scratch memory and changes no native object fields.
+
+Thirty-five isolated collision checks pass, including exact bitmap/contact
+parity for eight moving nodes, refresh with ROOT scratch unavailable, node/pair
+budget fallback, and recovery after discarding partially updated private data.
+The fully instrumented suite passes217 discovered/207 executed tests with ten
+documented skips (`collision-edge-budget-all-tests-v2.log`). The builder now
+limits linked code/data to36KiB and separately enforces the loader's64KiB limit
+after adding trampolines and immutable tables. This changes no reserved size;
+the loader allocates the actual module length.
+
+The first four-node version (106ba5d5) passes ordinary four-console BoB controls,
+600 steady frames, warm movement and shared pause. Host collision elapsed cost
+is2.36ms steady/2.42ms moving; Stage Render is4.21ms/4.14ms. Warm cadence has345
+intervals at2 VBlanks and17 at3, with15 small refreshes and nine full refreshes.
+Different runs have different object trajectories, so this is a modest observed
+gain, not a controlled causal FPS comparison or full-speed claim. A private
+160-node replay requires21532 instructions for one escaped node versus63624
+for the full refresh including its rejected small-refresh probe; bitmaps match.
+The comparison changes cached envelopes only in isolated Unicorn memory, never
+the live game. It is not a hardware CPU measurement.
+
+The bounded eight-node elapsed-profile image is
+`47a149ce5c27b1a918e33c42762e6d9d0e44aefaef2b0e5e1de2dc063331a9fd`.
+Fresh wireless measurements and course regression are tracked separately in
+`edge-budget-cost-profile/` and `edge-budget-gameplay-regression/`.
+The elapsed profile PASSES600 steady frames, all four controllers and600 paused
+frames. Host steady cadence has272 intervals at2 VBlanks,21 at3, two at4 and one
+boundary at1; warm movement has339 at2,18 at3 and one at4. Collision elapsed
+time is2.40ms steady/2.45ms moving and Stage Render4.25ms/4.17ms. Fifteen of23
+warm refreshes use the small path;104 callbacks validate successfully with no
+pressure releases or aborted plans. This run does not establish a further
+cadence gain over the four-node version. Its separate private replay uses21539
+instructions versus63972 for full refresh including the rejected probe, with
+identical candidate bits (`edge-budget-native-cost-replay.json`).
+The separate controller-only regression also PASSES guest2 shared coin pickup,
+native course exit with synchronized castle controls, and course reentry. The
+party was then closed. These checks use the exact47a149ce elapsed-profile ROM;
+they are not full-campaign or physical-hardware acceptance.
+
+The unprofiled optional four-console image is
+`870b7dd1ea6066df6d51c5e384bc77dee469eeaf2d6bef97db795e3870e8c7c0`;
+it is built but has not been played. Independent default fbb2262d and cache-only
+274084aa rebuilds are byte-identical. Optional changes remain disabled in both.
+
+An unmodified retail four-console Download Play reference also passes at
+`retail-wireless-vs-cadence-mode1/`. Its lighter native VS level51 has293 steady
+intervals at2 VBlanks, two at3 and two at4. Its movement sample has150 complete
+intervals at2. This establishes a stock wireless reference with occasional
+jitter; it is not a matched campaign-level CPU comparison.
+
+Offline parsing of the captured level7 WFS state confirms512-byte parent
+packets (498 payload bytes) on all four systems. The traced2219-byte animation
+requires at least five data packets plus protocol exchanges. This bounds the
+wireless work; it does not establish the cause of every one of the31 elapsed
+VBlanks. Native cache eviction and cold-read latency remain unresolved.
+
+A private allocator prototype tests an alternative to query-triggered eviction:
+merge the real free extents with the exact padded extents of owned cache blocks,
+then compute the capacity that native freeing would expose. Across24 fragmented
+layouts, all192 maximum/total queries match actually freeing those blocks in
+native ARM allocator code, including both alignment directions. The prototype
+does not change live memory or implement a game policy. A production experiment
+would need bounded validated traversal, atomic ownership checks, immediate native
+fallback on any uncertainty, and existing allocation/growth reclamation. See
+`virtual-cache-capacity-probe.json`; this is a next investigation, not a hitch fix.

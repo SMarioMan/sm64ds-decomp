@@ -85,8 +85,9 @@ def link(source, prefix, address, game_symbols, launcher, cc, ld, defines=()):
     end = max([address + len(payload)] + [emitted[n] + sizes[n] for n in defined])
     payload.extend(bytes(end - address - len(payload)))
     # The runtime is dynamically allocated in ROOT; the loader accepts 64 KiB.
-    # Retain a tighter build bound while allowing additional story policies.
-    if not payload or end > address + 0x8000:
+    # Keep code/data below 36 KiB; the final module (including tables) is
+    # checked separately against the loader's 64 KiB limit.
+    if not payload or end > address + 0x9000:
         raise RuntimeError('Invalid linked payload span')
     return payload, emitted
 
@@ -381,6 +382,8 @@ def main():
             source=PAYLOAD_ADDRESS+len(runtime)
             runtime+=prologue+branch(source+4,address+4)
         runtime+=narc_index+animation_mask
+        if len(runtime)>0x10000:
+            raise RuntimeError('Runtime module exceeds the 64 KiB loader limit')
         after = game['_ZN8dScene_c13AfterBehaviorEj']-rom.arm9RamAddress
         if arm9[after:after+12]!=struct.pack('<3I',0xe59fc000,0xe12fff1c,game['_ZN7fBase_c13AfterBehaviorEj']):
             raise RuntimeError('Unexpected scene behavior completion wrapper')
@@ -586,6 +589,8 @@ def main():
                 'capacity':192,'minimumNodes':48,'pairCheckBudget':1024,'axisPolicy':'bounded-alternate-if-primary-window-exceeds-budget','envelopeMargin':32*4096,'maximumEnvelopeMargin':2048*4096,'velocityEnvelopeFactor':32,'defaultEnabled':False,
                 'reusesOffset':emitted['coopCollisionPlanReuses']-PAYLOAD_ADDRESS,
                 'refreshesOffset':emitted['coopCollisionPlanRefreshes']-PAYLOAD_ADDRESS,'refreshShiftBudget':256,
+                'edgeRefreshesOffset':emitted['coopCollisionPlanEdgeRefreshes']-PAYLOAD_ADDRESS,
+                'edgeRefreshNodeBudget':8,'edgeRefreshPairBudget':1024,
                 'validatedCallbacksOffset':emitted['coopCollisionValidatedCallbacks']-PAYLOAD_ADDRESS,
                 'callbackAllocationsOffset':emitted['coopCollisionCallbackAllocations']-PAYLOAD_ADDRESS,
                 'statsOffset':emitted['coopCollisionPlanStats']-PAYLOAD_ADDRESS,

@@ -69,6 +69,20 @@ not establish campaign completion or real-hardware compatibility.
   direct14–16/exit/save/quit passes; normal four-console BoB speed is under test.
   Native frozen-list replay preserves contacts but full construction alone is
   more instructions than native; evaluate reuse, not square-root counts alone.
+  Normal four-console3413b389 additionally passes guest2 coin and native course
+  exit/reentry. Its warm cadence has339 intervals at2 VBlanks and22 at3.
+  An allocation-free refresh for at most eight escaped envelopes now passes
+  35 native collision checks and207 applicable full-suite checks. Pair work
+  is capped at1024 and sorting at256 shifts; excess work retains full refresh
+  or native processing. The first four-node live profile is a modest gain,
+  not full-speed acceptance. Fresh eight-node profiling/gameplay checks are
+  tracked in `edge-budget-cost-profile` and `edge-budget-gameplay-regression`.
+  Both now PASS: steady/warm/pause, guest2 shared coin and native exit/reentry.
+  Warm cadence is339 intervals at2 VBlanks,18 at3 and one at4. This does not
+  establish a further cadence improvement or resolve cold-read hitches.
+  An unmodified four-console retail VS reference also runs predominantly at
+  two VBlanks with occasional jitter; its lighter scene is not a matched BoB
+  CPU baseline. Cold-read hitches remain open.
 - [ ] Replace long black loading periods with visible, animated loading
   feedback on the host and guests. Keep a resident indicator responsive during
   Download Play handoff, wireless file reads and stage changes. Show real byte

@@ -24,9 +24,13 @@ Optional performance experiments are documented in
 [PERFORMANCE.md](PERFORMANCE.md): `--experimental-animation-cache` targets
 repeated synchronous animation reads, and `--diagnostic-player-cost` measures
 elapsed native work. `--experimental-collision-broadphase` evaluates an axis
-rejection before native cylinder distance calculations. These options require
-a separate `--output`; none is enabled in the normal candidate. The cache reduces observed warm BoB hitches in the
-current four-console check, while steady slowdown remains unresolved.
+rejection before native cylinder distance calculations. The separate
+`--experimental-collision-plan` option instead uses validated ordered spatial
+candidates, with bounded incremental refresh and native memory-pressure
+fallback. These options require a separate `--output`; none is enabled in the
+normal candidate. Optional cache/planner measurements now show predominantly
+two-VBlank BoB gameplay, but remaining slow intervals, cold asset hitches and
+all-level hardware performance remain unresolved.
 
 The newer local spatial candidate experiment uses
 `--experimental-animation-cache --experimental-collision-plan --output PATH`.
