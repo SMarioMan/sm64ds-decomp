@@ -175,7 +175,7 @@ its Behavior accounts for204 boundary samples, stage Render for104. Samples
 can alias periodic work and do not quantify exclusive CPU time. Warm movement
 mean3.628 includes cold stalls. Native func02059650 reads the existing SDK
 Timer0 clock without reprogramming it; targeted elapsed-time instrumentation
-could distinguish costs more precisely, but is NOT implemented yet.
+now supplies an optional elapsed-time profiler described below.
 
 The following fixed24-frame START pulse failed to open course pause despite a
 healthy party. The driver now uses the existing menu-readiness/input-echo toggle
@@ -208,3 +208,71 @@ animation, acknowledges release, and holds the fourth-row touch until the
 native action is accepted. Two isolated ARM menu checks prove rejection while
 cooling down and ready acceptance into native action19. The prior party closed;
 fresh `native-menu-readiness-regression/` live exit/reentry is pending.
+
+
+## Optional animation cache and elapsed-time profiler
+
+These experiments are disabled in the normal build. Add
+`--experimental-animation-cache --output /your/path/cache-host.nds` to the
+normal Download Play build command to evaluate the cache. Add
+`--diagnostic-player-cost` to that separate build to measure costs. The latter
+cannot be combined with `--diagnostic-render-cost`, whose FIFO drains alter
+scheduling. Neither option changes the stock melonDS core. Their memory and
+measurement overhead mean diagnostic cadence is not release acceptance.
+
+The raw animation cache holds private immutable copies of verified compressed
+`player/*.bca` members in ROOT: at most32 entries,64KB payload and16KB/member.
+It copies hits into the caller's existing buffer, preserves native file cursor,
+command arguments, WaitAsync and Close semantics, and never shares a mutable
+animation object. Reads must be complete synchronous main-thread reads of a
+verified common-archive member with healthy native state. Loaded but suspended
+physical-ROM archives are valid for wireless guests; unloaded/cancelling/
+suspending archives and pending native errors bypass the cache.
+
+Cache storage is expendable. Allocation pressure evicts least-recently-used
+copies, ROOT growth and capacity queries reclaim copies before native decisions,
+and stage/connection teardown flushes them. The ROOT owner is explicit even
+while GAME is the default heap. Optional allocation failure falls back to
+unchanged native I/O. Sixteen isolated ARM checks cover native heaps, copying,
+seek/wait/close, exact-read eligibility, pressure/growth/query safety, cache
+limits, archive suspension, failures and teardown. Only the physical SDK read
+completion is adapted from the supplied ROM bytes in those isolated tests.
+All-stage memory, extended wireless and physical acceptance remain open.
+
+Private image274084aaac11c165f7d9f8b67297e74ffdcb241ba9616c4d0a5f85368c641a8e
+uses the cache without elapsed instrumentation. Its normal four-console route
+reaches BoB; steady play and warm movement pass same-input-tick checks. All four
+consoles have51 hits/18 misses after steady play and55 hits/18 misses after
+warm movement (10808 cached bytes each). Warm host input cadence has252
+intervals, mean3.000 VBlanks, maximum4, versus normal fbb warm mean3.628 and
+maximum34 on the recorded comparison route. These are separate controller runs,
+not physical measurements. Steady cadence remains205 intervals, mean2.990,
+predominantly3 VBlanks: the cache reduces observed warm read hitches but does
+not establish full-speed gameplay. The earlier pressure-safe ec9a10be prototype
+incorrectly excluded suspended guest archives and cached only on the host;
+its results must not be reported as guest-cache acceptance.
+
+The elapsed profiler reads retail's already-initialized SDK Timer0 via
+func02059650; it never initializes or reprograms the timer. Four spans cover
+actual Player Behavior, body rendering, Yoshi head rendering and whole Stage
+Render. Eight buckets separate active and paused spans. Rows record completed
+count,64-bit total, maximum and minimum ticks with an update sequence so RAM
+observers can skip incomplete records. Counters reset on stage identity change;
+spans crossing shared input ticks, loading or stage changes are discarded.
+SDK ticks are approximately33.514MHz/64 and INCLUDE interrupt, filesystem and
+GPU waits. They are not exclusive CPU cycles. The wrappers preserve native
+arguments/returns, call the original model render directly and never drain
+geometry. `campaign.snapshot` decodes saved RAM to `*-runtime.json`, including
+milliseconds per span. Seven isolated ARM tests cover ABI, actual before/after
+scope, pause buckets, low32 wrap,64-bit carry, stage reset and readiness/span
+rejection. The full combined suite passes172 discovered/168 executed tests with4 obsolete
+prefix-only skips. Independent normal builds still reproduce fbb2262d.
+Live cost attribution is still pending.
+
+
+The completed274084aa continuation also passes a fresh guest2 shared coin,
+native course exit and reentry. Paired measurements at the returned BoB scene
+have205 active intervals all3 VBlanks and304 paused intervals averaging2.013
+VBlanks, on every console. Active gameplay work is a concrete next lead, but
+this comparison alone cannot separate collision, animation, rendering and
+synchronization costs. It is not proof of exclusive CPU saturation.

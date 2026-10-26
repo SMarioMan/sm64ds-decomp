@@ -152,13 +152,19 @@ def main():
                         help='TEST ONLY: synchronized L+R+X requests the next native stage')
     parser.add_argument('--diagnostic-render-cost',action='store_true',
                         help='TEST ONLY: drain geometry to measure terrain/body/head polygon costs; changes timing')
+    parser.add_argument('--diagnostic-player-cost',action='store_true',
+                        help='TEST ONLY: elapsed SDK ticks for player behavior/models and stage rendering')
+    parser.add_argument('--experimental-animation-cache',action='store_true',
+                        help='EXPERIMENTAL: expendable ROOT cache for compressed animation reads')
     args = parser.parse_args()
     if args.baseline and args.diagnostic_start_level is not None:
         parser.error('--baseline cannot select a diagnostic stage')
     if args.diagnostic_stage_cycle and args.diagnostic_start_level is None:
         parser.error('--diagnostic-stage-cycle requires --diagnostic-start-level')
-    if args.baseline and args.diagnostic_render_cost:
+    if args.baseline and (args.diagnostic_render_cost or args.diagnostic_player_cost or args.experimental_animation_cache):
         parser.error('--baseline cannot enable render diagnostics')
+    if args.diagnostic_player_cost and args.diagnostic_render_cost:
+        parser.error('Elapsed timing cannot be combined with FIFO-draining geometry diagnostics')
     original = args.rom.read_bytes()
     if hashlib.sha256(original).hexdigest() != ROM_SHA256:
         parser.error('Expected verified Europe revision-0 ROM; other revisions are unsupported')
@@ -263,17 +269,46 @@ def main():
         fov=game['func_0200ca14']-rom.arm9RamAddress
         if arm9[fov:fov+60]!=bytes.fromhex('30309fe50030d3e5030051e11eff2f11000052e3551f8002000091050208800300008105551f80120000911501088013000081151eff2fe150f20902'):
             raise RuntimeError('Unexpected native player camera FOV helper')
+        if args.experimental_animation_cache:
+            trampolines += [('CoopOriginalHeapAllocate',game['_ZN5mHeap6Heap_t8AllocateEji'],bytes.fromhex('30402de9')),
+                            ('CoopOriginalStageCleanup',game['_ZN10dScStage_c16CleanupResourcesEv'],bytes.fromhex('f0412de9')),
+                            ('CoopOriginalHeapReallocate',game['_ZN5mHeap6Heap_t10ReallocateEPvj'],bytes.fromhex('00402de9'))]
+            for address,expected in ((0x0203c5d0,'08c09fe5140090e50410a0e31cff2fe1f8e00402'),
+                                     (0x0203c5f8,'08c09fe5140090e50410a0e31cff2fe1f8e00402'),
+                                     (0x0203c5ac,'04c09fe5140090e51cff2fe180e10402')):
+                offset=address-rom.arm9RamAddress
+                if arm9[offset:offset+len(bytes.fromhex(expected))]!=bytes.fromhex(expected):
+                    raise RuntimeError('Unexpected expanding-heap capacity query')
+        if args.diagnostic_player_cost:
+            trampolines += [('CoopOriginalStageRender',game['_ZN10dScStage_c6RenderEv'],bytes.fromhex('f0402de9'))]
         imports = dict(game, **{name:PAYLOAD_ADDRESS+0x1800+i*8
                                for i,(name,_,_) in enumerate(trampolines)})
         imports['coopNarcIndex']=PAYLOAD_ADDRESS+0x1800
         narc_index=narc_member_index(rom,arm9,original)
+        animation_mask=b''
+        if args.experimental_animation_cache:
+            common=ndspy.narc.NARC(rom.files[rom.filenames.idOf('ARCHIVE/arc0.narc')])
+            if struct.unpack_from('<HH',narc_index)!=(0x8000,0x8000+len(common.files)):
+                raise RuntimeError('Unexpected common archive virtual range')
+            mask=bytearray((len(common.files)+7)//8)
+            for member in range(len(common.files)):
+                name=common.filenames.filenameOf(member)
+                if name and name.startswith('data/player/') and name.endswith('.bca'):
+                    mask[member//8]|=1<<(member%8)
+            if not any(mask):raise RuntimeError('No verified player animations')
+            animation_mask=bytes(mask)+bytes((-len(mask))%4)
+            imports['coopAnimationCacheMask']=imports['coopNarcIndex']+len(narc_index)
         defines=[f'COOP_SAVE_SLOT={ord(args.save_slot)-ord("A") if args.save_slot else -1}']
+        if args.experimental_animation_cache:
+            defines.append('COOP_EXPERIMENTAL_ANIMATION_CACHE=1')
         if args.diagnostic_start_level is not None:
             defines.append(f'COOP_DIAGNOSTIC_START_LEVEL={args.diagnostic_start_level}')
         if args.diagnostic_stage_cycle:
             defines.append('COOP_DIAGNOSTIC_STAGE_CYCLE=1')
-        if args.diagnostic_render_cost:
-            defines.append('COOP_DIAGNOSTIC_RENDER_COST=1')
+        if args.diagnostic_player_cost:
+            defines.append('COOP_DIAGNOSTIC_PLAYER_COST=1')
+        if args.diagnostic_render_cost or args.diagnostic_player_cost:
+            if args.diagnostic_render_cost:defines.append('COOP_DIAGNOSTIC_RENDER_COST=1')
             for address,target,data,base in (
                     (0x0202b998,game['_ZN10dScStage_c11RenderModelEv'],arm9,rom.arm9RamAddress),
                     (0x0202b9a4,game['_ZN10dScStage_c22RenderModelTransparentEv'],arm9,rom.arm9RamAddress),
@@ -285,6 +320,8 @@ def main():
         body_size = len(runtime)
         imports.update({name:PAYLOAD_ADDRESS+body_size+i*8 for i,(name,_,_) in enumerate(trampolines)})
         imports['coopNarcIndex']=PAYLOAD_ADDRESS+body_size+len(trampolines)*8
+        if args.experimental_animation_cache:
+            imports['coopAnimationCacheMask']=imports['coopNarcIndex']+len(narc_index)
         runtime, emitted = link(REPO/'mods/coop/runtime.cpp',root/'runtime',PAYLOAD_ADDRESS,imports,launcher,cc,ld,defines)
         if len(runtime)!=body_size:
             raise RuntimeError('Unstable runtime module size')
@@ -297,7 +334,7 @@ def main():
                 raise RuntimeError('Unexpected prologue for '+name)
             source=PAYLOAD_ADDRESS+len(runtime)
             runtime+=prologue+branch(source+4,address+4)
-        runtime+=narc_index
+        runtime+=narc_index+animation_mask
         after = game['_ZN8dScene_c13AfterBehaviorEj']-rom.arm9RamAddress
         if arm9[after:after+12]!=struct.pack('<3I',0xe59fc000,0xe12fff1c,game['_ZN7fBase_c13AfterBehaviorEj']):
             raise RuntimeError('Unexpected scene behavior completion wrapper')
@@ -318,6 +355,7 @@ def main():
             raise RuntimeError('Unexpected synchronous file-reader wrapper')
         records=relocations(root/'runtime.o',root/'runtime.elf',PAYLOAD_ADDRESS,runtime)
         records.extend(0x80000000 | (body_size+i*8+4) for i in range(len(trampolines)))
+        if len(runtime)%4:raise RuntimeError('Runtime fixup table must be word aligned')
         blob=pack(PAYLOAD_ADDRESS,runtime,emitted['CoopRuntimeDispatch'],sorted(records))
         (root/'runtime-relocatable.bin').write_bytes(blob)
         module_id=len(rom.files)
@@ -407,10 +445,24 @@ def main():
                (game['_ZN8dScene_c18AfterInitResourcesEj'],'CoopSceneAfterInit'),
                (game['_ZN8dScene_c14BeforeBehaviorEv'],'CoopSceneBefore'),(game['_ZN8dScene_c13AfterBehaviorEj'],'CoopSceneAfter'),
                (game['_ZN8dActor_c19BeforeInitResourcesEv'],'CoopActorBeforeInit'),(game['_ZN8dActor_c14BeforeBehaviorEv'],'CoopActorBefore'),(game['_ZN8dActor_c13AfterBehaviorEj'],'CoopActorAfter')]
+        if args.diagnostic_player_cost:
+            pairs += [(game['_ZN10dScStage_c6RenderEv'],'CoopCostStageRender')]
+        if args.experimental_animation_cache:
+            pairs += [(game['_ZN5mHeap6Heap_t8AllocateEji'],'CoopAnimationHeapAllocate'),
+                      (game['_ZN10dScStage_c16CleanupResourcesEv'],'CoopAnimationStageCleanup'),
+                      (game['_ZN5mHeap6Heap_t10ReallocateEPvj'],'CoopAnimationHeapReallocate'),
+                      (0x0203c5d0,'CoopAnimationMaxMemory'),(0x0203c5f8,'CoopAnimationMaxMemory'),
+                      (0x0203c5ac,'CoopAnimationMemoryLeft')]
         ram_hooks=[{'address':hex(a),'targetOffset':hex(emitted[n]-PAYLOAD_ADDRESS),'symbol':n}for a,n in pairs]
         module_report={'fileID':module_id,'linkBase':hex(PAYLOAD_ADDRESS),'bodyBytes':len(runtime),
                        'entryOffset':hex(emitted['CoopRuntimeDispatch']-PAYLOAD_ADDRESS),'fixups':len(records),
                        'sha256':hashlib.sha256(blob).hexdigest(),'cacheAddress':'0x02004180'}
+        if args.experimental_animation_cache:
+            module_report['experimentalAnimationReadCache']={'entries':32,'payloadBudget':65536,'maxMemberBytes':16384,
+                'statsOffset':emitted['coopAnimationCacheStats']-PAYLOAD_ADDRESS,
+                'entriesOffset':emitted['coopAnimationReadEntries']-PAYLOAD_ADDRESS,'entryWords':6,
+                'fields':['hits','misses','stores','evictions','payloadBytes','entries','peakBytes','flushes'],
+                'eligibleMaskSha256':hashlib.sha256(animation_mask).hexdigest()}
         module_report['sharedCourseCoins']=True
         module_report['runtimePlacement']=args.runtime_placement
         if args.runtime_placement=='prefix':module_report['residentAddress']='0x02000100'
@@ -462,6 +514,14 @@ def main():
                 'kinds':['terrain-opaque','terrain-transparent','player-body','yoshi-head'],
                 'fields':['tick','kind','slot','polygonsBefore','polygonsAfter','verticesBefore',
                           'verticesAfter','overflowBefore','overflowAfter','vblankBegin','vblankEnd','localSlot']}
+        if args.diagnostic_player_cost:
+            module_report['diagnosticPlayerCost']={
+                'clockHz':33513982/64,'exclusiveCpuCycles':False,'drainsGeometry':False,
+                'costsOffset':emitted['coopPlayerCosts']-PAYLOAD_ADDRESS,
+                'stageOffset':emitted['coopPlayerCostStage']-PAYLOAD_ADDRESS,
+                'kinds':['player-behavior','player-body','yoshi-head','stage-render'],
+                'fields':['sequence','count','totalTicksLow','totalTicksHigh','maxTicks','minTicks'],
+                'buckets':8,'resetOnStageIdentity':True}
         patches.append({'purpose':'ROOT module loader in unused VS result routines','address':hex(CAVE_START),
                         'size':CAVE_END-CAVE_START,'installerBytes':len(installer)})
     output=root/('baseline.nds' if args.baseline else 'sm64ds-coop-experimental.nds')

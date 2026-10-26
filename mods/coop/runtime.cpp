@@ -11,7 +11,7 @@
 #include "dCamera_c.h"
 #include "LVL_Overlay.h"
 #include "ExpandingHeapAllocator.h"
-#ifdef COOP_DIAGNOSTIC_RENDER_COST
+#if defined(COOP_DIAGNOSTIC_RENDER_COST) || defined(COOP_DIAGNOSTIC_PLAYER_COST)
 #include "dExtSimpleModel_c.h"
 #endif
 
@@ -36,6 +36,13 @@ void UnloadOverlay(int index);
 int CoopOriginalEntryCleanup(void *scene);
 void CoopOriginalLoadLevelOverlays(int level);
 int CoopOriginalStageInit(void *scene);
+#ifdef COOP_DIAGNOSTIC_PLAYER_COST
+// local extern: only decl_common.h's untyped catch-all declares this SDK clock.
+unsigned long long func_02059650(void);
+int CoopOriginalStageRender(void *scene);
+void CoopCostBodyRender(void *model,const Vector3 *scale);
+void CoopCostHeadRender(void *model,const Vector3 *scale);
+#endif
 int CoopOriginalSceneBefore(void *scene);
 int CoopOriginalActorBefore(void *actor);
 int CoopOriginalActorBeforeInit(void *actor);
@@ -97,6 +104,15 @@ int func_0205d5e8(void *file,void *archive,u32 top,u32 bottom,u32 index);
 extern mHeap::Heap_t *data_020a0e9c;
 int func_0205d3f4(void *file);
 void func_0201ffcc(void);
+#ifdef COOP_EXPERIMENTAL_ANIMATION_CACHE
+u32 _ZN3IRQ7DisableEv(void);
+void _ZN3IRQ7RestoreEj(u32 state);
+void CpuCopy8(const void *source,void *destination,u32 size);
+void *CoopOriginalHeapAllocate(mHeap::Heap_t *heap,u32 size,int align);
+int CoopOriginalStageCleanup(void *scene);
+u32 CoopOriginalHeapReallocate(mHeap::Heap_t *heap,void *ptr,u32 size);
+void CoopFlushAnimationReadCache(void);
+#endif
 void func_02040724(void);
 int CoopOriginalWirelessReset(void *callback);
 int CoopOriginalConnectionUpdate(void);
@@ -389,6 +405,9 @@ void CoopLoadCourseResources(int) {
 }
 
 int CoopEntryCleanup(void *scene) {
+#ifdef COOP_EXPERIMENTAL_ANIMATION_CACHE
+    CoopFlushAnimationReadCache();
+#endif
     int result = CoopOriginalEntryCleanup(scene);
     // Archive 0 lives in ROOT on both cartridge and downloaded clients.
     // Keep that shared cache; unmount the remaining archives while ENTRY's
@@ -450,6 +469,10 @@ void CoopLoadLevelOverlays(int level) {
         // palette gates; changing the global VS rule would alter gameplay.
         *(volatile u32 *)0x020e3ae8 = 0xe3a00001; // mov r0, #1 (body)
         *(volatile u32 *)0x020e3c88 = 0xe3a00001; // mov r0, #1 (head)
+#ifdef COOP_DIAGNOSTIC_PLAYER_COST
+        PatchCall(0x020e3b4c,(void *)CoopCostBodyRender);
+        PatchCall(0x020e3cfc,(void *)CoopCostHeadRender);
+#endif
 #ifdef COOP_DIAGNOSTIC_RENDER_COST
         PatchCall(0x020e3b4c,(void *)CoopDiagnosticBodyRender);
         PatchCall(0x020e3cfc,(void *)CoopDiagnosticHeadRender);
@@ -593,6 +616,9 @@ static void CoopConnectionLost() {
         coopDiagnosticConnectionFailure[6]=*(volatile u32 *)0x0209d50c;
         coopDiagnosticConnectionFailure[7]=coopFileWaiting;
     }
+#endif
+#ifdef COOP_EXPERIMENTAL_ANIMATION_CACHE
+    CoopFlushAnimationReadCache();
 #endif
     // Story rules bypass the retail VS disconnection branch. End the file
     // server before entering its resident error screen, including when the
@@ -790,7 +816,11 @@ int CoopStageInit(void *scene) {
 
 u32 coopFileWaiting = 0;
 
+#ifdef COOP_EXPERIMENTAL_ANIMATION_CACHE
+int CoopReadFileUncached(void *file, void *destination, int size, int async) {
+#else
 int CoopReadFile(void *file, void *destination, int size, int async) {
+#endif
 #ifdef COOP_DIAGNOSTIC_STAGE_CYCLE
     if (coopEnabled && data_0209fc68==4 && !async && !coopFileWaiting &&
         data_020a613c==data_020a621c && !coopSceneInitializing &&
@@ -1263,6 +1293,204 @@ static u32 CoopAlignedFree(mHeap::Heap_t *heap,int align) {
     return allocator->MaxAllocatableSize(align);
 }
 
+#ifdef COOP_EXPERIMENTAL_ANIMATION_CACHE
+// Private immutable compressed bytes, never borrowed by a file/model caller.
+// ROOT pressure may discard every entry before a native allocation.
+struct CoopAnimationReadEntry {
+    u32 top,length,bytes,age;
+    u8 *data;
+    mHeap::Heap_t *owner;
+};
+static CoopAnimationReadEntry coopAnimationReadEntries[32];
+static u32 coopAnimationReadClock=0;
+// hits, misses, stores, evictions, payload bytes, entries, peak bytes, flushes.
+u32 coopAnimationCacheStats[8]={0};
+extern const u8 coopAnimationCacheMask[];
+
+static unsigned CoopOldestAnimationRead() {
+    unsigned oldest=32;
+    u32 age=0;
+    for (unsigned i=0;i<32;++i)
+        if (coopAnimationReadEntries[i].data) {
+            u32 elapsed=coopAnimationReadClock-coopAnimationReadEntries[i].age;
+            if (oldest==32 || elapsed>age) { oldest=i; age=elapsed; }
+        }
+    return oldest;
+}
+
+static void CoopEvictAnimationRead(unsigned slot) {
+    CoopAnimationReadEntry *entry=&coopAnimationReadEntries[slot];
+    u8 *data=entry->data;
+    mHeap::Heap_t *owner=entry->owner;
+    coopAnimationCacheStats[4]-=entry->bytes;
+    --coopAnimationCacheStats[5];
+    ++coopAnimationCacheStats[3];
+    entry->data=0;
+    entry->owner=0;
+    owner->Deallocate(data);
+}
+
+void CoopFlushAnimationReadCache() {
+    u32 irq=_ZN3IRQ7DisableEv();
+    for (unsigned i=0;i<32;++i)
+        if (coopAnimationReadEntries[i].data)CoopEvictAnimationRead(i);
+    ++coopAnimationCacheStats[7];
+    _ZN3IRQ7RestoreEj(irq);
+}
+
+static void CoopAnimationCacheMakeRoom(mHeap::Heap_t *heap,u32 size,int align) {
+    if (!coopAnimationCacheStats[5] || !heap || heap!=data_020a0e9c)return;
+    u32 irq=_ZN3IRQ7DisableEv();
+    while (CoopAlignedFree(heap,align)<size) {
+        unsigned oldest=CoopOldestAnimationRead();
+        if (oldest==32)break;
+        CoopEvictAnimationRead(oldest);
+    }
+    _ZN3IRQ7RestoreEj(irq);
+}
+
+void *CoopAnimationHeapAllocate(mHeap::Heap_t *heap,u32 size,int align) {
+    CoopAnimationCacheMakeRoom(heap,size,align);
+    return CoopOriginalHeapAllocate(heap,size,align);
+}
+
+u32 CoopAnimationHeapReallocate(mHeap::Heap_t *heap,void *ptr,u32 size) {
+    // Even with ample total free memory, a cached block could obstruct an
+    // adjacent in-place grow. Restore the native layout before attempting it.
+    if (heap==data_020a0e9c && coopAnimationCacheStats[5] && ptr &&
+        size>(u32)heap->_Sizeof(ptr))CoopFlushAnimationReadCache();
+    return CoopOriginalHeapReallocate(heap,ptr,size);
+}
+
+u32 CoopAnimationMaxMemory(mHeap::Heap_t *heap) {
+    // Native callers sometimes choose a heap or reject a request before they
+    // allocate. Optional cache storage must not lower those capacity queries.
+    if (heap==data_020a0e9c && coopAnimationCacheStats[5])CoopFlushAnimationReadCache();
+    return CoopAlignedFree(heap,4);
+}
+
+u32 CoopAnimationMemoryLeft(mHeap::Heap_t *heap) {
+    if (heap==data_020a0e9c && coopAnimationCacheStats[5])CoopFlushAnimationReadCache();
+    ExpandingHeapAllocator *allocator=*(ExpandingHeapAllocator **)
+        ((u8 *)heap+sizeof(mHeap::Heap_t));
+    return allocator->MemoryLeft();
+}
+
+int CoopAnimationStageCleanup(void *scene) {
+    CoopFlushAnimationReadCache();
+    return CoopOriginalStageCleanup(scene);
+}
+
+static u32 CoopAnimationReadKey(void *file,int size,int async) {
+    if (!coopEnabled || data_0209fc68!=4 || (data_020a0f1c&0x9f) || async || size<8 || size>16384 ||
+        data_020a613c!=data_020a621c)return 0;
+    const u32 *fields=(const u32 *)file;
+    if (fields[3]!=0x10 || fields[5] || (void *)fields[2]!=data_0209d3b4 || fields[10]!=fields[8] ||
+        fields[9]-fields[8]!=(u32)size)return 0;
+    u32 archiveFlags=*((volatile u32 *)data_0209d3b4+4);
+    if (!(archiveFlags&2) || (archiveFlags&0xe0))return 0;
+    const CoopArchiveIndex *index=(const CoopArchiveIndex *)coopNarcIndex;
+    const u32 *extents=(const u32 *)(coopNarcIndex+index[0].extentOffset);
+    for (unsigned member=0;member<(unsigned)(index[0].limit-index[0].first);++member)
+        if ((coopAnimationCacheMask[member>>3] & (1u<<(member&7))) &&
+            fields[8]==index[0].romTop+extents[member*2] &&
+            (u32)size==extents[member*2+1]-extents[member*2])return fields[8];
+    return 0;
+}
+
+static bool CoopCopyAnimationRead(void *file,u32 top,void *destination,u32 size) {
+    u32 irq=_ZN3IRQ7DisableEv();
+    // Recheck the native ready/error/cursor state at the copy's atomic point.
+    if (CoopAnimationReadKey(file,size,0)!=top) {
+        _ZN3IRQ7RestoreEj(irq);
+        return false;
+    }
+    for (unsigned i=0;i<32;++i) {
+        CoopAnimationReadEntry *entry=&coopAnimationReadEntries[i];
+        if (entry->data && entry->top==top && entry->length==size) {
+            CpuCopy8(entry->data,destination,size);
+            entry->age=++coopAnimationReadClock;
+            ++coopAnimationCacheStats[0];
+            _ZN3IRQ7RestoreEj(irq);
+            return true;
+        }
+    }
+    ++coopAnimationCacheStats[1];
+    _ZN3IRQ7RestoreEj(irq);
+    return false;
+}
+
+static void CoopStoreAnimationRead(u32 top,void *source,u32 size) {
+    if (!func_02018568(source) || ((const u8 *)source)[4]!=0x10)return;
+    mHeap::Heap_t *root=data_020a0e9c;
+    if (!root)return;
+    u32 irq=_ZN3IRQ7DisableEv();
+    unsigned empty=32;
+    for (unsigned i=0;i<32;++i) {
+        CoopAnimationReadEntry *entry=&coopAnimationReadEntries[i];
+        if (entry->data && entry->top==top && entry->length==size) {
+            entry->age=++coopAnimationReadClock;
+            _ZN3IRQ7RestoreEj(irq);
+            return;
+        }
+        if (!entry->data)empty=i;
+    }
+    while (empty==32 || coopAnimationCacheStats[4]+((size+3)&~3u)>65536) {
+        unsigned oldest=CoopOldestAnimationRead();
+        if (oldest==32)break;
+        CoopEvictAnimationRead(oldest);
+        empty=oldest;
+    }
+    // Optional storage must never invoke the native game allocation's Crash
+    // policy. Do not reserve more memory when the aligned block cannot fit.
+    if (empty==32 || CoopAlignedFree(root,32)<size) {
+        _ZN3IRQ7RestoreEj(irq);
+        return;
+    }
+    u8 *copy=(u8 *)root->VAllocate(size,32);
+    if (copy) {
+        u32 bytes=root->_Sizeof(copy);
+        while (coopAnimationCacheStats[4]+bytes>65536) {
+            unsigned oldest=CoopOldestAnimationRead();
+            if (oldest==32)break;
+            CoopEvictAnimationRead(oldest);
+        }
+        CpuCopy8(source,copy,size);
+        CoopAnimationReadEntry *entry=&coopAnimationReadEntries[empty];
+        entry->top=top;
+        entry->length=size;
+        entry->bytes=bytes;
+        entry->age=++coopAnimationReadClock;
+        entry->owner=root;
+        entry->data=copy;
+        ++coopAnimationCacheStats[2];
+        ++coopAnimationCacheStats[5];
+        coopAnimationCacheStats[4]+=bytes;
+        if (coopAnimationCacheStats[4]>coopAnimationCacheStats[6])
+            coopAnimationCacheStats[6]=coopAnimationCacheStats[4];
+    }
+    _ZN3IRQ7RestoreEj(irq);
+}
+
+int CoopReadFile(void *file,void *destination,int size,int async) {
+    u32 key=destination ? CoopAnimationReadKey(file,size,async) : 0;
+    if (key && CoopCopyAnimationRead(file,key,destination,size)) {
+        // Native SeekFile is a synchronous cursor adjustment, without I/O.
+        // Keep the native view/CloseFile lifetime; only supply immutable bytes.
+        u32 *fields=(u32 *)file;
+        fields[4]=0; // Completed FS_COMMAND_READFILE.
+        fields[11]=(u32)destination;
+        fields[12]=fields[13]=size;
+        if (func_0205d368(file,size,1))return size;
+        return -1;
+    }
+    int result=CoopReadFileUncached(file,destination,size,async);
+    if (key && result==size && ((u32 *)file)[10]==key+(u32)size)
+        CoopStoreAnimationRead(key,destination,size);
+    return result;
+}
+#endif
+
 void *CoopAllocatePaintingMesh(u32 size) {
     // PicGate allocates its cells before opening its texture. Prior synchronous
     // resource reads have closed their source views and own their model copies.
@@ -1278,6 +1506,9 @@ void *CoopAllocatePaintingMesh(u32 size) {
 void *CoopAllocateAlignedResource(u32 size,int align) {
     mHeap::Heap_t *root=Memory::defaultHeapPtr;
     mHeap::Heap_t *game=(mHeap::Heap_t *)data_020a0eac;
+#ifdef COOP_EXPERIMENTAL_ANIMATION_CACHE
+    CoopAnimationCacheMakeRoom(root,size,align);
+#endif
     // Restrict balancing to file buffers allocated from ROOT. Actor
     // private heaps retain their original allocation and lifetime rules.
     if (coopEnabled && data_0209fc68 && root==data_020a0e9c &&
@@ -1701,6 +1932,68 @@ __asm void CoopShadowFlagsRead(void) {
     ldmfd sp!, {r1-r3, r12, pc}
 }
 
+#ifdef COOP_DIAGNOSTIC_PLAYER_COST
+// SDK Timer0 is initialized by retail. Observe it; never reconfigure it.
+// Elapsed ticks include interrupts and native I/O/GPU waits, not CPU cycles.
+u32 coopPlayerCostStage=0;
+u32 coopPlayerCosts[8][6]={{0}};
+struct CoopCostScope { u32 active,start,stage,tick,bucket; };
+static CoopCostScope coopPlayerBehaviorCost={0,0,0,0,0};
+static void *coopPlayerCostActor=0;
+
+static bool CoopCostReady() {
+    return coopEnabled && data_0209fc68==4 && coopStageIdentity &&
+        !coopStageLoading && !coopMenuLoading && !coopSceneInitializing &&
+        !coopTitleLoading && !(*(volatile u16 *)0x020a104c&0x4000) &&
+        *(volatile u16 *)0x020a6430;
+}
+static void CoopCostBegin(CoopCostScope *scope,unsigned kind) {
+    scope->active=0;
+    if (!CoopCostReady())return;
+    if (coopPlayerCostStage!=coopStageIdentity) {
+        for (unsigned row=0;row<8;++row)
+            for (unsigned field=0;field<6;++field)coopPlayerCosts[row][field]=0;
+        coopPlayerCostStage=coopStageIdentity;
+    }
+    scope->stage=coopStageIdentity;
+    scope->tick=data_020a1154[0];
+    scope->bucket=kind+(*(volatile u32 *)0x0209f1ec==3 ? 4 : 0);
+    scope->active=1;
+    scope->start=(u32)func_02059650();
+}
+static void CoopCostFinish(CoopCostScope *scope) {
+    if (!scope->active)return;
+    u32 elapsed=(u32)func_02059650()-scope->start;
+    scope->active=0;
+    if (!CoopCostReady() || scope->stage!=coopStageIdentity ||
+        scope->tick!=data_020a1154[0])return;
+    volatile u32 *row=coopPlayerCosts[scope->bucket];
+    ++row[0]; // Odd while updating; RAM observers discard partial records.
+    u32 low=row[2]+elapsed;
+    row[3]+=low<row[2];
+    row[2]=low;
+    if (!row[1] || elapsed>row[4])row[4]=elapsed;
+    if (!row[1] || elapsed<row[5])row[5]=elapsed;
+    ++row[1];
+    ++row[0];
+}
+static void CoopCostPlayerPart(void *model,const Vector3 *scale,unsigned kind) {
+    CoopCostScope scope;
+    CoopCostBegin(&scope,kind);
+    ((dExtSimpleModel_c *)model)->dExtSimpleModel_c::Render(scale);
+    CoopCostFinish(&scope);
+}
+void CoopCostBodyRender(void *model,const Vector3 *scale) { CoopCostPlayerPart(model,scale,1); }
+void CoopCostHeadRender(void *model,const Vector3 *scale) { CoopCostPlayerPart(model,scale,2); }
+int CoopCostStageRender(void *scene) {
+    CoopCostScope scope;
+    CoopCostBegin(&scope,3);
+    int result=CoopOriginalStageRender(scene);
+    CoopCostFinish(&scope);
+    return result;
+}
+#endif
+
 static void CoopSeedActor(dActor_c *actor,u32 frame) {
     u32 identity=actor->uniqueID-coopStageIdentity;
     u32 seed=frame^(identity*0x9e3779b9);
@@ -1725,6 +2018,10 @@ int CoopActorBeforeInit(dActor_c *actor) {
 }
 
 int CoopActorBefore(void *actor) {
+#ifdef COOP_DIAGNOSTIC_PLAYER_COST
+    coopPlayerCostActor=0;
+    coopPlayerBehaviorCost.active=0;
+#endif
     coopBehaviorActor = 0;
     coopBehaviorHealthSaved = 0;
     // Doors and NPCs run separately from the scene. Their single-player
@@ -1775,10 +2072,22 @@ int CoopActorBefore(void *actor) {
         gActivePlayerSlot = data_020a0f10;
         data_0209f250 = data_020a0f10;
     }
+#ifdef COOP_DIAGNOSTIC_PLAYER_COST
+    if (result)for (unsigned slot=0;slot<4;++slot)
+        if (data_0209f394[slot]==actor) {
+            coopPlayerCostActor=actor;
+            CoopCostBegin(&coopPlayerBehaviorCost,0);
+            break;
+        }
+#endif
     return result;
 }
 
 void CoopActorAfter(dActor_c *actor, u32 success) {
+#ifdef COOP_DIAGNOSTIC_PLAYER_COST
+    if (coopPlayerCostActor==actor)CoopCostFinish(&coopPlayerBehaviorCost);
+    coopPlayerCostActor=0;
+#endif
     if (coopBehaviorHealthSaved) {
         *(volatile u8 *)0x0211117c=coopBehaviorHealth;
         coopBehaviorHealthSaved=0;
@@ -1809,6 +2118,17 @@ static void PatchCall(u32 address, void *target) {
 }
 
 void CoopRuntimeDispatch(unsigned operation, u32 argument) {
+#ifdef COOP_DIAGNOSTIC_PLAYER_COST
+    Patch(0x0202b8a4,(void *)CoopCostStageRender);
+#endif
+#ifdef COOP_EXPERIMENTAL_ANIMATION_CACHE
+    Patch(0x0203c6cc,(void *)CoopAnimationHeapAllocate);
+    Patch(0x0202c9a8,(void *)CoopAnimationStageCleanup);
+    Patch(0x0203c578,(void *)CoopAnimationHeapReallocate);
+    Patch(0x0203c5d0,(void *)CoopAnimationMaxMemory);
+    Patch(0x0203c5f8,(void *)CoopAnimationMaxMemory);
+    Patch(0x0203c5ac,(void *)CoopAnimationMemoryLeft);
+#endif
     PatchCall(0x02010ba4,(void *)CoopShadowFlagsRead);
     PatchCall(0x02010bf0,(void *)CoopShadowFlagsRead);
 #ifdef COOP_DIAGNOSTIC_RENDER_COST

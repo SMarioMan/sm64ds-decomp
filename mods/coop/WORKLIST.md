@@ -45,6 +45,14 @@ not establish campaign completion or real-hardware compatibility.
   behavior and rendering; new read-only process histograms distinguish those.
   Camera acceptance now uses native player slots even when guest association
   order differs from console order.
+  An optional64KB compressed animation-read cache now passes16 native ARM
+  checks and caches on all three Download Play guests as well as the host.
+  The274084aa BoB warm sample reduces the longest observed input interval
+  from34 to4 VBlanks, but steady cadence remains approximately3 VBlanks.
+  It is not enabled by default and needs wider stage/memory/physical coverage.
+  An optional existing-SDK-clock profiler measures Player Behavior/body/head
+  and whole Stage Render without FIFO drains; seven ARM checks pass. Use it
+  to quantify the remaining steady-play bottleneck before selecting changes.
 - [x] Fix the reported white screen before the title screen on real hardware.
   Original failing commit: `419afe72b1f9d133bd26bb03bcd71ebe4d687869`,
   cartridge `sm64ds-haxxstation-game-handoff.nds`.

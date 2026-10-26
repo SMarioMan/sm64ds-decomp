@@ -8,7 +8,7 @@ runs it; the automated test frontend does not modify the emulation core.
 The latest candidate additionally fixes native flight entrances, asymmetric
 loading checks, and actor initialization randomness. A four-console33–40 stage
 cycle passes movement, shared pause/resume and matching-input-tick comparisons;
-142 applicable isolated checks pass, including native cannon launch arithmetic
+Applicable isolated checks pass, including native cannon launch arithmetic
 with per-player echoed pitch. Campaign saving on this combined image,
 remaining camera cases and boss victories remain open. The user reports
 functional physical multiplayer on the pinned89505d400 image (SHA256
@@ -19,6 +19,13 @@ The current shadow fix restores native per-camera far-shadow suppression while
 keeping AI synchronized. Four-console Bob-omb Battlefield entry now shows all
 four Yoshi heads and no geometry overflow; broader rendering and performance
 acceptance remain open. See [PERFORMANCE.md](PERFORMANCE.md) for measurements.
+
+Optional performance experiments are documented in
+[PERFORMANCE.md](PERFORMANCE.md): `--experimental-animation-cache` targets
+repeated synchronous animation reads, and `--diagnostic-player-cost` measures
+elapsed native work. Both require a separate `--output`; neither is enabled
+in the normal candidate. The cache reduces observed warm BoB hitches in the
+current four-console check, while steady slowdown remains unresolved.
 
 See [the worklist](WORKLIST.md) for current acceptance gaps and
 [the emulator handoff](tests/EMULATOR-HANDOFF.md) for exact image hashes.

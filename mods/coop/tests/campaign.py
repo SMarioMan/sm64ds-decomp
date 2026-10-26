@@ -125,7 +125,9 @@ def snapshot(ds, name):
         'coopDiagnosticSlowGameplayRead':module.get('gameplayReadFields'),
     }
     render_cost=module.get('diagnosticRenderCost')
-    if not any(diagnostic_fields.values()) and not render_cost:return
+    animation_cache=module.get('experimentalAnimationReadCache')
+    player_cost=module.get('diagnosticPlayerCost')
+    if not any(diagnostic_fields.values()) and not render_cost and not animation_cache and not player_cost:return
     diagnostics=[]
     for console in range(ds.count):
         ram=(ds.output/(name+'-'+str(console)+'.ram')).read_bytes()
@@ -141,6 +143,25 @@ def snapshot(ds, name):
                 values[symbol]={'captureAddressInvalid':hex(base+module['diagnosticOffsets'][symbol])}
                 continue
             values[symbol]=dict(zip(fields,struct.unpack_from('<'+'I'*len(fields),ram,offset)))
+        if animation_cache:
+            offset=base+animation_cache['statsOffset']-0x02000000
+            values['animationReadCache']=dict(zip(animation_cache['fields'],
+                struct.unpack_from('<8I',ram,offset)))
+        if player_cost:
+            offset=base+player_cost['costsOffset']-0x02000000
+            samples=[]
+            for bucket in range(player_cost['buckets']):
+                row=dict(zip(player_cost['fields'],struct.unpack_from('<6I',ram,offset+bucket*24)))
+                if row['sequence']&1:continue
+                total=row['totalTicksLow']+(row['totalTicksHigh']<<32)
+                row.update(kind=player_cost['kinds'][bucket%4],paused=bucket>=4,
+                           totalMs=total*1000/player_cost['clockHz'],
+                           meanMs=total*1000/player_cost['clockHz']/row['count'] if row['count'] else None,
+                           maxMs=row['maxTicks']*1000/player_cost['clockHz'])
+                samples.append(row)
+            values['playerCosts']={'stageIdentity':struct.unpack_from('<I',ram,
+                base+player_cost['stageOffset']-0x02000000)[0],
+                'exclusiveCpuCycles':False,'drainsGeometry':False,'samples':samples}
         if render_cost:
             offsets=module['diagnosticOffsets']
             count=struct.unpack_from('<I',ram,base+offsets['coopDiagnosticRenderCount']-0x02000000)[0]

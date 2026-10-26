@@ -21,7 +21,9 @@ def check_shared_coin_pickup(ds, controller):
     px,py,pz=player_position(ds,controller,slot)
     near=py<100 and math.hypot(px+664,pz-5506)<300
     if not near:
-        for x,z in ((-5000,5200),(-4000,4500),(-664,4500)):
+        # Approach from the north on the lower floor. The southern lip can
+        # put a jumping controller on the bridge above the coins instead.
+        for x,z in ((-5000,6200),(-4000,6200),(-664,6200)):
             walk_to(ds,x,z,console=controller,tolerance=100,pulse_frames=6,limit=300)
     # Inspect the remaining native gold coins in this lower-floor row. A
     # previous navigation attempt may already have collected its first coin.
@@ -41,10 +43,9 @@ def check_shared_coin_pickup(ds, controller):
     if not targets:raise RuntimeError('No native gold coins remain in the test row')
     px,_,pz=player_position(ds,controller,slot)
     target=min(targets,key=lambda point:math.hypot(point[0]-px,point[1]-pz))
-    # The lower approach has a terrain lip that slow walking cannot clear.
-    # Native jump pulses cross it; land near the real coin before checking
-    # the shared total. This path is controller input, not a position write.
-    touch_walk_to(ds,*target,console=controller,tolerance=60,limit=400,jump=True,
+    # The north side has clear ground access to the row beneath the bridge.
+    # Aim close enough for actual collision/pickup, without jumping onto its deck.
+    touch_walk_to(ds,*target,console=controller,tolerance=20,limit=400,
                   stop_when=lambda:counters()[0][0]>before[0][0])
     ds.run(120)
     after=counters()

@@ -9,6 +9,39 @@ all levels. The tested party size and campaign coverage were not specified;
 newer-image physical acceptance and campaign completion remain open. Read the current regressions first; later sections preserve
 historical checkpoints and failures rather than release acceptance.
 
+## Current performance work (supersedes historical active-session notes)
+
+Normal image remains fbb2262d6dbacd6c92e8f585bde99941d587ed8e323bde280f598e91e69abd2d.
+The native-menu-readiness-normal party is CLOSED; its complete continuation
+passes steady/warm movement, fresh guest2 coin, acknowledged course exit and
+reentry. Published source991c60ef6 contains those readiness fixes.
+
+Experimental cache image274084aaac11c165f7d9f8b67297e74ffdcb241ba9616c4d0a5f85368c641a8e
+is CLOSED at `bob-animation-cache-wfs-guests/`. Complete continuation
+`animation-cache-wfs-guests-regression/` PASSES steady/warm movement, fresh
+guest2 shared coin, native course exit/reentry and paired active/pause checks.
+All consoles cache successfully, including native archive flags0x0a on guests.
+Warm max4 VBlanks vs normal comparison34; paired active205 intervals all3
+VBlanks, paused304 intervals mean2.013. No steady-speed improvement established.
+Current full suite with cache+profiler:172 discovered,168 executed,4 obsolete
+prefix skips PASS, `animation-cache-player-cost-all-tests.log`. Independent
+both-disabled build reproduces fbb2262d. The cache remains optional.
+
+ACTIVE elapsed profiler image dc04637cff4017ea4c9ad313de48f0821251e7e78da8f5a25a625ea9165ddbad:
+parent `bob-animation-cache-player-cost/`, exec74505, socket
+`/workspace/runtime/bob-animation-cache-player-cost.sock`. Normal castle/BoB
+route is running; continuation `animation-cache-player-cost-profile/`, exec47996,
+waits to measure steady/warm/paused spans and retains the party afterward.
+Seven isolated native timing checks pass. This is the ONLY wireless party;
+check result.json and shut it down before launching another. Separately, one
+OFFLINE unmodified-retail console is measuring the normal castle/BoB route at
+`retail-bob-cadence-baseline/`, exec79400. It creates no wireless session.
+See PERFORMANCE.md for scope, memory guards and build options. No live RAM
+writes, savestate restores or packet substitutions are used.
+
+Historical entries below retain prior states and must not be taken as the
+current active-session inventory.
+
 ## Active native-menu-readiness regression
 
 - Latest pushed sourcefd9c67fb3 includes actual native touch initialization
