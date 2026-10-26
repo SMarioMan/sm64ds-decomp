@@ -9,27 +9,34 @@ all levels. The tested party size and campaign coverage were not specified;
 newer-image physical acceptance and campaign completion remain open. Read the current regressions first; later sections preserve
 historical checkpoints and failures rather than release acceptance.
 
-## Active acknowledged-input regression
+## Active native-menu-readiness regression
 
-- Latest pushed source3c44de626; uncommitted driver change waits for actual
-  native touch release, touching state and five-update initialization delay.
-  Native CheckInput ARM proof confirms that advancing24 SDK VBlanks without
-  input updates leaves its delay unchanged. No exact calibrated touch pixels
-  are required. This corrects an initial24-video-frame assumption in the test
-  driver; game loading hitches remain unresolved. Updated suite PASS:147
-  discovered,143 executed,4 obsolete prefix-only skips
-  (`native-input-readiness-all-tests.log`).
-- ACTIVE normal fbb party `acknowledged-course-return-normal/`, exec36689,
-  socket `acknowledged-course-return-normal.sock`, full-profiles frontend.
-  Startup/normal castle/BoB route frozen before this driver change.
-- ACTIVE continuation `native-input-readiness-regression/`, exec62209, waits for
-  the parent's controller socket, then measures steady/warm movement, fresh
-  guest2 coin, acknowledged pause/exit and native course reentry. Its frozen
-  source includes the new touch state waits. No live acceptance yet.
-- Earlier waiting continuations `acknowledged-course-return-regression/` and
-  `acknowledged-input-regression/` were replaced BEFORE any controller RPC;
-  result files explicitly record that status. Never run another wireless party
-  while this parent is active.
+- Latest pushed sourcefd9c67fb3 includes actual native touch initialization
+  waits and its ARM proof. The normal ROM remains fbb2262d.
+- CLOSED `acknowledged-course-return-normal/` plus continuation
+  `native-input-readiness-regression/`: steady/warm movement and fresh guest2
+  shared coin PASS. Acknowledged pause opens,15 Goomba states match. The exit
+  touch was sent while native opening cooldown0209f300 was10; PS state3 ignores
+  such touches. Later timeout shows all consoles healthy NET4, still paused in
+  BoB, cooldown0. This establishes no successful course exit/reentry.
+- New course-return driver waits for native PS state3, draw state3,
+  zero opening cooldown/menu animation, then holds the fourth-row touch until
+  native state leaves3. It acknowledges host touch release first. Two actual
+  retail PS_Update ARM tests prove cooldown rejection and ready touch->action19;
+  only presentation callbacks are replaced in those isolated tests.
+- ACTIVE normal fbb party `native-menu-readiness-normal/`, exec96332, socket
+  `native-menu-readiness-normal.sock`, full-profiles stock-core frontend.
+- ACTIVE continuation `native-menu-readiness-regression/`, exec61114, waits for
+  parent's normal castle/BoB route, then tests steady/warm movement, guest2 coin,
+  acknowledged pause/menu Exit and native course reentry. Latest frozen sources
+  include the native menu readiness waits. It closes on success and retains
+  the physically paused party on failure for inspection; NEVER start another
+  wireless party before closing this one.
+- Prior waiting continuations were explicitly replaced before any controller
+  connection, recorded in their result files. No live memory/packet writes or
+  savestate restores are used. Full current isolated suite is running under
+  `native-menu-readiness-all-tests.log` PASS:149 discovered,145 executed,4 obsolete
+  prefix-only skips. The two new actual ARM menu tests pass.
 
 ## Current performance investigation
 

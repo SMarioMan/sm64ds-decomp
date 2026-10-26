@@ -199,3 +199,12 @@ waits for native touching/delay readiness before reading its real origin.
 It does not require exact calibrated pixel coordinates. Live confirmation is
 in progress under `native-input-readiness-regression/`; loading stalls and
 prior navigation failures remain open until those checks pass.
+
+The acknowledged pause now opens and the four replicas'15 Goomba states match.
+The next exit touch still arrived while the native opening cooldown was10;
+actual retail PS_Update ignores touch while that counter is nonzero. The
+course-return driver now also waits for PS/draw state3 and zero cooldown/menu
+animation, acknowledges release, and holds the fourth-row touch until the
+native action is accepted. Two isolated ARM menu checks prove rejection while
+cooling down and ready acceptance into native action19. The prior party closed;
+fresh `native-menu-readiness-regression/` live exit/reentry is pending.

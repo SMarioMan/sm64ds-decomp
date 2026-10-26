@@ -609,8 +609,39 @@ def check_course_return(ds):
     # ordinary movement between serial console snapshots for a divergence.
     snapshot(ds,'course-return-pause')
     check_paused_course_enemies(ds,'course-return-pause')
-    # Native PS_Update case 3: fourth row, y=144..175, exits to castle.
-    ds.touch(0,128,160)
+    # PS_Update case3 ignores touch edges while its opening cooldown is
+    # nonzero. Pause flags become true earlier; wait for the actual menu on
+    # every replica, then hold the physical touch until its action is accepted.
+    for _ in range(180):
+        if any(ds.word(i,0x0209fc68)==6 for i in range(ds.count)):
+            raise RuntimeError('Wireless session failed while opening course pause')
+        ready=True
+        for console in range(ds.count):
+            state,draw_state,cooldown,animation=ds.readv(console,(
+                (0x0209f1ec,1),(0x0209f248,1),(0x0209f300,2),(0x0209f22c,1)))
+            if state!=b'\x03' or draw_state!=b'\x03' or any(cooldown) or any(animation):
+                ready=False
+        if ready:break
+        ds.run(1)
+    else:
+        snapshot(ds,'course-return-menu-not-ready')
+        raise RuntimeError('Native course pause menu did not finish opening')
+    ds.set_input(0,0xfff)
+    for _ in range(90):
+        if not ds.read(0,0x020a0de8,1)[0]:break
+        ds.run(1)
+    else:raise RuntimeError('Host touch release was not acknowledged before course exit')
+    # Fourth row: y144..175. Do not substitute a timed touch pulse.
+    ds.set_input(0,0xfff,(128,160))
+    try:
+        for _ in range(180):
+            if ds.read(0,0x0209f1ec,1)!=b'\x03':break
+            ds.run(1)
+        else:
+            snapshot(ds,'course-return-menu-touch-not-accepted')
+            raise RuntimeError('Native course pause did not accept the exit touch')
+    finally:
+        ds.set_input(0,0xfff)
     for step in range(300):
         if any(ds.word(i,0x0209fc68)==6 for i in range(ds.count)):
             snapshot(ds,'course-return-connection-failed')
