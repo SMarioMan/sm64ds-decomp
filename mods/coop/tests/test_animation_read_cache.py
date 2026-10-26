@@ -4,6 +4,7 @@ The physical read adapter supplies bytes from the user's ROM. It is not a
 wireless test and never replaces packets or memory in a running emulator.
 """
 import struct
+import random
 import unittest
 from pathlib import Path
 import ndspy.narc
@@ -222,6 +223,14 @@ class AnimationReadCacheTests(HeapHarness,unittest.TestCase):
     def test_flush_trace_records_actual_root_query_eviction_without_changing_query_result(self):
         if 'coopDiagnosticAnimationFlushCount' not in self.runtime:
             self.skipTest('requires stage-cycle cache diagnostics')
+        reserves=[]
+        if 'CoopAnimationQueryCapacity' in self.runtime:
+            # A valid used list above the bounded predictor's limit must take
+            # the original query/eviction path, with the actual native result.
+            allocator=self.word(self.root+20);node=self.word(allocator+0x2c);count=0
+            while node:count+=1;node=self.word(node+12)
+            for _ in range(max(0,1025-count)):
+                reserves.append(self.call(self.game['_ZN5mHeap6Heap_t8AllocateEji'],self.root,4,4))
         expected=self.call(self.game['_ZN5mHeap9ExpHeap_t19VMaxAllocatableSizeEv'],self.root)
         self.load()
         before=self.stats()[4:6]
@@ -237,6 +246,8 @@ class AnimationReadCacheTests(HeapHarness,unittest.TestCase):
         self.assertEqual(row[3:6],(4,*before))
         self.invoke('CoopAnimationMaxMemory',self.root)
         self.assertEqual(self.word(self.runtime['coopDiagnosticAnimationFlushCount']),count+1)
+        for pointer in reserves:
+            self.call(self.game['_ZN5mHeap6Heap_t10DeallocateEPv'],self.root,pointer)
         self.assertTrue(self.intact(self.root))
 
     def test_persistent_transition_retains_owned_bytes_and_reuses_native_file_cursor(self):
@@ -290,17 +301,123 @@ class AnimationReadCacheTests(HeapHarness,unittest.TestCase):
         self.assertEqual(len(self.reads),1)
         self.assertEqual(self.word(archive+16),0x0a)
 
-    def test_capacity_queries_reclaim_cache_and_match_native_values(self):
+    def test_capacity_queries_match_native_values_with_each_eviction_policy(self):
         for wrapper,native in (('CoopAnimationMaxMemory','_ZN5mHeap9ExpHeap_t19VMaxAllocatableSizeEv'),
                                ('CoopAnimationMemoryLeft','_ZN5mHeap9ExpHeap_t11VMemoryLeftEv')):
+            self.invoke('CoopFlushAnimationReadCache')
             before=self.call(self.game[native],self.root)
             game_before=self.call(self.game[native],self.game_heap)
             self.load()
             self.assertEqual(self.invoke(wrapper,self.game_heap),game_before)
             self.assertEqual(self.stats()[5],1)
             self.assertEqual(self.invoke(wrapper,self.root),before)
-            self.assertEqual(self.stats()[5],0)
+            self.assertEqual(self.stats()[5],int('CoopAnimationQueryCapacity' in self.runtime))
             self.assertTrue(self.intact(self.root))
+
+    def require_virtual_queries(self):
+        if 'CoopAnimationQueryCapacity' not in self.runtime:
+            self.skipTest('requires --experimental-lazy-animation-eviction')
+
+    def virtual_capacity(self):
+        out=self.base+0xfe00
+        before=self.capacity_heap_state()
+        self.assertEqual(self.invoke('CoopAnimationQueryCapacity',self.root,out),1)
+        self.assertEqual(self.capacity_heap_state(),before)
+        return struct.unpack('<2I',self.cpu.mem_read(out,8))
+
+    def capacity_heap_state(self):
+        # Ordinary compiled C++ uses the isolated harness stack below023fc000.
+        # Compare the actual heap, including both native list sentinels.
+        allocator=self.word(self.root+20);end=self.word(allocator+0x1c)
+        self.assertLess(end,0x023fb000)
+        return (bytes(self.cpu.mem_read(self.root,24)),
+                bytes(self.cpu.mem_read(allocator,end-allocator)))
+
+    def test_virtual_queries_match_real_frees_across_fragmented_padded_layouts(self):
+        self.require_virtual_queries();rng=random.Random(7618)
+        allocator=self.word(self.root+20)
+        for trial in range(8):
+            with self.subTest(trial=trial):
+                reserves=[];names=list(self.members);rng.shuffle(names)
+                for name in names[:12]:
+                    self.load(name)
+                    reserves.append(self.call(self.game['_ZN5mHeap6Heap_t8AllocateEji'],
+                        self.root,rng.randrange(4,1000,4),rng.choice((4,8,16,32,-4,-32))))
+                for pointer in reserves[::2]:
+                    self.call(self.game['_ZN5mHeap6Heap_t10DeallocateEPv'],self.root,pointer)
+                entries=self.stats()[5];self.assertGreater(entries,0)
+                predicted=self.virtual_capacity();self.assertEqual(self.stats()[5],entries)
+                self.assertEqual(self.invoke('CoopAnimationMaxMemory',self.root),predicted[0])
+                self.assertEqual(self.invoke('CoopAnimationMemoryLeft',self.root),predicted[1])
+                self.invoke('CoopFlushAnimationReadCache')
+                self.assertEqual(predicted,(self.call(self.game['_ZN22ExpandingHeapAllocator18MaxAllocatableSizeEi'],allocator,4),
+                    self.call(self.game['_ZN22ExpandingHeapAllocator10MemoryLeftEv'],allocator)))
+                for pointer in reserves[1::2]:
+                    self.call(self.game['_ZN5mHeap6Heap_t10DeallocateEPv'],self.root,pointer)
+                self.assertTrue(self.intact(self.root))
+
+    def test_virtual_capacity_does_not_stop_pressure_reclamation_or_change_native_read_bytes(self):
+        self.require_virtual_queries();self.load();reserves=[]
+        while self.largest(self.root)>=4:
+            reserves.append(self.call(self.game['_ZN5mHeap6Heap_t8AllocateEji'],self.root,self.largest(self.root),4))
+        predicted=self.virtual_capacity();self.assertGreater(predicted[0],0)
+        self.assertEqual(self.invoke('CoopAnimationMaxMemory',self.root),predicted[0])
+        self.assertEqual(self.stats()[5],1)
+        pointer=self.invoke('CoopAnimationHeapAllocate',self.root,predicted[0],4)
+        self.assertTrue(pointer);self.assertEqual(self.stats()[5],0)
+        self.call(self.game['_ZN5mHeap6Heap_t10DeallocateEPv'],self.root,pointer)
+        for pointer in reserves:
+            self.call(self.game['_ZN5mHeap6Heap_t10DeallocateEPv'],self.root,pointer)
+        self.load();self.load()
+        self.assertEqual(len(self.reads),2);self.assertEqual(self.stats()[0],1)
+        self.assertTrue(self.intact(self.root))
+
+    def test_virtual_capacity_rejects_uncertain_ownership_headers_and_counters_without_heap_writes(self):
+        self.require_virtual_queries();self.load()
+        entries=self.runtime['coopAnimationReadEntries']
+        entry=next(entries+i*24 for i in range(32) if self.word(entries+i*24+16))
+        data=self.word(entry+16);header=data-16
+        for address,value in ((entry+20,self.game_heap),(entry+8,self.word(entry+8)+4),
+                              (header,0),(self.runtime['coopAnimationCacheStats']+20,2),
+                              (self.word(self.root+20)+0x2c,0)):
+            with self.subTest(address=hex(address)):
+                original=self.word(address);self.write(address,value)
+                before=self.capacity_heap_state()
+                self.assertEqual(self.invoke('CoopAnimationQueryCapacity',self.root,self.base+0xfe00),0)
+                self.assertEqual(self.capacity_heap_state(),before)
+                self.write(address,original)
+        self.virtual_capacity();self.assertTrue(self.intact(self.root))
+
+    def test_all_32_owned_cache_nodes_match_native_coalescing_and_remain_readable(self):
+        self.require_virtual_queries()
+        names=sorted(self.members,key=lambda n:len(self.members[n][1]))[:32]
+        for name in names:self.load(name)
+        self.assertEqual(self.stats()[5],32)
+        predicted=self.virtual_capacity()
+        for name in names:self.load(name)
+        self.assertEqual(len(self.reads),32);self.assertEqual(self.stats()[0],32)
+        self.invoke('CoopFlushAnimationReadCache')
+        self.assertEqual(predicted,(self.invoke('CoopAnimationMaxMemory',self.root),
+                                    self.invoke('CoopAnimationMemoryLeft',self.root)))
+        self.assertTrue(self.intact(self.root))
+
+    def test_free_list_budget_uses_original_query_eviction_and_exact_native_capacity(self):
+        self.require_virtual_queries();reserves=[]
+        for _ in range(550):
+            reserves.append(self.call(self.game['_ZN5mHeap6Heap_t8AllocateEji'],self.root,16,4))
+        for pointer in reserves[::2]:
+            self.call(self.game['_ZN5mHeap6Heap_t10DeallocateEPv'],self.root,pointer)
+        allocator=self.word(self.root+20);node=self.word(allocator+0x24);count=0
+        while node:count+=1;node=self.word(node+12)
+        self.assertGreater(count,256)
+        expected=self.largest(self.root);self.load()
+        before=self.word(self.runtime['coopAnimationVirtualFallbacks'])
+        self.assertEqual(self.invoke('CoopAnimationMaxMemory',self.root),expected)
+        self.assertEqual(self.stats()[5],0)
+        self.assertEqual(self.word(self.runtime['coopAnimationVirtualFallbacks']),before+1)
+        for pointer in reserves[1::2]:
+            self.call(self.game['_ZN5mHeap6Heap_t10DeallocateEPv'],self.root,pointer)
+        self.assertTrue(self.intact(self.root))
 
     def test_native_in_place_growth_flushes_cache_and_preserves_buffer(self):
         before=self.largest(self.root)

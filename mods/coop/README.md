@@ -31,6 +31,10 @@ fallback. These options require a separate `--output`; none is enabled in the
 normal candidate. Optional cache/planner measurements now show predominantly
 two-VBlank BoB gameplay, but remaining slow intervals, cold asset hitches and
 all-level hardware performance remain unresolved.
+`--experimental-lazy-animation-eviction` additionally keeps owned animation
+bytes through validated native capacity queries; it requires the animation
+cache. Native allocation pressure and growth still reclaim those bytes. This
+option is under wireless testing and is disabled by default.
 
 The newer local spatial candidate experiment uses
 `--experimental-animation-cache --experimental-collision-plan --output PATH`.

@@ -683,3 +683,48 @@ does not change live memory or implement a game policy. A production experiment
 would need bounded validated traversal, atomic ownership checks, immediate native
 fallback on any uncertainty, and existing allocation/growth reclamation. See
 `virtual-cache-capacity-probe.json`; this is a next investigation, not a hitch fix.
+
+## Guarded virtual capacity queries
+
+`--experimental-lazy-animation-eviction` implements the query-retention
+experiment and requires `--experimental-animation-cache`. It validates the ROOT
+expanding allocator, cached block ownership/headers/padding and used-list
+membership, then merges the native free list with those exact cached extents.
+It returns the same largest/total capacity as actually releasing all cache
+blocks, including headers recovered through native coalescing. It changes no
+heap lists or bytes. Traversal is bounded at1024 used nodes and256 free nodes;
+uncertainty retains the original flush/query path. The calculation holds IRQs
+and performs no allocation, file I/O or game callbacks. Collision plans still
+release before queries. Actual allocation pressure, in-place growth and session
+cleanup retain their reclamation policies. It reserves no additional payload.
+
+Twenty-four animation-cache checks and the complete222-discovered/212-executed
+suite PASS, with ten documented skips (`lazy-animation-all-native-tests-v2.log`).
+New native ARM checks compare predicted results to actual frees across eight
+fragmented/padded layouts and all32 cached entries; exercise allocation after a
+virtual query with no free capacity; reject uncertain ownership, counters and
+headers without heap writes; and verify real used/free traversal-budget fallback.
+The initial no-write test incorrectly included the private C++ stack. Its corrected
+comparison covers the actual ROOT allocator, list sentinels and heap extent.
+
+Private instruction samples with553–584 used nodes cost27485 instructions for
+one entry,49321 for12 and68221 for32. This is bounded extra query work, not a
+steady-frame or hardware timing result. Successful-query/fallback counters are
+in the build report and read-only runtime snapshots. They permit checking whether
+query retention helps in practice without guessing from the absence of eviction.
+
+Four-console elapsed-profile image
+`d320a980070602733dc38bdc439bc18d48dc22b58d1862467ca81458ff7696ae`
+is testing ordinary all-Yoshi castle/painting entry followed by diagnostic stage
+checks6–16 at `lazy-eviction-performance/`. Stages6–7 controls, synchronization,
+steady/warm motion and shared pause PASS so far. Each console records four exact
+virtual queries/no fallback by7, retaining14 entries/24052 bytes across the
+transition. Its first movement adds four cache hits with no new miss or traced
+physical read:163 intervals at2 VBlanks, one at3. The old level7 route had a
+33-VBlank movement hitch from Y_walk.bca. This is a targeted observation on one
+route, not proof that every cold hitch is fixed. Initial stage6 entry still has
+a7430-byte Y_wait.bca guest read taking41 VBlanks. Cold reads remain unresolved.
+The earlier traced2219-byte/31-VBlank read is specifically
+`data/player/Y_walk.bca`, identified from the original common NARC extents.
+Default fbb2262d and cache-only274084aa independently reproduce byte-for-byte.
+No new performance option is enabled in those images.

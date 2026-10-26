@@ -1429,6 +1429,97 @@ u32 CoopAnimationHeapReallocate(mHeap::Heap_t *heap,void *ptr,u32 size) {
     return CoopOriginalHeapReallocate(heap,ptr,size);
 }
 
+#ifdef COOP_EXPERIMENTAL_LAZY_ANIMATION_EVICTION
+u32 coopAnimationVirtualQueries=0,coopAnimationVirtualFallbacks=0;
+struct CoopAnimationExtent { u32 start,end,node; };
+
+// Read-only prediction of the exact native free list after releasing all cache
+// blocks. Caller holds IRQs; uncertainty retains the existing flush policy.
+static bool CoopAnimationCapacityLocked(mHeap::Heap_t *heap,u32 *capacity) {
+    if (heap!=data_020a0e9c || !coopAnimationCacheStats[5])return false;
+    ExpandingHeapAllocator *allocator=*(ExpandingHeapAllocator **)
+        ((u8 *)heap+sizeof(mHeap::Heap_t));
+    if ((u32)allocator<0x02000000 || (u32)allocator>0x023fffc8 ||
+        allocator->mMagic!=0x45585048)return false;
+    u32 begin=(u32)allocator->mStart,end=(u32)allocator->mEnd;
+    if (begin<0x02000000 || end>0x02400000 || begin>=end || ((begin|end)&3))return false;
+    CoopAnimationExtent cached[32];unsigned count=0;u32 bytes=0;
+    for (unsigned slot=0;slot<32;++slot) {
+        CoopAnimationReadEntry *entry=&coopAnimationReadEntries[slot];
+        if (!entry->data)continue;
+        u32 data=(u32)entry->data;
+        if (entry->owner!=heap || data<begin+16 || data>end || (data&3))return false;
+        MemoryNode *node=(MemoryNode *)(data-16);
+        u32 padding=(node->flags>>8)&0x7f;
+        if (node->tag!=0x5544 || node->size!=entry->bytes ||
+            entry->length>node->size || node->size>end-data || (node->size&3) ||
+            padding>data-16-begin || (padding&3))return false;
+        CoopAnimationExtent extent={data-16-padding,data+node->size,data-16};
+        unsigned index=count++;
+        while (index && cached[index-1].start>extent.start) {
+            cached[index]=cached[index-1];--index;
+        }
+        cached[index]=extent;bytes+=entry->bytes;
+    }
+    if (count!=coopAnimationCacheStats[5] || bytes!=coopAnimationCacheStats[4])return false;
+    for (unsigned index=1;index<count;++index)
+        if (cached[index-1].end>cached[index].start)return false;
+    // Verify every cached header is still in this allocator's actual used
+    // list. The cache owns the bytes exclusively; no game file borrows them.
+    MemoryNode *node=allocator->mUsedFirstNode,*previous=0;
+    unsigned visited=0;u32 found=0;
+    while (node) {
+        u32 address=(u32)node;
+        if (++visited>1024 || address<begin || address>end-16 || (address&3) ||
+            node->tag!=0x5544 || node->prev!=previous || node->size>end-address-16)return false;
+        unsigned low=0,high=count;
+        while (low<high) {
+            unsigned middle=(low+high)/2;
+            if (cached[middle].node<address)low=middle+1;else high=middle;
+        }
+        if (low<count && cached[low].node==address) {
+            u32 bit=1u<<low;if (found&bit)return false;found|=bit;
+        }
+        previous=node;node=node->next;
+    }
+    if (previous!=allocator->mUsedLastNode ||
+        found!=(count==32 ? 0xffffffffu : (1u<<count)-1))return false;
+    // Merge the sorted cache extents with the native address-ordered free
+    // list, counting reclaimed headers/padding only when native FreeNode would.
+    node=allocator->mFirstNode;previous=0;visited=0;
+    unsigned index=0;u32 start=0,limit=0,total=0,largest=0,previousEnd=0;
+    while (node || index<count) {
+        u32 a,b;
+        if (node && (index==count || (u32)node<cached[index].start)) {
+            a=(u32)node;
+            if (++visited>256 || a<begin || a>end-16 || (a&3) ||
+                node->tag!=0x4652 || node->flags || node->prev!=previous ||
+                node->size>end-a-16 || (node->size&3) || (previous && a<=previousEnd))return false;
+            b=a+16+node->size;previousEnd=b;previous=node;node=node->next;
+        } else {
+            a=cached[index].start;b=cached[index].end;++index;
+        }
+        if (limit && a<limit)return false;
+        if (limit && a!=limit) {
+            u32 size=limit-start-16;total+=size;if (size>largest)largest=size;
+            start=a;
+        } else if (!limit)start=a;
+        limit=b;
+    }
+    if (previous!=allocator->mLastNode || !limit)return false;
+    u32 size=limit-start-16;total+=size;if (size>largest)largest=size;
+    capacity[0]=largest;capacity[1]=total;
+    return true;
+}
+
+bool CoopAnimationQueryCapacity(mHeap::Heap_t *heap,u32 *capacity) {
+    u32 irq=_ZN3IRQ7DisableEv();
+    bool valid=CoopAnimationCapacityLocked(heap,capacity);
+    if (valid)++coopAnimationVirtualQueries;else ++coopAnimationVirtualFallbacks;
+    _ZN3IRQ7RestoreEj(irq);return valid;
+}
+#endif
+
 u32 CoopAnimationMaxMemory(mHeap::Heap_t *heap) {
 #ifdef COOP_EXPERIMENTAL_COLLISION_PLAN
     if (heap==data_020a0e9c)CoopReleaseCollisionPlan(1);
@@ -1436,6 +1527,9 @@ u32 CoopAnimationMaxMemory(mHeap::Heap_t *heap) {
     // Native callers sometimes choose a heap or reject a request before they
     // allocate. Optional cache storage must not lower those capacity queries.
     if (heap==data_020a0e9c && coopAnimationCacheStats[5]) {
+#ifdef COOP_EXPERIMENTAL_LAZY_ANIMATION_EVICTION
+        u32 capacity[2];if (CoopAnimationQueryCapacity(heap,capacity))return capacity[0];
+#endif
         CoopTraceAnimationFlush(4);
         CoopFlushAnimationReadCache();
     }
@@ -1447,6 +1541,9 @@ u32 CoopAnimationMemoryLeft(mHeap::Heap_t *heap) {
     if (heap==data_020a0e9c)CoopReleaseCollisionPlan(1);
 #endif
     if (heap==data_020a0e9c && coopAnimationCacheStats[5]) {
+#ifdef COOP_EXPERIMENTAL_LAZY_ANIMATION_EVICTION
+        u32 capacity[2];if (CoopAnimationQueryCapacity(heap,capacity))return capacity[1];
+#endif
         CoopTraceAnimationFlush(5);
         CoopFlushAnimationReadCache();
     }

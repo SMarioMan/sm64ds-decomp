@@ -147,6 +147,11 @@ def snapshot(ds, name):
             offset=base+animation_cache['statsOffset']-0x02000000
             values['animationReadCache']=dict(zip(animation_cache['fields'],
                 struct.unpack_from('<8I',ram,offset)))
+            queries=animation_cache.get('virtualCapacityQueries')
+            if queries:
+                values['animationCapacityQueries']={key:struct.unpack_from('<I',ram,
+                    base+queries[field]-0x02000000)[0] for key,field in
+                    (('successes','successesOffset'),('fallbacks','fallbacksOffset'))}
         collision_plan=module.get('experimentalCollisionPlan')
         if collision_plan:
             offset=base+collision_plan['statsOffset']-0x02000000

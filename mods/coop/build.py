@@ -161,6 +161,8 @@ def main():
                         help='EXPERIMENTAL: conservative axis rejection before native cylinder distance')
     parser.add_argument('--experimental-persistent-animation-cache',action='store_true',
                         help='EXPERIMENTAL: retain immutable animation bytes across stage transitions')
+    parser.add_argument('--experimental-lazy-animation-eviction',action='store_true',
+                        help='EXPERIMENTAL: preserve cached bytes during exact virtual capacity queries')
     parser.add_argument('--experimental-animation-cache',action='store_true',
                         help='EXPERIMENTAL: expendable ROOT cache for compressed animation reads')
     args = parser.parse_args()
@@ -172,6 +174,8 @@ def main():
         parser.error('--baseline cannot enable render diagnostics')
     if args.experimental_persistent_animation_cache and not args.experimental_animation_cache:
         parser.error('Persistent animation caching requires --experimental-animation-cache')
+    if args.experimental_lazy_animation_eviction and not args.experimental_animation_cache:
+        parser.error('Lazy animation eviction requires --experimental-animation-cache')
     if args.experimental_collision_plan and (not args.experimental_animation_cache or args.experimental_collision_broadphase):
         parser.error('Collision plans require --experimental-animation-cache and exclude --experimental-collision-broadphase')
     if args.diagnostic_player_cost and args.diagnostic_render_cost:
@@ -338,6 +342,8 @@ def main():
             defines.append('COOP_EXPERIMENTAL_ANIMATION_CACHE=1')
         if args.experimental_persistent_animation_cache:
             defines.append('COOP_EXPERIMENTAL_PERSISTENT_ANIMATION_CACHE=1')
+        if args.experimental_lazy_animation_eviction:
+            defines.append('COOP_EXPERIMENTAL_LAZY_ANIMATION_EVICTION=1')
         if args.diagnostic_start_level is not None:
             defines.append(f'COOP_DIAGNOSTIC_START_LEVEL={args.diagnostic_start_level}')
         if args.diagnostic_stage_cycle:
@@ -513,6 +519,11 @@ def main():
                 'entriesOffset':emitted['coopAnimationReadEntries']-PAYLOAD_ADDRESS,'entryWords':6,
                 'fields':['hits','misses','stores','evictions','payloadBytes','entries','peakBytes','flushes'],
                 'eligibleMaskSha256':hashlib.sha256(animation_mask).hexdigest()}
+            if args.experimental_lazy_animation_eviction:
+                module_report['experimentalAnimationReadCache']['virtualCapacityQueries']={
+                    'successesOffset':emitted['coopAnimationVirtualQueries']-PAYLOAD_ADDRESS,
+                    'fallbacksOffset':emitted['coopAnimationVirtualFallbacks']-PAYLOAD_ADDRESS,
+                    'usedNodeLimit':1024,'freeNodeLimit':256}
         if args.experimental_animation_cache and args.diagnostic_stage_cycle:
             module_report['diagnosticAnimationFlushes']={
                 'countOffset':emitted['coopDiagnosticAnimationFlushCount']-PAYLOAD_ADDRESS,

@@ -83,6 +83,19 @@ not establish campaign completion or real-hardware compatibility.
   An unmodified four-console retail VS reference also runs predominantly at
   two VBlanks with occasional jitter; its lighter scene is not a matched BoB
   CPU baseline. Cold-read hitches remain open.
+  Guarded virtual capacity queries now preserve owned raw animation bytes
+  without lowering native query results. Native pressure/growth still evict;
+  unknown ownership/layout or bounded traversal failure uses the original policy.
+  All24 animation-cache and212 applicable full-suite checks pass. Four-console
+  d320a980 tests6–16 are in progress;6–7 pass. At7 there are four virtual-query
+  successes/no fallback per peer,14 retained entries, and first movement has
+  four cache hits/no new misses:163 intervals at2 VBlanks, one at3. The earlier
+  33-VBlank Y_walk movement hitch is absent on this route. Initial stage6 cold
+  entry still has a41-VBlank Y_wait guest read; this is not an all-hitch fix.
+  The31-VBlank/2219-byte read is Yoshi's walking animation. Investigate avoiding
+  repeated whole common-archive loads: its321224 bytes contain285814 bytes of
+  player assets, while only the current characters may be needed at entry.
+  Preserve every original file and native content if testing streamed loading.
 - [ ] Replace long black loading periods with visible, animated loading
   feedback on the host and guests. Keep a resident indicator responsive during
   Download Play handoff, wireless file reads and stage changes. Show real byte

@@ -9,54 +9,45 @@ all levels. The tested party size and campaign coverage were not specified;
 newer-image physical acceptance and campaign completion remain open. Read the current regressions first; later sections preserve
 historical checkpoints and failures rather than release acceptance.
 
-## Current bounded edge-refresh regression (supersedes older parties)
+## Current guarded animation-cache experiment (supersedes older parties)
 
-The small edge-refresh changes are based on published be682ed7f.
-The next commit publishes this source, its35 native cases and measured results. All previous wireless parties, including106ba5d5 and3413b389,
-are CLOSED. The3413 ordinary four-console BoB run passes controls/pause, guest2
-coin and native exit/reentry. Its warm cadence is339 intervals at2 VBlanks/22 at3.
-The106 first small-refresh profile passes steady/warm/paused observations, with
-345 warm intervals at2/17 at3; coin/return was not run on that exact image.
+Published base55cf25a40 has the bounded eight-node collision refresh. Its exact
+47a149ce four-console run PASSES steady/warm/pause, guest2 shared coin and
+native exit/reentry. That party and every older party are CLOSED.
 
-NO ACTIVE wireless party. Exact47a149ce elapsed-profile image
-47a149ce5c27b1a918e33c42762e6d9d0e44aefaef2b0e5e1de2dc063331a9fd
-PASSES steady600 frames, all four controllers and paused600 frames at
-`edge-budget-cost-profile/result.json`. Host collision2.40ms steady/2.45ms moving;
-warm cadence339 intervals at2 VBlanks,18 at3, one at4. This is not a further
-cadence gain over the first four-node run or hardware/full-speed acceptance.
-`edge-budget-gameplay-regression/result.json` separately PASSES guest2 shared
-coin, native course exit/restored castle controls and native course reentry.
-Parent `bob-edge-budget-cost/` was explicitly shut down after both results.
-Check actual process state/control-session.json before starting another party.
-The leftover old melon-test-jit entries are zombies, not running parties.
-No live RAM/packet changes or savestates were used. Frozen driver sources and
-hashes remain under the independent run directories.
+ONLY ACTIVE wireless party is d320a980070602733dc38bdc439bc18d48dc22b58d1862467ca81458ff7696ae,
+`/workspace/runtime/animation-cache-lazy-eviction-cost-host.nds`.
+Parent `lazy-eviction-matrix/`, exec97862, socket
+`/workspace/runtime/lazy-eviction-matrix.sock`.
+Continuation `lazy-eviction-performance/`, exec81353, takes the all-Yoshi castle
+fixture through diagnostic interior2 and the native BoB painting, then measures
+short diagnostic stage checks6–16. Read result.json and continuation log first.
+Stages6–7 have passed so far. At7 every peer has four virtual-query successes,
+no fallback and14 retained entries. First7 movement adds four hits/no misses:
+163 intervals at2 VBlanks, one at3; the old33-VBlank walking hitch is absent on
+this route. Initial6 cold entry still has a7430-byte Y_wait.bca guest read of41 VBlanks.
+The old31-VBlank/2219-byte read is Y_walk.bca. Neither query retention nor this
+partial run establishes a cold-read fix, full speed or campaign progression.
+No competing RPCs, second wireless party, live RAM/packet edits or savestates.
+Sources and hashes are frozen in both driver directories. Fully close and verify
+actual parent exit before another wireless party; tool IDs can disappear.
 
-Current source passes217 discovered/207 executed tests, ten documented skips
-(`collision-edge-budget-all-tests-v2.log`), and35 native collision cases including
-node/pair budget fallback and partial-private-update recovery. Instrumented
-verification image f02773ce is unplayed. Unprofiled optional four-console image
-870b7dd1ea6066df6d51c5e384bc77dee469eeaf2d6bef97db795e3870e8c7c0 is built
-but not played. Independent default fbb2262d/cache274084aa images reproduce.
-The optional planner changes are NOT enabled in the normal ROM.
-
-Previous three-system2f28 passes diagnostic14–16/return/save/quit, with native
-M/L/W character fixture. Four-console ef284c95 passes short checks6–23, FAILS
-on a fatal controller route in24. It is not a campaign pass. Retention alone
-fails to remove cold reads: ROOT queries evict cached bytes. Offline WFS parsing
-confirms512-byte packets/498 data payload, requiring at least five packets for
-the traced2219-byte read. Native transfer scheduling still needs investigation.
-Unmodified retail four-console VS cadence reference passes; see PERFORMANCE.md.
+The optional `--experimental-lazy-animation-eviction` requires animation caching.
+It predicts exact native capacity after cache frees without modifying heap lists,
+checks ownership/headers/padding/used-list membership, and bounds used/free walks
+at1024/256 nodes. Unknowns use the existing flush policy. Allocation pressure,
+in-place growth and session cleanup still reclaim cached bytes.212 applicable
+checks PASS (222 discovered, ten skips), including24 animation-cache cases:
+`lazy-animation-all-native-tests-v2.log`. Default fbb2262d and cache-only274084aa
+rebuild identically. All performance changes are disabled by default.
 
 Source-only recovery: `/workspace/runtime/spatial-plan-source-recovery/`;
 refresh after edits. No ROM/BIOS/RAM/compiler bundled. Serialize every build and
-native test through `/workspace/runtime/coop-bootstrap-build.lock`; use `set -e`
-before build+test commands so a failed compile cannot test an old ROM/new ELF.
-Disk space is tight; preserve supplied inputs, unique played images and fixtures.
-Closed106ba5d5 RAM/ITCM/DTCM/ARM7 snapshots were losslessly gzip-compressed;
-`edge-refresh-closed-snapshot-compression.json` records hashes and restore paths.
-No fixture used by the native tests was compressed.
-Rebuildable unplayed/duplicate ROMs may be removed after recording their hashes.
+native test through `/workspace/runtime/coop-bootstrap-build.lock`; use `set -e`.
+Closed3413/47a1 and106b snapshot families were losslessly gzip-compressed, with
+hash/restore manifests `closed-validated-edge-snapshot-compression.json` and
+`edge-refresh-closed-snapshot-compression.json`. No native test fixture changed.
+Disk space remains tight. Preserve inputs, unique played ROMs and fixtures.
 
 ## Historical spatial-plan work (superseded by the current section above)
 
