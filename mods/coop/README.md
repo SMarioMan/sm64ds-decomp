@@ -28,6 +28,21 @@ rejection before native cylinder distance calculations. These options require
 a separate `--output`; none is enabled in the normal candidate. The cache reduces observed warm BoB hitches in the
 current four-console check, while steady slowdown remains unresolved.
 
+The newer local spatial candidate experiment uses
+`--experimental-animation-cache --experimental-collision-plan --output PATH`.
+Its validated reusable version reduces measured steady BoB collision cost
+from9.44–9.67ms to2.16–2.37ms and reaches predominantly2-VBlank input cadence.
+Warm movement still has slow intervals. Callback validation and incremental
+refresh are under live evaluation. It remains disabled by default; broad stage
+and physical performance acceptance are still required.
+
+A further opt-in `--experimental-persistent-animation-cache` (together with
+`--experimental-animation-cache`) retains owned compressed animation bytes
+across live stage transitions. ROOT pressure, capacity queries and buffer growth
+still reclaim them; ended sessions flush them. This targets traced cold reads
+after each stage change. Its native checks pass; live performance and broader
+acceptance are pending. It is not enabled in the normal build.
+
 See [the worklist](WORKLIST.md) for current acceptance gaps and
 [the emulator handoff](tests/EMULATOR-HANDOFF.md) for exact image hashes.
 

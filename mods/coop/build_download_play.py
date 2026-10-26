@@ -29,8 +29,12 @@ def main():
                         help='TEST ONLY: measure geometry costs with FIFO drains; not a performance benchmark')
     parser.add_argument('--diagnostic-player-cost',action='store_true',
                         help='TEST ONLY: elapsed SDK ticks for player behavior/models and stage rendering')
+    parser.add_argument('--experimental-collision-plan',action='store_true',
+                        help='EXPERIMENTAL: ordered spatial candidates with pressure/callback fallback')
     parser.add_argument('--experimental-collision-broadphase',action='store_true',
                         help='EXPERIMENTAL: conservative axis rejection before native cylinder distance')
+    parser.add_argument('--experimental-persistent-animation-cache',action='store_true',
+                        help='EXPERIMENTAL: retain immutable animation bytes across stage transitions')
     parser.add_argument('--experimental-animation-cache',action='store_true',
                         help='EXPERIMENTAL: expendable compressed player-animation read cache')
     parser.add_argument('--clients',type=int,choices=(1,2,3),default=3)
@@ -42,6 +46,10 @@ def main():
                         help='Explicitly enable acknowledged entry closure with the legacy restart-parent strategy')
     parser.add_argument('--output',type=Path,default=ROOT/'build/coop/bootstrap/sm64ds-haxxstation-game-handoff.nds')
     args=parser.parse_args()
+    if args.experimental_persistent_animation_cache and not args.experimental_animation_cache:
+        parser.error('Persistent animation caching requires --experimental-animation-cache')
+    if args.experimental_collision_plan and (not args.experimental_animation_cache or args.experimental_collision_broadphase):
+        parser.error('Collision plans require --experimental-animation-cache and exclude --experimental-collision-broadphase')
     if args.diagnostic_player_cost and args.diagnostic_render_cost:
         parser.error('Elapsed timing cannot be combined with FIFO-draining geometry diagnostics')
     args.rom=args.rom.resolve()
@@ -49,7 +57,7 @@ def main():
     args.output=args.output.resolve()
     if args.diagnostic_stage_cycle and args.diagnostic_start_level is None:
         parser.error('--diagnostic-stage-cycle requires --diagnostic-start-level')
-    if (args.diagnostic_start_level is not None or args.diagnostic_render_cost or args.diagnostic_player_cost or args.experimental_animation_cache or args.experimental_collision_broadphase) and args.output==ROOT/'build/coop/bootstrap/sm64ds-haxxstation-game-handoff.nds':
+    if (args.diagnostic_start_level is not None or args.diagnostic_render_cost or args.diagnostic_player_cost or args.experimental_animation_cache or args.experimental_collision_broadphase or args.experimental_collision_plan) and args.output==ROOT/'build/coop/bootstrap/sm64ds-haxxstation-game-handoff.nds':
         parser.error('Diagnostic builds require --output to keep the normal cartridge separate')
     if args.runtime_placement=='prefix' and args.output==ROOT/'build/coop/bootstrap/sm64ds-haxxstation-game-handoff.nds':
         parser.error('Experimental prefix placement requires a separate --output')
@@ -76,8 +84,10 @@ def main():
     if args.diagnostic_stage_cycle:diagnostic+=('--diagnostic-stage-cycle',)
     if args.diagnostic_render_cost:diagnostic+=('--diagnostic-render-cost',)
     if args.diagnostic_player_cost:diagnostic+=('--diagnostic-player-cost',)
+    if args.experimental_collision_plan:diagnostic+=('--experimental-collision-plan',)
     if args.experimental_collision_broadphase:diagnostic+=('--experimental-collision-broadphase',)
     if args.experimental_animation_cache:diagnostic+=('--experimental-animation-cache',)
+    if args.experimental_persistent_animation_cache:diagnostic+=('--experimental-persistent-animation-cache',)
     run('build.py',args.rom,'--save-slot',args.save_slot,'--runtime-placement',args.runtime_placement,*diagnostic)
     run('bootstrap/build_probe.py','--station',args.station)
     # The provisional parent fixes the final WFS table extents before the

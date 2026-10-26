@@ -16,6 +16,9 @@
 #include "dExtShadowModel_c.h"
 #include "dCc_c.h"
 #endif
+#ifdef COOP_EXPERIMENTAL_COLLISION_PLAN
+#include "dCc_c.h"
+#endif
 
 namespace Memory { extern mHeap::Heap_t *defaultHeapPtr; }
 
@@ -48,6 +51,15 @@ void CoopCostHeadRender(void *model,const Vector3 *scale);
 #ifdef COOP_EXPERIMENTAL_COLLISION_BROADPHASE
 // local extern: no typed shared header declares this native vector function.
 int Vec3_HorzLen(const Vector3 *vector);
+#endif
+#ifdef COOP_EXPERIMENTAL_COLLISION_PLAN
+void CoopCollisionProcess(void);
+void CoopReleaseCollisionPlan(unsigned pressure);
+void CoopCollisionMakeRoom(mHeap::Heap_t *heap,u32 size,int align);
+void CoopCollisionPairContinue(void);
+void CoopCollisionPairDone(void);
+// local extern: no shared header declares this native collision notifier.
+void func_02014f44(u32 owner,dCc_c *node);
 #endif
 int CoopOriginalSceneBefore(void *scene);
 int CoopOriginalActorBefore(void *actor);
@@ -118,6 +130,9 @@ void *CoopOriginalHeapAllocate(mHeap::Heap_t *heap,u32 size,int align);
 int CoopOriginalStageCleanup(void *scene);
 u32 CoopOriginalHeapReallocate(mHeap::Heap_t *heap,void *ptr,u32 size);
 void CoopFlushAnimationReadCache(void);
+#ifdef COOP_EXPERIMENTAL_PERSISTENT_ANIMATION_CACHE
+void CoopAnimationTransitionCleanup(void);
+#endif
 #endif
 void func_02040724(void);
 int CoopOriginalWirelessReset(void *callback);
@@ -349,6 +364,11 @@ void CoopDiagnosticTransparentRender(dScStage_c *scene) {
 #endif
 
 void CoopStartMatch(void *) {
+#ifdef COOP_EXPERIMENTAL_PERSISTENT_ANIMATION_CACHE
+    CoopFlushAnimationReadCache();
+#elif defined(COOP_EXPERIMENTAL_COLLISION_PLAN)
+    CoopReleaseCollisionPlan(0);
+#endif
     unsigned count = data_0209fc50;
     if (count < 1 || count > 4)
         return;
@@ -411,7 +431,9 @@ void CoopLoadCourseResources(int) {
 }
 
 int CoopEntryCleanup(void *scene) {
-#ifdef COOP_EXPERIMENTAL_ANIMATION_CACHE
+#ifdef COOP_EXPERIMENTAL_PERSISTENT_ANIMATION_CACHE
+    CoopAnimationTransitionCleanup();
+#elif defined(COOP_EXPERIMENTAL_ANIMATION_CACHE)
     CoopFlushAnimationReadCache();
 #endif
     int result = CoopOriginalEntryCleanup(scene);
@@ -728,6 +750,9 @@ int CoopSceneBeforeInit(dScene_c *scene) {
             return 0;
         }
         coopTitleRadioResetPending=0;
+#ifdef COOP_EXPERIMENTAL_PERSISTENT_ANIMATION_CACHE
+        CoopFlushAnimationReadCache();
+#endif
         coopEnabled=coopTitleLoading=coopMenuLoading=0;
         coopSaveState=coopSavePage=0;
         data_020a1052[6]=0;
@@ -1337,6 +1362,9 @@ static void CoopEvictAnimationRead(unsigned slot) {
 }
 
 void CoopFlushAnimationReadCache() {
+#ifdef COOP_EXPERIMENTAL_COLLISION_PLAN
+    CoopReleaseCollisionPlan(0);
+#endif
     u32 irq=_ZN3IRQ7DisableEv();
     for (unsigned i=0;i<32;++i)
         if (coopAnimationReadEntries[i].data)CoopEvictAnimationRead(i);
@@ -1345,6 +1373,9 @@ void CoopFlushAnimationReadCache() {
 }
 
 static void CoopAnimationCacheMakeRoom(mHeap::Heap_t *heap,u32 size,int align) {
+#ifdef COOP_EXPERIMENTAL_COLLISION_PLAN
+    CoopCollisionMakeRoom(heap,size,align);
+#endif
     if (!coopAnimationCacheStats[5] || !heap || heap!=data_020a0e9c)return;
     u32 irq=_ZN3IRQ7DisableEv();
     while (CoopAlignedFree(heap,align)<size) {
@@ -1369,6 +1400,9 @@ u32 CoopAnimationHeapReallocate(mHeap::Heap_t *heap,void *ptr,u32 size) {
 }
 
 u32 CoopAnimationMaxMemory(mHeap::Heap_t *heap) {
+#ifdef COOP_EXPERIMENTAL_COLLISION_PLAN
+    if (heap==data_020a0e9c)CoopReleaseCollisionPlan(1);
+#endif
     // Native callers sometimes choose a heap or reject a request before they
     // allocate. Optional cache storage must not lower those capacity queries.
     if (heap==data_020a0e9c && coopAnimationCacheStats[5])CoopFlushAnimationReadCache();
@@ -1376,14 +1410,35 @@ u32 CoopAnimationMaxMemory(mHeap::Heap_t *heap) {
 }
 
 u32 CoopAnimationMemoryLeft(mHeap::Heap_t *heap) {
+#ifdef COOP_EXPERIMENTAL_COLLISION_PLAN
+    if (heap==data_020a0e9c)CoopReleaseCollisionPlan(1);
+#endif
     if (heap==data_020a0e9c && coopAnimationCacheStats[5])CoopFlushAnimationReadCache();
     ExpandingHeapAllocator *allocator=*(ExpandingHeapAllocator **)
         ((u8 *)heap+sizeof(mHeap::Heap_t));
     return allocator->MemoryLeft();
 }
 
+#ifdef COOP_EXPERIMENTAL_PERSISTENT_ANIMATION_CACHE
+void CoopAnimationTransitionCleanup() {
+#ifdef COOP_EXPERIMENTAL_COLLISION_PLAN
+    CoopReleaseCollisionPlan(0);
+#endif
+    // ROOT lives for the process; these are owned immutable bytes keyed by
+    // verified cartridge extents, never stage model pointers. Native ROOT
+    // pressure/queries still reclaim them before any game decision. Flush
+    // ended/offline sessions, retaining bytes only across live stage changes.
+    if (!coopEnabled || !data_0209fc68 || data_0209fc68==6 ||
+        coopTitleLoading || coopSessionEnded)CoopFlushAnimationReadCache();
+}
+#endif
+
 int CoopAnimationStageCleanup(void *scene) {
+#ifdef COOP_EXPERIMENTAL_PERSISTENT_ANIMATION_CACHE
+    CoopAnimationTransitionCleanup();
+#else
     CoopFlushAnimationReadCache();
+#endif
     return CoopOriginalStageCleanup(scene);
 }
 
@@ -1494,6 +1549,406 @@ int CoopReadFile(void *file,void *destination,int size,int async) {
     if (key && result==size && ((u32 *)file)[10]==key+(u32)size)
         CoopStoreAnimationRead(key,destination,size);
     return result;
+}
+#endif
+
+#ifdef COOP_EXPERIMENTAL_COLLISION_PLAN
+// Reclaimable conservative candidates are checked against fresh native nodes
+// and bounds every frame. Unknown types, domains or pressure retain retail.
+struct CoopCollisionRecord { int minX,maxX,minZ,maxZ; u32 index; };
+struct CoopCollisionPlan {
+    mHeap::Heap_t *owner;
+    u32 count,words,outer,next;
+    void *last;
+    u32 rowsOffset,nodesOffset,envelopesOffset,stage,sortedOffset,axis;
+};
+CoopCollisionPlan *volatile coopCollisionPlan=0;
+// prepared, fallback, candidates, dispatched, notifications, pressure, peak, abort.
+u32 coopCollisionPlanStats[8]={0};
+u32 coopCollisionPlanReuses=0;
+u32 coopCollisionPlanRefreshes=0;
+u32 coopCollisionCallbackDepth=0;
+u32 coopCollisionValidatedCallbacks=0;
+u32 coopCollisionCallbackAllocations=0;
+
+static Vector3 *CoopCollisionPosition(void *node) {
+    u32 table=*(u32 *)node;
+    if (table<0x02000000 || table>=0x023ffff0)return 0;
+    u32 *methods=(u32 *)table;
+    if (methods[2]==0x02014820 && methods[3]==0x02014818)
+        return (Vector3 *)((u8 *)node+0x30);
+    if (methods[2]==0x02014a2c && methods[3]==0x02014a20)
+        return (Vector3 *)((u8 *)node+0x34);
+    if (methods[2]==0x02014948 && methods[3]==0x0201493c) {
+        u32 owner=*(u32 *)((u8 *)node+0x30);
+        if (owner>=0x02000000 && owner<0x023fff80)return (Vector3 *)(owner+0x5c);
+    }
+    return 0;
+}
+static u32 CoopCollisionAbs(int value) { return value<0 ? 0u-(u32)value : (u32)value; }
+
+void CoopReleaseCollisionPlan(unsigned pressure) {
+    u32 irq=_ZN3IRQ7DisableEv();
+    CoopCollisionPlan *plan=coopCollisionPlan;
+    if (plan) {
+        coopCollisionPlan=0;
+        mHeap::Heap_t *owner=plan->owner;
+        if (pressure)++coopCollisionPlanStats[5];
+        owner->Deallocate(plan);
+    }
+    _ZN3IRQ7RestoreEj(irq);
+}
+void CoopCollisionMakeRoom(mHeap::Heap_t *heap,u32 size,int align) {
+    if (heap!=data_020a0e9c || !coopCollisionPlan)return;
+    u32 irq=_ZN3IRQ7DisableEv();
+    if (coopCollisionPlan && (coopCollisionCallbackDepth || CoopAlignedFree(heap,align)<size)) {
+        if (coopCollisionCallbackDepth)++coopCollisionCallbackAllocations;
+        CoopReleaseCollisionPlan(1);
+    }
+    _ZN3IRQ7RestoreEj(irq);
+}
+void *CoopCollisionVAllocate(mHeap::Heap_t *heap,u32 size,int align) {
+    ExpandingHeapAllocator *allocator=*(ExpandingHeapAllocator **)((u8 *)heap+sizeof(mHeap::Heap_t));
+    if (heap!=data_020a0e9c || !coopCollisionPlan)return allocator->Allocate(size,align);
+    // A different SDK thread can allocate between native pairs. Keep the
+    // capacity check, optional eviction and actual request atomic while this
+    // collision storage is resident; leave other heaps' policy unchanged.
+    u32 irq=_ZN3IRQ7DisableEv();
+    CoopCollisionMakeRoom(heap,size,align);
+    void *result=allocator->Allocate(size,align);
+    _ZN3IRQ7RestoreEj(irq);
+    return result;
+}
+u32 CoopCollisionVReallocate(mHeap::Heap_t *heap,void *ptr,u32 size) {
+    if (heap==data_020a0e9c)CoopReleaseCollisionPlan(1);
+    ExpandingHeapAllocator *allocator=*(ExpandingHeapAllocator **)((u8 *)heap+sizeof(mHeap::Heap_t));
+    return allocator->Reallocate(ptr,size);
+}
+
+static int CoopCollisionEnvelopeMargin(void *node) {
+    // Velocity sizes a conservative box only. Every frame still validates the
+    // actual geometry; acceleration, reversals and teleports are never assumed.
+    u32 speed=0;
+    u32 getter=(*(u32 **)node)[2];
+    if (getter!=0x02014820) {
+        u32 owner=*(u32 *)((u8 *)node+0x30);
+        if (owner>=0x02000000 && owner<0x023fff50) {
+            const dActor_c *actor=(const dActor_c *)owner;
+            speed=CoopCollisionAbs(actor->mHorzSpeed);
+            u32 axis=CoopCollisionAbs(actor->mSpeedX);if (axis>speed)speed=axis;
+            axis=CoopCollisionAbs(actor->mSpeedZ);if (axis>speed)speed=axis;
+        }
+    }
+    const u32 maximum=2048*4096;
+    u32 margin=speed>maximum/32 ? maximum : speed*32;
+    return margin<32*4096 ? 32*4096 : (int)margin;
+}
+static void CoopCollisionSift(CoopCollisionRecord *records,unsigned count,unsigned root) {
+    while (root*2+1<count) {
+        unsigned child=root*2+1;
+        if (child+1<count && records[child].minX<records[child+1].minX)++child;
+        if (records[root].minX>=records[child].minX)break;
+        CoopCollisionRecord temp=records[root]; records[root]=records[child]; records[child]=temp;
+        root=child;
+    }
+}
+static bool CoopCollisionPlanCoversRange(CoopCollisionPlan *plan,unsigned begin) {
+    if (plan->stage!=coopStageIdentity || begin>=plan->count)return false;
+    void **nodes=(void **)((u8 *)plan+plan->nodesOffset);
+    int *bounds=(int *)((u8 *)plan+plan->envelopesOffset);
+    void *node=*(void **)0x0209cee8;
+    for (unsigned index=begin;index<plan->count;++index) {
+        // Compare fresh list nodes before dereferencing anything cached. Removed,
+        // reordered or reallocated actors must never leave a stale game pointer.
+        if (!node || node!=nodes[index])return false;
+        Vector3 *pos=CoopCollisionPosition(node);
+        int radius=*(int *)((u8 *)node+4);
+        if (!pos || (u32)pos<0x02000000 || (u32)pos>=0x023ffff4 ||
+            CoopCollisionAbs(pos->x)>0x0fffffff || CoopCollisionAbs(pos->z)>0x0fffffff ||
+            (u32)radius>0x1fffffff ||
+            pos->x-radius<bounds[index*4] || pos->x+radius>bounds[index*4+1] ||
+            pos->z-radius<bounds[index*4+2] || pos->z+radius>bounds[index*4+3])return false;
+        node=*(void **)((u8 *)node+0x2c);
+    }
+    return node==0;
+}
+// Returns -1 before doing work if a fresh construction is required, 0 after
+// bounded work if this frame must retain retail, or 1 after an in-place refresh.
+static int CoopRefreshCollisionPlan(CoopCollisionPlan *plan) {
+    if (plan->stage!=coopStageIdentity || plan->axis>1)return -1;
+    void **nodes=(void **)((u8 *)plan+plan->nodesOffset);
+    void *node=*(void **)0x0209cee8;
+    for (unsigned index=0;index<plan->count;++index) {
+        if (!node || node!=nodes[index])return -1;
+        node=*(void **)((u8 *)node+0x2c);
+    }
+    if (node)return -1;
+    mHeap::Heap_t *owner=plan->owner;
+    u32 size=plan->count*sizeof(CoopCollisionRecord);
+    if (CoopAlignedFree(owner,32)<size)return -1;
+    // The caller already holds IRQs. Detach only while allocating private
+    // construction records, so our own optional-allocation hook cannot evict
+    // the block being refreshed. No game callbacks or I/O occur here.
+    coopCollisionPlan=0;
+    CoopCollisionRecord *records=(CoopCollisionRecord *)owner->VAllocate(size,32);
+    if (!records) { coopCollisionPlan=plan;return -1; }
+    u16 *sorted=(u16 *)((u8 *)plan+plan->sortedOffset);
+    int *bounds=(int *)((u8 *)plan+plan->envelopesOffset);
+    bool valid=true;
+    for (unsigned position=0;position<plan->count;++position) {
+        unsigned index=sorted[position];
+        if (index>=plan->count) { valid=false;break; }
+        void *item=nodes[index];Vector3 *pos=CoopCollisionPosition(item);
+        int radius=*(int *)((u8 *)item+4);
+        if (!pos || (u32)pos<0x02000000 || (u32)pos>=0x023ffff4 ||
+            CoopCollisionAbs(pos->x)>0x0fffffff || CoopCollisionAbs(pos->z)>0x0fffffff ||
+            (u32)radius>0x1fffffff) { valid=false;break; }
+        int margin=CoopCollisionEnvelopeMargin(item);
+        int minX=pos->x-radius-margin,maxX=pos->x+radius+margin;
+        int minZ=pos->z-radius-margin,maxZ=pos->z+radius+margin;
+        bounds[index*4]=minX;bounds[index*4+1]=maxX;
+        bounds[index*4+2]=minZ;bounds[index*4+3]=maxZ;
+        records[position].minX=plan->axis ? minZ : minX;
+        records[position].maxX=plan->axis ? maxZ : maxX;
+        records[position].minZ=plan->axis ? minX : minZ;
+        records[position].maxZ=plan->axis ? maxX : maxZ;
+        records[position].index=index;
+    }
+    unsigned shifts=0;
+    if (valid)for (unsigned index=1;index<plan->count;++index) {
+        CoopCollisionRecord item=records[index];unsigned position=index;
+        while (position && records[position-1].minX>item.minX) {
+            if (++shifts>256) { valid=false;break; }
+            records[position]=records[position-1];--position;
+        }
+        if (!valid)break;
+        records[position]=item;
+    }
+    unsigned candidates=0,checks=0;
+    u32 *rows=(u32 *)((u8 *)plan+plan->rowsOffset);
+    if (valid) {
+        for (unsigned word=0;word<plan->count*plan->words;++word)rows[word]=0;
+        for (unsigned first=0;first<plan->count && valid;++first) {
+            const CoopCollisionRecord *a=&records[first];
+            for (unsigned other=first+1;other<plan->count;++other) {
+                const CoopCollisionRecord *b=&records[other];
+                if (b->minX>=a->maxX)break;
+                if (++checks>1024) { valid=false;break; }
+                if (b->minZ>=a->maxZ || a->minZ>=b->maxZ)continue;
+                unsigned i=a->index,j=b->index;
+                if (i>j) { unsigned swap=i;i=j;j=swap; }
+                rows[i*plan->words+j/32]|=0x80000000u>>(j&31);++candidates;
+            }
+        }
+    }
+    if (valid) {
+        for (unsigned index=0;index<plan->count;++index)sorted[index]=(u16)records[index].index;
+        plan->outer=0xffffffff;plan->next=0;plan->last=0;
+        coopCollisionPlanStats[2]+=candidates;++coopCollisionPlanRefreshes;
+    }
+    owner->Deallocate(records);
+    coopCollisionPlan=plan;
+    return valid ? 1 : 0;
+}
+
+static void CoopPrepareCollisionPlan() {
+    if (!coopEnabled || data_0209fc68!=4 || (data_020a0f1c&0x9f) || coopCollisionCallbackDepth ||
+        data_020a613c!=data_020a621c || !data_020a0e9c) {
+        CoopReleaseCollisionPlan(0);++coopCollisionPlanStats[1];return;
+    }
+    // Bounded RAM/heap work only: no I/O, callbacks, thread sleeps or native
+    // game updates while IRQs protect the optional temporary allocation.
+    u32 irq=_ZN3IRQ7DisableEv();
+    CoopCollisionPlan *cached=coopCollisionPlan;
+    if (cached) {
+        if (CoopCollisionPlanCoversRange(cached,0)) {
+            cached->outer=0xffffffff;cached->next=0;cached->last=0;
+            ++coopCollisionPlanReuses;_ZN3IRQ7RestoreEj(irq);return;
+        }
+        int refreshed=CoopRefreshCollisionPlan(cached);
+        if (refreshed>0) { _ZN3IRQ7RestoreEj(irq);return; }
+        CoopReleaseCollisionPlan(0);
+        if (!refreshed) {
+            ++coopCollisionPlanStats[1];++coopCollisionPlanStats[7];
+            _ZN3IRQ7RestoreEj(irq);return;
+        }
+    }
+    void *head=*(void **)0x0209cee8,*node=head;
+    unsigned count=0;
+    while (node && count<192) {
+        if ((u32)node<0x02000000 || (u32)node>=0x023fffc0 || !CoopCollisionPosition(node))break;
+        ++count;node=*(void **)((u8 *)node+0x2c);
+    }
+    if (node || count<48) {
+        ++coopCollisionPlanStats[1];
+        if (node)++coopCollisionPlanStats[7];
+        _ZN3IRQ7RestoreEj(irq);return;
+    }
+    unsigned words=(count+31)/32;
+    u32 liveBytes=(sizeof(CoopCollisionPlan)+count*words*4+count*4+count*16+count*2+3)&~3u;
+    u32 bytes=liveBytes+count*sizeof(CoopCollisionRecord);
+    mHeap::Heap_t *owner=data_020a0e9c;
+    if (CoopAlignedFree(owner,32)<bytes) {
+        ++coopCollisionPlanStats[1];_ZN3IRQ7RestoreEj(irq);return;
+    }
+    CoopCollisionPlan *plan=(CoopCollisionPlan *)owner->VAllocate(bytes,32);
+    if (!plan) {
+        ++coopCollisionPlanStats[1];_ZN3IRQ7RestoreEj(irq);return;
+    }
+    plan->owner=owner;plan->count=count;plan->words=words;
+    plan->outer=0xffffffff;plan->next=0;plan->last=0;
+    plan->rowsOffset=sizeof(CoopCollisionPlan);
+    plan->nodesOffset=plan->rowsOffset+count*words*4;
+    plan->envelopesOffset=plan->nodesOffset+count*4;plan->stage=coopStageIdentity;
+    plan->sortedOffset=plan->envelopesOffset+count*16;plan->axis=0;
+    u32 *rows=(u32 *)((u8 *)plan+plan->rowsOffset);
+    void **nodes=(void **)((u8 *)plan+plan->nodesOffset);
+    int *envelopes=(int *)((u8 *)plan+plan->envelopesOffset);
+    CoopCollisionRecord *records=(CoopCollisionRecord *)((u8 *)plan+liveBytes);
+    for (unsigned word=0;word<count*words;++word)rows[word]=0;
+    node=head;
+    bool valid=true;
+    int minX=0x7fffffff,maxX=-0x7fffffff,minZ=0x7fffffff,maxZ=-0x7fffffff;
+    for (unsigned index=0;index<count;++index) {
+        Vector3 *pos=CoopCollisionPosition(node);
+        int radius=*(int *)((u8 *)node+4);
+        if (!pos || (u32)pos<0x02000000 || (u32)pos>=0x023ffff4 ||
+            CoopCollisionAbs(pos->x)>0x0fffffff || CoopCollisionAbs(pos->z)>0x0fffffff ||
+            (u32)radius>0x1fffffff) { valid=false;break; }
+        // A reusable superset of possible contacts. Every frame revalidates
+        // actual cylinder bounds against these envelopes before using the plan.
+        const int margin=CoopCollisionEnvelopeMargin(node);
+        records[index].minX=pos->x-radius-margin;records[index].maxX=pos->x+radius+margin;
+        records[index].minZ=pos->z-radius-margin;records[index].maxZ=pos->z+radius+margin;
+        envelopes[index*4]=records[index].minX;envelopes[index*4+1]=records[index].maxX;
+        envelopes[index*4+2]=records[index].minZ;envelopes[index*4+3]=records[index].maxZ;
+        if (records[index].minX<minX)minX=records[index].minX;
+        if (records[index].maxX>maxX)maxX=records[index].maxX;
+        if (records[index].minZ<minZ)minZ=records[index].minZ;
+        if (records[index].maxZ>maxZ)maxZ=records[index].maxZ;
+        records[index].index=index;nodes[index]=node;
+        node=*(void **)((u8 *)node+0x2c);
+    }
+    if (!valid) {
+        owner->Deallocate(plan);++coopCollisionPlanStats[1];++coopCollisionPlanStats[7];
+        _ZN3IRQ7RestoreEj(irq);return;
+    }
+    // Sweep the more spread-out horizontal axis; long narrow levels should
+    // not generate a quadratic window merely because it follows Z rather than X.
+    if ((u32)(maxZ-minZ)/2>(u32)(maxX-minX))plan->axis=1;
+    if (plan->axis)for (unsigned index=0;index<count;++index) {
+        int value=records[index].minX;records[index].minX=records[index].minZ;records[index].minZ=value;
+        value=records[index].maxX;records[index].maxX=records[index].maxZ;records[index].maxZ=value;
+    }
+    for (unsigned root=count/2;root;--root)CoopCollisionSift(records,count,root-1);
+    for (unsigned end=count-1;end;--end) {
+        CoopCollisionRecord temp=records[0];records[0]=records[end];records[end]=temp;
+        CoopCollisionSift(records,end,0);
+    }
+    u16 *sorted=(u16 *)((u8 *)plan+plan->sortedOffset);
+    for (unsigned index=0;index<count;++index)sorted[index]=(u16)records[index].index;
+    unsigned candidates=0,checks=0;
+    for (unsigned first=0;first<count;++first) {
+        const CoopCollisionRecord *a=&records[first];
+        for (unsigned other=first+1;other<count;++other) {
+            const CoopCollisionRecord *b=&records[other];
+            if (b->minX>=a->maxX)break;
+            // Dense scenes retain native processing instead of extending the
+            // IRQ-protected preparation into an unbounded quadratic pass.
+            if (++checks>1024) {
+                owner->Deallocate(plan);++coopCollisionPlanStats[1];++coopCollisionPlanStats[7];
+                _ZN3IRQ7RestoreEj(irq);return;
+            }
+            if (b->minZ>=a->maxZ || a->minZ>=b->maxZ)continue;
+            unsigned i=a->index,j=b->index;
+            if (i>j) { unsigned temp=i;i=j;j=temp; }
+            rows[i*words+j/32]|=0x80000000u>>(j&31);
+            ++candidates;
+        }
+    }
+    // Shrink away construction records before the native game runs. A failed
+    // shrink still leaves a valid optional block, reclaimed before native pressure.
+    owner->Reallocate(plan,liveBytes);
+    coopCollisionPlan=plan;
+    ++coopCollisionPlanStats[0];coopCollisionPlanStats[2]+=candidates;
+    if (count>coopCollisionPlanStats[6])coopCollisionPlanStats[6]=count;
+    _ZN3IRQ7RestoreEj(irq);
+}
+__asm u32 CoopCollisionLeadingZeroes(u32 value) { clz r0,r0; bx lr }
+
+void *CoopCollisionCandidate(void *first,void *other) {
+    // A pressure eviction may occur between native pairs. Protect all reads
+    // of the optional block, not the original collision/game processing.
+    u32 irq=_ZN3IRQ7DisableEv();
+    CoopCollisionPlan *plan=coopCollisionPlan;
+    if (!plan || coopCollisionCallbackDepth) { _ZN3IRQ7RestoreEj(irq);return other; }
+    void **nodes=(void **)((u8 *)plan+plan->nodesOffset);
+    if (plan->last!=first) {
+        ++plan->outer;plan->next=plan->outer+1;plan->last=first;
+    }
+    if (plan->outer>=plan->count || plan->next>=plan->count ||
+        nodes[plan->outer]!=first || nodes[plan->next]!=other) {
+        CoopReleaseCollisionPlan(0);_ZN3IRQ7RestoreEj(irq);return other;
+    }
+    u32 *row=(u32 *)((u8 *)plan+plan->rowsOffset)+plan->outer*plan->words;
+    unsigned word=plan->next/32;
+    u32 mask=row[word]&(0xffffffffu>>(plan->next&31));
+    while (!mask && ++word<plan->words)mask=row[word];
+    void *result=0;
+    if (mask) {
+        unsigned index=word*32+CoopCollisionLeadingZeroes(mask);
+        if (index<plan->count) {
+            result=nodes[index];plan->next=index+1;++coopCollisionPlanStats[3];
+        }
+    }
+    _ZN3IRQ7RestoreEj(irq);return result;
+}
+void CoopCollisionNotify(u32 owner,dCc_c *node) {
+    u32 irq=_ZN3IRQ7DisableEv();
+    CoopCollisionPlan *before=coopCollisionPlan;
+    void *first=*(void **)0x0209cee8;
+    Vector3 *position=before && before->outer<before->count ? CoopCollisionPosition(first) : 0;
+    if (before)++coopCollisionPlanStats[4];
+    ++coopCollisionCallbackDepth;
+    _ZN3IRQ7RestoreEj(irq);
+    // Candidate use is suspended throughout game code. Any ROOT allocation,
+    // capacity query, growth or cleanup reclaims optional storage BEFORE the
+    // native decision. Do not hold an IRQ guard across the game callback.
+    func_02014f44(owner,node);
+    irq=_ZN3IRQ7DisableEv();
+    --coopCollisionCallbackDepth;
+    if (before && coopCollisionPlan==before && !coopCollisionCallbackDepth) {
+        // Native r9 still refers to this outer collider's original position.
+        // Preserve that reference, list suffix/order and all remaining bounds
+        // before using another cached edge. A changed plan is never trusted.
+        if (coopEnabled && data_0209fc68==4 && position &&
+            *(void **)0x0209cee8==first && CoopCollisionPosition(first)==position &&
+            CoopCollisionPlanCoversRange(before,before->outer))
+            ++coopCollisionValidatedCallbacks;
+        else CoopReleaseCollisionPlan(0);
+    }
+    _ZN3IRQ7RestoreEj(irq);
+}
+
+void CoopCollisionProcess() {
+    CoopPrepareCollisionPlan();
+    dCc_c::Process();
+    // Keep only a pressure-reclaimable conservative plan, not borrowed actor
+    // resources. The next frame validates fresh nodes/bounds before any reuse.
+}
+__asm void CoopCollisionPairRead(void) {
+    stmfd sp!, {r1-r3,r12,lr}
+    sub sp,sp,#4
+    ldr r0,[r4]
+    mov r1,r8
+    bl CoopCollisionCandidate
+    mov r8,r0
+    add sp,sp,#4
+    ldmfd sp!, {r1-r3,r12,lr}
+    cmp r8,#0
+    beq CoopCollisionPairDone
+    ldr r0,[r4]
+    b CoopCollisionPairContinue
 }
 #endif
 
@@ -1964,7 +2419,7 @@ static void CoopCostBegin(CoopCostScope *scope,unsigned kind) {
     }
     scope->stage=coopStageIdentity;
     scope->tick=data_020a1154[0];
-    scope->bucket=kind+(*(volatile u32 *)0x0209f1ec==3 ? COOP_COST_KINDS : 0);
+    scope->bucket=kind+(*(volatile u8 *)0x0209f2c4 ? COOP_COST_KINDS : 0);
     scope->active=1;
     scope->start=(u32)func_02059650();
 }
@@ -2006,7 +2461,12 @@ void CoopCostTransparentRender(dScStage_c *scene) {
 }
 void CoopCostCollisionProcess() {
     CoopCostScope scope; CoopCostBegin(&scope,7);
-    dCc_c::Process(); CoopCostFinish(&scope);
+#ifdef COOP_EXPERIMENTAL_COLLISION_PLAN
+    CoopCollisionProcess();
+#else
+    dCc_c::Process();
+#endif
+    CoopCostFinish(&scope);
 }
 int CoopCostStageRender(void *scene) {
     CoopCostScope scope;
@@ -2185,6 +2645,16 @@ static void PatchCall(u32 address, void *target) {
 }
 
 void CoopRuntimeDispatch(unsigned operation, u32 argument) {
+#ifdef COOP_EXPERIMENTAL_COLLISION_PLAN
+    Patch(0x02014b0c,(void *)CoopCollisionPairRead);
+    Patch(0x0203c6bc,(void *)CoopCollisionVAllocate);
+    Patch(0x0203c568,(void *)CoopCollisionVReallocate);
+    PatchCall(0x02014d0c,(void *)CoopCollisionNotify);
+    PatchCall(0x02014dcc,(void *)CoopCollisionNotify);
+#ifndef COOP_DIAGNOSTIC_PLAYER_COST
+    PatchCall(0x0202ba14,(void *)CoopCollisionProcess);
+#endif
+#endif
 #ifdef COOP_EXPERIMENTAL_COLLISION_BROADPHASE
     PatchCall(0x02014bb4,(void *)CoopCollisionHorizontalRead);
 #endif

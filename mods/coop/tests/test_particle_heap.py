@@ -66,6 +66,10 @@ class HeapHarness:
         self.cpu.mem_map(self.base,0x10000)
         self.cpu.mem_map(0x04000000,0x10000)
         self.cpu.mem_write(0x02000000,self.ram)
+        # DS shared firmware page mirrors the top of4MB RAM. Diagnostic
+        # file-read timing observes its native VBlank counter at027ffc3c.
+        self.cpu.mem_map(0x027ff000,0x1000)
+        self.cpu.mem_write(0x027ff000,self.ram[0x3ff000:0x400000])
         self.cpu.mem_write(0x023c0000,self.dtcm)
         for section in self.main.sections:
             if section.ramAddress<0x02000000:

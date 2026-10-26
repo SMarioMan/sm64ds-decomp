@@ -154,8 +154,12 @@ def main():
                         help='TEST ONLY: drain geometry to measure terrain/body/head polygon costs; changes timing')
     parser.add_argument('--diagnostic-player-cost',action='store_true',
                         help='TEST ONLY: elapsed SDK ticks for player behavior/models and stage rendering')
+    parser.add_argument('--experimental-collision-plan',action='store_true',
+                        help='EXPERIMENTAL: ordered spatial candidates with pressure/callback fallback')
     parser.add_argument('--experimental-collision-broadphase',action='store_true',
                         help='EXPERIMENTAL: conservative axis rejection before native cylinder distance')
+    parser.add_argument('--experimental-persistent-animation-cache',action='store_true',
+                        help='EXPERIMENTAL: retain immutable animation bytes across stage transitions')
     parser.add_argument('--experimental-animation-cache',action='store_true',
                         help='EXPERIMENTAL: expendable ROOT cache for compressed animation reads')
     args = parser.parse_args()
@@ -163,8 +167,12 @@ def main():
         parser.error('--baseline cannot select a diagnostic stage')
     if args.diagnostic_stage_cycle and args.diagnostic_start_level is None:
         parser.error('--diagnostic-stage-cycle requires --diagnostic-start-level')
-    if args.baseline and (args.diagnostic_render_cost or args.diagnostic_player_cost or args.experimental_animation_cache or args.experimental_collision_broadphase):
+    if args.baseline and (args.diagnostic_render_cost or args.diagnostic_player_cost or args.experimental_animation_cache or args.experimental_collision_broadphase or args.experimental_collision_plan):
         parser.error('--baseline cannot enable render diagnostics')
+    if args.experimental_persistent_animation_cache and not args.experimental_animation_cache:
+        parser.error('Persistent animation caching requires --experimental-animation-cache')
+    if args.experimental_collision_plan and (not args.experimental_animation_cache or args.experimental_collision_broadphase):
+        parser.error('Collision plans require --experimental-animation-cache and exclude --experimental-collision-broadphase')
     if args.diagnostic_player_cost and args.diagnostic_render_cost:
         parser.error('Elapsed timing cannot be combined with FIFO-draining geometry diagnostics')
     original = args.rom.read_bytes()
@@ -292,8 +300,23 @@ def main():
             expected+=bytes.fromhex('0070b0e104709d05001094e50700a00108008d05040098e5042091e5000082e0076040e0000056e3c80000da')
             if arm9[begin:begin+len(expected)]!=expected:
                 raise RuntimeError('Unexpected native cylinder pair distance/overlap block')
+        if args.experimental_collision_plan:
+            for address,expected in ((0x0203c6bc,'04c09fe5140090e51cff2fe170e30402'),
+                                     (0x0203c568,'04c09fe5140090e51cff2fe1e8e10402'),
+                                     (0x02014b0c,'000094e51c2098e5183090e51c1090e5180098e5'),
+                                     (0x02014f14,'000094e52c1090e5285080e5000094e5000051e3')):
+                offset=address-rom.arm9RamAddress
+                if arm9[offset:offset+len(bytes.fromhex(expected))]!=bytes.fromhex(expected):
+                    raise RuntimeError('Unexpected native collision/heap plan site')
+            for address,target in ((0x0202ba14,game['_ZN5dCc_c7ProcessEv']),
+                                   (0x02014d0c,game['func_02014f44']),(0x02014dcc,game['func_02014f44'])):
+                offset=address-rom.arm9RamAddress
+                if arm9[offset:offset+4]!=branch(address,target)[:3]+b'\xeb':
+                    raise RuntimeError('Unexpected native collision plan callback')
         imports = dict(game, **{name:PAYLOAD_ADDRESS+0x1800+i*8
                                for i,(name,_,_) in enumerate(trampolines)})
+        if args.experimental_collision_plan:
+            imports.update(CoopCollisionPairContinue=0x02014b10,CoopCollisionPairDone=0x02014f14)
         imports['coopNarcIndex']=PAYLOAD_ADDRESS+0x1800
         narc_index=narc_member_index(rom,arm9,original)
         animation_mask=b''
@@ -312,10 +335,14 @@ def main():
         defines=[f'COOP_SAVE_SLOT={ord(args.save_slot)-ord("A") if args.save_slot else -1}']
         if args.experimental_animation_cache:
             defines.append('COOP_EXPERIMENTAL_ANIMATION_CACHE=1')
+        if args.experimental_persistent_animation_cache:
+            defines.append('COOP_EXPERIMENTAL_PERSISTENT_ANIMATION_CACHE=1')
         if args.diagnostic_start_level is not None:
             defines.append(f'COOP_DIAGNOSTIC_START_LEVEL={args.diagnostic_start_level}')
         if args.diagnostic_stage_cycle:
             defines.append('COOP_DIAGNOSTIC_STAGE_CYCLE=1')
+        if args.experimental_collision_plan:
+            defines.append('COOP_EXPERIMENTAL_COLLISION_PLAN=1')
         if args.experimental_collision_broadphase:
             defines.append('COOP_EXPERIMENTAL_COLLISION_BROADPHASE=1')
         if args.diagnostic_player_cost:
@@ -478,6 +505,7 @@ def main():
                        'sha256':hashlib.sha256(blob).hexdigest(),'cacheAddress':'0x02004180'}
         if args.experimental_animation_cache:
             module_report['experimentalAnimationReadCache']={'entries':32,'payloadBudget':65536,'maxMemberBytes':16384,
+                'preserveAcrossStageTransitions':args.experimental_persistent_animation_cache,
                 'statsOffset':emitted['coopAnimationCacheStats']-PAYLOAD_ADDRESS,
                 'entriesOffset':emitted['coopAnimationReadEntries']-PAYLOAD_ADDRESS,'entryWords':6,
                 'fields':['hits','misses','stores','evictions','payloadBytes','entries','peakBytes','flushes'],
@@ -546,6 +574,17 @@ def main():
             module_report['experimentalCollisionBroadphase']={
                 'callsite':'0x02014bb4','preservesPairOrder':True,
                 'coordinateLimit':0x1fffffff,'defaultEnabled':False}
+        if args.experimental_collision_plan:
+            module_report['experimentalCollisionPlan']={
+                'capacity':192,'minimumNodes':48,'pairCheckBudget':1024,'envelopeMargin':32*4096,'maximumEnvelopeMargin':2048*4096,'velocityEnvelopeFactor':32,'defaultEnabled':False,
+                'reusesOffset':emitted['coopCollisionPlanReuses']-PAYLOAD_ADDRESS,
+                'refreshesOffset':emitted['coopCollisionPlanRefreshes']-PAYLOAD_ADDRESS,'refreshShiftBudget':256,
+                'validatedCallbacksOffset':emitted['coopCollisionValidatedCallbacks']-PAYLOAD_ADDRESS,
+                'callbackAllocationsOffset':emitted['coopCollisionCallbackAllocations']-PAYLOAD_ADDRESS,
+                'statsOffset':emitted['coopCollisionPlanStats']-PAYLOAD_ADDRESS,
+                'workspaceOffset':emitted['coopCollisionPlan']-PAYLOAD_ADDRESS,
+                'fields':['preparedFrames','fallbackFrames','plannedPairs','dispatchedPairs',
+                          'notifications','pressureReleases','peakNodes','abortedFrames']}
         patches.append({'purpose':'ROOT module loader in unused VS result routines','address':hex(CAVE_START),
                         'size':CAVE_END-CAVE_START,'installerBytes':len(installer)})
     output=root/('baseline.nds' if args.baseline else 'sm64ds-coop-experimental.nds')

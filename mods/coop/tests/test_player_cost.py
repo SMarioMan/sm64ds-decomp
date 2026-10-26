@@ -23,7 +23,8 @@ class PlayerCostTests(HeapHarness,unittest.TestCase):
             self.write(self.runtime[name],0)
         self.cpu.mem_write(0x020a104c,b'\0\0')
         self.cpu.mem_write(0x020a6430,b'\1\0')
-        self.write(0x0209f1ec,0)
+        self.write(0x0209f1ec,3) # Native gameplay menu state is also3.
+        self.cpu.mem_write(0x0209f2c4,b'\0')
         self.write(0x020a1154,45)
         self.ticks=iter((100,150))
         self.delegates=[]
@@ -60,7 +61,7 @@ class PlayerCostTests(HeapHarness,unittest.TestCase):
         self.assertEqual(self.rows()[2],(2,1,25,0,25,25))
 
     def test_paused_buckets_wrap_and_64_bit_total_carry(self):
-        self.write(0x0209f1ec,3)
+        self.cpu.mem_write(0x0209f2c4,b'\1')
         self.ticks=iter((0xfffffff0,0x20))
         self.call('CoopCostStageRender',1)
         self.assertEqual(self.rows()[11],(2,1,48,0,48,48))

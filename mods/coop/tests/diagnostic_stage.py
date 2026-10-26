@@ -192,9 +192,11 @@ def next_stage(ds):
     if expected==41:expected+=1
     if expected>=52:expected=1
     resume_stage(ds)
-    chord=getattr(ds,'runtime_module',{}).get('diagnosticStageChord',0x304)
+    chord=getattr(ds,'runtime_module',{}).get('diagnosticStageChord',0x700)
+    ds.set_input(0,0xfff)
+    wait_controller_buttons(ds,0,chord)
     ds.set_input(0,0xfff^chord)
-    ds.run(24)
+    wait_controller_buttons(ds,0,chord,held=True)
     ds.set_input(0,0xfff)
     for attempt in range(360):
         exceptions=[i for i in range(ds.count) if ds.word(i,0x0209cddc)]
@@ -228,7 +230,11 @@ def next_stage(ds):
                     all(0x02000000<=ds.word(console,0x0209f394+4*s)<0x023ff000
                         for s in range(ds.count))):
                 arrived.append(ds.read(console,0x0209f2f8,1)[0])
-        if ready:return expected
+        if ready:
+            # Loading suspends ordinary input decoding. Observe release after
+            # arrival, rather than imposing a short deadline during WFS reads.
+            wait_controller_buttons(ds,0,chord)
+            return expected
         if len(arrived)==ds.count and len(set(arrived))==1 and arrived[0] not in (current,expected):
             snapshot(ds,'diagnostic-transition-unexpected-arrival')
             raise ControllerRouteFailure(

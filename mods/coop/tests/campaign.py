@@ -147,6 +147,17 @@ def snapshot(ds, name):
             offset=base+animation_cache['statsOffset']-0x02000000
             values['animationReadCache']=dict(zip(animation_cache['fields'],
                 struct.unpack_from('<8I',ram,offset)))
+        collision_plan=module.get('experimentalCollisionPlan')
+        if collision_plan:
+            offset=base+collision_plan['statsOffset']-0x02000000
+            values['collisionPlan']=dict(zip(collision_plan['fields'],struct.unpack_from('<8I',ram,offset)))
+            if 'reusesOffset' in collision_plan:
+                values['collisionPlan']['reusedFrames']=struct.unpack_from('<I',ram,
+                    base+collision_plan['reusesOffset']-0x02000000)[0]
+            for key,field in (('validatedCallbacks','validatedCallbacksOffset'),('callbackAllocations','callbackAllocationsOffset'),('incrementalRefreshes','refreshesOffset')):
+                if field in collision_plan:
+                    values['collisionPlan'][key]=struct.unpack_from('<I',ram,
+                        base+collision_plan[field]-0x02000000)[0]
         if player_cost:
             offset=base+player_cost['costsOffset']-0x02000000
             samples=[]

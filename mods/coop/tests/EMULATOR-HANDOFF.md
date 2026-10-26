@@ -9,6 +9,75 @@ all levels. The tested party size and campaign coverage were not specified;
 newer-image physical acceptance and campaign completion remain open. Read the current regressions first; later sections preserve
 historical checkpoints and failures rather than release acceptance.
 
+## Current persistent-cache comparison (supersedes all older active parties)
+
+All previous wireless parties are CLOSED. The unprofiled f4ade5d3 level sweep
+passed entrance/short-motion controls, synchronization and shared pause on6–11,
+then was deliberately stopped to compare cache retention. It is not a completed
+50-stage run. Reports: `incremental-unprofiled-performance-corrected/`.
+Its original controller route failure is retained separately; corrected entry
+was a labeled diagnostic transition into interior2 and normal painting to BoB.
+Level7 first movement has a33-VBlank hitch:2219-byte native read at2158424,
+31 VBlanks on each guest. Per-stage cache clearing is a concrete next target.
+
+ONLY ACTIVE party: unprofiled persistent-cache cycle image
+ef284c955abef54446d2bf668f0e255f68231a59eb8b21197c0ad50d1b86aa93.
+Parent `persistent-incremental-matrix/`, exec17166, socket
+`/workspace/runtime/persistent-incremental-matrix.sock`.
+Continuation `persistent-incremental-performance/`, exec52370, waits for
+native castle readiness, uses the same diagnostic interior/normal painting route,
+then measures cadence and short motion before native diagnostic transitions.
+Check result.json before further RPCs. No competing RPCs/second wireless party.
+Close it and verify parent exit before starting another. Frozen driver sources
+and hashes retained. No live RAM/packet changes, savestates or custom core.
+This remains entrance/short-motion coverage, not full-level/campaign acceptance.
+
+Full persistent/instrumented build passes210 discovered/200 executed tests,
+10 documented skips (`persistent-animation-profile-all-tests.log`). Unprofiled
+configuration passes192/210 with18 skips (extra eight timing tests not applicable).
+The isolated fixture now maps the captured shared firmware page; earlier15
+unmapped-read errors were harness errors, retained in their failed log. Profiler
+pause buckets now read0209f2c4, not native menu state3.
+Independent builds reproduce default fbb2262d, cache-only274084aa, normal optional
+spatial64dc499b and persistent diagnostic ef284c95. Duplicate generated
+verification ROMs were removed after hashing to free469762048 bytes; build logs,
+reports and unique original images remain. Do not delete supplied inputs.
+
+Latest published HEAD bc1c0c564. Automatic approval review blocked commit/push
+because of its usage limit, not an unsafe-action finding. Current changes LOCAL.
+Source-only recovery: `/workspace/runtime/spatial-plan-source-recovery/`;
+refresh after edits. No ROM/BIOS/RAM/compiler bundled. Builds and unit tests
+serialize through `/workspace/runtime/coop-bootstrap-build.lock`.
+
+## Latest spatial-plan work (supersedes older active-party entries)
+
+Published HEAD bc1c0c564. Automatic approval review blocked the subsequent
+commit/push because its usage limit was reached, explicitly not an unsafe-action
+finding. Spatial-plan code/tests and the mini-map worklist item are LOCAL.
+
+CLOSED first spatial image e05b6262de4265655965bad75272f2eb51ebaa262f98ac6932f01e1ca54b6e33:
+`animation-cache-spatial-plan-cost-profile/` PASSES steady/warm/paused checks.
+`spatial-plan-gameplay-regression/` PASSES guest2 coin, native course exit and
+reentry. Steady collision4.78–5.00ms versus control9.44–9.67ms, but cadence3
+VBlanks. No pressure releases/aborts/notifications in the measured steady delta.
+Do not claim full speed. All older leaf/control parties are also CLOSED.
+
+ONLY ACTIVE party: reusable plan image
+cd53ad2aa83bacf78733115aa547c794bfca9e81cc379a5798255e13ac7af7e0.
+Parent `bob-animation-cache-spatial-reuse-cost/`, exec88159, socket
+`/workspace/runtime/bob-animation-cache-spatial-reuse-cost.sock`.
+Continuation `animation-cache-spatial-reuse-cost-profile/`, exec72542, waits for
+normal castle/BoB then measures steady/warm/paused and retains on completion.
+No second wireless party until this one is explicitly closed and exits.
+
+Build/test lock `/workspace/runtime/coop-bootstrap-build.lock`. Reuse source
+passes21 isolated ARM cases and full200-discovered/190-executed/10-skip suite:
+`collision-plan-reuse-native-tests.log`, `collision-spatial-reuse-all-tests.log`.
+Independent normal fbb2262d and cache-only274084aa hashes reproduced, as did
+cd53 on a separate output. The reused workspace is optional ROOT storage;
+capacity/pressure/growth/callbacks/cleanup reclaim it. Fresh list and geometry
+coverage are validated every frame. See PERFORMANCE.md for precise scope.
+
 ## Current performance work (supersedes historical active-session notes)
 
 Normal image remains fbb2262d6dbacd6c92e8f585bde99941d587ed8e323bde280f598e91e69abd2d.

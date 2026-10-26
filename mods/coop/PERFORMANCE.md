@@ -373,3 +373,178 @@ is not a working ROM implementation or evidence of gameplay speed. Any native
 notification invalidates that frozen plan before calling into player code.
 Next work is a bounded candidate plan preserving original pair order, with
 safe callback invalidation, memory-pressure fallback and native parity tests.
+
+
+## Ordered spatial candidates (optional, not a release)
+
+Use `--experimental-animation-cache --experimental-collision-plan` with a
+separate `--output` to evaluate this approach. It cannot be combined with the
+older `--experimental-collision-broadphase` leaf guard. Add
+`--diagnostic-player-cost` only for elapsed-time instrumentation. The planner
+uses original native pair order, masks, distance arithmetic and responses;
+only provably separated pairs are omitted. Three pure native position/owner
+getter pairs are whitelisted. Unknown types, unsafe arithmetic domains, short
+lists, capacity, dense preparation windows or insufficient memory retain the
+native walk. Preparation handles at most192 nodes and1024 sweep comparisons;
+it performs no I/O or game callbacks under its bounded IRQ guard.
+
+Storage uses an optional nonfatal ROOT allocation with an explicit owner.
+ROOT allocation pressure, capacity queries and reallocation reclaim it before
+native decisions. Candidate use is suspended during native notifications. A
+notification retains the plan only after fresh remaining-list/order, geometry
+and original outer-position-reference validation; callback allocations reclaim
+it before native allocator decisions. Stage/resource cleanup and session reset
+also release it. Direct
+expanding-heap allocation/reallocation forwarders are checked against complete
+retail signatures; other heaps retain native behavior. IRQ guards protect
+workspace reads and ROOT allocation/eviction from SDK-thread preemption.
+
+The first implementation e05b6262de4265655965bad75272f2eb51ebaa262f98ac6932f01e1ca54b6e33
+passes native four-console startup/castle/BoB, steady/warm/paused checks, a guest2
+shared coin and course exit/reentry. Steady collision cost falls to4.78–5.00ms
+from9.44–9.67ms; whole stage render falls to6.70–6.84ms. However cadence remains
+near3 VBlanks per input tick, so this is not full-speed acceptance. During the
+steady sample every console prepares207–208 plans, with no pressure eviction,
+preparation abort or native notification; repeated construction is a next lead.
+The party is closed.
+
+The reuse build retains a pressure-reclaimable conservative envelope plan.
+Before each frame it checks the FRESH native list/order, getter implementations,
+stage identity, arithmetic domain and every actual cylinder's X/Z bounds.
+Reuse is allowed only while all actual bounds remain inside the saved32-unit
+margins. Teleports, radius growth, changed lists, callbacks or memory pressure
+invalidate it immediately. It does not assume a frame count or movement speed.
+Twenty-one isolated ARM checks cover whole native contact/list parity across
+randomized getters/masks/owners, touching/coincident/zero-radius cases, moving
+callbacks, real allocation pressure/growth, IRQ restoration, dense/capacity
+fallback, cross-frame reuse, teleports, reordered nodes and native cleanup.
+Hardware SQRT/DIV results and final game notification are isolated adapters;
+no live emulator memory or wireless packets are replaced.
+
+The earlier diagnostic image cd53ad2aa83bacf78733115aa547c794bfca9e81cc379a5798255e13ac7af7e0
+completed the normal four-console route. Its full suite:200 discovered,190 executed,
+10 skips (six mutually exclusive leaf-guard tests and four obsolete prefix
+checks). Independent disabled builds reproduce normal fbb2262d and cache-only
+274084aa. Wider stages/party sizes and physical acceptance remain
+pending. Approval review could not execute the latest commit/push because of
+its usage limit; current spatial-plan changes are local, after published bc1c0c564.
+
+
+The fixed32-unit reuse build cd53ad2a PASSES four-console movement/pause and a
+fresh guest2 coin, course exit and reentry. Its steady cadence improves only
+partially:227 intervals/615 VBlanks (66 intervals at2,161 at3) on every console.
+A read-only32-snapshot investigation after reentry shows45 rebuilds and4 reuses,
+with no native notification or pressure release. Thirty compared rebuild samples
+retain the same node order; the main cause is geometry leaving small envelopes.
+Profiles208 and220 move about59 and25 units/update in the captured scene, and
+native actor horizontal/X/Z velocity fields confirm this. No order-remapping
+change was introduced based on the initial hypothesis.
+
+The current motion-envelope experiment scales bounds only for moving owners:
+max(32 units,32 times current horizontal/X/Z speed), capped at2048 units. These
+are sizing hints, not limits or predictions trusted by collision processing.
+Every fresh actual bound is still validated each frame; abrupt acceleration,
+reversals, owner changes and teleports cannot bypass validation. Static position
+colliders retain the base margin. Signed extremes are clamped before multiplying.
+On the captured scene the candidate count changes only170->183 despite improving
+coverage for the fast movers. Two additional native tests cover selective bounds
+and extreme signed velocity without changing native game velocity fields.
+
+Motion-envelope image607c46b11f05b31d49523a691fb6b9e2a649a8ce408cb239f61ba92c34c2e624
+PASSES normal four-console castle/BoB entry, steady/warm movement, shared pause,
+guest2 coin and native course exit/reentry. Its steady sample has303 intervals:
+286 at2 VBlanks,16 at3 and one boundary interval at1. Collision averages
+2.16–2.37ms; stage rendering4.06–4.22ms. Warm movement still has117 intervals
+at3 and196 at2, with115 full builds and104 native notifications on the host.
+That remaining movement cost motivates validating plans after callbacks and
+refreshing them incrementally. This party is closed. Its23 native tests and
+202-discovered/192-executed suite pass; normal fbb2262d, cache-only274084aa and
+the607c image independently reproduce.
+
+The next experimental image1f749f4719043105702446c69f710d0e2fd6027b700ed3f2b073c06459680923
+retains valid plans after callbacks and refreshes unchanged node lists in place.
+Every callback still revalidates the remaining suffix and original position
+reference. All ROOT allocations inside callbacks reclaim optional plan storage
+before calling the native allocator, even with ample free memory. Refresh uses
+fresh geometry and bounded insertion sorting (256 shifts,1024 sweep comparisons).
+Exceeded budgets discard the plan and run native collision for that frame;
+changed lists use full construction. No frame count or user timing establishes
+validity. Twenty-nine isolated ARM tests pass, including callback mutation,
+allocation, native contacts, in-place refresh and sort-budget recovery. Fresh
+four-console measurements and physical acceptance are pending. The full suite
+passes208 discovered/198 executed tests, with10 documented skips. These experiments remain disabled in the normal build.
+
+The elapsed profiler originally selected its pause bucket from the native menu
+state0209f1ec==3. Captured active and paused BoB scenes both have that value;
+its historical `paused` labels therefore cannot separate the two. Active-only
+before/after deltas above remain valid. Current source reads the actual byte
+pause flag0209f2c4 instead; isolated checks initialize the normal menu state3
+and verify separate unpaused/paused buckets. The diagnostic stage-matrix build
+uses the corrected profiler. Earlier1f749 measurements still require deltas
+between explicitly active or explicitly paused captures, not bucket labels.
+
+Image1f749 PASSES normal four-console castle/BoB entry,600 steady frames,
+warm movement on every controller and600 paused frames. In steady play all
+consoles record303 intervals:287 at2 VBlanks,15 at3 and one boundary at1.
+Warm movement records335 intervals at2 and22 at3 (host357 intervals; guests
+also include one boundary at1). This improves the previous607c warm sample's
+117 slow intervals out of313, but still does not establish full-speed play.
+Steady collision averages2.09–2.31ms and stage rendering3.99–4.14ms. Movement
+collision averages2.18–2.39ms and stage rendering4.00–4.11ms. The host records
+five full builds,16 incremental refreshes,338 reuses and104 notifications; all
+104 callbacks validate, with no callback allocation, pressure release, abort or
+native fallback. Four warm animation reads hit the cache on every console,
+with zero misses. Guest2 coin and native course exit/reentry also PASS. Its party is closed.
+Independent pre-profiler-correction builds reproduce normal fbb2262d, cache-only
+274084aa and1f749 exactly. The normal ROM has no optional timing instrumentation.
+
+The corrected stage-matrix diagnostic image is54c82a1fbd20e58c252cd3ee154eb2be8061ea490f28b8f8dbe9286cc154b8c0.
+Its208-test suite passes198 tests with10 documented skips. Diagnostic file-read
+tracing reads the DS shared page at027ff000; the private Unicorn fixture now
+maps its captured4MB-RAM mirror so those reads execute correctly. The earlier
+matrix test failure was15 unmapped-read exceptions in that isolated harness;
+no game allocation or wireless failure was suppressed.
+
+Unprofiled normal optional image64dc499bd9af263add4d6c32b20acab71ebf4d62152554e69493a7002fa1e6d2
+has been built but not fully accepted. Unprofiled cycle diagnostic image
+f4ade5d327917bd20b53be9fa58290eaf31a63b2d5e7ddd6c8adbce66e2d8976
+is running a fresh four-console session: native castle readiness, ordinary
+BoB entrance, then entrance/short-motion performance and compatibility sampling
+through diagnostic native stage transitions. This removes elapsed timing
+instrumentation from cadence measurements. It is not all-level exploration,
+earned progression, physical acceptance or a full-speed release claim.
+
+The unprofiled f4ade5d3 sweep PASSES entrance/short-motion synchronization,
+controls and shared pause on levels6–11, then was deliberately stopped for a
+cache-retention comparison. It is NOT a completed50-stage sweep. Its first
+controller script failed by using the interior route while in the grounds;
+the corrected run uses a labeled diagnostic transition into interior2, then
+the normal painting route into BoB. BoB steady:282 intervals at2,13 at3, one
+boundary at1. Movement:342 at2,16 at3, one boundary at1. Level7 steady has
+300–301 at2 and three at3, but first movement includes one33-VBlank hitch.
+The final native file-read trace identifies2219 bytes at ROM offset2158424:
+zero VBlanks on the host and31 on each guest. The raw cache has one miss and
+store during that sample after its per-stage flush. This is a cold first-motion
+sample; calling the driver phase `movement` does not establish warmed assets.
+
+Optional `--experimental-persistent-animation-cache` now preserves private
+immutable animation bytes across live stage/ENTRY cleanup, while releasing
+collision plans before native stage cleanup. The ROOT heap is created by
+SetupRootHeap and lives for the process; its pointer is unchanged in the captured
+transitions. Copies are keyed by validated immutable cartridge extents, not
+model pointers or a stage heap. Native ROOT pressure, capacity queries and growth
+retain their eviction policy. Offline/disconnected/ended/title sessions flush
+bytes; new matches and planned session termination flush explicitly. It does
+not increase the64KB payload or32-entry limits and does not suppress file errors.
+
+Unprofiled persistent cycle image
+ef284c955abef54446d2bf668f0e255f68231a59eb8b21197c0ad50d1b86aa93
+is in fresh four-console testing. All210 discovered/200 executed tests pass with
+ten documented skips in a fully instrumented build; without elapsed profiling,
+192 execute and18 skip. Two new ARM checks cover reuse of exact bytes/native
+cursor across transitions and release for disabled/offline/disconnected/title/
+ended sessions. Native stage-cleanup ABI and collision-plan reclamation still
+pass. Independent builds reproduce fbb2262d,274084aa,64dc499b and ef284c95;
+this retention option remains disabled by default pending live speed and memory
+acceptance. Duplicate verification ROM copies were removed to free space after
+hashing; reports/logs and unique source images are retained.

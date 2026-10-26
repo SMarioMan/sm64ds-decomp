@@ -207,15 +207,44 @@ class AnimationReadCacheTests(HeapHarness,unittest.TestCase):
     def test_stage_cleanup_flushes_before_delegating_and_preserves_result(self):
         self.load()
         calls=[]
+        retained='CoopAnimationTransitionCleanup' in self.runtime
+        expected=self.stats()[4:6] if retained else (0,0)
         def original(cpu,address,size,user):
             if address!=self.runtime['CoopOriginalStageCleanup']:return
-            self.assertEqual(self.stats()[4:6],(0,0))
+            self.assertEqual(self.stats()[4:6],expected)
             calls.append(cpu.reg_read(UC_ARM_REG_R0))
             cpu.reg_write(UC_ARM_REG_R0,17)
             cpu.reg_write(UC_ARM_REG_PC,cpu.reg_read(UC_ARM_REG_LR))
         self.cpu.hook_add(UC_HOOK_CODE,original)
         self.assertEqual(self.invoke('CoopAnimationStageCleanup',0x023f8000),17)
         self.assertEqual(calls,[0x023f8000])
+
+    def test_persistent_transition_retains_owned_bytes_and_reuses_native_file_cursor(self):
+        if 'CoopAnimationTransitionCleanup' not in self.runtime:
+            self.skipTest('requires --experimental-persistent-animation-cache')
+        self.load()
+        saved=self.stats()[4:6]
+        for _ in range(3):self.invoke('CoopAnimationTransitionCleanup')
+        self.assertEqual(self.stats()[4:6],saved)
+        self.load()
+        self.assertEqual(len(self.reads),1)
+        self.assertEqual(self.stats()[0],1)
+        self.assertTrue(self.intact(self.root))
+
+    def test_persistent_cache_flushes_disabled_disconnected_title_and_ended_sessions(self):
+        if 'CoopAnimationTransitionCleanup' not in self.runtime:
+            self.skipTest('requires --experimental-persistent-animation-cache')
+        for address,value in ((self.runtime['coopEnabled'],0),(0x0209fc68,0),
+                              (0x0209fc68,6),(self.runtime['coopTitleLoading'],1),
+                              (self.runtime['coopSessionEnded'],1)):
+            with self.subTest(address=hex(address),value=value):
+                self.load()
+                self.assertEqual(self.stats()[5],1)
+                old=self.word(address);self.write(address,value)
+                self.invoke('CoopAnimationTransitionCleanup')
+                self.assertEqual(self.stats()[4:6],(0,0))
+                self.write(address,old)
+                self.assertTrue(self.intact(self.root))
 
     def test_archive_transition_and_pending_native_errors_bypass_cache(self):
         self.load()

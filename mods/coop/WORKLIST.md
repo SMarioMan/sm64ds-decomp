@@ -42,6 +42,24 @@ not establish campaign completion or real-hardware compatibility.
   isolated native replay matches contact/list state, with final ROM memory,
   callback and performance validation still required. Retail Adventure BoB
   baseline is confirmed near2 VBlanks.
+  Ordered spatial candidates pass native four-console coin and course
+  exit/reentry checks. Validated reuse with selective moving-object envelopes
+  reduces steady collision cost to2.16–2.37ms and stage rendering to4.06–4.22ms;
+  steady cadence is predominantly2 VBlanks, but warm movement still includes
+  117 of313 intervals at3. The next candidate validates plans after callbacks
+  and refreshes unchanged node lists in place with bounded sorting. All29 native
+  checks and198 executed tests pass (208 discovered,10 documented skips).
+  Its four-console speed test passes; warm slow intervals fall to22 of357,
+  with104 validated callbacks, five full builds and16 incremental refreshes.
+  Guest2 coin and course exit/reentry pass. An unprofiled four-console level
+  matrix passes levels6–11 for entrance/short-motion compatibility, but includes
+  a33-VBlank first-motion hitch from a2219-byte native guest read after stage
+  cache flush. A separate optional persistent-cache experiment has200 native/
+  other applicable tests passing and is starting a fresh four-console comparison.
+  All-level exploration, hardware cadence and remaining slow intervals are open.
+  Both cache and spatial planning remain
+  optional; broader stage/party-size/physical validation and full-game performance
+  acceptance are still required. Retail Adventure BoB cadence is near2 VBlanks.
 - [ ] Replace long black loading periods with visible, animated loading
   feedback on the host and guests. Keep a resident indicator responsive during
   Download Play handoff, wireless file reads and stage changes. Show real byte
@@ -73,6 +91,11 @@ not establish campaign completion or real-hardware compatibility.
   files so merely selecting it cannot overwrite normal progress. Verify all
   three actual file selections and the full-progress test option through native
   menu input, including empty files, unlocks and save/quit behavior.
+- [ ] Display every connected player's location on each console's mini-map.
+  Give players distinct markers matching their character or reserved multiplayer
+  Yoshi color. Keep the local player recognizable and handle area changes,
+  entrances, deaths, character changes and map scaling on every peer. Schedule
+  this after the current gameplay-performance work.
 - [ ] Fix intermittent missing objects/model parts on individual consoles.
   The user observes this on physical hardware and melonDS, including a Yoshi
   head disappearing immediately on entry to Bob-omb Battlefield, with no
