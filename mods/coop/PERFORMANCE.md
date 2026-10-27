@@ -1429,3 +1429,60 @@ the build is BYTE-IDENTICAL to playedf759. Actual wireless transfer speed,
 full-body execution and physical behavior remain unverified. Counters report
 completed groups, actual recipient advances, potential repeated payload bytes
 saved and stale recipients; these are not measured wall-clock savings.
+
+
+## Packed132 four-player acceptance and three-system retest
+
+The unprofiledf759 four-Yoshi build PASSES native stages6–23: steady samples,
+short per-controller movement, shared pause/coin simulation and loading-UI lease
+restoration. No sampled steady/movement physical read count grows. BoB guest
+steady896x2VB/7x3VB/2x4VB; stage13 guest889x2VB/8x3VB/1x5VB/1x10VB plus one
+boundary1VB; stage14 guest771x2VB/91x3VB/2x4VB. Stage14 still misses the2VB
+cadence on about11% of intervals, and13 has a non-I/O hitch; full speed is open.
+
+The later-stage stationary600-frame route fails in24 when giant Goombas kill
+player2. The capture shows enemy contact on the platform, not a floor/geometry
+failure. Resuming the actual death sequence returns all four to castle exterior1
+with full health. Shared simulation/UI cleanup and Save & Quit then PASS; host
+saves/title and all3 guest session ends are verified. Explicit shutdown and actual
+frontend249029 exit are verified. The observation helper initially expected
+castle2, while this diagnostic death returns1; its later capture/read-only check
+verifies the correct native destination. No health/position/progress is injected.
+Stages24 onward are not accepted; improve their physical test routes.
+
+Three-system normal image28e661dca4b9d1914b3987e3440317b0711de363c4ad2f87c3d2132da695073d
+has no stage-cycle or actor-cost diagnostics and no bootstrap multicast. Full
+native suite PASS:322 tests,30 skip records (including the disabled bootstrap
+class). Actual3-console firmware DLP, castle/native painting to6, steady/movement,
+pause/coin comparison, native course return, cartridge save/title and2 guest
+shutdowns PASS. BoB guest steady905x2VB/1x3VB/1x4VB; movement270x2VB/1x3VB.
+Explicit shutdown and actual frontend exit verified. Physical acceptance remains
+pending. Reproduce with the pinned command in PERFORMANCE-RETEST.md.
+
+## First matched bootstrap grouping comparison
+
+Four-console5db570d1 PASSES initial signed/unsigned native startup, ordinary
+castle/painting BoB entry, independent controls, shared pause, coin/Goomba state,
+UI restoration, native course return, Save & Quit, host title and3 guest ends.
+Explicit shutdown/actual frontend251976 exit verified. All4383 body blocks group
+all3 recipients;13149 recipient advances,1104272 potential repeated payload bytes
+saved,0 stale recipients. Default native unicastf759 repeat also passes those
+checks and actual frontend exit. The embedded552136-byte executable bodies are
+BYTE-IDENTICAL, SHA256f6a9a181bc7cf3de3eac69751a4f5fde4d5f5681b6af8f7c4808e3f31b3aa6fe.
+
+After scripted menu confirmations, read-only payload samples span2801 SDK VBlanks
+for unicast versus1097 grouped (about60.8% fewer). Their first sampled body offsets
+are2520 and8568 respectively; both end552136, with all peers phase9. These are
+one matched pair of partial transfer/execution windows, including polling; not
+complete discovery/join/loading time or hardware measurements. Menu timing and
+initial byte offsets differ slightly; do not claim an exact universal factor.
+Native successful sender completions13563→4797 are consistent with the reduced
+repeated submissions. Stage WFS loads are unaffected.
+
+The grouping native suite now has8 max-roster cases, plus its configured-roster
+case passes separately compiled parents for1 and2 guests. Actual3-system startup
+passes and closes cleanly. The2-system startup and delayed4-system menu-selection
+runs follow serially after it. Options remain disabled by default pending broader/hardware testing.
+Private evidence: packed132-no-cost-performance/, packed132-after-native-death-save/,
+packed-production-3p-acceptance/, bootstrap-multicast-acceptance/,
+payload-unicast-control-acceptance/ and their frozen source/ROM manifests.

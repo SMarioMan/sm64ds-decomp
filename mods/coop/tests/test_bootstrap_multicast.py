@@ -4,6 +4,7 @@ No running emulator or radio packet is altered. Only the compiled parent module
 executes here; private peer records model SDK success, errors and reconnects.
 """
 import io
+import os
 import ndspy.rom
 import struct
 import unittest
@@ -79,6 +80,22 @@ class BootstrapMulticastTests(unittest.TestCase):
         finally:self.allow_pump=False
     def complete(self,error=0):
         self.cpu.mem_write(self.event+2,struct.pack('<H',error));self.call('CoopStationSent',self.event)
+
+    def test_configured_roster_submits_and_advances_exactly_its_connected_guests(self):
+        # Full suite uses the default3-guest build. For --clients1/2, run this
+        # case with COOP_BOOTSTRAP_CLIENTS matching that separately built parent.
+        count=int(os.environ.get('COOP_BOOTSTRAP_CLIENTS','3'))
+        self.assertIn(count,(1,2,3));mask=(1<<(count+1))-2
+        self.write('stationChildren',mask)
+        self.cpu.mem_write(self.wm+0x1e2a,struct.pack('<H',mask))
+        for aid in range(count+1,4):self.peer(aid,phase=0)
+        self.pump();self.assertEqual(len(self.submissions),1)
+        self.assertEqual(self.submissions[0]['destinations'],mask)
+        self.assertEqual(self.submissions[0]['data'],b'\0\0'+bytes(range(126)))
+        self.complete()
+        for aid in range(1,count+1):self.assertEqual(self.row(aid)[1:3],(126,1))
+        for aid in range(count+1,4):self.assertEqual(self.row(aid)[0:3],(0,0,0))
+        self.assertEqual(self.stats(),(1,count,(count-1)*126,0) if count>1 else (0,0,0,0))
 
     def test_matching_payload_blocks_group_only_associated_ready_members(self):
         for count in (1,2,3):

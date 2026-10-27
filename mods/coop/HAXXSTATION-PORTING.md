@@ -356,6 +356,39 @@ before responding to the first menu request can strand early clients during
 mixed firmware/application reconnects. Execution payloads need a separate
 party-wide barrier, discussed next.
 
+### Group identical blocks when the native sender supports it
+
+A sender with a reliable destination bitmap can submit one payload block for
+several guests. This keeps the signed receiver protocol unchanged: every guest
+still sees its normal port, chunk number and exact payload bytes. It can reduce
+repeated data substantially when three receivers need the same executable.
+
+Group recipients only when their protocol phase, byte offset and chunk number
+match and each has completed its own readiness/cooldown conditions. Keep the
+shared send buffer unchanged until the SDK releases it. Record every selected
+association's generation and transfer position before submission; a successful
+callback must advance only those same transactions. A reconnect or a new request
+cannot inherit an older send's acknowledgment. Retain the native SDK's error and
+retry semantics, and verify that success guarantees delivery to the entire
+selected bitmap in the target SDK. A bitmap parameter alone is insufficient to
+establish that guarantee.
+
+Let lagging guests catch up at their own positions before grouping them again.
+Keep menu/control and execute messages on their original paths until separately
+validated. In particular, fewer data submissions do not remove the complete-body
+barrier before executing any guest's ROM. Joining and menu selection should remain
+state driven rather than depend on people pressing buttons at matching times.
+
+This repository's optional `--experimental-bootstrap-multicast` demonstrates that
+approach in `bootstrap/host.cpp`. Its private native ARM checks exercise errors,
+lagging recipients, generation/position changes, duplicate completions and execute
+barriers. An initial stock-core four-console run transferred the same 552,136-byte
+execution body to three guests in 4,383 grouped sends, accounting for 1,104,272 fewer
+repeated payload bytes, then started the authenticated native game clients. Those
+byte counts are not a complete loading-time measurement or physical acceptance.
+The option is disabled by default; stage wireless-filesystem transfers use a
+separate protocol and receive no benefit from this change.
+
 ## 8. Treat every reconnect as a state transition
 
 There are at least three guest identities/lifetimes to reason about: firmware

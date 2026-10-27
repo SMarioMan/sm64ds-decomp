@@ -6,16 +6,31 @@ flashcart host and two ordinary DS Download Play guests. A single ROM supporting
 an arbitrary two-to-four-system party is still on the worklist.
 
 The previous three-system hardware report for `be682ed7f` confirmed complete
-Yoshi heads, but very slow movement and long blank loads. This candidate adds
-subsequent direct animation caching/prefetch, reclaimable collision plans,
-exact painting work, a larger compressed-input window and animated stage loads.
-It has **no physical performance acceptance yet**. Related four-system
-instrumented builds pass normal Yoshi stage entries6–16, movement, course return
-and Save & Quit; that does not establish campaign completion or hardware speed.
+Yoshi heads, but very slow movement and long blank loads. The updated candidate
+adds the packed common-animation cache and conservative line/coin-shadow work
+to the earlier loading/performance options. It has **no physical performance
+acceptance yet**.
+
+The exact three-system image below passes real stock-core Download Play startup,
+normal castle/painting entry into Bob-omb Battlefield, independent movement,
+shared pause and coin-state comparison, course return, host cartridge saving,
+host title initialization and both guest shutdowns. Its steady BoB guest sample
+has905 two-VBlank intervals, one three-VBlank interval and one four-VBlank interval;
+movement has270 two-VBlank and one three-VBlank interval. Those are emulated
+SDK input intervals, not measured hardware frame rates. A related four-system
+build passes stages6–23; stationary enemies killed a guest in24, followed by a
+synchronized native castle recovery and Save & Quit. Later courses and complete
+campaign/physical speed acceptance remain open.
+
+If you already built the older `2ac1e988…` retest, its hardware results are still
+useful. The new image is a separate comparison and excludes the new experimental
+bootstrap multicast option.
 
 ## Build
 
-Update the `co-op-multiplayer` branch and activate your existing build environment.
+Fetch the `co-op-multiplayer` branch and use source commit `175708cbb` for this
+exact hash, then activate your existing build environment. Later documentation
+and test-only commits do not change this ROM.
 Use your own paths for the EU revision-0 game and USA Download Station Volume1
 dumps. The command below uses the cloud setup's paths; the flags are portable.
 Run builders one at a time because their intermediate filenames are shared.
@@ -33,16 +48,18 @@ python mods/coop/build_download_play.py /workspace/inputs/sm64ds-eu.nds \
   --experimental-painting-normals \
   --experimental-painting-visibility \
   --experimental-lz-window \
-  --experimental-animation-prewarm \
+  --experimental-packed-animation-cache \
+  --experimental-line-broadphase \
+  --experimental-local-coin-shadows \
   --experimental-animation-prefetch \
   --experimental-loading-screen \
-  --output build/coop/bootstrap/coop-performance-loading-3p.nds
+  --output build/coop/bootstrap/packed-performance-loading-3p.nds
 ```
 
 Expected SHA-256, with slotA and the inputs pinned in the main README:
 
 ```text
-2ac1e9888c2067a4b1dbaf85d80f3d6e560c701e3f445e859e0102cfa1f3d5d2
+28e661dca4b9d1914b3987e3440317b0711de363c4ad2f87c3d2132da695073d
 ```
 
 The adjacent JSON identifies the exact ROM, input hashes and module options.

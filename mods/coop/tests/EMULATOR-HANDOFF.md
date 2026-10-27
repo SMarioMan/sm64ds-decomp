@@ -1,5 +1,40 @@
 # Download Play handoff investigation
 
+CURRENT OVERRIDE (newest): previous f759 four-player party CLOSED after6–23
+PASS, native giant-Goomba death in stationary24 route, all4 recovered to castle
+exterior1 with full health, Save & Quit PASS, explicit/actual249029 exit verified.
+24–51 are NOT accepted: the idle benchmark attracts a giant Goomba; adapt physical
+routes, do not label that native enemy death as geometry/heap corruption.
+
+5db570d1 multicast4p PASSES signed+unsigned startup, normalYoshi castle→nativeBoB,
+steady/movement/pause/coin+Goomba parity, UI cleanup, course return and Save & Quit.
+Actual251976 exit verified. Matched f759 unicast control also PASSES and CLOSED.
+Body bytes IDENTICAL552136, SHA f6a9a181bc7cf3de3eac69751a4f5fde4d5f5681b6af8f7c4808e3f31b3aa6fe.
+Observer payload windows2801→1097 SDKVB, first offsets2520 vs8568, not full joining
+or hardware timing. Group4383 sends/13149 recipient advances/1104272 saved bytes,
+0 stale. Source smoke now records payload SDK counter samples automatically.
+
+Normal3-system28e661dca4b9d1914b3987e3440317b0711de363c4ad2f87c3d2132da695073d
+PASSES all322 native checks (30 skip records), actual3-console DLP/castle/BoB,
+steady/movement/shared pause/coin state, course return, save/title/2 guest ends,
+explicit+actual frontend exit. No stage diagnostics, actor-cost profiler or
+bootstrap grouping. Hardware retest instructions updated with source175708cbb
+and exact hash in PERFORMANCE-RETEST.md. BoB guest905x2/1x3/1x4VB steady,
+270x2/1x3VB movement; physical acceptance still open.
+
+ONLY ACTIVE roster-test queue /workspace/runtime/queue-multicast-roster-boot-tests.py
+log same basename.log.3-system multicast boot4ac08abd PASSED and CLOSED; currently
+2-system multicast d52a7390 running, last actual frontend253602. It then runs
+staggered4p5db570d1 menu delays0/600/1500, native story castle check, no control
+socket, automatic frontend shutdown and verified actual exit between runs.
+No competing party. Roster runs are startup checks, not full campaign acceptance.
+Native max-roster suite8 cases PASS, configured-roster case also passes compiled
+1/2-guest parents. Global runtime ELF/base currently normal28e/no-stage-diag;
+host ELF/bin currently2p-group d52a. Frozen group3p/2p host artifacts in /tmp/
+sm64ds-coop-runs/bootstrap-multicast-{3p,2p}-native-build. Core image outputs in
+/tmp/sm64ds-coop-runs; preserve frozen artifacts before subsequent builders.
+Older CURRENT/ACTIVE notes below are historical and superseded here.
+
 CURRENT OVERRIDE (newest): ONLY ACTIVEf759a3778d5ddea71b84173c061112763e9da94db2e7b5d7c4675fb8e4f46143,
 actual frontend249029, socket /workspace/runtime/packed132-no-cost-matrix.sock.
 Normal4-Yoshi6–23 matrix has PASSED through21; later follower

@@ -920,6 +920,7 @@ by default and is absent from the2ac hardware retest image.
 for ready Download Play guests using the existing native port15 sender. SDK
 completion advances only the recorded peer generations, offsets and chunk IDs;
 menu, start and execution messages retain their individual path and the complete
-body barrier. Seven isolated native ARM cases pass. Wireless speed, reconnect and
-hardware acceptance are pending, so this option remains off by default. It
+body barrier. Eight isolated native ARM cases pass. A first matched four-console payload window improves2801→1097 SDK VBlanks
+and native BoB/return/save checks pass;2/3-system startup, delayed selection and
+hardware acceptance remain open, so this option remains off by default. It
 changes initial executable transfer, not in-level wireless file loading.
