@@ -87,15 +87,21 @@ not establish campaign completion or real-hardware compatibility.
   without lowering native query results. Native pressure/growth still evict;
   unknown ownership/layout or bounded traversal failure uses the original policy.
   All24 animation-cache and212 applicable full-suite checks pass. Four-console
-  d320a980 tests6–16 are in progress;6–7 pass. At7 there are four virtual-query
+  d320a980 short checks6–16 and four-system return/save/quit now PASS. At7 there are four virtual-query
   successes/no fallback per peer,14 retained entries, and first movement has
   four cache hits/no new misses:163 intervals at2 VBlanks, one at3. The earlier
   33-VBlank Y_walk movement hitch is absent on this route. Initial stage6 cold
   entry still has a41-VBlank Y_wait guest read; this is not an all-hitch fix.
-  The31-VBlank/2219-byte read is Yoshi's walking animation. Investigate avoiding
-  repeated whole common-archive loads: its321224 bytes contain285814 bytes of
+  The31-VBlank/2219-byte read is Yoshi's walking animation. A separate optional common-archive streaming build passes215 applicable native
+  checks; matched wireless loading tests are starting. It avoids repeated whole mounts: its321224 bytes contain285814 bytes of
   player assets, while only the current characters may be needed at entry.
   Preserve every original file and native content if testing streamed loading.
+  Remaining movement hitches include direct player paddle_end.bca reads outside
+  the common-only raw-cache mask; index the154 original direct player BCA files.
+  Level14 still has collision6.68–7.23ms:194 last-frame nodes exceed192, and
+  both axis windows exceed1024 despite327 actual envelope pairs. A cap-only
+  private experiment is rejected. Separate bounded window work/candidate budgets
+  need native and live validation before increasing these limits.
 - [ ] Replace long black loading periods with visible, animated loading
   feedback on the host and guests. Keep a resident indicator responsive during
   Download Play handoff, wireless file reads and stage changes. Show real byte

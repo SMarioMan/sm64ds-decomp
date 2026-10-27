@@ -34,7 +34,10 @@ all-level hardware performance remain unresolved.
 `--experimental-lazy-animation-eviction` additionally keeps owned animation
 bytes through validated native capacity queries; it requires the animation
 cache. Native allocation pressure and growth still reclaim those bytes. This
-option is under wireless testing and is disabled by default.
+option passes short four-console stage checks6–16 and return/save/quit, but
+remaining hitches and hardware acceptance are open. It is disabled by default.
+`--experimental-stream-common-archive` separately evaluates loading only required
+common members; its native tests pass, with wireless loading measurements pending.
 
 The newer local spatial candidate experiment uses
 `--experimental-animation-cache --experimental-collision-plan --output PATH`.

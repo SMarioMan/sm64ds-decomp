@@ -9,45 +9,61 @@ all levels. The tested party size and campaign coverage were not specified;
 newer-image physical acceptance and campaign completion remain open. Read the current regressions first; later sections preserve
 historical checkpoints and failures rather than release acceptance.
 
-## Current guarded animation-cache experiment (supersedes older parties)
+## Current loading comparison (supersedes every older party)
 
-Published base55cf25a40 has the bounded eight-node collision refresh. Its exact
-47a149ce four-console run PASSES steady/warm/pause, guest2 shared coin and
-native exit/reentry. That party and every older party are CLOSED.
+Published8a2ac5f92 adds guarded virtual capacity queries. Exact d320a980 image
+PASSES four-console short diagnostic6–16, controls/steady/warm/pause, then native
+course return and Save & Quit with other files unchanged. Reports:
+`lazy-eviction-performance/`, `lazy-eviction-stage16-return-save/`. That parent
+was explicitly closed and all actual processes exited. It is not full-game or
+hardware acceptance; multiple later-stage hitches and13/14 slowdown remain.
 
-ONLY ACTIVE wireless party is d320a980070602733dc38bdc439bc18d48dc22b58d1862467ca81458ff7696ae,
-`/workspace/runtime/animation-cache-lazy-eviction-cost-host.nds`.
-Parent `lazy-eviction-matrix/`, exec97862, socket
-`/workspace/runtime/lazy-eviction-matrix.sock`.
-Continuation `lazy-eviction-performance/`, exec81353, takes the all-Yoshi castle
-fixture through diagnostic interior2 and the native BoB painting, then measures
-short diagnostic stage checks6–16. Read result.json and continuation log first.
-Stages6–7 have passed so far. At7 every peer has four virtual-query successes,
-no fallback and14 retained entries. First7 movement adds four hits/no misses:
-163 intervals at2 VBlanks, one at3; the old33-VBlank walking hitch is absent on
-this route. Initial6 cold entry still has a7430-byte Y_wait.bca guest read of41 VBlanks.
-The old31-VBlank/2219-byte read is Y_walk.bca. Neither query retention nor this
-partial run establishes a cold-read fix, full speed or campaign progression.
-No competing RPCs, second wireless party, live RAM/packet edits or savestates.
-Sources and hashes are frozen in both driver directories. Fully close and verify
-actual parent exit before another wireless party; tool IDs can disappear.
+ONLY ACTIVE party: d320a980070602733dc38bdc439bc18d48dc22b58d1862467ca81458ff7696ae
+control for a three-stage loading comparison. Parent
+`stream-common-control-v2-matrix/`, exec46075, socket
+`/workspace/runtime/stream-common-control-v2-matrix.sock`.
+Continuation `stream-common-control-v2-performance/`, exec30463, measures short
+6–8 checks and native SDK transition VBlanks, including resume/chord/poll overhead.
+Read result.json and logs first. It retains paused cores after completion.
+No other RPC or wireless party until it is closed and actual exit is verified.
+No live RAM/packet modifications or savestates; frozen sources/hashes are retained.
+First attempt `stream-common-control-matrix/` FAILED on a frontend address guard:
+027ffc3c is outside its physical-RAM read API. Retry reads023ffc3c, the actual
+physical mirror. All failed-attempt cores exited; control-session metadata records
+closure. This is a harness failure, not evidence against the ROM.
 
-The optional `--experimental-lazy-animation-eviction` requires animation caching.
-It predicts exact native capacity after cache frees without modifying heap lists,
-checks ownership/headers/padding/used-list membership, and bounds used/free walks
-at1024/256 nodes. Unknowns use the existing flush policy. Allocation pressure,
-in-place growth and session cleanup still reclaim cached bytes.212 applicable
-checks PASS (222 discovered, ten skips), including24 animation-cache cases:
-`lazy-animation-all-native-tests-v2.log`. Default fbb2262d and cache-only274084aa
-rebuild identically. All performance changes are disabled by default.
+Unplayed candidate474f41cbbb012da123228ea2a654b201d979e04b75e1345635c7eedfdbd8bea2
+is `/workspace/runtime/animation-cache-stream-common-cost-host.nds`. Its new
+`--experimental-stream-common-archive` skips new common mounts in active co-op,
+keeps existing source ownership, and uses already verified original member views.
+Native225-discovered/215-executed/10-skipped checks PASS, including the new mount
+policy. No wireless speed acceptance yet. Start a matching fresh party only after
+the control is closed. Build/test global artifacts currently describe474f41cb.
 
-Source-only recovery: `/workspace/runtime/spatial-plan-source-recovery/`;
-refresh after edits. No ROM/BIOS/RAM/compiler bundled. Serialize every build and
-native test through `/workspace/runtime/coop-bootstrap-build.lock`; use `set -e`.
-Closed3413/47a1 and106b snapshot families were losslessly gzip-compressed, with
-hash/restore manifests `closed-validated-edge-snapshot-compression.json` and
-`edge-refresh-closed-snapshot-compression.json`. No native test fixture changed.
-Disk space remains tight. Preserve inputs, unique played ROMs and fixtures.
+Two additional concrete performance targets are confirmed but NOT implemented:
+- Stage9 repeated29–31-VBlank IO is direct `data/player/paddle_end.bca`,1011 bytes
+  at ROM7021840, excluded by the common-NARC-only cache whitelist. All154 direct
+  player BCA files are compressed and within16KiB; index exact original FAT extents.
+- Stage14 retained collider links reconstruct194 valid nodes. Private Unicorn
+  replay changing only192->256 still rejects: X1398/Z1041 one-axis windows exceed
+  1024, despite327 actual2D candidates. Never changed live memory. Keep candidate
+  work separate from window work and validate native contacts/order/heap/performance.
+  Uncompressed fixture `/runtime/lazy-eviction-performance/08-level-14/diagnostic-stage-passed-0`
+  (expand `/runtime` to `/workspace/runtime`) is retained for this replay.
+
+Serialize builds/native tests with `/workspace/runtime/coop-bootstrap-build.lock`
+and `set -e`. Source-only recovery `/workspace/runtime/spatial-plan-source-recovery/`
+contains no ROM/BIOS/RAM/compiler; refresh after edits. Disk space is tight.
+Supplied inputs, played ROMs and default test fixtures remain intact. Closed
+snapshot families are losslessly gzip-compressed; restore with `gzip -dk PATH.gz`.
+Manifests: `completed-lazy-matrix-snapshot-compression.json`,
+`closed-lazy-party-snapshot-compression.json`,
+`closed-three-system-stage14-snapshot-compression.json`,
+`closed-validated-edge-snapshot-compression.json`,
+`edge-refresh-closed-snapshot-compression.json`.
+Unplayed870b/f027 generated ROM copies were removed after hashing; metadata,
+build/test logs and source commits remain, recorded in
+`superseded-unplayed-edge-budget-images-removed.json`.
 
 ## Historical spatial-plan work (superseded by the current section above)
 

@@ -37,6 +37,8 @@ def main():
                         help='EXPERIMENTAL: retain immutable animation bytes across stage transitions')
     parser.add_argument('--experimental-lazy-animation-eviction',action='store_true',
                         help='EXPERIMENTAL: preserve cached bytes during exact virtual capacity queries')
+    parser.add_argument('--experimental-stream-common-archive',action='store_true',
+                        help='EXPERIMENTAL: stream required common members instead of mounting the whole NARC')
     parser.add_argument('--experimental-animation-cache',action='store_true',
                         help='EXPERIMENTAL: expendable compressed player-animation read cache')
     parser.add_argument('--clients',type=int,choices=(1,2,3),default=3)
@@ -52,6 +54,8 @@ def main():
         parser.error('Persistent animation caching requires --experimental-animation-cache')
     if args.experimental_lazy_animation_eviction and not args.experimental_animation_cache:
         parser.error('Lazy animation eviction requires --experimental-animation-cache')
+    if args.experimental_stream_common_archive and not args.experimental_animation_cache:
+        parser.error('Streaming the common archive requires --experimental-animation-cache')
     if args.experimental_collision_plan and (not args.experimental_animation_cache or args.experimental_collision_broadphase):
         parser.error('Collision plans require --experimental-animation-cache and exclude --experimental-collision-broadphase')
     if args.diagnostic_player_cost and args.diagnostic_render_cost:
@@ -93,6 +97,7 @@ def main():
     if args.experimental_animation_cache:diagnostic+=('--experimental-animation-cache',)
     if args.experimental_persistent_animation_cache:diagnostic+=('--experimental-persistent-animation-cache',)
     if args.experimental_lazy_animation_eviction:diagnostic+=('--experimental-lazy-animation-eviction',)
+    if args.experimental_stream_common_archive:diagnostic+=('--experimental-stream-common-archive',)
     run('build.py',args.rom,'--save-slot',args.save_slot,'--runtime-placement',args.runtime_placement,*diagnostic)
     run('bootstrap/build_probe.py','--station',args.station)
     # The provisional parent fixes the final WFS table extents before the

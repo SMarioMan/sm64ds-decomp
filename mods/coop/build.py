@@ -163,6 +163,8 @@ def main():
                         help='EXPERIMENTAL: retain immutable animation bytes across stage transitions')
     parser.add_argument('--experimental-lazy-animation-eviction',action='store_true',
                         help='EXPERIMENTAL: preserve cached bytes during exact virtual capacity queries')
+    parser.add_argument('--experimental-stream-common-archive',action='store_true',
+                        help='EXPERIMENTAL: stream required common members instead of mounting the whole NARC')
     parser.add_argument('--experimental-animation-cache',action='store_true',
                         help='EXPERIMENTAL: expendable ROOT cache for compressed animation reads')
     args = parser.parse_args()
@@ -176,6 +178,8 @@ def main():
         parser.error('Persistent animation caching requires --experimental-animation-cache')
     if args.experimental_lazy_animation_eviction and not args.experimental_animation_cache:
         parser.error('Lazy animation eviction requires --experimental-animation-cache')
+    if args.experimental_stream_common_archive and not args.experimental_animation_cache:
+        parser.error('Streaming the common archive requires --experimental-animation-cache')
     if args.experimental_collision_plan and (not args.experimental_animation_cache or args.experimental_collision_broadphase):
         parser.error('Collision plans require --experimental-animation-cache and exclude --experimental-collision-broadphase')
     if args.diagnostic_player_cost and args.diagnostic_render_cost:
@@ -288,6 +292,9 @@ def main():
             trampolines += [('CoopOriginalHeapAllocate',game['_ZN5mHeap6Heap_t8AllocateEji'],bytes.fromhex('30402de9')),
                             ('CoopOriginalStageCleanup',game['_ZN10dScStage_c16CleanupResourcesEv'],bytes.fromhex('f0412de9')),
                             ('CoopOriginalHeapReallocate',game['_ZN5mHeap6Heap_t10ReallocateEPvj'],bytes.fromhex('00402de9'))]
+        if args.experimental_stream_common_archive:
+            trampolines += [('CoopOriginalLoadArchive',game['LoadArchive'],bytes.fromhex('10402de9'))]
+        if args.experimental_animation_cache:
             for address,expected in ((0x0203c5d0,'08c09fe5140090e50410a0e31cff2fe1f8e00402'),
                                      (0x0203c5f8,'08c09fe5140090e50410a0e31cff2fe1f8e00402'),
                                      (0x0203c5ac,'04c09fe5140090e51cff2fe180e10402')):
@@ -344,6 +351,8 @@ def main():
             defines.append('COOP_EXPERIMENTAL_PERSISTENT_ANIMATION_CACHE=1')
         if args.experimental_lazy_animation_eviction:
             defines.append('COOP_EXPERIMENTAL_LAZY_ANIMATION_EVICTION=1')
+        if args.experimental_stream_common_archive:
+            defines.append('COOP_EXPERIMENTAL_STREAM_COMMON_ARCHIVE=1')
         if args.diagnostic_start_level is not None:
             defines.append(f'COOP_DIAGNOSTIC_START_LEVEL={args.diagnostic_start_level}')
         if args.diagnostic_stage_cycle:
@@ -502,6 +511,8 @@ def main():
                (game['_ZN8dActor_c19BeforeInitResourcesEv'],'CoopActorBeforeInit'),(game['_ZN8dActor_c14BeforeBehaviorEv'],'CoopActorBefore'),(game['_ZN8dActor_c13AfterBehaviorEj'],'CoopActorAfter')]
         if args.diagnostic_player_cost:
             pairs += [(game['_ZN10dScStage_c6RenderEv'],'CoopCostStageRender')]
+        if args.experimental_stream_common_archive:
+            pairs += [(game['LoadArchive'],'CoopLoadArchive')]
         if args.experimental_animation_cache:
             pairs += [(game['_ZN5mHeap6Heap_t8AllocateEji'],'CoopAnimationHeapAllocate'),
                       (game['_ZN10dScStage_c16CleanupResourcesEv'],'CoopAnimationStageCleanup'),
@@ -539,6 +550,10 @@ def main():
         module_report['particleTableReserveBeforeStageResources']=True
         module_report['sharedResourceFallback']=True
         module_report['streamUncachedNarcMembers']=True
+        if args.experimental_stream_common_archive:
+            module_report['streamCommonArchiveOnDemand']={
+                'archiveIndex':0,'wholeArchiveBytes':len(rom.files[rom.filenames.idOf('ARCHIVE/arc0.narc')]),
+                'skipsOffset':emitted['coopCommonArchiveSkips']-PAYLOAD_ADDRESS,'preserveMountedSource':True}
         module_report['streamCompressedDiskFiles']=True
         module_report['nativeTeardownResetDeduplicated']=True
         module_report['evictCommonStageSourceCache']=True

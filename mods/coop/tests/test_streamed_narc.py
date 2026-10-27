@@ -75,6 +75,8 @@ class StreamedNarcTests(HeapHarness,unittest.TestCase):
                 result=1
             elif address in (self.runtime['CoopOriginalOpenFile'],self.runtime['CoopOriginalResolveFile']):
                 self.original_calls.append((address,args));result=0x1234
+            elif address==self.runtime.get('CoopOriginalLoadArchive'):
+                self.original_calls.append((address,args));result=0x1234
             if result is not None:
                 cpu.reg_write(UC_ARM_REG_R0,result)
                 cpu.reg_write(UC_ARM_REG_PC,cpu.reg_read(UC_ARM_REG_LR))
@@ -143,6 +145,47 @@ class StreamedNarcTests(HeapHarness,unittest.TestCase):
         self.assertEqual(self.call('CoopOpenFile',self.file,0x9c06),0x1234)
         self.assertEqual(len(self.original_calls),2)
         self.assertEqual(self.physical_opens,0)
+
+    def require_common_streaming(self):
+        if 'CoopLoadArchive' not in self.runtime:
+            self.skipTest('requires --experimental-stream-common-archive')
+
+    def test_common_mount_is_optional_and_walk_member_still_reads_original_bytes(self):
+        self.require_common_streaming();self.write(self.arc_table,0)
+        before=(self.largest(self.root),self.largest(self.game_heap))
+        entry=bytes(self.cpu.mem_read(self.arc_table,20))
+        self.assertEqual(self.call('CoopLoadArchive',0),1)
+        self.assertEqual(bytes(self.cpu.mem_read(self.arc_table,20)),entry)
+        self.assertFalse(self.original_calls);self.assertEqual(self.physical_opens,0)
+        archive=ndspy.narc.NARC(self.archives['/ARCHIVE/arc0.narc'][3])
+        index=archive.filenames.idOf('data/player/Y_walk.bca');expected=archive.files[index]
+        self.assertEqual(self.call('CoopResolveFile',0x8000+index),0)
+        self.assertEqual(self.call('CoopOpenFile',self.file,0x8000+index),1)
+        self.assertEqual(self.call(self.game['FS_ReadFile'],self.file,self.buffer,len(expected)),len(expected))
+        self.assertEqual(bytes(self.cpu.mem_read(self.buffer,len(expected))),expected)
+        self.call(self.game['FS_CloseFile'],self.file)
+        self.assertEqual(self.read_sizes,[len(expected)])
+        self.assertEqual((self.largest(self.root),self.largest(self.game_heap)),before)
+        self.assertEqual(self.word(self.runtime['coopCommonArchiveSkips']),1)
+
+    def test_common_streaming_keeps_a_mounted_source_and_native_owner_intact(self):
+        self.require_common_streaming()
+        self.write(self.arc_table,0x02300000);self.write(self.arc_table+4,self.root)
+        entry=bytes(self.cpu.mem_read(self.arc_table,20))
+        expected=self.call(self.game['LoadArchive'],0)
+        self.assertEqual(self.call('CoopLoadArchive',0),expected)
+        self.assertEqual(bytes(self.cpu.mem_read(self.arc_table,20)),entry)
+        self.assertEqual(self.word(self.runtime['coopCommonArchiveSkips']),0)
+        self.assertFalse(self.original_calls)
+
+    def test_other_archives_offline_and_ended_sessions_keep_native_mount_policy(self):
+        self.require_common_streaming()
+        for archive,enabled,net in ((7,1,4),(0,0,4),(0,1,0),(0,1,5),(0,1,6)):
+            with self.subTest(archive=archive,enabled=enabled,net=net):
+                self.write(self.runtime['coopEnabled'],enabled);self.write(0x0209fc68,net)
+                self.assertEqual(self.call('CoopLoadArchive',archive),0x1234)
+                self.assertEqual(self.original_calls[-1][1][0],archive)
+        self.assertEqual(self.word(self.runtime['coopCommonArchiveSkips']),0)
 
 
 if __name__=='__main__':unittest.main()

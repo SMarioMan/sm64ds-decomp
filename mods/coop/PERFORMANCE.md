@@ -715,9 +715,12 @@ query retention helps in practice without guessing from the absence of eviction.
 
 Four-console elapsed-profile image
 `d320a980070602733dc38bdc439bc18d48dc22b58d1862467ca81458ff7696ae`
-is testing ordinary all-Yoshi castle/painting entry followed by diagnostic stage
-checks6–16 at `lazy-eviction-performance/`. Stages6–7 controls, synchronization,
-steady/warm motion and shared pause PASS so far. Each console records four exact
+PASSES all-Yoshi castle/painting entry followed by short diagnostic stage
+checks6–16 at `lazy-eviction-performance/`: controls, synchronization, steady/warm
+motion and shared pause. The separate `lazy-eviction-stage16-return-save/` also
+PASSES600 steady16 frames, real course return, restored castle controls and
+Save & Quit on all four systems, with other files unchanged. The party is CLOSED.
+These are compatibility checks, not earned campaign/boss completion. Each console records four exact
 virtual queries/no fallback by7, retaining14 entries/24052 bytes across the
 transition. Its first movement adds four cache hits with no new miss or traced
 physical read:163 intervals at2 VBlanks, one at3. The old level7 route had a
@@ -728,3 +731,49 @@ The earlier traced2219-byte/31-VBlank read is specifically
 `data/player/Y_walk.bca`, identified from the original common NARC extents.
 Default fbb2262d and cache-only274084aa independently reproduce byte-for-byte.
 No new performance option is enabled in those images.
+
+
+## Common-archive loading experiment and remaining bottlenecks
+
+`--experimental-stream-common-archive` requires animation caching and avoids
+new whole mounts of archive0 during live co-op. Existing mounted sources and
+owners remain intact; other archives/offline/ended sessions retain native policy.
+The existing verified unmounted-NARC views load the original requested member
+through the normal copying/decompression paths. All ROM files and extents remain
+present. A native prologue audit guards the new LoadArchive trampoline. The
+counter records skipped mount requests; multiplying it by archive size would
+NOT measure actual bytes saved because a normal mounted source serves many calls.
+
+The common NARC is321224 bytes, of which285814 are player assets. This makes
+on-demand loading worth comparing against the whole mount for an all-Yoshi party.
+Instrumented image474f41cbbb012da123228ea2a654b201d979e04b75e1345635c7eedfdbd8bea2
+PASSES225 discovered/215 executed tests, ten documented skips
+(`stream-common-all-native-tests.log`), including original walk bytes without
+container reservation, preservation of mounted ownership and offline/other-archive
+native behavior. It is not yet played; no loading-speed improvement is claimed.
+
+The d320 full6–16 sweep still has movement hitches in9,10,12 and13. At9 the
+repeated29–31-VBlank read is the direct NitroFS player animation
+`data/player/paddle_end.bca` (1011 bytes, ROM7021840), outside the current
+common-NARC-only cache eligibility. There are154 direct player BCA files, all
+compressed and within the16KiB member limit. Extending the verified player-file
+index is a separate next fix. At13 another Y_walk read takes31 VBlanks after
+memory pressure has reclaimed its bytes; query retention alone cannot solve it.
+
+Level14 also remains slow: host collision6.68ms steady/7.23ms moving and Stage
+Render9.91ms/10.81ms, with many3-VBlank intervals. A retained coherent last-frame
+list has194 nodes, exceeding the192 cap. Private native-code replay with only a
+256-node cap still rejects it: X has1398 windows, Z1041, both above1024 despite
+only327 true two-dimensional envelope candidates. No invalid geometry was found.
+Do not blindly raise just the cap or claim the existing alternate-axis fix solves
+this four-Yoshi case. Consider separately bounded window work/candidate totals,
+with native contact/order/heap checks and live speed evidence before promotion.
+The live game was never modified; `stage14-node-cap-probe.json` records the result.
+
+A matched three-stage loading comparison is starting with d320 control. First
+attempt `stream-common-control-matrix/` FAILED because the frontend rejected an
+out-of-range diagnostic read of027ffc3c; it is a harness error, not a game pass or
+failure. The corrected controller reads physical RAM mirror023ffc3c in
+`stream-common-control-v2-matrix/` / `stream-common-control-v2-performance/`.
+Its transition totals include real resume/chord input and30-frame arrival polling.
+Compare the matching candidate only after closing this party and verifying exit.
