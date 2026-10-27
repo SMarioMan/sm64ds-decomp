@@ -12,7 +12,12 @@ not establish campaign completion or real-hardware compatibility.
   comparison or physical acceptance. Level13 remains mostly3 VBlanks.
   An optional exact painting-wave coefficient experiment matches native
   arithmetic and reduces a private400-cell ARM replay from89200 to64929
-  instructions and1200 to3 divisions; live timing remains pending.
+  instructions and1200 to3 divisions. Live f67 passes13–16 and course
+  return/save/quit; its13 cadence gain is modest and not full speed.
+  A separate exact regular-grid-normal candidate passes seven full-mesh ARM
+  comparisons and the247-test suite;90153→75864 instructions,400→324 native
+  normalizations. Live timing is pending. A Yoshi sleep-start cold read also
+  needs loading-time warming; it can span phase measurement boundaries.
   The user tested the pinned89505d400 normal ROM, SHA-256
   `aea94b7bc8a51986b02c258cb779934bd200f269e05ad4d193282237be4baedf`,
   and reports functional physical multiplayer with parity to melonDS behavior,

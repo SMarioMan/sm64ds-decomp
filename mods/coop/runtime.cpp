@@ -489,6 +489,11 @@ void CoopLoadLevelOverlays(int level) {
 #ifdef COOP_EXPERIMENTAL_PAINTING_MATH
             extern int CoopPaintingHeight(daPicGate_c *,int);
             Patch(0x02125bb0,(void *)CoopPaintingHeight);
+#ifdef COOP_EXPERIMENTAL_PAINTING_NORMALS
+            extern void CoopPaintingNormals(daPicGate_c *);
+            PatchCall(0x021265b4,(void *)CoopPaintingNormals);
+            PatchCall(0x02126a24,(void *)CoopPaintingNormals);
+#endif
 #endif
         }
         // Overlay 2 stays authenticated on disk. Patch native story camera
@@ -585,6 +590,65 @@ int CoopPaintingHeight(daPicGate_c *painting,int distance) {
     if (sum<0)sum=0;
     const s16 *sine=(const s16 *)0x02082214;
     return CoopPaintingMultiply(sine[((u16)phase>>4)*2],sum);
+}
+#endif
+
+#ifdef COOP_EXPERIMENTAL_PAINTING_NORMALS
+struct CoopPaintingVector { s32 x,y,z; };
+// Private ABI aliases to the unchanged native vector/painting routines.
+extern "C" void CoopPaintingNormalize(CoopPaintingVector *,CoopPaintingVector *);
+extern "C" void CoopOriginalPaintingNormals(daPicGate_c *);
+u32 coopPaintingNormalStats[3]={0}; // regular grids, native fallbacks, overwritten borders.
+static s32 CoopPaintingNegativeMultiply(s32 a,s32 b) {
+    return (s32)((-((s64)a*b)+0x800)>>12);
+}
+void CoopPaintingNormals(daPicGate_c *painting) {
+    unsigned rows=painting->mRows,cols=painting->mCols,count=painting->mNumCells;
+    daPicGate_c::Vertex *cells=painting->mCells;
+    u32 pointer=(u32)cells;
+    bool regular=coopEnabled && data_0209fc68==4 && rows>=2 && rows<=32 &&
+        rows==cols && count==rows*cols && !(pointer&3) &&
+        pointer>=0x02000000 && pointer<=0x02400000-count*sizeof(*cells);
+    // Prove the two cross-product components that vanish on a regular grid.
+    // Finish all validation before modifying any native mesh field.
+    for (unsigned row=0;row<rows && regular;++row)
+        for (unsigned col=0;col<cols;++col) {
+            daPicGate_c::Vertex *v=&cells[row*cols+col];
+            if (v->x!=cells[col].x || v->y!=cells[row*cols].y) {
+                regular=false;break;
+            }
+        }
+    if (!regular) {
+        ++coopPaintingNormalStats[1];CoopOriginalPaintingNormals(painting);return;
+    }
+    ++coopPaintingNormalStats[0];
+    s32 width=((painting->param1&15)+1)*0x64000;
+    s32 height=(((painting->param1>>4)&15)+1)*0x64000;
+    for (unsigned row=0;row<rows;++row)
+        for (unsigned col=0;col<cols;++col) {
+            daPicGate_c::Vertex *v=&cells[row*cols+col];
+            // Both ROM-verified callers immediately invoke FlattenFrame,
+            // which overwrites these normals. Keep z untouched here: inner
+            // normals still need the original neighbouring border heights.
+            if (!v->x || v->x==width || !v->y || v->y==height) {
+                v->normal=0x1ff00000;++coopPaintingNormalStats[2];continue;
+            }
+            const daPicGate_c::Vertex *left=col ? v-1 : v;
+            const daPicGate_c::Vertex *right=col+1<cols ? v+1 : v;
+            const daPicGate_c::Vertex *top=row ? v-rows : v;
+            const daPicGate_c::Vertex *bottom=row+1<rows ? v+rows : v;
+            s32 dx=(s32)((u32)left->x-(u32)right->x);
+            s32 dy=(s32)((u32)top->y-(u32)bottom->y);
+            s32 dzx=(s32)((u32)left->z-(u32)right->z);
+            s32 dzy=(s32)((u32)top->z-(u32)bottom->z);
+            CoopPaintingVector normal;
+            normal.x=CoopPaintingNegativeMultiply(dzx,dy);
+            normal.y=CoopPaintingNegativeMultiply(dx,dzy);
+            normal.z=CoopPaintingMultiply(dx,dy)>>1;
+            CoopPaintingNormalize(&normal,&normal);
+            v->normal=((u32)(normal.x>>3)&0x3ff) |
+                (((u32)(normal.y>>3)&0x3ff)<<10) | (((u32)(normal.z>>3)&0x3ff)<<20);
+        }
 }
 #endif
 

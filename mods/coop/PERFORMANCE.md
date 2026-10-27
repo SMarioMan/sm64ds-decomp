@@ -859,3 +859,38 @@ boot checks explicitly used the earlier58e integrated image while testing the
 new painting module; the former failed run retained a missing generated
 provisional-ROM fixture error, then passed with COOP_HOST_ROM set explicitly.
 All raw default private RAM fixtures remain available.
+
+## Continuous painting live result and regular-grid normals
+
+Painting coefficients f67dd4ca PASSES direct13–16, movement, shared pause,
+world synchronization, course return and four-system Save & Quit. In matched
+13-entry settings, control4604 steady cadence is247 at2/439 at3/4 at4 VBlanks;
+f67 is268 at2/427 at3/2 at4. Movement changes33 at2/90 at3 plus boundary1 to
+60 at2/74 at3/1 at5. Boot/shared ticks and trajectories can differ. This is a
+modest gain;13 still misses full speed. All consoles reuse279600 coefficients
+in the steady sample with one fill and no fallback; native geometry is retained.
+
+A14 cold4969-byte `data/player/Y_sleep_start.bca` read crosses the steady/motion
+boundary. Its read count is unchanged while its completion/store happens later.
+A zero miss delta in a single phase does not establish no file-read stall. Trace
+both active/end fields and store counters. Idle/walk/sleep first-use warming
+remains part of the hitch work.
+
+`--experimental-painting-normals` requires painting math and remains disabled by
+default. It proves square2–32-cell regular X/Y coordinates before writing mesh
+fields; unknown geometry/counts and offline modes call the original. The known
+zero cross-product terms and redundant vector-subtraction calls are removed.
+Both patched calls are ROM-verified to immediately call native FlattenFrame.
+Border normals are overwritten by that function, so their calculation is
+skipped while their heights remain available to neighbouring interior normals.
+All remaining normalization and final flattening still use native routines.
+
+Seven ARM cases compare every resulting vertex byte after normal/flatten,
+including nonzero border heights, signed wrapping, reversed/min/max grids,
+nonregular/rectangular/inconsistent-count fallbacks, actor/RNG preservation.
+400-cell instructions fall90153→75864; normalizations400→324. Full247-discovered
+suite passes (237 executed,10 skips). This is private replay evidence; live
+cadence is pending. Code/data soft bound becomes38KiB; final64KiB cap remains.
+The diagnostic combined body/tables are43072 bytes. No polygon/mesh/actor detail
+is removed. A captured inner256-cell region has256 distinct normalization inputs;
+a speculative normalization-result cache was therefore not added.

@@ -837,3 +837,8 @@ character/color matching coverage remains on the worklist.
 coefficients. Native ARM arithmetic tests pass, including signed inputs and
 parameter/timer changes; live performance acceptance is pending. It remains
 opt-in. It does not reduce mesh detail, wave updates, actor simulation or content.
+
+`--experimental-painting-normals` requires `--experimental-painting-math` and
+also remains opt-in. It computes the same regular painting mesh normals using
+native normalization, then keeps native border flattening. Seven complete-mesh
+ARM comparisons and the247-test suite pass; live timing remains pending.

@@ -85,9 +85,9 @@ def link(source, prefix, address, game_symbols, launcher, cc, ld, defines=()):
     end = max([address + len(payload)] + [emitted[n] + sizes[n] for n in defined])
     payload.extend(bytes(end - address - len(payload)))
     # The runtime is dynamically allocated in ROOT; the loader accepts 64 KiB.
-    # Keep code/data below 37 KiB; the final module (including tables) is
+    # Keep code/data below 38 KiB; the final module (including tables) is
     # checked separately against the loader's 64 KiB limit.
-    if not payload or end > address + 0x9400:
+    if not payload or end > address + 0x9800:
         raise RuntimeError('Invalid linked payload span')
     return payload, emitted
 
@@ -155,6 +155,8 @@ def main():
                         help='TEST ONLY: drain geometry to measure terrain/body/head polygon costs; changes timing')
     parser.add_argument('--diagnostic-player-cost',action='store_true',
                         help='TEST ONLY: elapsed SDK ticks for player behavior/models and stage rendering')
+    parser.add_argument('--experimental-painting-normals',action='store_true',
+                        help='EXPERIMENTAL: exact regular-grid painting normals with native fallback')
     parser.add_argument('--experimental-painting-math',action='store_true',
                         help='EXPERIMENTAL: reuse exact ripple-wave coefficients across mesh cells')
     parser.add_argument('--experimental-collision-plan',action='store_true',
@@ -168,6 +170,8 @@ def main():
     parser.add_argument('--experimental-animation-cache',action='store_true',
                         help='EXPERIMENTAL: expendable ROOT cache for compressed animation reads')
     args = parser.parse_args()
+    if args.experimental_painting_normals and not args.experimental_painting_math:
+        parser.error('Painting normals require --experimental-painting-math')
     if args.baseline and args.diagnostic_start_level is not None:
         parser.error('--baseline cannot select a diagnostic stage')
     if args.diagnostic_stage_cycle and args.diagnostic_start_level is None:
@@ -332,6 +336,16 @@ def main():
             if painting_image.data[offset:offset+4]!=branch(address,0x01ffabe4)[:3]+b'\xeb':
                 raise RuntimeError('Unexpected native painting signed divider call')
             imports['CoopPaintingDivide']=0x01ffabe4
+        if args.experimental_painting_normals:
+            painting_image=rom.loadArm9Overlays()[80]
+            for site in (0x021265b4,0x02126a24):
+                offset=site-painting_image.ramAddress
+                expected=branch(site,0x02125940)[:3]+b'\xeb'+bytes.fromhex('0500a0e1')
+                expected+=branch(site+8,0x02125af0)[:3]+b'\xeb'
+                if painting_image.data[offset:offset+12]!=expected:
+                    raise RuntimeError('Unexpected painting normal/flatten call pair')
+            imports.update(CoopOriginalPaintingNormals=0x02125940,CoopPaintingNormalize=game['NormalizeVec3'])
+
         if args.experimental_collision_plan:
             imports.update(CoopCollisionPairContinue=0x02014b10,CoopCollisionPairDone=0x02014f14)
         imports['coopNarcIndex']=PAYLOAD_ADDRESS+0x1800
@@ -365,6 +379,7 @@ def main():
             imports['coopAnimationDirectIndex']=imports['coopAnimationCacheMask']+len(animation_mask)
         defines=[f'COOP_SAVE_SLOT={ord(args.save_slot)-ord("A") if args.save_slot else -1}']
         if args.experimental_painting_math:defines.append('COOP_EXPERIMENTAL_PAINTING_MATH=1')
+        if args.experimental_painting_normals:defines.append('COOP_EXPERIMENTAL_PAINTING_NORMALS=1')
         if args.experimental_animation_cache:
             defines.append('COOP_EXPERIMENTAL_ANIMATION_CACHE=1')
         if args.experimental_persistent_animation_cache:
@@ -576,6 +591,11 @@ def main():
         module_report['evictCommonStageSourceCache']=True
         module_report['evictStageCacheForPaintingMesh']=True
         module_report['localCameraControls']=True
+        if args.experimental_painting_normals:
+            module_report['experimentalPaintingNormals']={'defaultEnabled':False,
+                'statsOffset':emitted['coopPaintingNormalStats']-PAYLOAD_ADDRESS,
+                'fields':['regularGrids','nativeFallbacks','overwrittenBorders'],
+                'nativeNormalization':True,'verifiedFlattenCallers':[hex(0x021265b4),hex(0x02126a24)]}
         if args.experimental_painting_math:
             module_report['experimentalPaintingMath']={'defaultEnabled':False,'statsOffset':emitted['coopPaintingMathStats']-PAYLOAD_ADDRESS,
                 'fields':['coefficientHits','coefficientFills','nativeFallbacks'],'nativeStateZeroPreserved':True}

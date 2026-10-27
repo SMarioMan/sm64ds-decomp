@@ -11,10 +11,52 @@ historical checkpoints and failures rather than release acceptance.
 
 ## Current painting experiment and minimap follow-up
 
-Published HEAD9449b839d. LOCAL numbered minimap markers and optional painting
-coefficients are being validated; no claim of campaign completion/full speed.
-ALL wireless parties are CLOSED; actual parent/frontend206593/206598/206599
-exited. The next party should use the painting experiment, after building it.
+Published HEADd6b06fc18; normal optimization is currently LOCAL. Numbered minimap markers and optional painting
+coefficients are pushed; no claim of campaign completion/full speed.
+ONLY ACTIVE party is normals7f9ace211f92e02c5d24aae429d5bce7bd9eb9fd9cf84e4092428ea68d3cf53d,
+`painting-normals-stage13-cost-host.nds`. Parent `painting-normals-matrix/`,
+socket `/workspace/runtime/painting-normals-matrix.sock`, exec43713;
+continuation `painting-normals-performance/`, exec65039. It measures1800 steady
+frames and four-player movement/pause on direct13→16, recording coefficient and
+normal counters. Check result/log before RPC; no competing party or live edits.
+The full image passes four retail boot/secure-area/layout checks.
+
+All earlier parties are CLOSED. f67dd4ca coefficients PASSES13–16
+plus600 steady16, course return, shared world and four-system Save & Quit.
+It was explicitly shut down; actual frontend209510 exited. Its ROM and captures
+are verified gzip. `painting-coefficients-performance/` and
+`painting-coefficients-stage16-return-save/` contain results.
+13 steady268 at2/427 at3/2 at4 VBlanks, only a modest gain over control below.
+All peers reuse279600 coefficients in the measured steady delta, one initial
+fill and no fallback. No full-speed claim. Do not start another party until normals7f9 is explicitly closed and actual
+frontend exit verified.
+
+LOCAL optional --experimental-painting-normals requires painting math. Both
+native normal→MOV r0,r5→FlattenFrame call pairs are ROM-verified at021265b4 and
+02126a24. The first build's guard rejected an incorrect r4 assumption before
+compilation; it was corrected to actual r5. Seven full-mesh native comparisons
+PASS, including wrapping, geometry fallbacks and untouched neighbour border
+heights. Instructions90153→75864, native normalizations400→324. Full247 tests
+PASS (237 executed,10 skipped). Soft code/data bound38KiB;64KiB final cap stays.
+Combined diagnostic body43072 bytes. No normalization cache: inner256 captured
+vertices have256 different normalization inputs. Live normal timing pending.
+The new normal candidate is now built and its frozen-driver party is active as
+described above.
+Global ELF/base ROM/build.json currently match the normals option.
+
+The matched painting-OFF control4604db37b42f11047352b848f3feb9f2a67c56290e54b40289223377c0df0af6
+PASSES13→14. `painting-coefficients-control-performance/`:13 steady247 intervals
+at2 VBlanks/439 at3/4 at4, collision2.333ms/render4.094ms;14 steady727 at2/96
+at3/2 at4/1 at6, collision3.566ms/render6.910ms.14 movement has one39-VBlank
+interval. A native4969-byte Y_sleep_start.bca read (ROM7207044, file973) starts
+near the measurement boundary and finishes during movement: read count stays12,
+guest cache stores20→21. Miss delta0 alone does NOT prove no physical read
+crossed the boundary; inspect active/start/end and completed store counters.
+This direct player file is already indexed; its first cold read still stalls.
+Control was explicitly shut down and actual frontend exit verified. Its captures
+and ROM are losslessly gzipped with manifest
+`closed-painting-control-snapshot-rom-compression.json`.
+All earlier parties including58e are CLOSED; actual206593/206598/206599 exited.
 
 56b1796f PASSES short6–16,600-frame steady16, course return and four-system
 Save & Quit with other files unchanged. `direct-window-budget-performance/`
@@ -48,10 +90,14 @@ provisional-host fixture had been removed for disk space. A new full build
 restores that default generated fixture. Earlier compile failures/skipped-only
 painting test attempts are not counted as passing implementation tests.
 
-Global ELF/base ROM/build.json now match the new unprofiled normal build,
-35d8be5d8a49681d37c9e05f3b12b991bb6ffff96e165f05223ba46c6d25adc3.
-Its21 structural/boot/relocation/minimap checks PASS. The generated raw
-provisional-host fixture is restored. Build the painting candidate next. Freeze driver sources and matching
+Unprofiled normal35d8be5d8a49681d37c9e05f3b12b991bb6ffff96e165f05223ba46c6d25adc3
+passes21 structural/boot/relocation/minimap checks, but has not been played.
+It is now losslessly gzipped; README records its new default hash. Global
+ELF/base ROM/build.json now match the local normals option (diagnostic13).
+Earlier f67 preflight25 painting/boot/image/minimap tests passed.
+Generated raw provisional-host fixture is restored. After closing this control,
+build the painting candidate with --experimental-painting-math and otherwise
+identical flags. Native240 suite with painting ON was previously successful. Freeze driver sources and matching
 ROM metadata before changing code. Build/native-test lock:
 `/workspace/runtime/coop-bootstrap-build.lock`; use `set -e`.
 Source-only recovery `/workspace/runtime/spatial-plan-source-recovery/` contains

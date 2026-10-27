@@ -29,6 +29,8 @@ def main():
                         help='TEST ONLY: measure geometry costs with FIFO drains; not a performance benchmark')
     parser.add_argument('--diagnostic-player-cost',action='store_true',
                         help='TEST ONLY: elapsed SDK ticks for player behavior/models and stage rendering')
+    parser.add_argument('--experimental-painting-normals',action='store_true',
+                        help='EXPERIMENTAL: exact regular-grid painting normals; requires painting math')
     parser.add_argument('--experimental-painting-math',action='store_true',
                         help='EXPERIMENTAL: reuse exact painting-wave coefficients')
     parser.add_argument('--experimental-collision-plan',action='store_true',
@@ -54,6 +56,8 @@ def main():
         parser.error('Persistent animation caching requires --experimental-animation-cache')
     if args.experimental_lazy_animation_eviction and not args.experimental_animation_cache:
         parser.error('Lazy animation eviction requires --experimental-animation-cache')
+    if args.experimental_painting_normals and not args.experimental_painting_math:
+        parser.error('Painting normals require --experimental-painting-math')
     if args.experimental_collision_plan and (not args.experimental_animation_cache or args.experimental_collision_broadphase):
         parser.error('Collision plans require --experimental-animation-cache and exclude --experimental-collision-broadphase')
     if args.diagnostic_player_cost and args.diagnostic_render_cost:
@@ -92,6 +96,7 @@ def main():
     if args.diagnostic_player_cost:diagnostic+=('--diagnostic-player-cost',)
     if args.experimental_collision_plan:diagnostic+=('--experimental-collision-plan',)
     if args.experimental_painting_math:diagnostic+=('--experimental-painting-math',)
+    if args.experimental_painting_normals:diagnostic+=('--experimental-painting-normals',)
     if args.experimental_collision_broadphase:diagnostic+=('--experimental-collision-broadphase',)
     if args.experimental_animation_cache:diagnostic+=('--experimental-animation-cache',)
     if args.experimental_persistent_animation_cache:diagnostic+=('--experimental-persistent-animation-cache',)
