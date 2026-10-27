@@ -30,10 +30,12 @@ class LoadingScreenTests(HeapHarness,unittest.TestCase):
         self.cpu.mem_write(0x020a6088,bytes(26));self.half(0x020a609c,0x100)
         self.native_irq=self.game['_ZN3IRQ13VBlankHandlerEv']
         self.write(0x02099fe4,self.native_irq)
-        self.native_calls=0;self.delegates=[];self.writer=None
+        self.native_calls=0;self.delegates=[];self.writer=None;self.native_change=None
         def adapter(cpu,address,size,user):
             if address==self.native_irq:
-                self.native_calls+=1;result=0
+                self.native_calls+=1
+                if self.native_change:self.native_change()
+                result=0
             elif address in tuple(self.runtime[n] for n in
                     ('CoopLoadingOriginalDecompress','CoopLoadingOriginalObjPalette','CoopLoadingOriginalReadAt')):
                 args=tuple(cpu.reg_read(r) for r in (UC_ARM_REG_R0,UC_ARM_REG_R1,UC_ARM_REG_R2))
@@ -166,6 +168,38 @@ class LoadingScreenTests(HeapHarness,unittest.TestCase):
         self.assertEqual(self.stats(),(0,)*7)
         self.assertEqual(self.word(0x04001000),self.display)
         self.assertEqual(self.word(0x02099fe4),self.native_irq)
+
+    def test_native_wipe_windows_forced_blank_and_obj_darkening_yield_during_feedback(self):
+        native=self.display|0x6080
+        self.write(0x04001000,native);self.half(0x04001050,0x00df);self.half(0x04001054,16)
+        self.invoke('CoopLoadingAllow');self.invoke('CoopLoadingVBlank')
+        self.assertEqual(self.word(0x04001000)&0xe080,0)
+        self.assertEqual(self.readhalf(0x04001050)&0x10,0)
+        self.invoke('CoopLoadingEnd')
+        self.assertEqual(self.word(0x04001000),native)
+        self.assertEqual(self.readhalf(0x04001050),0x00df)
+        self.assertEqual(self.readhalf(0x04001054),16)
+
+    def test_native_vblank_display_writes_do_not_hide_the_loading_objects(self):
+        self.invoke('CoopLoadingAllow')
+        def native_write():
+            self.write(0x04001000,self.word(0x04001000)|0x6080)
+            self.half(0x0400106c,0x8010)
+            self.half(0x04001050,self.readhalf(0x04001050)|0x10)
+        self.native_change=native_write;self.invoke('CoopLoadingVBlank')
+        self.assertEqual(self.native_calls,1)
+        self.assertEqual(self.word(0x04001000)&0xe080,0)
+        self.assertEqual(self.readhalf(0x0400106c),0)
+        self.assertEqual(self.readhalf(0x04001050)&0x10,0)
+
+    def test_reacquiring_feedback_draws_objects_immediately_before_the_next_scanout(self):
+        self.invoke('CoopLoadingAllow')
+        self.assertEqual(self.readhalf(0x07000400),88)
+        self.assertEqual(self.readhalf(0x07000404),0xf1f8)
+        self.invoke('CoopLoadingSuspend');self.invoke('CoopLoadingBegin')
+        self.assertEqual(self.readhalf(0x07000400),88)
+        self.assertEqual(self.readhalf(0x07000404),0xf1f8)
+        self.assertEqual(self.native_calls,0)
 
 
 if __name__=='__main__':unittest.main()

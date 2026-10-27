@@ -1,19 +1,29 @@
 # Download Play handoff investigation
 
-CURRENT OVERRIDE: ONLY ACTIVEdf0b76ee7a368f82ea5bb14188889a74fa54c2c8c172d5c777220d6fc5cc6a82
-raw /tmp/sm64ds-coop-runs/loading-ui-yoshi-host.nds; parent
-/workspace/runtime/loading-ui-yoshi-matrix (symlink to /tmp), socket
-/workspace/runtime/loading-ui-yoshi-matrix.sock, exec14232; performance follower
-loading-ui-yoshi-performance exec59761; return/save follower exec63279 waits.
-Scripts reproduce/continue-loading-ui-yoshi.py and
-continue-loading-ui-yoshi-stage16-return-save.py. Frozen source includes
-loading_screen.inc and read-only loading_feedback.py screenshot checks.
-COOP_CAPTURE_LOADING_SCREEN=1 requires rendered LOADING letters and two spinner
-phases on every console per diagnostic transition. Driver also asserts UI
-active/wanted0, original IRQ0201a534 and zero ownership faults at playable entry.
-No competing party or live RAM/packet changes. Global ELF/base/default bootstrap
-matchdf0b;10 new UI native cases and full293 PASS (283 executed,10 skips).
-Soft code/data44KiB, module64KiB cap unchanged; body/tables49116 bytes.
+CURRENT OVERRIDE: ONLY ACTIVE105a389d43dcf763a3616a0650380aac129990775f512cfc02d0dc43cf66bcc8
+raw /tmp/sm64ds-coop-runs/loading-ui-scanout-yoshi-host.nds; parent
+/workspace/runtime/loading-ui-scanout-matrix (symlink to /tmp), socket
+/workspace/runtime/loading-ui-scanout-matrix.sock, exec73315; performance follower
+loading-ui-scanout-performance exec75956; return/save follower exec19869 waits.
+Drivers reproduce/continue-loading-ui-scanout.py and
+continue-loading-ui-scanout-stage16-return-save.py. Normal four-Yoshi6–15 pass;
+16/return/save still running. Actual LOADING letters and two spinner phases
+PASS all four consoles on every observed diagnostic transition. Gameplay UI
+active/wanted0, original IRQ0201a534 restored, ownershipFaults0. Stage9 steady
+and movement both0 physical reads after14-pose prefetch. Global ELF/base/raw
+default bootstrap match105a, full296 tests PASS (286 executed,10 skips).
+No competing party; physical inputs/read-only observation only. Frozen drivers
+are authoritative. Actual frontend PID227294; verify shutdown before another.
+
+df0b anddd47 prototypes failed rendered visibility despite balanced ownership:
+native BLDCNTff with effective EVY16 darkens OBJ, while CPU BLDY readback is0.
+Read-only graphics-snapshot proves this. The current lease excludes OBJ from
+blend target1, disables sub windows/forced blank, redraws after native VBlank
+and immediately on reacquisition.13 native cases pass; 4 hardware diagnostics
+fields existed before, now13 capture relevant graphics/lease state. CPU
+subBlendYReadback is not the GPU's effective coefficient. Source-only custom
+test frontend command graphics-snapshot changes no core state. No custom
+melonDS needed by users. Earlier parties are closed with actual exits verified.
 
 5bf prefetch party PASSES normal6–16,600 steady16, native course return and
 four-system Save & Quit. It is explicitly closed and actual frontend exit

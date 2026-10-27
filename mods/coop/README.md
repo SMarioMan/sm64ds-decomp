@@ -874,13 +874,18 @@ After skybox loading it reads missing verified Yoshi idle/walk/sleep and shared
 cold-weather pose files into the existing optional cache. This intentionally
 moves first-use IO into loading. It uses optional8192-byte GAME scratch, keeps
 native open/read/close and network servicing, and skips reads that cannot be
-cached. Existing cache entries add no reads. Eight native cases and the283-test
-suite pass; wireless hitch and loading-time comparisons are still pending.
+cached. Existing cache entries add no reads. The table now includes fourteen
+idle/walk/sleep/cold/swimming poses. Eight native cases and the296-test suite
+pass. The earlier nine-pose build passes normal four-Yoshi stages6–16, course
+return and four-system Save & Quit with zero new steady gameplay reads; the
+fourteen-pose candidate also removes the three stage9 movement reads. Broader
+actions, campaign and physical performance acceptance remain open.
 The option is disabled by default. It is independent of the archive-copy
 `--experimental-animation-prewarm` option.
 
 `--experimental-loading-screen` tests animated stage-loading feedback using a
-temporary sub-OBJ lease and native VBlank handling. Ten native ownership/asset
-restoration tests and the293-test suite pass; rendered four-console loading
-and subsequent gameplay/save checks are underway. It is off by default and
+temporary sub-OBJ lease and native VBlank handling. Thirteen native ownership,
+fade/window and asset-restoration checks and the296-test suite pass. Actual
+four-console screenshots verify the letters and changing spinner phases through
+normal stage transitions. Subsequent gameplay/save checks are underway. It is off by default and
 currently covers native stage initialization, not every firmware/menu screen.

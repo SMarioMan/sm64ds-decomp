@@ -18,6 +18,40 @@ the identical mod image with2,3 and4 players. Record the exact image hash,
 hardware, cold/warm assets and controller route. Faster host emulation or a
 passing synchronization check does not establish full-speed hardware gameplay.
 
+## Latest stage-loading and first-use results
+
+Candidate `105a389d43dcf763a3616a0650380aac129990775f512cfc02d0dc43cf66bcc8`
+combines the optional loading indicator with fourteen preloaded Yoshi poses.
+The full native suite passes296 discovered tests (286 executed,10 skipped).
+The previous nine-pose5bf build already passes normal four-Yoshi6–16, course
+return and four-system Save & Quit with no new physical gameplay reads in any
+steady sample. It still reads three swimming poses during stage9 movement.
+Adding paddle1/paddle2/paddle-end/swim-in/swim-wait to loading removes those
+movement reads on105a. All exact original file bytes are retained; cache entry
+and byte budgets are unchanged. Broader actions,17–51 and physical speed
+acceptance remain open;6/13/14/16 still show intervals above two VBlanks.
+
+The loading indicator now has actual four-console screenshot evidence: custom
+LOADING glyphs and two distinct spinner phases appear during each observed
+transition. It releases its VRAM/OAM/IRQ leases at playable entry with zero
+ownership faults. A first prototype passed ownership checks but drew black:
+the native fade targets OBJ with effective coefficient16, although reading
+write-only BLDY returns zero. Read-only GPU-state captures confirmed that cause.
+The lease excludes OBJ from the native blend targets, clears window/forced-blank
+bits temporarily, and redraws after the original VBlank handler and immediately
+on lease acquisition. Thirteen isolated ARM cases cover these visibility rules
+and native graphics restoration. This covers stage initialization, not initial
+firmware/Download Station/menu phases, and still needs hardware visual testing.
+Screenshot sampling adds test overhead; its load times are not matched speed
+benchmarks. Evidence: `loading-ui-scanout-{matrix,performance}/` and
+`loading-ui-scanout-all-native-tests.log` in the private runtime directory.
+
+The separate same-source LZ-window control measures actual four-console load
+SDK VBlanks off→on:1→2 **2733→1500**,6→7 **5139→4304**,
+7→8 **4898→4095**. Off image8cbf93be and on image167a are source-matched
+(the on proof rebuild is byte-identical). This is one pair, includes input and
+polling, and is emulated time; physical and broader loading acceptance remain.
+
 ## Read-only emulator measurements
 
 The test frontend links the unmodified melonDS core. Build it using the

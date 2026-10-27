@@ -15,8 +15,8 @@ not establish campaign completion or real-hardware compatibility.
   mesh work pass native tests and earlier mixed-character13–16 diagnostics.
   Several four-Yoshi stages reach mostly2-VBlank cadence, but first-use pose
   reads still cause30–42-VBlank guest stalls and BoB still has3-VBlank samples.
-  This is not full-speed or full-campaign acceptance. Full283 tests pass
-  (273 executed,10 skipped) on the latest prefetch candidate5bf388b2.
+  This is not full-speed or full-campaign acceptance. The latest loading/prefetch
+  candidate105a389d passes296 tests (286 executed,10 skipped).
   The normal four-Yoshi0c52 run passes6–12 but crashes guests on12→13 in a
   native1048-byte model-work allocation. A guarded source-release boundary
   preserves native model data, allocation and cleanup; nine captured ARM
@@ -25,7 +25,8 @@ not establish campaign completion or real-hardware compatibility.
   that is not a native game failure and does not validate13. The5bf repeat
   now uses separate scratch storage and PASSES6–16, course return and four-system
   Save & Quit. Every steady stage sample has zero physical gameplay reads;
-  stage9 movement still has three reads, and6/13/14/16 retain slower intervals.
+  the expanded fourteen-pose105a candidate eliminates the three stage9 swimming
+  movement reads as well.6/13/14/16 retain slower intervals.
   Continue17–51,
   repeated loads, moving/visible paintings, missions, bosses and final combined
   hardware performance acceptance. Exact evidence and older results are in
@@ -44,14 +45,16 @@ not establish campaign completion or real-hardware compatibility.
   output allocation, with the original512-byte stack fallback. Eight native
   cases pass; one captured asset requires7 reads instead of48. Same-source
   window-on rebuild reproduces167a exactly; window-off8cbf93be passes21
-  discovered checks (18 executed,3 skipped). Measure actual matched loading
-  transitions before claiming whole-level improvement. Native mounting and
+  discovered checks (18 executed,3 skipped). An actual matched four-console comparison
+  measures window-off→on SDK VBlanks2733→1500 for1→2,5139→4304 for6→7
+  and4898→4095 for7→8. This includes input/polling, is only one matched pair,
+  and does not establish hardware or universal loading improvement. Native mounting and
   original archive/file extents must stay intact; the earlier mount-bypass
   experiment was withdrawn after a wireless crash.
   `--experimental-animation-prewarm` copies verified Yoshi idle/walk members
   before common-source release without additional reads; native heap/lifetime
   tests pass. It does not remove the direct sleep/cold first-use hitches.
-  `--experimental-animation-prefetch` moves nine missing idle/walk/sleep/cold
+  `--experimental-animation-prefetch` moves fourteen missing idle/walk/sleep/cold/swimming
   reads after native skybox loading using optional8KB GAME scratch and the
   existing32-entry/64KB reclaimable cache. Eight native cases pass, including
   exact bytes/cursors, repeat hits, native close, short reads, readiness and
@@ -65,9 +68,11 @@ not establish campaign completion or real-hardware compatibility.
   or phase progress where measurable; use an animated indicator when no honest
   total is available. Validate that feedback preserves native loading barriers,
   input acknowledgments, geometry/VRAM ownership and the retail hardware boot fix.
-  An opt-in stage-loading LOADING/spinner prototype passes10 native lease/
-  restoration checks and the293-test suite. Its actual four-console animation,
-  gameplay/heap and save checks are running ondf0b76ee. Initial firmware/menu
+  The opt-in stage-loading LOADING/spinner passes13 native lease/fade/window/
+  restoration checks and the296-test suite. Actual105a389d screenshots verify
+  letters and multiple spinner phases on all four consoles during normal
+  transitions; gameplay/heap and save checks are running. Thedf0b anddd47
+  prototypes had invisible text under native darkening; they are superseded. Initial firmware/menu
   loading phases and final hardware visual acceptance remain open.
 - [ ] Improve loading performance as well as steady gameplay speed. Measure
   cold/warm boot, castle/course transitions and guest file reads separately.

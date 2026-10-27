@@ -1,5 +1,6 @@
 """Read-only rendered loading-text and animation observations during live loads."""
 import json
+import os
 import struct
 from pathlib import Path
 
@@ -59,11 +60,18 @@ class LoadingFeedbackCapture:
                     (base+self.meta['statsOffset'],28),(0x023ffc3c,4)))
                 if int.from_bytes(values[0],'little')!=1:break
                 stats=dict(zip(self.meta['fields'],struct.unpack('<7I',values[1])))
+                hardware={}
+                if 'hardwareOffset' in self.meta:
+                    count=len(self.meta['hardwareFields'])
+                    raw=self.ds.read(c,base+self.meta['hardwareOffset'],count*4)
+                    hardware=dict(zip(self.meta['hardwareFields'],struct.unpack('<'+str(count)+'I',raw)))
                 if stats['ownershipFaults']:raise RuntimeError('Loading UI lost its native VRAM ownership')
                 number=self.probes[c];self.probes[c]+=1
                 filename=self.path.stem+f'-console{c}-{number}.ppm'
                 self.ds.command(f'screen {c} {self.ds.output/filename}')
-                row={'screenshot':filename,'sdkVBlank':int.from_bytes(values[2],'little'),'stats':stats,
+                if os.environ.get('COOP_CAPTURE_LOADING_GRAPHICS')=='1':
+                    self.ds.command(f'graphics-snapshot {c} {self.ds.output/Path(filename).stem}')
+                row={'screenshot':filename,'sdkVBlank':int.from_bytes(values[2],'little'),'stats':stats,'hardware':hardware,
                      **rendered_glyphs(self.ds.output/filename)}
                 rows.append(row);self.save()
                 if not repeat:

@@ -10,12 +10,13 @@ void CoopLoadingOriginalVBlank(void);
 static volatile u32 coopLoadingWanted=0,coopLoadingActive=0;
 static u32 coopLoadingWriting=0,coopLoadingBorrowedBank=0;
 static u32 coopLoadingSavedDisplay=0;
-static u16 coopLoadingSavedBrightness=0,coopLoadingSavedPalette[2];
+static u16 coopLoadingSavedBrightness=0,coopLoadingSavedPalette[2],coopLoadingSavedBlendObject=0;
 static u8 coopLoadingSavedBank=0;
 static u16 coopLoadingSavedLcdc=0,coopLoadingSavedOam[24];
 static u32 coopLoadingSavedTiles[64];
 // starts, stops, VBlank draws, asset pauses, bank skips, context skips, faults.
 u32 coopLoadingScreenStats[7]={0};
+u32 coopLoadingHardware[13]={0};
 static const u8 coopLoadingLetters[7][5]={
     {16,16,16,16,31}, {14,17,17,17,14}, {14,17,31,17,17},
     {30,17,17,17,30}, {31,4,4,4,31}, {17,25,21,19,17}, {14,16,23,17,15}
@@ -39,19 +40,37 @@ static void CoopLoadingGlyph(unsigned tile,const u8 *glyph) {
         out[y]=row;
     }
 }
-void CoopLoadingVBlank(void) {
-    CoopLoadingOriginalVBlank();
+static void CoopLoadingDraw(void) {
     if (!coopLoadingActive)return;
     if (*(volatile u8 *)0x04000249!=0x82) {
         ++coopLoadingScreenStats[6];return;
     }
+    coopLoadingHardware[0]=*(volatile u32 *)0x04001000;
+    coopLoadingHardware[1]=*(volatile u16 *)0x0400106c;
+    coopLoadingHardware[2]=*(volatile u16 *)0x04000304;
+    coopLoadingHardware[3]=*(volatile u8 *)0x04000249;
+    coopLoadingHardware[4]=*(volatile u32 *)0x04001050;
+    // BLDY is write-only; readback is not its effective coefficient.
+    coopLoadingHardware[5]=*(volatile u16 *)0x04001054;
+    // Native wipes/windows and brightness effects must not hide this lease.
+    volatile u32 *display=(volatile u32 *)0x04001000;
+    *display=(*display&~0x0003f080)|0x00011000;
+    *(volatile u16 *)0x0400106c=0;
+    *(volatile u16 *)0x04001050&=~0x10;
     unsigned frame=(*(volatile u32 *)0x027ffc3c>>3)&3;
     CoopLoadingGlyph(7,coopLoadingSpinner[frame]);
     for (unsigned i=0;i<8;++i) {
         volatile u16 *oam=(volatile u16 *)0x07000400+i*4;
         oam[0]=88;oam[1]=(u16)(96+i*8);oam[2]=(u16)(0xf000+504+i);
     }
-    ++coopLoadingScreenStats[2];
+    coopLoadingHardware[6]=*(volatile u16 *)0x050007e2;
+    coopLoadingHardware[7]=*(volatile u32 *)0x07000400;
+    coopLoadingHardware[8]=*(volatile u16 *)0x07000404;
+    coopLoadingHardware[9]=*(volatile u32 *)0x06603f00;
+}
+void CoopLoadingVBlank(void) {
+    CoopLoadingOriginalVBlank();
+    if (coopLoadingActive) { CoopLoadingDraw();++coopLoadingScreenStats[2]; }
 }
 
 void CoopLoadingSuspend(void) {
@@ -70,10 +89,12 @@ void CoopLoadingSuspend(void) {
         volatile u16 *oam=(volatile u16 *)0x07000400+i*4;
         for (unsigned j=0;j<3;++j)oam[j]=coopLoadingSavedOam[i*3+j];
     }
-    const u32 mask=0x00031000;
+    const u32 mask=0x0003f080;
     volatile u32 *display=(volatile u32 *)0x04001000;
     *display=(*display&~mask)|coopLoadingSavedDisplay;
     *(volatile u16 *)0x0400106c=coopLoadingSavedBrightness;
+    volatile u16 *blend=(volatile u16 *)0x04001050;
+    *blend=(*blend&~0x10)|coopLoadingSavedBlendObject;
     if (coopLoadingBorrowedBank) {
         CoopLoadingSetSubObjBank(0);
         *(volatile u8 *)0x04000249=coopLoadingSavedBank;
@@ -114,12 +135,18 @@ void CoopLoadingBegin(void) {
         for (unsigned j=0;j<3;++j)coopLoadingSavedOam[i*3+j]=oam[j];
     }
     for (unsigned i=0;i<7;++i)CoopLoadingGlyph(i,coopLoadingLetters[i]);
-    coopLoadingSavedDisplay=display&0x00031000;
+    coopLoadingSavedDisplay=display&0x0003f080;
     coopLoadingSavedBrightness=*(volatile u16 *)0x0400106c;
-    *(volatile u32 *)0x04001000=(display&~0x00030000)|0x00011000;
+    coopLoadingHardware[10]=display;
+    coopLoadingHardware[11]=*(volatile u16 *)0x04001050;
+    coopLoadingHardware[12]=coopLoadingSavedBrightness;
+    coopLoadingSavedBlendObject=*(volatile u16 *)0x04001050&0x10;
+    *(volatile u16 *)0x04001050&=~0x10;
+    *(volatile u32 *)0x04001000=(display&~0x0003f080)|0x00011000;
     *(volatile u16 *)0x0400106c=0;
     coopLoadingActive=1;++coopLoadingScreenStats[0];
     IRQ::SetIRQHandler(1,CoopLoadingVBlank);
+    CoopLoadingDraw();
     _ZN3IRQ7RestoreEj(irq);
 }
 void CoopLoadingAllow(void) { coopLoadingWanted=1;CoopLoadingBegin(); }

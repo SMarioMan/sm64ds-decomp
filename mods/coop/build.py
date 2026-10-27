@@ -433,7 +433,8 @@ def main():
                 top,end=struct.unpack_from('<II',narc_index,common_extents+member*8)
                 prefetch_animations.append((common_top+top,end-top,common_id))
             for name in ('Y_sleep_start','Y_sleep_wait','Y_sleep_end','Y_sleep_to_lie',
-                         'cold_wait_start','cold_wait','cold_wait_end'):
+                         'cold_wait_start','cold_wait','cold_wait_end','swim_in','swim_wait',
+                         'paddle_1','paddle_2','paddle_end'):
                 file_id=rom.filenames.idOf(f'data/player/{name}.bca')
                 top,end=struct.unpack_from('<II',original,fat+file_id*8)
                 prefetch_animations.append((top,end-top,file_id))
@@ -666,6 +667,8 @@ def main():
         if args.experimental_loading_screen:
             module_report['experimentalLoadingScreen']={'defaultEnabled':False,
                 'statsOffset':emitted['coopLoadingScreenStats']-PAYLOAD_ADDRESS,
+                'hardwareOffset':emitted['coopLoadingHardware']-PAYLOAD_ADDRESS,
+                'hardwareFields':['subDisplay','subMasterBrightness','displayPower','bankI','subBlend','subBlendYReadback','textWhite','oamPosition','oamTile','firstGlyphWord','nativeDisplayAtLease','nativeBlendAtLease','nativeBrightnessAtLease'],
                 'activeOffset':emitted['coopLoadingActive']-PAYLOAD_ADDRESS,
                 'wantedOffset':emitted['coopLoadingWanted']-PAYLOAD_ADDRESS,
                 'tileBytes':256,'oamObjects':8,'nativeVBlankPreserved':True,

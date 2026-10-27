@@ -448,6 +448,28 @@ int main(int argc,char** argv) try {
                 if(!file)throw std::runtime_error("Cannot write wireless state capture");
             }
             else if(cmd=="read") { unsigned addr,n;s>>std::hex>>addr>>std::dec>>n;if(addr<0x02000000||addr+n>0x02400000||n>1024)throw std::runtime_error("Read outside main RAM");std::cout<<"RAM "<<i<<" "<<std::hex<<addr<<":";for(unsigned j=0;j<n;j++)std::cout<<" "<<unsigned(ds.MainRAM[(addr+j)&ds.MainRAMMask]);std::cout<<std::dec<<"\n"; }
+            else if(cmd=="graphics-snapshot") {
+                // Read-only core observations: never change registers or VRAM.
+                std::string prefix;if(!(s>>prefix))throw std::runtime_error("Missing graphics output prefix");
+                auto write=[&](const std::string& suffix,const void* data,size_t size) {
+                    std::ofstream file(prefix+suffix,std::ios::binary);
+                    if(!file)throw std::runtime_error("Cannot write graphics observation");
+                    file.write(static_cast<const char*>(data),size);
+                };
+                std::array<u8,256> tiles{};
+                for(unsigned j=0;j<tiles.size();++j)tiles[j]=ds.GPU.ReadVRAM_BOBJ<u8>(0x3f00+j);
+                write(".obj-tiles",tiles.data(),tiles.size());
+                write(".obj-flat",ds.GPU.VRAMFlat_BOBJ+0x3f00,tiles.size());
+                write(".obj-oam",ds.GPU.OAM+0x400,64);
+                write(".obj-palette",ds.GPU.Palette+0x600,512);
+                std::ofstream file(prefix+".graphics.json");
+                if(!file)throw std::runtime_error("Cannot write graphics metadata");
+                auto& a=ds.GPU.GPU2D_A;auto& b=ds.GPU.GPU2D_B;
+                file<<"{\"readOnly\":true,\"enabledA\":"<<int(a.Enabled)<<",\"enabledB\":"<<int(b.Enabled)
+                    <<",\"displayA\":\"0x"<<std::hex<<a.DispCnt<<"\",\"displayB\":\"0x"<<b.DispCnt
+                    <<"\",\"brightnessA\":\"0x"<<a.MasterBrightness<<"\",\"brightnessB\":\"0x"<<b.MasterBrightness
+                    <<"\",\"blendB\":\"0x"<<b.BlendCnt<<"\",\"blendYB\":\"0x"<<unsigned(b.EVY)<<"\"}\n";
+            }
             else if(cmd=="regs") {
                 for(int reg=0;reg<16;reg++)std::cout<<"r"<<reg<<"="<<std::hex<<ds.ARM9.R[reg]<<" ";
                 std::cout<<"arm7:";for(int reg=0;reg<16;reg++)std::cout<<" r"<<reg<<"="<<std::hex<<ds.ARM7.R[reg]<<" ";
