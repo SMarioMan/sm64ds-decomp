@@ -155,6 +155,8 @@ def main():
                         help='TEST ONLY: drain geometry to measure terrain/body/head polygon costs; changes timing')
     parser.add_argument('--diagnostic-player-cost',action='store_true',
                         help='TEST ONLY: elapsed SDK ticks for player behavior/models and stage rendering')
+    parser.add_argument('--experimental-animation-prewarm',action='store_true',
+                        help='EXPERIMENTAL: retain native Yoshi idle/walk bytes before source release')
     parser.add_argument('--experimental-lz-window',action='store_true',
                         help='EXPERIMENTAL: optional owned4KB compressed-input window with512-byte fallback')
     parser.add_argument('--experimental-painting-visibility',action='store_true',
@@ -184,6 +186,8 @@ def main():
         parser.error('--diagnostic-stage-cycle requires --diagnostic-start-level')
     if args.baseline and (args.diagnostic_render_cost or args.diagnostic_player_cost or args.experimental_animation_cache or args.experimental_collision_broadphase or args.experimental_collision_plan or args.experimental_painting_math or args.experimental_lz_window):
         parser.error('--baseline cannot enable runtime experiments or diagnostics')
+    if args.experimental_animation_prewarm and not args.experimental_animation_cache:
+        parser.error('Animation prewarming requires --experimental-animation-cache')
     if args.experimental_persistent_animation_cache and not args.experimental_animation_cache:
         parser.error('Persistent animation caching requires --experimental-animation-cache')
     if args.experimental_lazy_animation_eviction and not args.experimental_animation_cache:
@@ -373,6 +377,12 @@ def main():
                 if name and name.startswith('data/player/') and name.endswith('.bca'):
                     mask[member//8]|=1<<(member%8)
             if not any(mask):raise RuntimeError('No verified player animations')
+            if args.experimental_animation_prewarm:
+                for member,name in ((80,'Y_wait'),(81,'Y_walk')):
+                    data=common.files[member]
+                    if (common.filenames.filenameOf(member)!=f'data/player/{name}.bca' or
+                            not 8<=len(data)<=16384 or data[:5]!=b'LZ77\x10'):
+                        raise RuntimeError('Unexpected prewarm pose or member format')
             animation_mask=bytes(mask)+bytes((-len(mask))%4)
             fat=struct.unpack_from('<I',original,0x48)[0]
             for file_id,data in enumerate(rom.files):
@@ -394,6 +404,7 @@ def main():
         if args.experimental_painting_normals:defines.append('COOP_EXPERIMENTAL_PAINTING_NORMALS=1')
         if args.experimental_painting_visibility:defines.append('COOP_EXPERIMENTAL_PAINTING_VISIBILITY=1')
         if args.experimental_lz_window:defines.append('COOP_EXPERIMENTAL_LZ_WINDOW=1')
+        if args.experimental_animation_prewarm:defines.append('COOP_EXPERIMENTAL_ANIMATION_PREWARM=1')
         if args.experimental_animation_cache:
             defines.append('COOP_EXPERIMENTAL_ANIMATION_CACHE=1')
         if args.experimental_persistent_animation_cache:
@@ -605,6 +616,11 @@ def main():
         module_report['evictCommonStageSourceCache']=True
         module_report['evictStageCacheForPaintingMesh']=True
         module_report['localCameraControls']=True
+        if args.experimental_animation_prewarm:
+            module_report['experimentalAnimationPrewarm']={'defaultEnabled':False,
+                'statsOffset':emitted['coopAnimationPrewarmStats']-PAYLOAD_ADDRESS,
+                'members':[80,81],'names':['Y_wait','Y_walk'],'newFileReads':False,
+                'fields':['attempts','scratchFallbacks','copiedBytes','stores','noStoreAttempts']}
         if args.experimental_lz_window:
             module_report['experimentalLzWindow']={'defaultEnabled':False,
                 'statsOffset':emitted['coopLzWindowStats']-PAYLOAD_ADDRESS,

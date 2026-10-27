@@ -955,5 +955,26 @@ a fresh same-source window-disabled control is needed for causal comparison.
 All earlier direct13 painting runs used the native Mario/Luigi/Wario/Yoshi
 character fixture, so their results are not four-Yoshi acceptance.
 Visibility8cc passes13–16 and return/save/quit;13 steady improves to791 intervals
-at2 VBlanks/28 at3/1 at4/13 at7/33 at8. That still includes cold reads and hitches
+at2 VBlanks/28 at3/1 at4/1 at37/3 at38. That still includes cold reads and hitches
 and is not full-speed hardware acceptance.
+
+## Idle/walk prewarming and normal-route regression
+
+`--experimental-animation-prewarm` requires the optional animation cache and is
+also disabled by default. Before the native common archive is released it copies
+the builder-verified Y_wait/Y_walk compressed members into optional GAME scratch,
+unmounts normally, then stores exact bytes in the existing reclaimable ROOT
+cache. The temporary9652-byte aligned scratch allocation is returned through
+its recorded owner. No file reads are added. No scratch space means ordinary
+unmount and no warming; unavailable cache storage also releases the scratch.
+Native source lifetime, exact bytes, heap pressure, offline policy, repeated
+boundaries and mesh cleanup checks pass. Full266 tests pass (256 executed,
+10 skips); combined body/tables44700 bytes. Wireless prewarm acceptance pending.
+
+The0c52 normal four-Yoshi run PASSES6–12, then FAILS12→13 on all three guests
+inside native model-work allocation (1048 bytes, DoSetFile02016c20), before the
+painting mesh allocator. It is not accepted. Retained RAM/DTCM captures are in
+lz-window-yoshi-performance/06-level-12. A later read-only frontend regs command
+terminated the frontend; the original game-failure captures predate that harness
+failure. Actual frontend exit is verified; no party remains active. A fresh
+same-source window-off control is still required to isolate loading changes.

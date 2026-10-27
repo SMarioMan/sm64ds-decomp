@@ -855,3 +855,11 @@ It preserves native mounting and exact decoder output. Eight native cases cover
 ownership, repeated loads, fallback and file semantics; broader wireless loading
 performance is under test. It is disabled by default and can be combined with
 or used independently of the animation cache.
+
+`--experimental-animation-prewarm` requires `--experimental-animation-cache`.
+It optionally retains exact Yoshi idle/walk file bytes before native source
+archive release, using temporary GAME storage and the existing reclaimable cache.
+It adds no file reads. Native heap/lifetime checks pass; wireless acceptance is
+pending. All performance options remain disabled by default. The combined0c52
+normal four-Yoshi diagnostic failed12→13 during model-work allocation; earlier
+mixed-character direct entries do not establish normal-route acceptance.

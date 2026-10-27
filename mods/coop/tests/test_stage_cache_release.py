@@ -31,6 +31,8 @@ class StageCacheReleaseTests(HeapHarness,unittest.TestCase):
     def test_native_cache_is_released_before_skybox_loading(self):
         self.call('CoopLoadSkybox',0)
         self.assertEqual(self.cache_at_skybox,[0])
+        if 'coopAnimationPrewarmStats' in self.runtime:
+            self.call('CoopFlushAnimationReadCache')
         self.assertGreaterEqual(self.largest(self.root),321224)
         self.assertEqual(self.word(self.runtime['coopStageCacheEvictions']),1)
         self.assertTrue(self.intact(self.root))
@@ -49,6 +51,8 @@ class StageCacheReleaseTests(HeapHarness,unittest.TestCase):
         cache_bytes=self.word(self.archive-12)
         self.assertFalse(self.archive<=result<self.archive+cache_bytes)
         self.call('CoopLoadSkybox',0)
+        if 'coopAnimationPrewarmStats' in self.runtime:
+            self.call('CoopFlushAnimationReadCache')
         reused=self.call(self.game['_ZN6Memory8AllocateEj'],cache_bytes)
         self.assertEqual(reused,self.archive)
         self.cpu.mem_write(reused,bytes(cache_bytes))
@@ -74,6 +78,73 @@ class StageCacheReleaseTests(HeapHarness,unittest.TestCase):
         self.assertEqual(self.cache_at_skybox,[self.archive])
         self.assertEqual(self.largest(self.root),before)
         self.assertEqual(self.word(self.runtime['coopStageCacheEvictions']),0)
+
+
+class AnimationPrewarmTests(StageCacheReleaseTests):
+    def setUp(self):
+        super().setUp()
+        if 'coopAnimationPrewarmStats' not in self.runtime:
+            self.skipTest('requires --experimental-animation-prewarm')
+
+    def stats(self):
+        return tuple(self.word(self.runtime['coopAnimationPrewarmStats']+i*4) for i in range(5))
+
+    def cached(self):
+        result={}
+        for i in range(32):
+            row=self.runtime['coopAnimationReadEntries']+i*24
+            data=self.word(row+16)
+            if data:
+                self.assertEqual(self.word(row+20),self.word(0x020a0e9c))
+                result[self.word(row)]=bytes(self.cpu.mem_read(data,self.word(row+4)))
+        return result
+
+    def test_exact_original_idle_and_walk_bytes_survive_source_release(self):
+        before_game=self.largest(self.game_heap)
+        arc=ndspy.narc.NARC(self.stock.files[self.stock.filenames.idOf('ARCHIVE/arc0.narc')])
+        index=self.runtime['coopNarcIndex']
+        extents=index+self.word(index+12);top=self.word(index+8)
+        expected={top+self.word(extents+i*8):bytes(arc.files[i]) for i in (80,81)}
+        self.call('CoopLoadSkybox',0)
+        self.assertEqual(self.cache_at_skybox,[0])
+        self.assertEqual(self.stats(),(1,0,sum(map(len,expected.values())),2,0))
+        self.assertEqual(self.cached(),expected)
+        # The complete original GAME scratch allocation has been returned.
+        self.assertEqual(self.largest(self.game_heap),before_game)
+        # Repeated boundary calls neither allocate nor recopy an absent source.
+        self.call('CoopLoadSkybox',0)
+        self.assertEqual(self.stats()[0],1)
+        self.call('CoopFlushAnimationReadCache')
+        self.assertEqual(self.cached(),{})
+        self.assertTrue(self.intact(self.root));self.assertTrue(self.intact(self.game_heap))
+
+    def test_game_pressure_unmounts_without_scratch_or_fatal_allocation(self):
+        ballast=[];before=self.largest(self.game_heap)
+        for _ in range(128):
+            available=self.largest(self.game_heap)
+            if available<9652:break
+            pointer=self.call(self.game['_ZN5mHeap6Heap_t8AllocateEji'],self.game_heap,available-128,4)
+            self.assertTrue(pointer);ballast.append(pointer)
+        self.assertLess(self.largest(self.game_heap),9652)
+        self.call('CoopLoadSkybox',0)
+        self.assertEqual(self.stats(),(1,1,0,0,0))
+        self.assertEqual(self.cached(),{})
+        self.assertEqual(self.cache_at_skybox,[0])
+        for pointer in reversed(ballast):
+            self.call(self.game['_ZN5mHeap6Heap_t10DeallocateEPv'],self.game_heap,pointer)
+        self.assertEqual(self.largest(self.game_heap),before)
+        self.assertTrue(self.intact(self.root));self.assertTrue(self.intact(self.game_heap))
+
+    def test_missing_root_cache_owner_releases_scratch_and_native_source(self):
+        before=self.largest(self.game_heap);root=self.word(0x020a0e9c)
+        self.write(0x020a0e9c,0)
+        self.call('CoopLoadSkybox',0)
+        self.write(0x020a0e9c,root)
+        self.assertEqual(self.stats(),(1,0,9649,0,1))
+        self.assertEqual(self.cached(),{})
+        self.assertEqual(self.cache_at_skybox,[0])
+        self.assertEqual(self.largest(self.game_heap),before)
+        self.assertTrue(self.intact(self.root));self.assertTrue(self.intact(self.game_heap))
 
 
 if __name__=='__main__':unittest.main()

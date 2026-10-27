@@ -1,5 +1,22 @@
 # Download Play handoff investigation
 
+CURRENT: No active party.0c52 normal four-Yoshi PASSES6–12 but FAILS12→13
+on all guests in native1048-byte model-work allocation at02016c20. Original
+failure RAM/DTCM/screens retained in lz-window-yoshi-performance/06-level-12.
+A subsequent read-only regs frontend command killed the frontend; exit verified.
+The return/save follower aborted without performing its checks. Older ACTIVE
+notes below are historical and superseded by this paragraph.
+
+Global ELF/base ROM and default bootstrap fixture now match43182720 prewarm ON:
+--experimental-animation-prewarm adds exact Y_wait/Y_walk copies before native
+common source release, temporary GAME scratch, then existing optional ROOT cache.
+11 stage-source/prewarm tests pass; full266 tests PASS (256 executed,10 skips).
+First full run failed only an old mesh-test assumption that all ROOT capacity
+is free after native cleanup despite intentionally retained poses; updated test
+checks optional cache teardown restores that exact capacity. Failed log retained.
+No wireless prewarm acceptance. Combined body/tables44700 bytes; no default flags
+changed. Diagnose model-work pressure, then repeat normal-route acceptance.
+
 The mod remains unfinished. Four-player gameplay works on an unmodified
 melonDS core, with acknowledged startup now passing repeat tests. Later-stage memory
 fixes are still undergoing live validation. The user reports functional physical

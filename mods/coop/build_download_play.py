@@ -29,6 +29,8 @@ def main():
                         help='TEST ONLY: measure geometry costs with FIFO drains; not a performance benchmark')
     parser.add_argument('--diagnostic-player-cost',action='store_true',
                         help='TEST ONLY: elapsed SDK ticks for player behavior/models and stage rendering')
+    parser.add_argument('--experimental-animation-prewarm',action='store_true',
+                        help='EXPERIMENTAL: retain native Yoshi idle/walk bytes before source release')
     parser.add_argument('--experimental-lz-window',action='store_true',
                         help='EXPERIMENTAL: optional4KB compressed-input window with512-byte fallback')
     parser.add_argument('--experimental-painting-visibility',action='store_true',
@@ -56,6 +58,8 @@ def main():
                         help='Explicitly enable acknowledged entry closure with the legacy restart-parent strategy')
     parser.add_argument('--output',type=Path,default=ROOT/'build/coop/bootstrap/sm64ds-haxxstation-game-handoff.nds')
     args=parser.parse_args()
+    if args.experimental_animation_prewarm and not args.experimental_animation_cache:
+        parser.error('Animation prewarming requires --experimental-animation-cache')
     if args.experimental_persistent_animation_cache and not args.experimental_animation_cache:
         parser.error('Persistent animation caching requires --experimental-animation-cache')
     if args.experimental_lazy_animation_eviction and not args.experimental_animation_cache:
@@ -105,6 +109,7 @@ def main():
     if args.experimental_painting_normals:diagnostic+=('--experimental-painting-normals',)
     if args.experimental_painting_visibility:diagnostic+=('--experimental-painting-visibility',)
     if args.experimental_lz_window:diagnostic+=('--experimental-lz-window',)
+    if args.experimental_animation_prewarm:diagnostic+=('--experimental-animation-prewarm',)
     if args.experimental_collision_broadphase:diagnostic+=('--experimental-collision-broadphase',)
     if args.experimental_animation_cache:diagnostic+=('--experimental-animation-cache',)
     if args.experimental_persistent_animation_cache:diagnostic+=('--experimental-persistent-animation-cache',)

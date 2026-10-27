@@ -1420,9 +1420,17 @@ u32 coopStreamedNarcReads=0;
 u32 coopNarcOpenDiagnostic[6]={0,0,0,0,0,0};
 u32 coopStageCacheEvictions=0;
 
+#ifdef COOP_EXPERIMENTAL_ANIMATION_PREWARM
+static void CoopUnloadCommonWithWarmPoses(void);
+#endif
+
 static void CoopReleaseStageSourceCache(void) {
     if (coopEnabled && data_0209fc68 && data_0208ecf4[0].image) {
+#ifdef COOP_EXPERIMENTAL_ANIMATION_PREWARM
+        CoopUnloadCommonWithWarmPoses();
+#else
         UnloadArchive(0);
+#endif
         ++coopStageCacheEvictions;
     }
 }
@@ -1861,6 +1869,49 @@ static void CoopStoreAnimationRead(u32 top,void *source,u32 size) {
     }
     _ZN3IRQ7RestoreEj(irq);
 }
+
+#ifdef COOP_EXPERIMENTAL_ANIMATION_PREWARM
+// attempts, scratch fallbacks, copied bytes, cache stores, no-store attempts.
+u32 coopAnimationPrewarmStats[5]={0};
+static void CoopUnloadCommonWithWarmPoses(void) {
+    ++coopAnimationPrewarmStats[0];
+    const CoopArchiveIndex *row=(const CoopArchiveIndex *)coopNarcIndex;
+    const u32 *extent=(const u32 *)(coopNarcIndex+row->extentOffset);
+    // Builder pins these two names and their original extents. Both are copied
+    // while the original full NARC still owns its bytes, never after unmount.
+    u32 lengths[2],offsets[2],total=0;
+    for (unsigned i=0;i<2;++i) {
+        unsigned member=80+i;
+        lengths[i]=extent[member*2+1]-extent[member*2];
+        offsets[i]=total;total+=(lengths[i]+3)&~3u;
+    }
+    mHeap::Heap_t *owner=(mHeap::Heap_t *)data_020a0eac;
+    u32 irq=_ZN3IRQ7DisableEv();
+    u8 *scratch=0;
+    if (owner && CoopAlignedFree(owner,32)>=total)
+        scratch=(u8 *)owner->VAllocate(total,32);
+    _ZN3IRQ7RestoreEj(irq);
+    if (!scratch) {
+        ++coopAnimationPrewarmStats[1];
+        UnloadArchive(0);
+        return;
+    }
+    const u8 *image=(const u8 *)data_0208ecf4[0].image+0x60;
+    for (unsigned i=0;i<2;++i)
+        CpuCopy8(image+extent[(80+i)*2],scratch+offsets[i],lengths[i]);
+    coopAnimationPrewarmStats[2]+=lengths[0]+lengths[1];
+    // Free the321KB source before attempting optional ROOT cache ownership.
+    // Native unmount and archive completion stay intact; no new file reads.
+    UnloadArchive(0);
+    u32 stores=coopAnimationCacheStats[2];
+    for (unsigned i=0;i<2;++i)
+        CoopStoreAnimationRead(row->romTop+extent[(80+i)*2],scratch+offsets[i],lengths[i]);
+    u32 added=coopAnimationCacheStats[2]-stores;
+    coopAnimationPrewarmStats[3]+=added;
+    if (!added)++coopAnimationPrewarmStats[4];
+    owner->Deallocate(scratch);
+}
+#endif
 
 int CoopReadFile(void *file,void *destination,int size,int async) {
     u32 key=destination ? CoopAnimationReadKey(file,size,async) : 0;

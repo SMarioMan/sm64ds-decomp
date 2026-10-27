@@ -44,6 +44,11 @@ class PaintingMeshHeapTests(HeapHarness,unittest.TestCase):
         self.cpu.mem_write(cells,pattern)
         self.assertEqual(bytes(self.cpu.mem_read(cells,9600)),pattern)
         self.call(0x02126bfc,actor) # Original daPicGate_c::CleanupResources.
+        if 'coopAnimationPrewarmStats' in self.runtime:
+            # Optional owned poses may remain after native mesh cleanup.
+            # Their explicit cache teardown must restore the original block.
+            self.assertEqual(self.word(self.runtime['coopAnimationPrewarmStats']+12),2)
+            self.call('CoopFlushAnimationReadCache')
         self.assertEqual(self.largest(self.root),321328)
         self.assertEqual(self.largest(self.game_heap),game_before)
         self.assertTrue(self.intact(self.root))
