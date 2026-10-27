@@ -29,6 +29,8 @@ def main():
                         help='TEST ONLY: measure geometry costs with FIFO drains; not a performance benchmark')
     parser.add_argument('--diagnostic-player-cost',action='store_true',
                         help='TEST ONLY: elapsed SDK ticks for player behavior/models and stage rendering')
+    parser.add_argument('--experimental-painting-math',action='store_true',
+                        help='EXPERIMENTAL: reuse exact painting-wave coefficients')
     parser.add_argument('--experimental-collision-plan',action='store_true',
                         help='EXPERIMENTAL: ordered spatial candidates with pressure/callback fallback')
     parser.add_argument('--experimental-collision-broadphase',action='store_true',
@@ -89,6 +91,7 @@ def main():
     if args.diagnostic_render_cost:diagnostic+=('--diagnostic-render-cost',)
     if args.diagnostic_player_cost:diagnostic+=('--diagnostic-player-cost',)
     if args.experimental_collision_plan:diagnostic+=('--experimental-collision-plan',)
+    if args.experimental_painting_math:diagnostic+=('--experimental-painting-math',)
     if args.experimental_collision_broadphase:diagnostic+=('--experimental-collision-broadphase',)
     if args.experimental_animation_cache:diagnostic+=('--experimental-animation-cache',)
     if args.experimental_persistent_animation_cache:diagnostic+=('--experimental-persistent-animation-cache',)

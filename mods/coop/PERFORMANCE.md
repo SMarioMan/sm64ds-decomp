@@ -829,3 +829,33 @@ callback order, and restores heap free bytes. Instruction counts are287266
 native,233088 cold planned and78692 reused; this is isolated ARM evidence only.
 37 targeted collision tests and216 executed tests (226 discovered,10 skips) pass.
 Live6–16 and physical performance acceptance remain pending.
+
+## Combined crowded-list pass and painting follow-up
+
+56b1796f PASSES short four-console6–16 diagnostics plus course return and
+Save & Quit. In level14, collision elapsed is3.615ms steady/3.462ms motion,
+versus6.68/7.229ms on d320. Steady cadence is252 intervals at2 VBlanks and33
+at3; motion143 at2 and17 at3. Different shared starting ticks can change actor
+trajectories, so these are separate scene samples rather than a controlled FPS
+claim.13 remains mostly3 VBlanks; cold poses still hitch in9/10/12/13.
+
+Read-only sampling identifies a400-cell continuous-wave painting in13. Its
+native RippleHeight repeats the same phase-speed, amplitude and radial-slope
+divisions for every cell. `--experimental-painting-math` reuses coefficients
+only when all five wave parameters and the timer match. Phase and distance
+arithmetic still run for every vertex with native fixed-point rounding. State0,
+other modes, offline and unknown/invalid inputs keep the original routine.
+The original signed-divider call is ROM-verified at02125cf0→01ffabe4.
+Six isolated ARM tests match native phases, clocks, signed inputs and mutations;
+no actor, RNG or parameter writes occur. A400-cell sample uses89200 native vs
+64929 optimized instructions and1200 vs3 divisions. These are instruction and
+call counts, not DS elapsed timing. The option is disabled by default pending
+live timing/transition coverage. The code/data soft bound becomes37KiB; the
+existing final64KiB loader limit remains enforced. Combined module body/tables
+are42152 bytes in the current diagnostic build.
+
+The240-test combined native suite passes (230 executed,10 skipped). Structural
+boot checks explicitly used the earlier58e integrated image while testing the
+new painting module; the former failed run retained a missing generated
+provisional-ROM fixture error, then passed with COOP_HOST_ROM set explicitly.
+All raw default private RAM fixtures remain available.

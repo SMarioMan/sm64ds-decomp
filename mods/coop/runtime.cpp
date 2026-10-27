@@ -9,6 +9,11 @@
 #include "PlayerInput.h"
 #include "dActor_c.h"
 #include "dCamera_c.h"
+#include "dMap_c.h"
+#include "OAM.h"
+#ifdef COOP_EXPERIMENTAL_PAINTING_MATH
+#include "daPicGate_c.h"
+#endif
 #include "LVL_Overlay.h"
 #include "ExpandingHeapAllocator.h"
 #if defined(COOP_DIAGNOSTIC_RENDER_COST) || defined(COOP_DIAGNOSTIC_PLAYER_COST)
@@ -41,6 +46,8 @@ void UnloadOverlay(int index);
 int CoopOriginalEntryCleanup(void *scene);
 void CoopOriginalLoadLevelOverlays(int level);
 int CoopOriginalStageInit(void *scene);
+int CoopOriginalMinimapBehavior(dMap_c *map);
+int CoopOriginalMinimapRender(dMap_c *map);
 #ifdef COOP_DIAGNOSTIC_PLAYER_COST
 // local extern: only decl_common.h's untyped catch-all declares this SDK clock.
 unsigned long long func_02059650(void);
@@ -477,7 +484,13 @@ void CoopLoadLevelOverlays(int level) {
             *(u32 *)0x02126e0c==0xe0000091 &&
             *(u32 *)0x02126e10==0xebfc5770 &&
             *(u32 *)0x02126e14==0xe58401a0)
+        {
             PatchCall(0x02126e10,(void *)CoopAllocatePaintingMesh);
+#ifdef COOP_EXPERIMENTAL_PAINTING_MATH
+            extern int CoopPaintingHeight(daPicGate_c *,int);
+            Patch(0x02125bb0,(void *)CoopPaintingHeight);
+#endif
+        }
         // Overlay 2 stays authenticated on disk. Patch native story camera
         // reads and state helpers only after the authenticated loader runs.
         extern void CoopCameraFlagsRead(void);
@@ -488,6 +501,10 @@ void CoopLoadLevelOverlays(int level) {
         extern int CoopCourseTutorial(void *);
         extern int CoopLevelEnterInit(void *);
         extern void CoopPlayerHeadLook(void *);
+        extern int CoopMinimapBehavior(dMap_c *);
+        extern int CoopMinimapRender(dMap_c *);
+        Patch(0x020fa690,(void *)CoopMinimapBehavior);
+        Patch(0x020f9e98,(void *)CoopMinimapRender);
         Patch(0x020c6e14,(void *)CoopStarTutorial);
         Patch(0x020c44c4,(void *)CoopCourseTutorial);
         Patch(0x020c7838,(void *)CoopLevelEnterInit);
@@ -518,6 +535,58 @@ void CoopLoadLevelOverlays(int level) {
         _ZN4CP1526InvalidateInstructionCacheEjj(0x020fe6c8, 4);
     }
 }
+
+#ifdef COOP_EXPERIMENTAL_PAINTING_MATH
+extern "C" int CoopOriginalPaintingHeight(daPicGate_c *,int);
+// local extern: no shared header declares this fixed-point scalar helper.
+extern "C" int _ZN4cstd4fdivEii(int,int);
+// local extern: no typed shared header declares the native signed divider.
+extern "C" int CoopPaintingDivide(int,int);
+struct CoopPaintingCoefficients {
+    u32 valid,timer;
+    s32 params[5],speed,amplitude,slope;
+};
+static CoopPaintingCoefficients coopPaintingCoefficients={0};
+u32 coopPaintingMathStats[3]={0}; // coefficient hits, fills, native fallback.
+static s32 CoopPaintingMultiply(s32 a,s32 b) {
+    return (s32)(((s64)a*b+0x800)>>12);
+}
+int CoopPaintingHeight(daPicGate_c *painting,int distance) {
+    u32 pointer=(u32)painting->mWaveParams;
+    if (!coopEnabled || data_0209fc68!=4 || ((painting->param1>>13)&3)!=1 ||
+        pointer<0x02000000 || pointer>0x023fffec || (pointer&3)) {
+        ++coopPaintingMathStats[2];
+        return CoopOriginalPaintingHeight(painting,distance);
+    }
+    unsigned timer=painting->mWaveTimer;
+    if (!timer)return 0;
+    const s32 *params=(const s32 *)pointer;
+    if (!params[2] || !params[3] || !params[4] ||
+        (params[0]==(s32)0x80000000 && params[4]==-1)) {
+        ++coopPaintingMathStats[2];
+        return CoopOriginalPaintingHeight(painting,distance);
+    }
+    CoopPaintingCoefficients *cache=&coopPaintingCoefficients;
+    bool same=cache->valid && cache->timer==timer;
+    for (unsigned i=0;i<5 && same;++i)same=cache->params[i]==params[i];
+    if (!same) {
+        cache->valid=0;
+        cache->timer=timer;
+        for (unsigned i=0;i<5;++i)cache->params[i]=params[i];
+        // Exactly the three native invariant divisions, in native order.
+        cache->speed=_ZN4cstd4fdivEii(0xffff,params[2]);
+        s32 quotient=CoopPaintingDivide(params[0],params[4]);
+        cache->amplitude=(s32)((u32)params[0]-(u32)quotient*((u32)params[4]-timer));
+        cache->slope=_ZN4cstd4fdivEii(cache->amplitude,params[3]);
+        cache->valid=1;++coopPaintingMathStats[1];
+    } else ++coopPaintingMathStats[0];
+    s16 phase=(s16)((u32)CoopPaintingMultiply(distance,cache->speed)-(s32)painting->mWavePhase);
+    s32 sum=(s32)((u32)cache->amplitude+(u32)CoopPaintingMultiply((s32)(0u-(u32)cache->slope),distance));
+    if (sum<0)sum=0;
+    const s16 *sine=(const s16 *)0x02082214;
+    return CoopPaintingMultiply(sine[((u16)phase>>4)*2],sum);
+}
+#endif
 
 // Shared arrival results and progression messages have one owner. Retail
 // starts them independently from each Player, which lets multiple return
@@ -2403,6 +2472,54 @@ void CoopMessageUpdate(void) {
 
 static u8 CoopCameraOwner(void) {
     return coopEnabled && data_0209fc68 ? data_020a0f10 : data_0209f250;
+}
+
+// Overlay1's common HUD digits are present in every story HUD language.
+// Reuse those assets instead of VS's incompatible bottom-screen atlas.
+static void CoopDrawMinimapPlayers(dMap_c *map,unsigned local) {
+    if (data_0209f2d8 || local>=4)return;
+    u8 hidden=*(volatile u8 *)0x0209f294 | *(volatile u8 *)0x0209f2c4 | data_0209f20c;
+    // Match the native map's cutscene/pause visibility policy.
+    if (hidden && (*(volatile u32 *)0x0209caa8&0x80) &&
+        !(data_0209f20c && *(volatile u32 *)0x0209f2d4<3))return;
+    int mapID=*(volatile s8 *)0x02111148;
+    if (mapID<0)return;
+    OamAttr *const *numbers=(OamAttr *const *)0x020aba70;
+    for (unsigned slot=0;slot<4;++slot) {
+        u32 player=(u32)data_0209f394[slot];
+        if (!player || map->mPlayerMapIDs[slot]!=mapID)continue;
+        int x=map->mPlayerIconX[slot],y=map->mPlayerIconY[slot];
+        if ((u32)(x+16)>=288 || (u32)(y+16)>=224)continue;
+        // The existing head/arrow identifies this console; a small numbered
+        // badge identifies its slot. Remote numbered markers use their exact
+        // native map position and remain distinguishable for all-Yoshi parties.
+        OAM::RenderSub(numbers[slot+1],x+(slot==local ? 10 : -4),y-8,-1,2);
+    }
+}
+
+static bool CoopMinimapLocalReady(unsigned local) {
+    u32 player=local<4 ? (u32)data_0209f394[local] : 0;
+    return coopEnabled && data_0209fc68==4 &&
+        player>=0x02000000 && player<=0x023ffff4 && !(player&3);
+}
+
+int CoopMinimapBehavior(dMap_c *map) {
+    u8 previous=data_0209f250,input=gActivePlayerSlot,local=CoopCameraOwner();
+    bool active=CoopMinimapLocalReady(local);
+    if (active)data_0209f250=gActivePlayerSlot=local;
+    int result=CoopOriginalMinimapBehavior(map);
+    if (active) { data_0209f250=previous;gActivePlayerSlot=input; }
+    return result;
+}
+
+int CoopMinimapRender(dMap_c *map) {
+    u8 previous=data_0209f250,local=CoopCameraOwner();
+    bool active=CoopMinimapLocalReady(local);
+    if (active)data_0209f250=local;
+    int result=CoopOriginalMinimapRender(map);
+    if (active)CoopDrawMinimapPlayers(map,local);
+    if (active)data_0209f250=previous;
+    return result;
 }
 
 static u8 CoopLocalCameraInfo(dCamera_c *camera) {

@@ -5,6 +5,14 @@ not establish campaign completion or real-hardware compatibility.
 
 - [ ] PRIORITY: optimize steady gameplay speed and eliminate significant
   hitches on real hardware across every level and supported party size.
+  Latest56b combined four-console diagnostic PASSES short6–16, course return,
+  and Save & Quit. Level14 collision elapsed falls from~6.7ms to~3.6ms;
+  steady cadence252 intervals at2 VBlanks/33 at3, versus179/83 previously.
+  Scene trajectories differ between runs; this is not an exact causal FPS
+  comparison or physical acceptance. Level13 remains mostly3 VBlanks.
+  An optional exact painting-wave coefficient experiment matches native
+  arithmetic and reduces a private400-cell ARM replay from89200 to64929
+  instructions and1200 to3 divisions; live timing remains pending.
   The user tested the pinned89505d400 normal ROM, SHA-256
   `aea94b7bc8a51986b02c258cb779934bd200f269e05ad4d193282237be4baedf`,
   and reports functional physical multiplayer with parity to melonDS behavior,
@@ -136,6 +144,11 @@ not establish campaign completion or real-hardware compatibility.
   three actual file selections and the full-progress test option through native
   menu input, including empty files, unlocks and save/quit behavior.
 - [ ] Display every connected player's location on each console's mini-map.
+  Native numbered slot markers now pass four-console castle/BoB sprite
+  submission checks and movement/shared-pause/world synchronization on58e096a6.
+  The local head/arrow stays native; projection, clipping and area IDs are native.
+  Broader maps and character/color matching remain open. The VS atlas cannot be
+  used directly with story HUD textures/palettes.
   Give players distinct markers matching their character or reserved multiplayer
   Yoshi color. Keep the local player recognizable and handle area changes,
   entrances, deaths, character changes and map scaling on every peer. Schedule

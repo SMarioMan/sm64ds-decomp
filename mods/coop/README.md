@@ -236,7 +236,7 @@ changes the output hash, so retain the adjacent build report with test results.
 The output is `build/coop/bootstrap/sm64ds-haxxstation-game-handoff.nds`.
 
 The current default slot-A/four-console build has SHA-256
-`fbb2262d6dbacd6c92e8f585bde99941d587ed8e323bde280f598e91e69abd2d`.
+`35d8be5d8a49681d37c9e05f3b12b991bb6ffff96e165f05223ba46c6d25adc3`.
 It includes the verified Bob-omb Battlefield shadow/head rendering fix.
 Other save slots and guest counts produce different hashes.
 Its adjacent JSON records input hashes, client overlay authentication and
@@ -827,3 +827,13 @@ baseline without claiming a full source rebuild succeeded. Evidence is under
 The strict control reports 15/106 exact modules and an ARM9 size increase of
 32 bytes. These mismatches remain recorded; fidelity gates were not disabled
 and original `src/`, shared headers and matching configuration were not edited.
+
+The current source adds numbered player1–4 mini-map markers using native story
+HUD assets. The local head and direction arrow remain native. Four-console
+castle/BoB sprite submissions, motion and shared pause pass; broader map and
+character/color matching coverage remains on the worklist.
+
+`--experimental-painting-math` additionally reuses exact continuous-wave painting
+coefficients. Native ARM arithmetic tests pass, including signed inputs and
+parameter/timer changes; live performance acceptance is pending. It remains
+opt-in. It does not reduce mesh detail, wave updates, actor simulation or content.

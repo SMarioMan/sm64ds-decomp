@@ -9,44 +9,58 @@ all levels. The tested party size and campaign coverage were not specified;
 newer-image physical acceptance and campaign completion remain open. Read the current regressions first; later sections preserve
 historical checkpoints and failures rather than release acceptance.
 
-## Current combined performance regression
+## Current painting experiment and minimap follow-up
 
-Published7efc134e5 withdraws the unsafe common-archive bypass and caches all154
-direct player BCA files. The f66 normal-mount four-console regression PASSES6–9
-and a second swimming traversal. First swimming motion has three cold physical
-reads; the second has12 cache hits, no reads and163 intervals at2 VBlanks on
-all four consoles. The f66 party is CLOSED. Original archive mounting is retained.
-The failed474f common-bypass image remains rejected after6→7 guest crashes.
+Published HEAD9449b839d. LOCAL numbered minimap markers and optional painting
+coefficients are being validated; no claim of campaign completion/full speed.
+ALL wireless parties are CLOSED; actual parent/frontend206593/206598/206599
+exited. The next party should use the painting experiment, after building it.
 
-ONLY ACTIVE party is56b1796f023d070644930e76bdb92866a4c4f9e669f7c230e3433a6e8100ca71,
-`animation-cache-direct-window-budget-cost-host.nds`. Parent
-`direct-window-budget-matrix/`, socket
-`/workspace/runtime/direct-window-budget-matrix.sock`; continuation
-`direct-window-budget-performance/` checks the native castle/painting route then
-short6–16 steady/motion/pause/synchronization. Read its result/log before RPC.
-No competing party, live RAM/packet edits, savestates or core modifications.
-Frozen driver sources match this image. Verify actual frontend exit before another.
+56b1796f PASSES short6–16,600-frame steady16, course return and four-system
+Save & Quit with other files unchanged. `direct-window-budget-performance/`
+and `direct-window-budget-stage16-return-save/` contain results.14 collision
+steady3.615ms (old d3206.68ms), cadence252 at2/33 at3;13 remains slow.
+Compiled production194-node replay prepares327 candidates and preserves native
+contacts/callback order/heap bytes.256 nodes/2048 window checks, actual candidates
+and edge comparisons still1024. Normal pre-marker slotA build reproducesfbb2262d.
 
-Current collision source accepts256 nodes and2048 one-axis window checks while
-preserving the1024 actual-candidate and edge-refresh comparison limits.37 native
-collision tests PASS; the full suite PASS counts226 discovered/216 executed/10
-skipped. A production-code isolated replay of the retained194-node level14 list
-prepares327 candidates and preserves native contacts/callback order/heap bytes:
-287266 native instructions,233088 cold planned,78692 reused. No private ARM
-immediate patches are used in this replay. This is not hardware speed evidence.
-Fixture remains uncompressed at
-`/workspace/runtime/lazy-eviction-performance/08-level-14/diagnostic-stage-passed-0`.
+58e096a61f46822ae0674ebc2cc3d75d2764050f7a5e923e6841fa932e098548:
+`minimap-numbered-window-cost-host.nds.gz` uses native story digit assets for
+slot1–4 markers, local head/arrow and local map/touch context. The direct VS
+marker-branch prototype was withdrawn before play: story textures/palettes differ.
+`minimap-numbered-regression-v4/` PASSES actual four-slot sub-OAM submissions on
+all consoles, movement/shared pause/world sync. v3 also proves castle and BoB
+submissions; it later stops on an incomplete live frame. v1 searched dActor
+instead of HUD process list; v2/v3 read OAM fill in a different live snapshot.
+Their failed reports remain failures, with captured zero/partial OAM frames.
+v4 samples a single RAM snapshot until native submissions are complete, with
+bounded attempts reported; it does not patch game RAM or packets. More maps,
+portrait/color matching and physical visual acceptance remain open.
 
-Earlier d320 virtual-capacity image PASSES short6–16 checks and four-system
-course return/save/quit with other files unchanged. These are compatibility,
-not full-campaign, physical speed or boss completion.13/14 remained slow.
+`--experimental-painting-math` reuses exact continuous-wave coefficients when
+five parameters/timer match; no mesh/actor writes or wave/collision culling.
+State0 and other rules call the original. Six native ARM tests PASS;400-cell
+replay89200→64929 instructions,1200→3 divisions. No live timing yet.
+Code/data bound37KiB, final module bound64KiB, current combined body42152 bytes.
+Full240-discovered/230-executed/10-skip suite PASSES. Boot layout explicitly uses
+COOP_HOST_ROM=58e image; first attempt failed only because the generated
+provisional-host fixture had been removed for disk space. A new full build
+restores that default generated fixture. Earlier compile failures/skipped-only
+painting test attempts are not counted as passing implementation tests.
 
-Build/native-test lock: `/workspace/runtime/coop-bootstrap-build.lock`; use `set -e`.
+Global ELF/base ROM/build.json now match the new unprofiled normal build,
+35d8be5d8a49681d37c9e05f3b12b991bb6ffff96e165f05223ba46c6d25adc3.
+Its21 structural/boot/relocation/minimap checks PASS. The generated raw
+provisional-host fixture is restored. Build the painting candidate next. Freeze driver sources and matching
+ROM metadata before changing code. Build/native-test lock:
+`/workspace/runtime/coop-bootstrap-build.lock`; use `set -e`.
 Source-only recovery `/workspace/runtime/spatial-plan-source-recovery/` contains
-no ROM/BIOS/RAM/compiler; refresh after edits. Disk remains tight. Inputs/played
-artifacts/default test fixtures are preserved. Closed snapshots/ROMs are losslessly
-gzip-compressed with SHA manifests; restore `gzip -dk PATH.gz` before reuse.
-Default no-cache build still requires a fresh hash check after these edits.
+no ROM/BIOS/RAM/compiler; refresh after edits. Disk is tight. Closed played ROMs
+and captures are verified lossless gzip with SHA manifests. Restore `gzip -dk`
+before reuse. Preserve all user inputs and raw default native RAM fixtures.
+Latest ROM manifest `closed-minimap-and-earlier-performance-rom-compression.json`
+includes58e, edge-budget, bounded-axis, three-system14 and persistent matrix.
+The rejected common bypass remains removed after474f guest crashes on6→7.
 
 ## Historical spatial-plan work (superseded by the current section above)
 

@@ -85,9 +85,9 @@ def link(source, prefix, address, game_symbols, launcher, cc, ld, defines=()):
     end = max([address + len(payload)] + [emitted[n] + sizes[n] for n in defined])
     payload.extend(bytes(end - address - len(payload)))
     # The runtime is dynamically allocated in ROOT; the loader accepts 64 KiB.
-    # Keep code/data below 36 KiB; the final module (including tables) is
+    # Keep code/data below 37 KiB; the final module (including tables) is
     # checked separately against the loader's 64 KiB limit.
-    if not payload or end > address + 0x9000:
+    if not payload or end > address + 0x9400:
         raise RuntimeError('Invalid linked payload span')
     return payload, emitted
 
@@ -155,6 +155,8 @@ def main():
                         help='TEST ONLY: drain geometry to measure terrain/body/head polygon costs; changes timing')
     parser.add_argument('--diagnostic-player-cost',action='store_true',
                         help='TEST ONLY: elapsed SDK ticks for player behavior/models and stage rendering')
+    parser.add_argument('--experimental-painting-math',action='store_true',
+                        help='EXPERIMENTAL: reuse exact ripple-wave coefficients across mesh cells')
     parser.add_argument('--experimental-collision-plan',action='store_true',
                         help='EXPERIMENTAL: ordered spatial candidates with pressure/callback fallback')
     parser.add_argument('--experimental-collision-broadphase',action='store_true',
@@ -170,7 +172,7 @@ def main():
         parser.error('--baseline cannot select a diagnostic stage')
     if args.diagnostic_stage_cycle and args.diagnostic_start_level is None:
         parser.error('--diagnostic-stage-cycle requires --diagnostic-start-level')
-    if args.baseline and (args.diagnostic_render_cost or args.diagnostic_player_cost or args.experimental_animation_cache or args.experimental_collision_broadphase or args.experimental_collision_plan):
+    if args.baseline and (args.diagnostic_render_cost or args.diagnostic_player_cost or args.experimental_animation_cache or args.experimental_collision_broadphase or args.experimental_collision_plan or args.experimental_painting_math):
         parser.error('--baseline cannot enable render diagnostics')
     if args.experimental_persistent_animation_cache and not args.experimental_animation_cache:
         parser.error('Persistent animation caching requires --experimental-animation-cache')
@@ -234,6 +236,8 @@ def main():
         if struct.unpack_from('<I', arm9, 0x02004180-rom.arm9RamAddress)[0] == 0x31504f43:
             raise RuntimeError('Retail prefix overlaps the runtime-cache marker')
         trampolines = [
+            ('CoopOriginalMinimapBehavior',0x020fa690,bytes.fromhex('f04f2de9')),
+            ('CoopOriginalMinimapRender',0x020f9e98,bytes.fromhex('f04f2de9')),
             ('CoopOriginalLoadLevelOverlays', game['_Z17LoadLevelOverlaysi'], bytes.fromhex('30402de9')),
             ('CoopOriginalEntryCleanup', ov_symbols['_ZN10dScEntry_c16CleanupResourcesEv'], bytes.fromhex('00402de9')),
             ('CoopOriginalStageInit', game['_ZN10dScStage_c13InitResourcesEv'], bytes.fromhex('f04f2de9')),
@@ -284,6 +288,8 @@ def main():
         fov=game['func_0200ca14']-rom.arm9RamAddress
         if arm9[fov:fov+60]!=bytes.fromhex('30309fe50030d3e5030051e11eff2f11000052e3551f8002000091050208800300008105551f80120000911501088013000081151eff2fe150f20902'):
             raise RuntimeError('Unexpected native player camera FOV helper')
+        if args.experimental_painting_math:
+            trampolines += [('CoopOriginalPaintingHeight',0x02125bb0,bytes.fromhex('f0402de9'))]
         if args.experimental_animation_cache:
             trampolines += [('CoopOriginalHeapAllocate',game['_ZN5mHeap6Heap_t8AllocateEji'],bytes.fromhex('30402de9')),
                             ('CoopOriginalStageCleanup',game['_ZN10dScStage_c16CleanupResourcesEv'],bytes.fromhex('f0412de9')),
@@ -320,6 +326,12 @@ def main():
                     raise RuntimeError('Unexpected native collision plan callback')
         imports = dict(game, **{name:PAYLOAD_ADDRESS+0x1800+i*8
                                for i,(name,_,_) in enumerate(trampolines)})
+        if args.experimental_painting_math:
+            painting_image=rom.loadArm9Overlays()[80]
+            address=0x02125cf0;offset=address-painting_image.ramAddress
+            if painting_image.data[offset:offset+4]!=branch(address,0x01ffabe4)[:3]+b'\xeb':
+                raise RuntimeError('Unexpected native painting signed divider call')
+            imports['CoopPaintingDivide']=0x01ffabe4
         if args.experimental_collision_plan:
             imports.update(CoopCollisionPairContinue=0x02014b10,CoopCollisionPairDone=0x02014f14)
         imports['coopNarcIndex']=PAYLOAD_ADDRESS+0x1800
@@ -352,6 +364,7 @@ def main():
             imports['coopAnimationCacheMask']=imports['coopNarcIndex']+len(narc_index)
             imports['coopAnimationDirectIndex']=imports['coopAnimationCacheMask']+len(animation_mask)
         defines=[f'COOP_SAVE_SLOT={ord(args.save_slot)-ord("A") if args.save_slot else -1}']
+        if args.experimental_painting_math:defines.append('COOP_EXPERIMENTAL_PAINTING_MATH=1')
         if args.experimental_animation_cache:
             defines.append('COOP_EXPERIMENTAL_ANIMATION_CACHE=1')
         if args.experimental_persistent_animation_cache:
@@ -394,7 +407,9 @@ def main():
         if len(runtime)!=body_size:
             raise RuntimeError('Unstable runtime module size')
         for name,address,prologue in trampolines:
-            if player_overlay.ramAddress<=address<player_overlay.ramAddress+len(player_overlay.data):
+            if name=='CoopOriginalPaintingHeight':
+                image,base=rom.loadArm9Overlays()[80].data,rom.loadArm9Overlays()[80].ramAddress
+            elif player_overlay.ramAddress<=address<player_overlay.ramAddress+len(player_overlay.data):
                 image,base = player_overlay.data,player_overlay.ramAddress
             else:
                 image,base = (overlay.data,overlay.ramAddress) if address>=overlay.ramAddress else (arm9,rom.arm9RamAddress)
@@ -561,6 +576,11 @@ def main():
         module_report['evictCommonStageSourceCache']=True
         module_report['evictStageCacheForPaintingMesh']=True
         module_report['localCameraControls']=True
+        if args.experimental_painting_math:
+            module_report['experimentalPaintingMath']={'defaultEnabled':False,'statsOffset':emitted['coopPaintingMathStats']-PAYLOAD_ADDRESS,
+                'fields':['coefficientHits','coefficientFills','nativeFallbacks'],'nativeStateZeroPreserved':True}
+        module_report['cooperativeMinimapMarkers']={'nativeProjection':True,'localMapControls':True,
+            'markerStyle':'native-common-HUD-slot-numbers','storyItemRulesPreserved':True}
         module_report['nativeFlightEntranceMarioCaps']=True
         module_report['loadingChecksumTransitionGrace']=True
         module_report['localMovementCameraModes']=[33607948, 33608008, 33608760, 33608820, 33608968, 33609028, 33609088, 33609152, 33609212, 33609276, 33609336, 33609396, 33609456, 33609516, 33609576, 33609636]
