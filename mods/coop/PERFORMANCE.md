@@ -733,10 +733,10 @@ Default fbb2262d and cache-only274084aa independently reproduce byte-for-byte.
 No new performance option is enabled in those images.
 
 
-## Common-archive loading experiment and remaining bottlenecks
+## Withdrawn common-archive loading experiment and remaining bottlenecks
 
-`--experimental-stream-common-archive` requires animation caching and avoids
-new whole mounts of archive0 during live co-op. Existing mounted sources and
+The former `--experimental-stream-common-archive` option skipped new whole
+mounts of archive0 during live co-op. It has been removed after live failure. Existing mounted sources and
 owners remain intact; other archives/offline/ended sessions retain native policy.
 The existing verified unmounted-NARC views load the original requested member
 through the normal copying/decompression paths. All ROM files and extents remain
@@ -750,14 +750,18 @@ Instrumented image474f41cbbb012da123228ea2a654b201d979e04b75e1345635c7eedfdbd8be
 PASSES225 discovered/215 executed tests, ten documented skips
 (`stream-common-all-native-tests.log`), including original walk bytes without
 container reservation, preservation of mounted ownership and offline/other-archive
-native behavior. It is not yet played; no loading-speed improvement is claimed.
+native behavior. The live candidate passes6, then FAILS6→7 with native Crash() on all three
+guests. Its first measured1→2 transition is2905 SDK VBlanks versus2722 for
+the matched control (about7% slower, including resume/chord/poll overhead).
+Native mount/unit checks did not establish correctness of the full loading path.
+The hook, build option and mount-policy tests are withdrawn; original mounting
+remains. Failed images/logs/captures are retained, not counted as passes.
 
 The d320 full6–16 sweep still has movement hitches in9,10,12 and13. At9 the
 repeated29–31-VBlank read is the direct NitroFS player animation
 `data/player/paddle_end.bca` (1011 bytes, ROM7021840), outside the current
 common-NARC-only cache eligibility. There are154 direct player BCA files, all
-compressed and within the16KiB member limit. Extending the verified player-file
-index is a separate next fix. At13 another Y_walk read takes31 VBlanks after
+compressed and within the16KiB member limit. The exact direct-file index is implemented in the following section. At13 another Y_walk read takes31 VBlanks after
 memory pressure has reclaimed its bytes; query retention alone cannot solve it.
 
 Level14 also remains slow: host collision6.68ms steady/7.23ms moving and Stage
@@ -770,10 +774,42 @@ this four-Yoshi case. Consider separately bounded window work/candidate totals,
 with native contact/order/heap checks and live speed evidence before promotion.
 The live game was never modified; `stage14-node-cap-probe.json` records the result.
 
-A matched three-stage loading comparison is starting with d320 control. First
+The matched d320 control PASSES short6–8 checks and measures1→2/6→7/7→8
+transitions at2722/5240/4826 SDK VBlanks on every console. Its party is CLOSED. First
 attempt `stream-common-control-matrix/` FAILED because the frontend rejected an
 out-of-range diagnostic read of027ffc3c; it is a harness error, not a game pass or
 failure. The corrected controller reads physical RAM mirror023ffc3c in
 `stream-common-control-v2-matrix/` / `stream-common-control-v2-performance/`.
 Its transition totals include real resume/chord input and30-frame arrival polling.
 Compare the matching candidate only after closing this party and verifying exit.
+
+
+## Direct player animation reads
+
+The cache now recognizes154 original direct NitroFS `data/player/*.bca` files,
+in addition to the common-NARC player members. The builder verifies original FAT
+extents and compressed prefixes, then emits a sorted physical-offset/length index.
+Reads still require the full exact file view, main thread, synchronous mode and
+native ready/error/cursor checks. Owned copies, native SeekFile completion and
+pressure/growth/session reclamation are unchanged; no partial data is cached.
+The extra immutable index is1236 bytes. It changes experimental cache-image
+hashes; the older274084aa control describes the earlier common-only policy.
+
+Native224-discovered/214-executed/ten-skip checks PASS after removing the failed
+mount bypass (`direct-player-normal-mount-all-native-tests.log`). Two new ARM
+checks verify the captured1011-byte paddle_end pose and exact cached bytes/cursors
+for every direct player pose. The prior227 suite included the now-withdrawn
+mount-policy cases. Unplayed d3878454 combined the direct index with that failed
+mount experiment and was removed after hashing; its metadata/logs remain.
+
+Fresh imagef66e880d0d11cd925dd4d781564ec0876fe5c598287898ea8fe02feb4502fcf5
+restores original mounting and is in a four-console6–9 test with a second warm
+swimming pass. Parent `direct-player-normal-mount-matrix/`; observations
+`direct-player-normal-mount-performance/`. No swimming speed acceptance yet.
+
+A further isolated194-node replay raises both the node cap and window budget
+(256/2048), retaining327 actual candidates, and matches native contact bytes and
+notification order with intact heap/restored free bytes. This is not production
+code or a live edit. Any implementation must separately preserve the1024 true
+candidate limit, bounded refresh work and native fallback; see
+`stage14-bounded-window-work-probe.json`.

@@ -97,7 +97,9 @@ not establish campaign completion or real-hardware compatibility.
   player assets, while only the current characters may be needed at entry.
   Preserve every original file and native content if testing streamed loading.
   Remaining movement hitches include direct player paddle_end.bca reads outside
-  the common-only raw-cache mask; index the154 original direct player BCA files.
+  the common-only raw-cache mask. An exact original FAT index of154 direct
+  player poses now passes214 applicable native checks; fresh four-system6–9
+  and second warm swimming checks are running with original mounting.
   Level14 still has collision6.68–7.23ms:194 last-frame nodes exceed192, and
   both axis windows exceed1024 despite327 actual envelope pairs. A cap-only
   private experiment is rejected. Separate bounded window work/candidate budgets

@@ -36,8 +36,10 @@ bytes through validated native capacity queries; it requires the animation
 cache. Native allocation pressure and growth still reclaim those bytes. This
 option passes short four-console stage checks6–16 and return/save/quit, but
 remaining hitches and hardware acceptance are open. It is disabled by default.
-`--experimental-stream-common-archive` separately evaluates loading only required
-common members; its native tests pass, with wireless loading measurements pending.
+The common-archive mount-bypass experiment was withdrawn after a guest crash
+on6→7 and a slower measured transition. Original archive loading is retained.
+The animation cache now also indexes154 direct player animation files, including
+the swimming poses responsible for repeated hitches; wireless retesting is ongoing.
 
 The newer local spatial candidate experiment uses
 `--experimental-animation-cache --experimental-collision-plan --output PATH`.

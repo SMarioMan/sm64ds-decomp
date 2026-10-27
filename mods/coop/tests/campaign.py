@@ -152,10 +152,6 @@ def snapshot(ds, name):
                 values['animationCapacityQueries']={key:struct.unpack_from('<I',ram,
                     base+queries[field]-0x02000000)[0] for key,field in
                     (('successes','successesOffset'),('fallbacks','fallbacksOffset'))}
-        common=module.get('streamCommonArchiveOnDemand')
-        if common:
-            values['commonArchiveMountSkips']=struct.unpack_from('<I',ram,
-                base+common['skipsOffset']-0x02000000)[0]
         collision_plan=module.get('experimentalCollisionPlan')
         if collision_plan:
             offset=base+collision_plan['statsOffset']-0x02000000

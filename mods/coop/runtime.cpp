@@ -1238,21 +1238,6 @@ extern CoopArchiveEntry data_0208ecf4[];
 u32 coopStreamedNarcReads=0;
 u32 coopNarcOpenDiagnostic[6]={0,0,0,0,0,0};
 u32 coopStageCacheEvictions=0;
-#ifdef COOP_EXPERIMENTAL_STREAM_COMMON_ARCHIVE
-int CoopOriginalLoadArchive(int archive);
-u32 coopCommonArchiveSkips=0;
-
-int CoopLoadArchive(int archive) {
-    if (coopEnabled && data_0209fc68>=1 && data_0209fc68<=4 && archive==0) {
-        // Both native file loaders already copy/decompress members through
-        // our verified unmounted-NARC views. Preserve an existing mounted
-        // source and its owner; avoid reloading all characters on later entry.
-        if (!data_0208ecf4[0].image)++coopCommonArchiveSkips;
-        return 1;
-    }
-    return CoopOriginalLoadArchive(archive);
-}
-#endif
 
 static void CoopReleaseStageSourceCache(void) {
     if (coopEnabled && data_0209fc68 && data_0208ecf4[0].image) {
@@ -1361,6 +1346,7 @@ static u32 coopAnimationReadClock=0;
 // hits, misses, stores, evictions, payload bytes, entries, peak bytes, flushes.
 u32 coopAnimationCacheStats[8]={0};
 extern const u8 coopAnimationCacheMask[];
+extern const u32 coopAnimationDirectIndex[];
 #ifdef COOP_DIAGNOSTIC_STAGE_CYCLE
 u32 coopDiagnosticAnimationFlushCount=0;
 u32 coopDiagnosticAnimationFlushes[16][8]={{0}};
@@ -1608,6 +1594,16 @@ static u32 CoopAnimationReadKey(void *file,int size,int async) {
         if ((coopAnimationCacheMask[member>>3] & (1u<<(member&7))) &&
             fields[8]==index[0].romTop+extents[member*2] &&
             (u32)size==extents[member*2+1]-extents[member*2])return fields[8];
+    // Shared player poses such as paddle_end are direct NitroFS files rather
+    // than common-NARC members. Match their exact original immutable extents.
+    const u32 *direct=coopAnimationDirectIndex+1;
+    unsigned low=0,high=coopAnimationDirectIndex[0];
+    while (low<high) {
+        unsigned middle=(low+high)/2;
+        if (direct[middle*2]<fields[8])low=middle+1;else high=middle;
+    }
+    if (low<coopAnimationDirectIndex[0] && direct[low*2]==fields[8] &&
+        direct[low*2+1]==(u32)size)return fields[8];
     return 0;
 }
 
@@ -2963,9 +2959,6 @@ void CoopRuntimeDispatch(unsigned operation, u32 argument) {
 #endif
     Patch(0x02017060,(void *)CoopTrimResourceModel);
     Patch(0x020186c0,(void *)CoopResolveFile);
-#ifdef COOP_EXPERIMENTAL_STREAM_COMMON_ARCHIVE
-    Patch(0x020188a8,(void *)CoopLoadArchive);
-#endif
     Patch(0x020185c0,(void *)CoopOpenFile);
     Patch(0x0201834c,(void *)CoopLoadDiskFile);
     Patch(0x02062200,(void *)CoopWirelessReset);

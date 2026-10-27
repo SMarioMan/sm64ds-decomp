@@ -44,6 +44,12 @@ class AnimationReadCacheTests(HeapHarness,unittest.TestCase):
             if name and name.startswith('data/player/') and name.endswith('.bca'):
                 top=archive_top+self.word(table+offset+i*8)
                 self.members[name]=(top,bytes(data))
+        self.direct_members={}
+        for file_id,data in enumerate(self.stock.files):
+            name=self.stock.filenames.filenameOf(file_id)
+            if (name and name.startswith('data/player/') and name.endswith('.bca') and
+                    8<=len(data)<=16384 and data[:5]==b'LZ77\x10'):
+                self.direct_members[name]=(struct.unpack_from('<I',original,fat+file_id*8)[0],bytes(data))
         def physical(cpu,address,size,user):
             if address!=self.game['func_0205cdf4']:return
             f,command=(cpu.reg_read(r) for r in (UC_ARM_REG_R0,UC_ARM_REG_R1))
@@ -53,7 +59,7 @@ class AnimationReadCacheTests(HeapHarness,unittest.TestCase):
                 # its physical command; native WaitAsync/Seek/Close still run.
                 d,n=self.word(f+44),self.word(f+52)
                 top=self.word(f+32)
-                data=next(data for member,data in self.members.values() if member==top)
+                data=next(data for member,data in (*self.members.values(),*self.direct_members.values()) if member==top)
                 pos=self.word(f+40)-top
                 count=min(n,len(data)-pos)
                 if self.read_limit is not None:count=min(count,self.read_limit)
@@ -81,7 +87,7 @@ class AnimationReadCacheTests(HeapHarness,unittest.TestCase):
         return self.cpu.reg_read(UC_ARM_REG_R0)
 
     def view(self,name='data/player/Y_run.bca'):
-        top,data=self.members[name]
+        top,data=(self.members if name in self.members else self.direct_members)[name]
         self.write(self.file+8,self.word(0x0209d3b4))
         self.write(self.file+12,0x10)
         self.write(self.file+20,0)
@@ -119,6 +125,25 @@ class AnimationReadCacheTests(HeapHarness,unittest.TestCase):
         self.assertEqual(self.word(self.file+8),0)
         self.assertEqual(self.word(self.file+16),12)
         self.assertEqual(self.read_irq,[0]) # No cache critical section covers physical I/O.
+
+    def test_direct_swimming_pose_reuses_exact_bytes_and_native_cursor(self):
+        name='data/player/paddle_end.bca'
+        self.assertEqual(len(self.direct_members[name][1]),1011)
+        self.load(name);self.cpu.mem_write(self.destination,b'caller modified its own buffer')
+        self.load(name)
+        self.assertEqual(len(self.reads),1);self.assertEqual(self.stats()[:3],(1,1,1))
+        self.assertEqual(self.word(self.file+40),self.direct_members[name][0]+1011)
+        self.assertEqual(self.read_irq,[0]);self.assertTrue(self.intact(self.root))
+
+    def test_every_verified_direct_player_pose_reuses_original_rom_bytes(self):
+        self.assertEqual(len(self.direct_members),154)
+        for name in self.direct_members:
+            reads=len(self.reads)
+            self.load(name);self.load(name)
+            self.assertEqual(len(self.reads),reads+1,name)
+            self.assertLessEqual(self.stats()[4],65536)
+            self.assertLessEqual(self.stats()[5],32)
+        self.assertTrue(self.intact(self.root))
 
     def test_root_pressure_evicts_optional_storage_before_native_allocation(self):
         before=self.largest(self.root)
