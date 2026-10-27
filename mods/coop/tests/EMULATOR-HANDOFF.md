@@ -14,6 +14,14 @@ Focused14 tests PASS. Full native321 suite PASS293 executed/28 skips in
 packed132-no-cost-all-native-tests.log. New party launched after old actual exit;
 queue reports parent249025, follower249026, immediate-return follower249027.
 Actual active frontend249029. Only this party is running.
+IMPORTANT: the old immediate-return follower249027 was stopped before any RPC
+connection while6–23 matrix was still running. Its result is superseded. New
+continue-packed132-no-cost-late-stages.py waits for6–23 PASS, then runs24–51
+(skip41), stationary speed/jump/pause/coin/heap/UI checks, wrap1→2→nativeBoB,
+course return and Save & Quit before explicit shutdown. Its result/log paths
+are packed132-no-cost-late-stages and continue-packed132-no-cost-late-stages.log.
+Do not start another party. Native jumping avoids the unsafe forward cliff route
+in24; later native hazards may still require a safer physical controller route.
 Queue /workspace/runtime/queue-packed132-no-cost.py checks old party closed+actual
 exit AND native-suite PASS before starting the only next party. Its log records
 launch PIDs. New parent packed132-no-cost-matrix/socket, follower
@@ -26,8 +34,12 @@ are separate from globals. New counters allow absent player-cost metadata.
 f7436–23 earlier PASS, but long unattended pause later ended native input exchange
 error0x101 before return/save; cause unestablished. Stability soak remains open.
 Hardware2ac retest pending, no new hardware acceptance claim. Flag-disabled defaultde4be02f and hardware2ac1e988 rebuild BYTE-IDENTICALLY.
-GLOBAL ELF/base now match2ac hardware proof, not playedf759; frozen132 artifacts
-above preserve native-suite correspondence. Commit/push packed feature next.
+GLOBAL ELF/base have been restored from frozen132 artifacts and match playedf759.
+Packed feature PUSHEDed50d4612. New seven-case line suite passes on that exact
+build, including complete15-Goomba native state parity. A collision-composition
+experiment passed native checks but showed negligible benefit and was discarded;
+5b4844bc private ROM is unplayed and not a candidate. Through12 current6–23
+matrix PASSED; BoB steady guest896x2VB,7x3VB,2x4VB, no steady/movement reads.
 Continue full-speed priority,24–51/actions/mixed characters and remaining worklist.
 Older CURRENT/ACTIVE notes below are historical and superseded here.
 

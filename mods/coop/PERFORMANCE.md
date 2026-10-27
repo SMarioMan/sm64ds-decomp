@@ -1368,3 +1368,33 @@ byte-identically to2ac1e988. More stages, direct first-use actions, mixed
 characters and physical acceptance remain open.
 Private evidence: `packed-animation-adoption-feasibility.json`,
 `packed-animation-all-native-tests.log`, `packed-animation-{matrix,performance}/`.
+
+
+## Collision composition measurement and additional actor parity
+
+An unpublished experiment combined the ordered collision plan with the older
+axis check at the remaining native cylinder-distance call. Its321 native checks
+passed (299 executed,22 configuration skips), including randomized native contact
+bytes and notification order. A private comparison of the160-node captured list
+measured plan-only173071 instructions/8 SQRT reads versus combined173231/5.
+For Lethal Lava Land, reconstructing the194-node list privately from its retained
+plan nodes measured warm plan-only79244/3 versus combined79308/2; cold builds
+were234979/3 versus235043/2. Contacts and callback order matched. Hardware SQRT
+latency is not modeled by these isolated instruction counts, and no material
+performance benefit is established. The composition option was discarded; the
+builders retain their original mutual exclusion. These measurements do not
+alter the playedf759 image or its acceptance status.
+
+A new native replay executes all15 captured Goomba Behavior updates and compares
+complete0x488-byte actor state and return values against the original distance
+calls. The existing line-sphere rejection preserves those results while changing
+109425 instructions/376 SQRT reads to108123/151. All seven line-broadphase cases
+pass. This extends correctness coverage of the already published optimization;
+it adds no runtime hook or production overhead.
+
+Private evidence: combined-collision-native-benchmark.json,
+combined-collision-level14-{cold,warm}-benchmark.json,
+combined-collision-all-native-tests.log, combined-collision-plan-recheck.log,
+combined-collision-goomba-tests.log. A first multi-mode private benchmark reused
+a workspace pointer after restoring its heap fixture; explicitly releasing the
+private plan between trials fixed that probe. No live console was modified.

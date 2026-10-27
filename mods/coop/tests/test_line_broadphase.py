@@ -125,3 +125,26 @@ class LineBroadphaseTests(LineHardwareHarness,unittest.TestCase):
         self.assertEqual(optimized[:2],native[:2])
         print('Captured coins: actors/instructions/sqrt reads:',len(actors),native[2:],optimized[2:])
         self.assertLess(optimized[3],native[3]);self.assertLess(optimized[2],native[2])
+
+    def test_captured_goomba_updates_keep_complete_actor_state_with_fewer_sqrt_reads(self):
+        node=self.word(0x0209b468);actors=[]
+        while node:
+            actor=self.word(node+8)
+            if self.word(actor+12)&65535 in (200,201,202):actors.append(actor)
+            node=self.word(node+4)
+        self.assertGreaterEqual(len(actors),15)
+        ram=bytes(self.cpu.mem_read(0x02000000,0x400000))
+        def run(optimized):
+            results=[];start=self.instructions;reads=self.sqrt_reads
+            for actor in actors:
+                self.cpu.mem_write(0x02000000,ram)
+                self.branch(self.runtime['CoopLineSphereRead'] if optimized else self.game['Vec3_Dist'])
+                self.write(actor+0xb0,self.word(actor+0xb0)&~0x38)
+                behavior=self.word(self.word(actor)+6*4)
+                result=self.call(behavior,actor)
+                results.append((result,bytes(self.cpu.mem_read(actor,0x488))))
+            return results,self.instructions-start,self.sqrt_reads-reads
+        native=run(False);optimized=run(True)
+        self.assertEqual(optimized[0],native[0])
+        self.assertLess(optimized[1],native[1]);self.assertLess(optimized[2],native[2])
+        print('Goomba complete updates: instructions/sqrt:',native[1:],optimized[1:])
