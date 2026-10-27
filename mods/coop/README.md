@@ -236,7 +236,7 @@ changes the output hash, so retain the adjacent build report with test results.
 The output is `build/coop/bootstrap/sm64ds-haxxstation-game-handoff.nds`.
 
 The current default slot-A/four-console build has SHA-256
-`35d8be5d8a49681d37c9e05f3b12b991bb6ffff96e165f05223ba46c6d25adc3`.
+`de4be02f1e8a4067265457a7d1894a9f8fb3c3454cf51aaa101e6c3e2edac881`.
 It includes the verified Bob-omb Battlefield shadow/head rendering fix.
 Other save slots and guest counts produce different hashes.
 Its adjacent JSON records input hashes, client overlay authentication and
@@ -863,3 +863,13 @@ It adds no file reads. Native heap/lifetime checks pass; wireless acceptance is
 pending. All performance options remain disabled by default. The combined0c52
 normal four-Yoshi diagnostic failed12→13 during model-work allocation; earlier
 mixed-character direct entries do not establish normal-route acceptance.
+
+`--experimental-animation-prefetch` requires `--experimental-animation-cache`.
+After skybox loading it reads missing verified Yoshi idle/walk/sleep and shared
+cold-weather pose files into the existing optional cache. This intentionally
+moves first-use IO into loading. It uses optional8192-byte GAME scratch, keeps
+native open/read/close and network servicing, and skips reads that cannot be
+cached. Existing cache entries add no reads. Eight native cases and the283-test
+suite pass; wireless hitch and loading-time comparisons are still pending.
+The option is disabled by default. It is independent of the archive-copy
+`--experimental-animation-prewarm` option.

@@ -13,7 +13,9 @@ not establish campaign completion or real-hardware compatibility.
   claiming a causal load-time gain. Animated loading feedback remains open.
 - [ ] Validate opt-in idle/walk animation prewarming in wireless play. Full266
   native tests pass, including exact bytes and temporary GAME/ROOT ownership.
-  No new reads are added, but direct sleep-start first use still needs work.
+  No new reads are added. A separate loading-only prefetch option now covers
+  nine idle/walk/sleep/cold poses; eight native cases and283-test suite pass.
+  Compare wireless first-use hitches and total loading time before acceptance.
 - [ ] PRIORITY: optimize steady gameplay speed and eliminate significant
   hitches on real hardware across every level and supported party size.
   Latest56b combined four-console diagnostic PASSES short6–16, course return,

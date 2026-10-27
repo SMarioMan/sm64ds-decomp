@@ -1004,3 +1004,37 @@ case identifies the exact1048-byte ten-bone model from the native registry.
 The167a680a cartridge combines the guarded fix, idle/walk prewarm and other
 performance options. A fresh four-console normal-route6–16 run is active;
 acceptance through the failed12→13 transition and return/save is pending.
+
+## Loading-only animation prefetch
+
+The normal167a BoB sample confirms that archive-copy prewarming leaves two
+physical reads during steady play: Y_sleep_start and Y_sleep_wait. Cold-weather
+idle start (6614 bytes) also stalls stage10. Host CARD reads complete within a
+VBlank while guests wait30–40 VBlanks; native cadence sees the whole party stall.
+This is evidence for moving those first reads into loading, not reducing poses.
+
+`--experimental-animation-prefetch` requires animation caching and is default
+off, independent of archive-copy prewarming. After native skybox loading it
+tries an8192-byte GAME scratch buffer and native file views for nine verified
+common/direct Yoshi idle/walk/sleep and shared cold-weather poses. Existing
+entries are reused without IO; insufficient ROOT cache room skips the read.
+IRQs are enabled for IO and the aligned scratch has cache maintenance before
+CARD DMA. Exact complete reads alone enter the same32-slot/64KB optional cache.
+Every opened view closes on success or short read; scratch ownership is returned.
+Offline, gameplay, another thread, active IO and unready/error archives skip it.
+
+Eight ARM cases pass: exact original bytes/cursors, all nine cache hits without
+new reads, repeat passes, existing common entries, close/error paths, aligned
+cache maintenance, IRQ policy, both heap-pressure paths and readiness guards.
+Native FS read/wait/seek/close and heaps execute; only physical open/range and
+ROM data delivery are adapted. Full283 tests pass (273 executed,10 skipped).
+Combined5bf388b2 body/tables45932 bytes; code/data soft bound41KiB and hard64KiB
+module cap are enforced. No padding is allocated. The first40KiB build was
+rejected before any native tests; failure logs remain. Wireless acceptance is
+pending behind the active167a regression, which currently passes normal6–8.
+
+The default flags-off slot-A integrated cartridge independently reproduces
+`de4be02f1e8a4067265457a7d1894a9f8fb3c3454cf51aaa101e6c3e2edac881`
+in two complete builds. Its9 model-work tests and14 boot/layout/relocation/map
+checks pass. Older35d8be5d is the pre-model-pressure normal image. No new
+hardware performance or complete-campaign acceptance is claimed.

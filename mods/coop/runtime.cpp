@@ -1435,6 +1435,10 @@ static void CoopReleaseStageSourceCache(void) {
     }
 }
 
+#ifdef COOP_EXPERIMENTAL_ANIMATION_PREFETCH
+void CoopPrefetchAnimationReads(void);
+#endif
+
 void CoopLoadSkybox(void *scene) {
     // Native SharedFilePtr/LoadFile copy or decompress cached members into
     // their own buffers and close their file views. All stage model/object
@@ -1443,6 +1447,9 @@ void CoopLoadSkybox(void *scene) {
     // the uncached NARC path rather than pinning the whole archive again.
     CoopReleaseStageSourceCache();
     CoopOriginalLoadSkybox(scene);
+#ifdef COOP_EXPERIMENTAL_ANIMATION_PREFETCH
+    CoopPrefetchAnimationReads();
+#endif
 }
 
 static CoopArchiveEntry *CoopUncachedArchive(u32 fileID) {
@@ -1869,6 +1876,57 @@ static void CoopStoreAnimationRead(u32 top,void *source,u32 size) {
     }
     _ZN3IRQ7RestoreEj(irq);
 }
+
+#ifdef COOP_EXPERIMENTAL_ANIMATION_PREFETCH
+extern const u32 coopAnimationPrefetchIndex[];
+// passes, reused entries, reads, stores, open failures, read failures,
+// scratch fallbacks, capacity skips.
+u32 coopAnimationPrefetchStats[8]={0};
+void CoopPrefetchAnimationReads(void) {
+    if (!coopEnabled || data_0209fc68!=4 || coopStageLoading!=2 ||
+        coopFileWaiting || data_020a613c!=data_020a621c || !data_0209d3b4)return;
+    u32 flags=*((volatile u32 *)data_0209d3b4+4);
+    if (!(flags&2) || (flags&0xe0))return;
+    ++coopAnimationPrefetchStats[0];
+    mHeap::Heap_t *owner=(mHeap::Heap_t *)data_020a0eac;
+    u32 irq=_ZN3IRQ7DisableEv();
+    u8 *scratch=0;
+    if (owner && CoopAlignedFree(owner,32)>=8192)
+        scratch=(u8 *)owner->VAllocate(8192,32);
+    _ZN3IRQ7RestoreEj(irq);
+    if (!scratch) { ++coopAnimationPrefetchStats[6];return; }
+    const u32 *entry=coopAnimationPrefetchIndex+1;
+    for (unsigned i=0;i<coopAnimationPrefetchIndex[0];++i,entry+=3) {
+        u32 top=entry[0],size=entry[1];
+        irq=_ZN3IRQ7DisableEv();
+        bool cached=false;
+        for (unsigned slot=0;slot<32;++slot)
+            if (coopAnimationReadEntries[slot].data &&
+                coopAnimationReadEntries[slot].top==top &&
+                coopAnimationReadEntries[slot].length==size) { cached=true;break; }
+        bool fits=data_020a0e9c && CoopAlignedFree(data_020a0e9c,32)>=size;
+        _ZN3IRQ7RestoreEj(irq);
+        if (cached) { ++coopAnimationPrefetchStats[1];continue; }
+        if (!fits) { ++coopAnimationPrefetchStats[7];continue; }
+        // These builder-verified immutable file views use native open/read/
+        // close. The loading reader keeps NET alive without running actors.
+        u32 file[17];FS_InitFile(file);
+        if (!func_0205d5e8(file,data_0209d3b4,top,top+size,entry[2])) {
+            ++coopAnimationPrefetchStats[4];continue;
+        }
+        ++coopAnimationPrefetchStats[2];
+        _ZN4CP1527FlushAndInvalidateDataCacheEjj((u32)scratch,size);
+        int read=CoopReadFileUncached(file,scratch,size,0);
+        if (read==(int)size) {
+            u32 before=coopAnimationCacheStats[2];
+            CoopStoreAnimationRead(top,scratch,size);
+            coopAnimationPrefetchStats[3]+=coopAnimationCacheStats[2]-before;
+        } else ++coopAnimationPrefetchStats[5];
+        FS_CloseFile(file);
+    }
+    owner->Deallocate(scratch);
+}
+#endif
 
 #ifdef COOP_EXPERIMENTAL_ANIMATION_PREWARM
 // attempts, scratch fallbacks, copied bytes, cache stores, no-store attempts.

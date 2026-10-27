@@ -1,5 +1,23 @@
 # Download Play handoff investigation
 
+LATEST SOURCE/BUILD NOTE: ONLY ACTIVE party remains167a model-work-yoshi above
+(the CURRENT OVERRIDE below lists its scripts/socket/execs). It has passed6–8
+on the normal four-Yoshi route; return/save follower still waits. Never start a
+second wireless party. The283-discovered-test prefetch build5bf388b2 PASSES
+273 executed/10 skipped, including8 new loading-prefetch cases. It is built at
+/runtime/prefetch-yoshi-cost-host.nds, UNPLAYED. Optional prefetch moves nine
+verified idle/walk/sleep/cold file reads after native skybox loading, skips hits
+and pressure, returns8192-byte GAME scratch and preserves native read/close.
+Flags-off normal independently reproducesde4be02f in two full builds and passes
+9 captured-model-work plus14 boot/layout/relocation/map checks. Global ELF/base
+and raw default bootstrap fixture now match that normalde4 build, NOT active
+167a or unplayed5bf. Frozen active drivers and adjacent JSON remain authoritative.
+Soft code/data bound41KiB; module64KiB cap unchanged. Completed167a stage snapshots
+are verified gzip in completed-model-work-stage-snapshot-compression.json; only
+stages marked passed are compressed, stage16/return/failure fixtures remain raw.
+Unplayed431 prewarm host is verified gzip. Need matched loading control, finish
+167a normal6–16/return/save, close/verify exit, then play5bf with prefetch counters.
+
 CURRENT OVERRIDE: ONLY ACTIVE167a680a2aaa42e6d33197471ed4431722cdd3cf3350d25822da7bf6907da927
 raw /runtime/model-work-yoshi-cost-host.nds; parent model-work-yoshi-matrix,
 socket /workspace/runtime/model-work-yoshi-matrix.sock, exec89451; follower

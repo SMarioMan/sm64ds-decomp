@@ -85,9 +85,9 @@ def link(source, prefix, address, game_symbols, launcher, cc, ld, defines=()):
     end = max([address + len(payload)] + [emitted[n] + sizes[n] for n in defined])
     payload.extend(bytes(end - address - len(payload)))
     # The runtime is dynamically allocated in ROOT; the loader accepts 64 KiB.
-    # Keep code/data below 40 KiB; the final module (including tables) is
+    # Keep code/data below 41 KiB; the final module (including tables) is
     # checked separately against the loader's 64 KiB limit.
-    if not payload or end > address + 0xa000:
+    if not payload or end > address + 0xa400:
         raise RuntimeError('Invalid linked payload span')
     return payload, emitted
 
@@ -155,6 +155,8 @@ def main():
                         help='TEST ONLY: drain geometry to measure terrain/body/head polygon costs; changes timing')
     parser.add_argument('--diagnostic-player-cost',action='store_true',
                         help='TEST ONLY: elapsed SDK ticks for player behavior/models and stage rendering')
+    parser.add_argument('--experimental-animation-prefetch',action='store_true',
+                        help='EXPERIMENTAL: read Yoshi idle/sleep and cold poses during loading')
     parser.add_argument('--experimental-animation-prewarm',action='store_true',
                         help='EXPERIMENTAL: retain native Yoshi idle/walk bytes before source release')
     parser.add_argument('--experimental-lz-window',action='store_true',
@@ -186,6 +188,8 @@ def main():
         parser.error('--diagnostic-stage-cycle requires --diagnostic-start-level')
     if args.baseline and (args.diagnostic_render_cost or args.diagnostic_player_cost or args.experimental_animation_cache or args.experimental_collision_broadphase or args.experimental_collision_plan or args.experimental_painting_math or args.experimental_lz_window):
         parser.error('--baseline cannot enable runtime experiments or diagnostics')
+    if args.experimental_animation_prefetch and not args.experimental_animation_cache:
+        parser.error('Animation prefetch requires --experimental-animation-cache')
     if args.experimental_animation_prewarm and not args.experimental_animation_cache:
         parser.error('Animation prewarming requires --experimental-animation-cache')
     if args.experimental_persistent_animation_cache and not args.experimental_animation_cache:
@@ -374,6 +378,7 @@ def main():
         imports['coopNarcIndex']=PAYLOAD_ADDRESS+0x1800
         narc_index=narc_member_index(rom,arm9,original)
         animation_mask=b'';animation_direct_index=b'';direct_animations=[]
+        animation_prefetch_index=b'';prefetch_animations=[]
         if args.experimental_animation_cache:
             common=ndspy.narc.NARC(rom.files[rom.filenames.idOf('ARCHIVE/arc0.narc')])
             if struct.unpack_from('<HH',narc_index)!=(0x8000,0x8000+len(common.files)):
@@ -406,12 +411,34 @@ def main():
                 struct.pack('<II',top,size) for top,size in direct_animations)
             imports['coopAnimationCacheMask']=imports['coopNarcIndex']+len(narc_index)
             imports['coopAnimationDirectIndex']=imports['coopAnimationCacheMask']+len(animation_mask)
+            if args.experimental_animation_prefetch:
+                imports['coopAnimationPrefetchIndex']=imports['coopAnimationDirectIndex']+len(animation_direct_index)
+        if args.experimental_animation_prefetch:
+            common_extents=struct.unpack_from('<I',narc_index,12)[0]
+            common_top=struct.unpack_from('<I',narc_index,8)[0]
+            common_id=struct.unpack_from('<I',narc_index,4)[0]
+            for member,name in ((80,'Y_wait'),(81,'Y_walk')):
+                if common.filenames.filenameOf(member)!=f'data/player/{name}.bca':
+                    raise RuntimeError('Unexpected common prefetch pose')
+                top,end=struct.unpack_from('<II',narc_index,common_extents+member*8)
+                prefetch_animations.append((common_top+top,end-top,common_id))
+            for name in ('Y_sleep_start','Y_sleep_wait','Y_sleep_end','Y_sleep_to_lie',
+                         'cold_wait_start','cold_wait','cold_wait_end'):
+                file_id=rom.filenames.idOf(f'data/player/{name}.bca')
+                top,end=struct.unpack_from('<II',original,fat+file_id*8)
+                prefetch_animations.append((top,end-top,file_id))
+            for top,size,file_id in prefetch_animations:
+                if not 8<=size<=8192 or original[top:top+5]!=b'LZ77\x10':
+                    raise RuntimeError('Unexpected prefetch extent or format')
+            animation_prefetch_index=struct.pack('<I',len(prefetch_animations))+b''.join(
+                struct.pack('<III',*entry) for entry in prefetch_animations)
         defines=[f'COOP_SAVE_SLOT={ord(args.save_slot)-ord("A") if args.save_slot else -1}']
         if args.experimental_painting_math:defines.append('COOP_EXPERIMENTAL_PAINTING_MATH=1')
         if args.experimental_painting_normals:defines.append('COOP_EXPERIMENTAL_PAINTING_NORMALS=1')
         if args.experimental_painting_visibility:defines.append('COOP_EXPERIMENTAL_PAINTING_VISIBILITY=1')
         if args.experimental_lz_window:defines.append('COOP_EXPERIMENTAL_LZ_WINDOW=1')
         if args.experimental_animation_prewarm:defines.append('COOP_EXPERIMENTAL_ANIMATION_PREWARM=1')
+        if args.experimental_animation_prefetch:defines.append('COOP_EXPERIMENTAL_ANIMATION_PREFETCH=1')
         if args.experimental_animation_cache:
             defines.append('COOP_EXPERIMENTAL_ANIMATION_CACHE=1')
         if args.experimental_persistent_animation_cache:
@@ -450,6 +477,8 @@ def main():
         if args.experimental_animation_cache:
             imports['coopAnimationCacheMask']=imports['coopNarcIndex']+len(narc_index)
             imports['coopAnimationDirectIndex']=imports['coopAnimationCacheMask']+len(animation_mask)
+            if args.experimental_animation_prefetch:
+                imports['coopAnimationPrefetchIndex']=imports['coopAnimationDirectIndex']+len(animation_direct_index)
         runtime, emitted = link(REPO/'mods/coop/runtime.cpp',root/'runtime',PAYLOAD_ADDRESS,imports,launcher,cc,ld,defines)
         if len(runtime)!=body_size:
             raise RuntimeError('Unstable runtime module size')
@@ -464,7 +493,7 @@ def main():
                 raise RuntimeError('Unexpected prologue for '+name)
             source=PAYLOAD_ADDRESS+len(runtime)
             runtime+=prologue+branch(source+4,address+4)
-        runtime+=narc_index+animation_mask+animation_direct_index
+        runtime+=narc_index+animation_mask+animation_direct_index+animation_prefetch_index
         if len(runtime)>0x10000:
             raise RuntimeError('Runtime module exceeds the 64 KiB loader limit')
         after = game['_ZN8dScene_c13AfterBehaviorEj']-rom.arm9RamAddress
@@ -623,6 +652,11 @@ def main():
         module_report['evictCommonStageSourceCache']=True
         module_report['evictStageCacheForPaintingMesh']=True
         module_report['localCameraControls']=True
+        if args.experimental_animation_prefetch:
+            module_report['experimentalAnimationPrefetch']={'defaultEnabled':False,
+                'statsOffset':emitted['coopAnimationPrefetchStats']-PAYLOAD_ADDRESS,
+                'scratchBytes':8192,'loadingOnly':True,'members':len(prefetch_animations),
+                'fields':['passes','reused','reads','stores','openFailures','readFailures','scratchFallbacks','capacitySkips']}
         if args.experimental_animation_prewarm:
             module_report['experimentalAnimationPrewarm']={'defaultEnabled':False,
                 'statsOffset':emitted['coopAnimationPrewarmStats']-PAYLOAD_ADDRESS,

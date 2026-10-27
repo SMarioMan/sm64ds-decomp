@@ -14,7 +14,7 @@ from unicorn.arm_const import (UC_ARM_REG_R0,UC_ARM_REG_R1,UC_ARM_REG_R2,UC_ARM_
 from test_particle_heap import HeapHarness
 
 
-class AnimationReadCacheTests(HeapHarness,unittest.TestCase):
+class AnimationReadCacheHarness(HeapHarness):
     fixture_variable='COOP_ANIMATION_CACHE_FIXTURE'
     default_fixture='/workspace/runtime/bob-native-process-steady/steady-bob-0'
 
@@ -108,6 +108,8 @@ class AnimationReadCacheTests(HeapHarness,unittest.TestCase):
         self.assertEqual(self.word(self.file+40),top+count) # Actual retail SeekFile on hits.
         return data
 
+
+class AnimationReadCacheTests(AnimationReadCacheHarness,unittest.TestCase):
     def test_second_exact_read_uses_immutable_bytes_and_native_cursor_without_io(self):
         self.load()
         self.assertEqual(self.stats()[:3],(0,1,1))
