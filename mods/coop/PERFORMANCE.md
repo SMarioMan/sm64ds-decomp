@@ -1203,3 +1203,75 @@ soft linked code/data ceiling is48KiB to accommodate diagnostic arrays; actual
 allocation stays at the emitted size and the64KiB final-module limit remains.
 Use before/after totals in a stable stage and compare class totals against
 aggregate spans; last-actor pointers at frame boundaries are not elapsed time.
+
+## Actor-class measurements and line/coin shadow work
+
+The7f10 normal four-Yoshi profiling route reaches BoB with a64-class table and
+no overflow. In its stable609-frame guest sample, nonplayer Behavior spans total
+13.93ms per stage render: yellow coins4.37ms, Goombas3.57ms, Bob-ombs1.93ms,
+King Bob-omb0.87ms and Chain Chomp0.40ms. Four player behaviors total4.26ms;
+bodies1.80ms, heads0.94ms, stage Render3.98ms. Stage Render already includes
+actor-collision elapsed: **do not add collision to that total again**. These
+are instrumented elapsed SDK-clock observations, including interrupts/waits,
+not exclusive CPU costs or hardware acceptance. Later class samples include
+13 with Goombas1.49ms,actor237 1.44ms,actor255 1.27ms and coins1.04ms.
+The active route continues beyond16. Initial7f10 profiling was interrupted by
+an invalid1792-byte readv field (frontend maximum1024), not an established
+native game failure. Its frontend exited. The corrected repeat reads two
+896-byte fields under the same core lock and retains exact image7f10.
+
+`--experimental-line-broadphase` is optional and independent of collision plans.
+It replaces only the Vec3_Dist call at020387a4 in native dBgCh_Lin::DetectClsn.
+The subsequent ADD/CMP/BGT still consumes the distance comparison. In the
+ordinary co-op gameplay state, wrapped32-bit differences with absolute values
+below2^29 prove that native squared arithmetic and its sqrt left shift cannot
+overflow. If any axis exceeds the nonnegative cutoff, return cutoff+1; otherwise
+run original rounded Vec3_Dist. Unusual differences, thresholds and offline/
+nonplaying states retain native arithmetic exactly. The bridge forwards the
+native r6+r4 cutoff and preserves those saved registers. The builder pins the
+original call and following ADD/CMP. No mesh query or accepted contact is changed.
+Six native cases cover600 seeded comparisons, rounding/touching boundaries,
+wrap/large/negative fallbacks, modes, bridge ABI and full captured coin behavior.
+For68 captured coins all complete actor bytes and query results match;
+128054→124253 private ARM instructions and704→45 SQRT reads. The first
+coordinate-domain prototype was correct but slower in instructions, so it was
+replaced before gameplay testing by the wrapped-delta guard. These are private
+instruction counts, not a measured wireless or hardware speedup.
+
+`--experimental-local-coin-shadows` targets a larger related cost. The AI
+visibility guard neutralizes clip bits so every replica simulates the same
+world. Coin helper020b10e4 uses bit8 only to gate a **visual shadow-floor probe**;
+neutering it makes far, unprobed coins ray-cast every frame even when invisible.
+A single flags-read hook at020b10f0 restores that saved local bit for the native
+probe gate. Coin Behavior itself still sees the neutral AI flags. Collection,
+movement, timers, Yoshi-mouth logic, collider updates and model matrices remain
+native. Shadow floor state/height and derived render clip radius are visual
+state; this hook does not introduce camera-dependent simulation decisions.
+Original native probing resumes as soon as the coin becomes visible.
+
+The authenticated overlay is changed only after loading, with both the LDR and
+following ANDS pinned. No new cache/allocation is needed. Six captured ARM cases
+cover native visible behavior, local-reference flags, inactive/foreign-context
+policy, ABI and returning to visible state. In this68-coin offscreen BoB cohort,
+complete actor bytes also match the old implementation: the redundant far
+probes all miss. Work falls127310→21616 instructions (83.0%) and704→0 SQRT reads.
+Combined candidatef74354c3 passes the full311-test suite (301 executed,10
+skipped). Four additional observation-client checks pass after that run: large
+fields are split into legal1024-byte requests within a single4KB atomic read,
+and invalid requests fail before reaching the frontend. The wireless comparison
+is next; this is not yet physical or all-level performance acceptance. Both options are
+off by default and absent from the published2ac hardware retest candidate.
+Evidence: `bob-coin-instruction-profile.json`, `line-sphere-delta-native-tests.log`
+and `local-coin-shadow-native-tests.log` in the private runtime directory.
+
+
+A new read-only paused coin check compares stage-relative identity, type,
+parameter, position/angles, movement, timers, active/bounce flags and block state
+on every peer. Local shadow-floor bits/height and derived render clip radius
+are intentionally excluded; they do not make collection or motion decisions.
+The comparison passes an existing four-system105a paused fixture (22 coins).
+It is integrated into stage checks for the local-coin-shadow candidate and must
+also pass in actual wireless play. The earlier2ac three-system retest image is
+independently rebuilt after these source additions and remains byte-identical;
+its14 boot/relocation/minimap proof checks pass. Neither new option is enabled
+in that image, so the published hardware test instructions/hash stay valid.

@@ -892,3 +892,15 @@ fade/window and asset-restoration checks and the296-test suite pass. Actual
 four-console screenshots verify the letters and changing spinner phases through
 normal stage transitions. Normal6–16 gameplay, native course return and four-system Save & Quit also pass. It is off by default and
 currently covers native stage initialization, not every firmware/menu screen.
+
+`--experimental-line-broadphase` conservatively rejects distant line-query
+collision spheres before the native rounded distance calculation. Candidate
+queries, order and native arithmetic fallbacks are retained. Six ARM checks
+include complete captured coin/query byte parity and fewer sqrt operations.
+
+`--experimental-local-coin-shadows` restores local visibility only for coin
+shadow-floor probing, so invisible coins do not repeatedly run visual raycasts.
+Coin AI, collection and physics still use the shared simulation flags. Six
+captured ARM checks cover visible behavior, local visual parity, ABI and becoming
+visible again. Both options remain off by default pending wireless and physical
+performance comparison; they are not in the2ac hardware retest candidate.

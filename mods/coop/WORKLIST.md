@@ -31,7 +31,11 @@ not establish campaign completion or real-hardware compatibility.
   and four-system Save & Quit, with zero physical reads in every steady and
   short movement sample. Loading letters/spinner are visible on all peers.
   Bounded diagnostic actor-class elapsed totals now target the remaining CPU
-  work; preserve geometry and actor update semantics. Continue17–51,
+  work; preserve geometry and actor update semantics. BoB timing points to
+  coins4.37ms, Goombas3.57ms and Bob-ombs1.93ms per stage render. Optional line
+  sphere rejection preserves all captured results, while a separate local coin
+  shadow-probe visibility hook removes83% of captured offscreen coin work with
+  complete actor parity. Both need wireless/hardware comparison. Continue17–51,
   repeated loads, moving/visible paintings, missions, bosses and final combined
   hardware performance acceptance. Exact evidence and older results are in
   [PERFORMANCE.md](PERFORMANCE.md) and [EMULATOR-HANDOFF.md](tests/EMULATOR-HANDOFF.md).

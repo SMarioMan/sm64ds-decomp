@@ -106,14 +106,31 @@ class Emulators:
         return bytes(int(v,16) for v in line.split(':',1)[1].split())
 
     def readv(self, index, fields):
-        """Read related observations under one core lock, without advancing it."""
+        """Read at most4KB under one core lock; split large individual fields.
+
+        Validate before sending: a malformed command terminates the test
+        frontend, so a diagnostic size mistake must not discard a live party.
+        """
+        fields=list(fields)
+        if not 0<=index<self.count:raise ValueError('Invalid console index')
+        if any(size<0 or size>4096 or address<0x02000000 or address>0x02400000-size
+               for address,size in fields) or sum(size for _,size in fields)>4096:
+            raise ValueError('Read vector must fit4KB of main RAM')
+        chunks=[];groups=[]
+        for address,size in fields:
+            start=len(chunks)
+            chunks.extend((address+offset,min(1024,size-offset)) for offset in range(0,size,1024))
+            groups.append((start,len(chunks)))
+        if not chunks:return [b'' for _ in fields]
         if not os.environ.get('COOP_BATCH_INPUT'):
-            return [self.read(index,address,size) for address,size in fields]
-        lines=self.command(f'readv {index} '+ ' '.join(f'{address:08x} {size}' for address,size in fields))
-        values=[bytes(int(v,16) for v in line.split(':',1)[1].split())
-                for line in lines if line.startswith('RAM ')]
-        if len(values)!=len(fields):raise RuntimeError('Incomplete read vector')
-        return values
+            values=[self.read(index,address,size) for address,size in chunks]
+        else:
+            lines=self.command(f'readv {index} '+ ' '.join(f'{address:08x} {size}' for address,size in chunks))
+            values=[bytes(int(v,16) for v in line.split(':',1)[1].split())
+                    for line in lines if line.startswith('RAM ')]
+        if len(values)!=len(chunks) or any(len(value)!=size for value,(_,size) in zip(values,chunks)):
+            raise RuntimeError('Incomplete read vector')
+        return [b''.join(values[start:end]) for start,end in groups]
 
     def set_input(self, index, keys, touch=None):
         if os.environ.get('COOP_BATCH_INPUT'):

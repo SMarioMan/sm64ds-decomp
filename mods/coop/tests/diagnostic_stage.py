@@ -165,6 +165,10 @@ def check_stage(ds, level):
     toggle_pause(ds,0)
     if not all(paused()):raise RuntimeError('Host pause did not reach the diagnostic party')
     heaps=heap_status(ds)
+    if getattr(ds,'runtime_module',{}).get('experimentalLocalCoinShadows'):
+        from campaign import check_paused_coin_gameplay
+        snapshot(ds,'coin-shadow-gameplay-pause')
+        check_paused_coin_gameplay(ds,'coin-shadow-gameplay-pause')
     toggle_pause(ds,0)
     if any(paused()):raise RuntimeError('Host resume did not reach the diagnostic party')
     check_connected_party(ds)

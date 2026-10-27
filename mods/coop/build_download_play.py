@@ -43,6 +43,10 @@ def main():
                         help='EXPERIMENTAL: exact regular-grid painting normals; requires painting math')
     parser.add_argument('--experimental-painting-math',action='store_true',
                         help='EXPERIMENTAL: reuse exact painting-wave coefficients')
+    parser.add_argument('--experimental-local-coin-shadows',action='store_true',
+                        help='EXPERIMENTAL: use local visibility for visual coin shadow-floor probes')
+    parser.add_argument('--experimental-line-broadphase',action='store_true',
+                        help='EXPERIMENTAL: reject distant line-query spheres before native sqrt')
     parser.add_argument('--experimental-collision-plan',action='store_true',
                         help='EXPERIMENTAL: ordered spatial candidates with pressure/callback fallback')
     parser.add_argument('--experimental-collision-broadphase',action='store_true',
@@ -83,7 +87,7 @@ def main():
     args.output=args.output.resolve()
     if args.diagnostic_stage_cycle and args.diagnostic_start_level is None:
         parser.error('--diagnostic-stage-cycle requires --diagnostic-start-level')
-    if (args.diagnostic_start_level is not None or args.diagnostic_render_cost or args.diagnostic_player_cost or args.experimental_animation_cache or args.experimental_collision_broadphase or args.experimental_collision_plan) and args.output==ROOT/'build/coop/bootstrap/sm64ds-haxxstation-game-handoff.nds':
+    if (args.diagnostic_start_level is not None or args.diagnostic_render_cost or args.diagnostic_player_cost or args.experimental_animation_cache or args.experimental_collision_broadphase or args.experimental_collision_plan or args.experimental_line_broadphase or args.experimental_local_coin_shadows) and args.output==ROOT/'build/coop/bootstrap/sm64ds-haxxstation-game-handoff.nds':
         parser.error('Diagnostic builds require --output to keep the normal cartridge separate')
     if args.runtime_placement=='prefix' and args.output==ROOT/'build/coop/bootstrap/sm64ds-haxxstation-game-handoff.nds':
         parser.error('Experimental prefix placement requires a separate --output')
@@ -111,6 +115,8 @@ def main():
     if args.diagnostic_render_cost:diagnostic+=('--diagnostic-render-cost',)
     if args.diagnostic_player_cost:diagnostic+=('--diagnostic-player-cost',)
     if args.experimental_collision_plan:diagnostic+=('--experimental-collision-plan',)
+    if args.experimental_line_broadphase:diagnostic+=('--experimental-line-broadphase',)
+    if args.experimental_local_coin_shadows:diagnostic+=('--experimental-local-coin-shadows',)
     if args.experimental_painting_math:diagnostic+=('--experimental-painting-math',)
     if args.experimental_painting_normals:diagnostic+=('--experimental-painting-normals',)
     if args.experimental_painting_visibility:diagnostic+=('--experimental-painting-visibility',)

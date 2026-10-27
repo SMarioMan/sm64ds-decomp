@@ -518,6 +518,13 @@ void CoopLoadLevelOverlays(int level) {
         extern void CoopPlayerHeadLook(void *);
         extern int CoopMinimapBehavior(dMap_c *);
         extern int CoopMinimapRender(dMap_c *);
+#ifdef COOP_EXPERIMENTAL_LOCAL_COIN_SHADOWS
+        extern void CoopCoinShadowProbeRead(void);
+        // This flags read gates only the coin's visual shadow-floor probe.
+        // The rest of coin Behavior still receives synchronized AI flags.
+        if (*(u32 *)0x020b10f0==0xe59500b0 && *(u32 *)0x020b10f4==0xe2100008)
+            PatchCall(0x020b10f0,(void *)CoopCoinShadowProbeRead);
+#endif
         Patch(0x020fa690,(void *)CoopMinimapBehavior);
         Patch(0x020f9e98,(void *)CoopMinimapRender);
         Patch(0x020c6e14,(void *)CoopStarTutorial);
@@ -2018,6 +2025,32 @@ int CoopReadFile(void *file,void *destination,int size,int async) {
 }
 #endif
 
+#ifdef COOP_EXPERIMENTAL_LINE_BROADPHASE
+int Vec3_Dist(const Vector3 *a,const Vector3 *b);
+int CoopLineSphereDistance(const Vector3 *a,const Vector3 *b,int limit) {
+    // This callsite only compares the returned length against limit. Retain
+    // native rounded distance for candidates and every unusual arithmetic case.
+    if (coopEnabled && data_0209fc68==4 && (u32)limit<=0x1ffffffe) {
+        // SUB wraps to32 bits in native Vec3_Dist before signed squaring.
+        // Match that arithmetic explicitly, including unusual world positions.
+        u32 x=(u32)a->x-(u32)b->x,y=(u32)a->y-(u32)b->y,z=(u32)a->z-(u32)b->z;
+        if ((int)x<0)x=0u-x;if ((int)y<0)y=0u-y;if ((int)z<0)z=0u-z;
+        // Each absolute difference below2^29 keeps summed squares below2^60:
+        // native sqrt's left shift by2 cannot wrap, and its rounded positive
+        // result is at least each integer axis distance. Larger domains fall back.
+        if (!((x|y|z)&0xe0000000) && (x>(u32)limit || y>(u32)limit || z>(u32)limit))
+            return limit+1;
+    }
+    return Vec3_Dist(a,b);
+}
+__asm void CoopLineSphereRead(void) {
+    // Native line-query sphere cull: r0/r1 endpoints, r6 collider radius,
+    // r4 query radius. The following ADD/CMP/BGT consumes only the predicate.
+    add r2,r6,r4
+    b CoopLineSphereDistance
+}
+#endif
+
 #ifdef COOP_EXPERIMENTAL_COLLISION_PLAN
 // Reclaimable conservative candidates are checked against fresh native nodes
 // and bounds every frame. Unknown types, domains or pressure retain retail.
@@ -3103,6 +3136,26 @@ u32 CoopShadowActorFlags(dActor_c *actor) {
     return flags;
 }
 
+#ifdef COOP_EXPERIMENTAL_LOCAL_COIN_SHADOWS
+u32 CoopCoinShadowProbeFlags(dActor_c *actor) {
+    u32 flags=actor->mFlags;
+    if (coopEnabled && data_0209fc68 && coopBehaviorActor==(u32)actor)
+        flags|=coopBehaviorVisibility&8;
+    return flags;
+}
+__asm void CoopCoinShadowProbeRead(void) {
+    // Replaces LDR r0,[r5,#0xb0], before the native ANDS/early return.
+    stmfd sp!, {r1-r3,r12,lr}
+    mrs r1,cpsr
+    stmfd sp!, {r1}
+    mov r0,r5
+    bl CoopCoinShadowProbeFlags
+    ldmfd sp!, {r1}
+    msr cpsr_f,r1
+    ldmfd sp!, {r1-r3,r12,pc}
+}
+#endif
+
 // Replace only each native shadow helper's flags load. Its following ANDS,
 // early return, scale arguments and native list registration remain intact.
 __asm void CoopShadowFlagsRead(void) {
@@ -3391,6 +3444,9 @@ static void PatchCall(u32 address, void *target) {
 }
 
 void CoopRuntimeDispatch(unsigned operation, u32 argument) {
+#ifdef COOP_EXPERIMENTAL_LINE_BROADPHASE
+    PatchCall(0x020387a4,(void *)CoopLineSphereRead);
+#endif
 #ifdef COOP_EXPERIMENTAL_COLLISION_PLAN
     Patch(0x02014b0c,(void *)CoopCollisionPairRead);
     Patch(0x0203c6bc,(void *)CoopCollisionVAllocate);

@@ -1,6 +1,50 @@
 # Download Play handoff investigation
 
 CURRENT OVERRIDE: ONLY ACTIVE7f10e660ea86ab60c55c8918cf4c183d0440f31c4a93d99eb4edd562379c7248
+corrected repeat actor-profile-retry-matrix, socket
+/workspace/runtime/actor-profile-retry-matrix.sock, parent exec85003, actual
+frontend PID229493. Follower actor-profile-retry-performance exec40969 samples
+6–23; normal6–20 PASSED,21 underway. No return/save follower. Scripts
+reproduce/continue-actor-profile-retry.py. Profile read uses two896-byte fields.
+Original actor-profile party reached BoB then a1792-byte readv field exceeded
+frontend1024 guard and ended the harness; actual original frontend exit verified.
+No native game failure proved. Do not resume or count the interrupted run as pass.
+
+NEW BUILT/UNPLAYED candidatef74354c3c21f8c527eca46bbd912a237d5b5efbbe7de1e8a8829a422590e8e1c
+/tmp/sm64ds-coop-runs/local-coin-shadow-yoshi-host.nds, adjacent JSON. Full311
+native tests PASS (301 executed,10 skips). Adds optional --experimental-line-broadphase
+and --experimental-local-coin-shadows, both defaultOFF. Six line cases preserve
+all coin/query bytes,128054→124253 private instructions,704→45sqrt reads.
+Six local-shadow cases preserve visible/native-local behavior and becoming visible;
+captured68 offscreen BoB coins retain COMPLETE actor bytes,127310→21616 instr,
+704→0sqrt. This only restores saved local bit8 for visual shadow-floor probe.
+AI flags/physics/collection still neutral/native. Need actual wireless comparison.
+Body/ELF/bin/build.json/base frozen under /tmp/sm64ds-coop-runs/local-coin-native-build.
+Do not start it while the7f10 control remains. Complete/diagnose control23 and
+close/verify actual frontend, then play this candidate normal6–23 with costs,
+UI checks, and new paused coin-gameplay comparison. Source tests/emulators.py
+now validates/splits large readv fields safely;4 focused client checks PASS.
+Source campaign.py paused coin comparator passes existing105a22-coin fixture.
+
+GLOBAL ELF/base/provisional now match normal THREE-SYSTEM2ac1e9888c2067a4b1dbaf85d80f3d6e560c701e3f445e859e0102cfa1f3d5d2
+proof rebuild /tmp/sm64ds-coop-runs/coop-performance-loading-3p-proof.nds.
+It is BYTE-IDENTICAL to published hardware retest2ac, new line/coin flags OFF,
+14 proof checks PASS. Previous2ac44 native/layout checks remain valid. Hardware
+retest at commitf31021001 was asked asynchronously; user has not replied yet.
+No3p actual emulator party for2ac yet. Keep active party7f10 frozen source/JSON.
+Worklist/performance docs and source recovery updated. New options/tests are
+validated natively and pending wireless acceptance; source-only archive contains82 files, no ROMs.
+Queue exec98085 /workspace/runtime/queue-local-coin-shadow.py waits for control23
+PASS, captures final paused coin state, requests shutdown and waits for PID229493
+to disappear before starting candidatef743. Failure retains control for diagnosis.
+Next scripts reproduce/continue-local-coin-shadow.py use latest frozen source,
+normal6–23 profile route, exact installed line/coin hook assertions and the new
+paused coin comparison. Candidate parent local-coin-shadow-matrix, follower
+local-coin-shadow-performance, respective logs in /workspace/runtime. No next
+party is started until actual control exit. Monitor queue log, do not compete.
+Older CURRENT/ACTIVE notes below are historical and superseded here.
+
+CURRENT OVERRIDE: ONLY ACTIVE7f10e660ea86ab60c55c8918cf4c183d0440f31c4a93d99eb4edd562379c7248
 raw /tmp/sm64ds-coop-runs/actor-profile-yoshi-host.nds; parent
 /workspace/runtime/actor-profile-matrix, socket /workspace/runtime/actor-profile-matrix.sock,
 exec38717, actual frontend PID228794. Follower actor-profile-performance exec4169

@@ -169,6 +169,10 @@ def main():
                         help='EXPERIMENTAL: exact regular-grid painting normals with native fallback')
     parser.add_argument('--experimental-painting-math',action='store_true',
                         help='EXPERIMENTAL: reuse exact ripple-wave coefficients across mesh cells')
+    parser.add_argument('--experimental-local-coin-shadows',action='store_true',
+                        help='EXPERIMENTAL: use local visibility for visual coin shadow-floor probes')
+    parser.add_argument('--experimental-line-broadphase',action='store_true',
+                        help='EXPERIMENTAL: reject distant line-query spheres before native sqrt')
     parser.add_argument('--experimental-collision-plan',action='store_true',
                         help='EXPERIMENTAL: ordered spatial candidates with pressure/callback fallback')
     parser.add_argument('--experimental-collision-broadphase',action='store_true',
@@ -461,6 +465,19 @@ def main():
             defines.append(f'COOP_DIAGNOSTIC_START_LEVEL={args.diagnostic_start_level}')
         if args.diagnostic_stage_cycle:
             defines.append('COOP_DIAGNOSTIC_STAGE_CYCLE=1')
+        if args.experimental_local_coin_shadows:
+            defines.append('COOP_EXPERIMENTAL_LOCAL_COIN_SHADOWS=1')
+            coin_overlay=rom.loadArm9Overlays()[2]
+            offset=0x020b10f0-coin_overlay.ramAddress
+            if coin_overlay.data[offset:offset+8]!=struct.pack('<II',0xe59500b0,0xe2100008):
+                raise RuntimeError('Unexpected native coin shadow probe flags read')
+        if args.experimental_line_broadphase:
+            defines.append('COOP_EXPERIMENTAL_LINE_BROADPHASE=1')
+            address=0x020387a4;offset=address-rom.arm9RamAddress
+            expected=branch(address,game['Vec3_Dist'])[:3]+b'\xeb'
+            if (arm9[offset:offset+4]!=expected or
+                arm9[offset+4:offset+12]!=struct.pack('<II',0xe0861004,0xe1500001)):
+                raise RuntimeError('Unexpected native line-sphere distance callsite')
         if args.experimental_collision_plan:
             defines.append('COOP_EXPERIMENTAL_COLLISION_PLAN=1')
         if args.experimental_collision_broadphase:
@@ -758,6 +775,15 @@ def main():
                     'scope':'successful dActor_c BeforeBehavior to AfterBehavior entry; excludes guard/cleanup'},
                 'fields':['sequence','count','totalTicksLow','totalTicksHigh','maxTicks','minTicks'],
                 'buckets':18,'resetOnStageIdentity':True}
+        if args.experimental_local_coin_shadows:
+            module_report['experimentalLocalCoinShadows']={'defaultEnabled':False,
+                'flagsRead':'0x020b10f0','localVisibilityBit':8,
+                'scope':'visual shadow floor probe only; gameplay AI flags stay neutral'}
+        if args.experimental_line_broadphase:
+            module_report['experimentalLineBroadphase']={'defaultEnabled':False,
+                'callsite':'0x020387a4','preservesAcceptedDistance':True,
+                'wrappedAbsoluteDeltaLimitExclusive':0x20000000,
+                'cutoffMaximum':0x1ffffffe}
         if args.experimental_collision_broadphase:
             module_report['experimentalCollisionBroadphase']={
                 'callsite':'0x02014bb4','preservesPairOrder':True,

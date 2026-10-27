@@ -772,3 +772,43 @@ def check_paused_course_enemies(ds, checkpoint):
     if any(party!=parties[0] for party in parties[1:]):
         raise RuntimeError('Goomba positions, states, or timers diverged in the paused course')
     print(f'{len(parties[0])} Goomba simulation states match across {ds.count} consoles.',flush=True)
+
+
+def check_paused_coin_gameplay(ds, checkpoint):
+    """Compare shared coin simulation while allowing native local shadow state.
+
+    Read captured paused RAM only. Floor-probe bits/height and render clip radius
+    belong to local shadows; collection, movement and timers must match peers.
+    """
+    parties=[];module=ds.runtime_module
+    for console in range(ds.count):
+        ram=(ds.output/f'{checkpoint}-{console}.ram').read_bytes()
+        def word(address):
+            if not 0x02000000<=address<=0x023ffffc:
+                raise RuntimeError('Invalid address in paused coin checkpoint')
+            return struct.unpack_from('<I',ram,address-0x02000000)[0]
+        if not ram[0x9f2c4]:raise RuntimeError('Coin comparison requires shared pause')
+        base=word(0x02004184)-int(module['entryOffset'],16)
+        stage=word(base+module['diagnosticOffsets']['coopStageIdentity'])
+        node=word(0x0209b468);seen=set();coins=[]
+        while node:
+            if node in seen or len(seen)>=4096:raise RuntimeError('Invalid paused actor list')
+            seen.add(node);actor=word(node+8);kind=word(actor+12)&65535
+            if kind in (288,289,290):
+                off=actor-0x02000000
+                coins.append({'identity':(word(actor+4)-stage)&0xffffffff,
+                    'kind':kind,'parameter':word(actor+8),
+                    'position':struct.unpack_from('<3i',ram,off+0x5c),
+                    'angles':struct.unpack_from('<6h',ram,off+0x8c),
+                    'motion':struct.unpack_from('<6i',ram,off+0x98),
+                    'actorFlags':word(actor+0xb0)&~0x38,
+                    'coinType':word(actor+0x3a0),'behavior':word(actor+0x3a4),
+                    'timers':ram[off+0x3a8:off+0x3ae].hex(),
+                    'activeSoundBounces':ram[off+0x3ae]&31,
+                    'blockState':ram[off+0x3af:off+0x3b1].hex()})
+            node=word(node+4)
+        coins.sort(key=lambda c:c['identity']);parties.append(coins)
+    (ds.output/f'{checkpoint}-coin-gameplay.json').write_text(json.dumps(parties,indent=2)+'\n')
+    if any(party!=parties[0] for party in parties[1:]):
+        raise RuntimeError('Coin positions, movement, collection flags or timers diverged in shared pause')
+    print(f'{len(parties[0])} coin gameplay states match across {ds.count} consoles.',flush=True)
