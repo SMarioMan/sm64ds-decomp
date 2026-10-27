@@ -848,3 +848,10 @@ It avoids a continuous painting's private mesh work only while the native
 renderer rejects it; native interaction, sliding and wave timing continue.
 Visible vertex identity and shared state pass nine ARM checks; live timing is
 pending. It remains opt-in with the other painting experiments.
+
+`--experimental-lz-window` optionally uses a4096-byte heap window for compressed
+file input, with the original512-byte stack window as a memory-pressure fallback.
+It preserves native mounting and exact decoder output. Eight native cases cover
+ownership, repeated loads, fallback and file semantics; broader wireless loading
+performance is under test. It is disabled by default and can be combined with
+or used independently of the animation cache.

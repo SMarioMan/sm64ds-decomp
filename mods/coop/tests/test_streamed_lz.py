@@ -67,9 +67,10 @@ class StreamedLzTests(HeapHarness,unittest.TestCase):
         self.assertEqual(len(expected),33336)
         result=self.call('CoopLoadDiskFile',self.file,1)
         self.assertEqual(bytes(self.cpu.mem_read(result,len(expected))),expected)
-        self.assertLessEqual(max(self.read_sizes),512)
+        limit=4096 if 'coopLzWindowStats' in self.runtime else 512
+        self.assertLessEqual(max(self.read_sizes),limit)
         self.assertTrue(self.input_cache_ranges)
-        self.assertTrue(all(address%32==0 and 0<count<=512
+        self.assertTrue(all(address%32==0 and 0<count<=limit
                             for address,count in self.input_cache_ranges))
         self.assertTrue(self.closed)
         self.assertEqual(self.flushes,[(result,len(expected))])
@@ -86,6 +87,68 @@ class StreamedLzTests(HeapHarness,unittest.TestCase):
             self.assertEqual((self.largest(self.root),self.largest(self.game_heap)),before)
         self.assertTrue(self.intact(self.root))
         self.assertTrue(self.intact(self.game_heap))
+
+    def window_stats(self):
+        if 'coopLzWindowStats' not in self.runtime:
+            self.skipTest('requires --experimental-lz-window build')
+        return struct.unpack('<5I',self.cpu.mem_read(self.runtime['coopLzWindowStats'],20))
+
+    def fill_below_window(self,owner,ballast):
+        for _ in range(128):
+            available=self.largest(owner)
+            if available<4096:return
+            pointer=self.call(self.game['_ZN5mHeap6Heap_t8AllocateEji'],owner,available-128,4)
+            self.assertTrue(pointer);ballast.append((owner,pointer))
+        self.fail('Could not construct bounded native heap-pressure fixture')
+
+    def release_ballast(self,ballast):
+        for owner,pointer in reversed(ballast):
+            self.call(self.game['_ZN5mHeap6Heap_t10DeallocateEPv'],owner,pointer)
+
+    def test_large_window_reduces_read_requests_and_restores_both_native_heaps(self):
+        self.window_stats()
+        before=(self.largest(self.root),self.largest(self.game_heap))
+        result=self.call('CoopLoadDiskFile',self.file,0)
+        stats=self.window_stats()
+        self.assertEqual(stats[0]+stats[1],1)
+        self.assertEqual(stats[2],0)
+        self.assertEqual(max(self.read_sizes),4096)
+        self.assertEqual(len(self.read_sizes),1+(len(self.data)-8+4095)//4096)
+        self.assertEqual(stats[3],len(self.read_sizes)-1)
+        self.assertEqual(bytes(self.cpu.mem_read(result,33336)),ndspy.lz10.decompress(self.data[4:]))
+        self.call('CoopFreeResource',result)
+        self.assertEqual((self.largest(self.root),self.largest(self.game_heap)),before)
+        self.assertTrue(self.intact(self.root));self.assertTrue(self.intact(self.game_heap))
+
+    def test_heap_pressure_keeps_exact_output_with_the_original_stack_window(self):
+        self.window_stats()
+        before=(self.largest(self.root),self.largest(self.game_heap));ballast=[]
+        # Keep one exact output-sized block. After allocating the output,
+        # neither heap can provide the optional4KB input window.
+        held=self.call(self.game['_ZN5mHeap6Heap_t8AllocateEji'],self.root,33336,32)
+        self.fill_below_window(self.root,ballast)
+        self.fill_below_window(self.game_heap,ballast)
+        self.call(self.game['_ZN5mHeap6Heap_t10DeallocateEPv'],self.root,held)
+        result=self.call('CoopLoadDiskFile',self.file,0)
+        self.assertEqual(self.window_stats()[:3],(0,0,1))
+        self.assertLessEqual(max(self.read_sizes),512)
+        self.assertEqual(bytes(self.cpu.mem_read(result,33336)),ndspy.lz10.decompress(self.data[4:]))
+        self.call('CoopFreeResource',result);self.release_ballast(ballast)
+        self.assertEqual((self.largest(self.root),self.largest(self.game_heap)),before)
+        self.assertTrue(self.intact(self.root));self.assertTrue(self.intact(self.game_heap))
+
+    def test_game_owned_window_is_released_through_its_explicit_owner(self):
+        self.window_stats()
+        before=(self.largest(self.root),self.largest(self.game_heap));ballast=[]
+        held=self.call(self.game['_ZN5mHeap6Heap_t8AllocateEji'],self.root,33336,32)
+        self.fill_below_window(self.root,ballast)
+        self.call(self.game['_ZN5mHeap6Heap_t10DeallocateEPv'],self.root,held)
+        result=self.call('CoopLoadDiskFile',self.file,0)
+        self.assertEqual(self.window_stats()[:3],(0,1,0))
+        self.assertEqual(bytes(self.cpu.mem_read(result,33336)),ndspy.lz10.decompress(self.data[4:]))
+        self.call('CoopFreeResource',result);self.release_ballast(ballast)
+        self.assertEqual((self.largest(self.root),self.largest(self.game_heap)),before)
+        self.assertTrue(self.intact(self.root));self.assertTrue(self.intact(self.game_heap))
 
     def test_offline_policy_delegates_without_reading(self):
         self.write(self.runtime['coopEnabled'],0)

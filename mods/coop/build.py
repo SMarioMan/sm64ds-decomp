@@ -85,9 +85,9 @@ def link(source, prefix, address, game_symbols, launcher, cc, ld, defines=()):
     end = max([address + len(payload)] + [emitted[n] + sizes[n] for n in defined])
     payload.extend(bytes(end - address - len(payload)))
     # The runtime is dynamically allocated in ROOT; the loader accepts 64 KiB.
-    # Keep code/data below 38 KiB; the final module (including tables) is
+    # Keep code/data below 39 KiB; the final module (including tables) is
     # checked separately against the loader's 64 KiB limit.
-    if not payload or end > address + 0x9800:
+    if not payload or end > address + 0x9c00:
         raise RuntimeError('Invalid linked payload span')
     return payload, emitted
 
@@ -155,6 +155,8 @@ def main():
                         help='TEST ONLY: drain geometry to measure terrain/body/head polygon costs; changes timing')
     parser.add_argument('--diagnostic-player-cost',action='store_true',
                         help='TEST ONLY: elapsed SDK ticks for player behavior/models and stage rendering')
+    parser.add_argument('--experimental-lz-window',action='store_true',
+                        help='EXPERIMENTAL: optional owned4KB compressed-input window with512-byte fallback')
     parser.add_argument('--experimental-painting-visibility',action='store_true',
                         help='EXPERIMENTAL: skip continuous private meshes rejected by native rendering')
     parser.add_argument('--experimental-painting-normals',action='store_true',
@@ -180,8 +182,8 @@ def main():
         parser.error('--baseline cannot select a diagnostic stage')
     if args.diagnostic_stage_cycle and args.diagnostic_start_level is None:
         parser.error('--diagnostic-stage-cycle requires --diagnostic-start-level')
-    if args.baseline and (args.diagnostic_render_cost or args.diagnostic_player_cost or args.experimental_animation_cache or args.experimental_collision_broadphase or args.experimental_collision_plan or args.experimental_painting_math):
-        parser.error('--baseline cannot enable render diagnostics')
+    if args.baseline and (args.diagnostic_render_cost or args.diagnostic_player_cost or args.experimental_animation_cache or args.experimental_collision_broadphase or args.experimental_collision_plan or args.experimental_painting_math or args.experimental_lz_window):
+        parser.error('--baseline cannot enable runtime experiments or diagnostics')
     if args.experimental_persistent_animation_cache and not args.experimental_animation_cache:
         parser.error('Persistent animation caching requires --experimental-animation-cache')
     if args.experimental_lazy_animation_eviction and not args.experimental_animation_cache:
@@ -391,6 +393,7 @@ def main():
         if args.experimental_painting_math:defines.append('COOP_EXPERIMENTAL_PAINTING_MATH=1')
         if args.experimental_painting_normals:defines.append('COOP_EXPERIMENTAL_PAINTING_NORMALS=1')
         if args.experimental_painting_visibility:defines.append('COOP_EXPERIMENTAL_PAINTING_VISIBILITY=1')
+        if args.experimental_lz_window:defines.append('COOP_EXPERIMENTAL_LZ_WINDOW=1')
         if args.experimental_animation_cache:
             defines.append('COOP_EXPERIMENTAL_ANIMATION_CACHE=1')
         if args.experimental_persistent_animation_cache:
@@ -602,6 +605,12 @@ def main():
         module_report['evictCommonStageSourceCache']=True
         module_report['evictStageCacheForPaintingMesh']=True
         module_report['localCameraControls']=True
+        if args.experimental_lz_window:
+            module_report['experimentalLzWindow']={'defaultEnabled':False,
+                'statsOffset':emitted['coopLzWindowStats']-PAYLOAD_ADDRESS,
+                'fields':['rootWindows','gameWindows','stackFallbacks','refills','requestedBytes'],
+                'maximumWindowBytes':4096,'fallbackWindowBytes':512,'stackFallbackStorageBytes':543,'largeWindowOnHeap':True,
+                'optionalOwnedAllocation':True}
         if args.experimental_painting_visibility:
             module_report['experimentalPaintingVisibility']={'defaultEnabled':False,
                 'statsOffset':emitted['coopPaintingVisibilityStats']-PAYLOAD_ADDRESS,

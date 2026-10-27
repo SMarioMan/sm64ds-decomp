@@ -926,3 +926,34 @@ instructions (native89200, old optimized64929); all six arithmetic cases pass.
 Full256 tests pass (246 executed,10 skipped); the integrated visibility image's
 four retail boot/layout checks pass. Combined body/tables43476 bytes, still
 inside the38KiB code/data and64KiB final-module bounds. Live timing is pending.
+
+## Optional compressed-input loading window
+
+`--experimental-lz-window` retains the exact streamed LZ10 decoder and native
+archive mounting, and tries a4096-byte aligned heap input window after allocating
+the output. ROOT is preferred, then GAME; neither optional allocation invokes
+fatal allocation policy. If neither fits, the original512-byte window is used.
+The4096-byte storage is on the heap; the original543-byte stack fallback storage
+remains. Explicit owner release occurs before completion and on decoder/read
+errors. IRQs are restored before filesystem reads. No extra4KB stack is needed.
+
+Eight private ARM cases pass, including exact decompressed output, file cursor,
+cache maintenance, repeated loads, GAME ownership and both-heaps-pressure
+fallback. The captured23607-byte skybox takes48 physical reads with512-byte
+chunks versus7 with4096-byte chunks, including its header. This read-count
+comparison does not establish a whole-level loading-time improvement.
+Full259 discovered tests pass (249 executed,10 skipped), plus four integrated
+retail boot/layout checks. Combined diagnostic body/tables are44188 bytes;
+code/data soft bound39KiB and final module64KiB remain enforced without padding.
+The option is disabled by default. The normal integrated cartridge independently
+reproduces35d8be5d8a49681d37c9e05f3b12b991bb6ffff96e165f05223ba46c6d25adc3.
+
+The0c52c505 combined cartridge is currently being tested with the normal
+castle→BoB route and four confirmed Yoshi characters, followed by native stage
+entries6–16. SDK VBlank loading measurements include controller/poll overhead;
+a fresh same-source window-disabled control is needed for causal comparison.
+All earlier direct13 painting runs used the native Mario/Luigi/Wario/Yoshi
+character fixture, so their results are not four-Yoshi acceptance.
+Visibility8cc passes13–16 and return/save/quit;13 steady improves to791 intervals
+at2 VBlanks/28 at3/1 at4/13 at7/33 at8. That still includes cold reads and hitches
+and is not full-speed hardware acceptance.

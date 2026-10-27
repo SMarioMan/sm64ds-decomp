@@ -2485,18 +2485,41 @@ void CoopFreeResource(void *ptr) {
     _ZN6Memory10DeallocateEPv(ptr);
 }
 
+#ifdef COOP_EXPERIMENTAL_LZ_WINDOW
+u32 coopLzWindowStats[5]={0}; // ROOT/GAME windows, stack fallback, refills, bytes.
+#endif
 struct CoopLzReader {
     void *file;
     u32 remaining,at,count;
     u8 storage[512+31];
+#ifdef COOP_EXPERIMENTAL_LZ_WINDOW
+    mHeap::Heap_t *owner;
+    u8 *external;
+    u32 capacity;
+    void Release() {
+        if (external)owner->Deallocate(external);
+        external=0;owner=0;capacity=512;
+    }
+#endif
     u8 Read() {
         u8 *buffer=(u8 *)(((u32)storage+31)&~31u);
+        u32 limit=512;
+#ifdef COOP_EXPERIMENTAL_LZ_WINDOW
+        if (external)buffer=external;
+        limit=capacity;
+#endif
         if (at==count) {
-            count=remaining<512 ? remaining : 512;
+            count=remaining<limit ? remaining : limit;
+#ifdef COOP_EXPERIMENTAL_LZ_WINDOW
+            ++coopLzWindowStats[3];coopLzWindowStats[4]+=count;
+#endif
             // CARD reads may DMA into this window on hardware. Keep cache
             // maintenance inside its own aligned storage, away from fields.
             _ZN4CP1527FlushAndInvalidateDataCacheEjj((u32)buffer,count);
             if (!count || FS_ReadFile(file,buffer,count)!=(int)count) {
+#ifdef COOP_EXPERIMENTAL_LZ_WINDOW
+                Release();
+#endif
                 Crash(); return 0;
             }
             remaining-=count;
@@ -2526,6 +2549,24 @@ void *CoopLoadDiskFile(void *file,int flush) {
     input.file=file;
     input.remaining=length-8;
     input.at=input.count=0;
+#ifdef COOP_EXPERIMENTAL_LZ_WINDOW
+    input.owner=0;input.external=0;input.capacity=512;
+    // The output already owns its allocation. Optional input storage must
+    // neither displace that output nor invoke the native fatal policy.
+    u32 irq=_ZN3IRQ7DisableEv();
+    mHeap::Heap_t *owners[2]={data_020a0e9c,(mHeap::Heap_t *)data_020a0eac};
+    for (unsigned i=0;i<2 && !input.external;++i) {
+        mHeap::Heap_t *owner=owners[i];
+        if (!owner || (i && owner==owners[0]) || CoopAlignedFree(owner,32)<4096)continue;
+        u8 *window=(u8 *)owner->VAllocate(4096,32);
+        if (window) {
+            input.external=window;input.owner=owner;input.capacity=4096;
+            ++coopLzWindowStats[i];
+        }
+    }
+    if (!input.external)++coopLzWindowStats[2];
+    _ZN3IRQ7RestoreEj(irq);
+#endif
     u32 written=0;
     while (written<size) {
         unsigned flags=input.Read();
@@ -2533,11 +2574,19 @@ void *CoopLoadDiskFile(void *file,int flush) {
             if (flags&bit) {
                 unsigned first=input.Read(),second=input.Read();
                 unsigned count=(first>>4)+3,distance=((first&15)<<8)+second+1;
-                if (distance>written || count>size-written) { Crash(); return 0; }
+                if (distance>written || count>size-written) {
+#ifdef COOP_EXPERIMENTAL_LZ_WINDOW
+                    input.Release();
+#endif
+                    Crash(); return 0;
+                }
                 while (count--) { output[written]=output[written-distance]; ++written; }
             } else output[written++]=input.Read();
         }
     }
+#ifdef COOP_EXPERIMENTAL_LZ_WINDOW
+    input.Release();
+#endif
     FS_CloseFile(file);
     func_02018770();
     if (flush)_ZN4CP1514FlushDataCacheEjj((u32)output,size);

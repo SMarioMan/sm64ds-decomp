@@ -13,13 +13,43 @@ historical checkpoints and failures rather than release acceptance.
 
 Published HEADd6b06fc18; normal optimization is currently LOCAL. Numbered minimap markers and optional painting
 coefficients are pushed; no claim of campaign completion/full speed.
-ONLY ACTIVE party is visibility8ccff3ca9b6194a1e9f77aa055dc5e9aac72deead9339159f610e3bdc916e8ad,
-`painting-visibility-stage13-cost-host.nds`. Parent `painting-visibility-matrix/`,
-socket `/workspace/runtime/painting-visibility-matrix.sock`, exec68700;
-continuation `painting-visibility-performance/`, exec25460. Direct13→16,
-1800 steady frames, four controls/pause/world checks, coefficient/normal and
-visibility counters. Frozen sources match8cc. Check result/log before RPC;
-no competing party or live state edits. ALL earlier parties are CLOSED.
+ONLY ACTIVE party is loading-window0c52c50570d7234ce8bc12e37b755a3934ac8656b1865c1db6905bbd1b6cc370,
+`lz-window-yoshi-cost-host.nds`. Parent `lz-window-yoshi-matrix/`, socket
+`/workspace/runtime/lz-window-yoshi-matrix.sock`, exec53885;
+continuation `lz-window-yoshi-performance/`, exec77246. It uses castle1,
+diagnostic interior2, actual BoB painting and short6→16,1800 steady frames each.
+It explicitly asserts four native Yoshis at castle/BoB. It records SDK VBlank
+loading transitions using physical mirror023ffc3c, including input/poll overhead,
+and per-transition owned-window/refill deltas. Frozen source matches0c52.
+Check result/log before RPC; no competing party or live state edits.
+All earlier parties including8cc are CLOSED and actual frontend exit verified.
+
+8cc PASSES13–16 plus600 steady16, course return, world sync and four-system
+Save & Quit. `painting-visibility-performance/` and return-save results remain.
+Mixed-fixture13 steady791 intervals at2/28 at3/1 at4/1 at37/3 at38 VBlanks;
+motion145 at2/14 at3 plus boundary1. All peers reject825 private meshes in the
+steady delta. This is a large CPU gain, but cold idle/sleep poses still hitch,
+occasional3-VBlank intervals remain, and normal four-Yoshi/physical acceptance
+is pending. Never label it full-speed complete.
+
+LOCAL --experimental-lz-window selects optional32-aligned4KB ROOT then GAME
+storage AFTER the output allocation, releasing through its explicit owner.
+It retains the original512+31-byte stack fallback storage; no4KB stack array.
+Allocation is nonfatal/preflighted under IRQ protection; IO occurs with IRQs
+restored. Read/decode failures release the optional window before native Crash.
+Eight stream-LZ ARM cases PASS (exact bytes, repeated heaps, explicit GAME owner,
+low-memory512 fallback, fewer reads, offline/raw delegation). The first attempt
+failed only because the test reserved a33336-byte output in too-small GAME;
+the corrected pressure fixture reserves that block in ROOT. Failed log retained.
+Full259 tests PASS (249 executed,10 skips);0c52 passes four retail boot/layout
+checks. The normal disabled image independently reproduces35d8be5d. Code/data
+soft bound39KiB, final64KiB cap remains. Live WFS/loading acceptance pending.
+Global ELF/base ROM/build.json match0c52, all experiments including LZ window ON.
+
+The direct13 parties4604/f67/7f9/8cc use the native M/L/W/Y diagnostic fixture
+(param1 values0,1,2,3), confirmed from captured RAM. They are NOT the ordinary
+four-Yoshi castle-start route. Repeat the normal all-Yoshi route on the combined
+performance candidate before making normal-game performance claims.
 
 Normals7f9 PASSES direct13–16,
 600 steady16, course return, world sync and four-system Save & Quit.

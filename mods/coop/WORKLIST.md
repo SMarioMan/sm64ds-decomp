@@ -3,6 +3,11 @@
 The mod is experimental. A passing unit test or stage-entry diagnostic does
 not establish campaign completion or real-hardware compatibility.
 
+- [ ] Finish validation of the optional4KB compressed-input loading window.
+  Eight native cases and the259-discovered-test suite pass; one captured asset
+  needs7 reads instead of48. Four-Yoshi normal-route wireless stage testing is
+  running on0c52c505. Measure same-source window-off loading transitions before
+  claiming a causal load-time gain. Animated loading feedback remains open.
 - [ ] PRIORITY: optimize steady gameplay speed and eliminate significant
   hitches on real hardware across every level and supported party size.
   Latest56b combined four-console diagnostic PASSES short6–16, course return,

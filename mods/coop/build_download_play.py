@@ -29,6 +29,8 @@ def main():
                         help='TEST ONLY: measure geometry costs with FIFO drains; not a performance benchmark')
     parser.add_argument('--diagnostic-player-cost',action='store_true',
                         help='TEST ONLY: elapsed SDK ticks for player behavior/models and stage rendering')
+    parser.add_argument('--experimental-lz-window',action='store_true',
+                        help='EXPERIMENTAL: optional4KB compressed-input window with512-byte fallback')
     parser.add_argument('--experimental-painting-visibility',action='store_true',
                         help='EXPERIMENTAL: avoid continuous meshes rejected by native rendering')
     parser.add_argument('--experimental-painting-normals',action='store_true',
@@ -102,6 +104,7 @@ def main():
     if args.experimental_painting_math:diagnostic+=('--experimental-painting-math',)
     if args.experimental_painting_normals:diagnostic+=('--experimental-painting-normals',)
     if args.experimental_painting_visibility:diagnostic+=('--experimental-painting-visibility',)
+    if args.experimental_lz_window:diagnostic+=('--experimental-lz-window',)
     if args.experimental_collision_broadphase:diagnostic+=('--experimental-collision-broadphase',)
     if args.experimental_animation_cache:diagnostic+=('--experimental-animation-cache',)
     if args.experimental_persistent_animation_cache:diagnostic+=('--experimental-persistent-animation-cache',)
