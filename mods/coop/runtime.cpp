@@ -1452,13 +1452,19 @@ u32 coopStreamedNarcReads=0;
 u32 coopNarcOpenDiagnostic[6]={0,0,0,0,0,0};
 u32 coopStageCacheEvictions=0;
 
+#ifdef COOP_EXPERIMENTAL_PACKED_ANIMATION_CACHE
+static void CoopUnloadCommonWithPackedPoses(void);
+#endif
+
 #ifdef COOP_EXPERIMENTAL_ANIMATION_PREWARM
 static void CoopUnloadCommonWithWarmPoses(void);
 #endif
 
 static void CoopReleaseStageSourceCache(void) {
     if (coopEnabled && data_0209fc68 && data_0208ecf4[0].image) {
-#ifdef COOP_EXPERIMENTAL_ANIMATION_PREWARM
+#ifdef COOP_EXPERIMENTAL_PACKED_ANIMATION_CACHE
+        CoopUnloadCommonWithPackedPoses();
+#elif defined(COOP_EXPERIMENTAL_ANIMATION_PREWARM)
         CoopUnloadCommonWithWarmPoses();
 #else
         UnloadArchive(0);
@@ -1597,14 +1603,56 @@ void CoopTraceAnimationFlush(unsigned reason) {
 #endif
 
 
+#ifdef COOP_EXPERIMENTAL_PACKED_ANIMATION_CACHE
+// Native common source ownership moves into one ordinary optional cache slot.
+// ROM offsets0/1 are impossible eligible keys:0=packed/ready,1=packing.
+u32 coopPackedAnimationStats[8]={0}; // attempts, adoptions, hits, reuses, invalid, interrupted, shrink failures, bytes.
+static CoopAnimationReadEntry *CoopPackedAnimationView(u32 top,u32 size,u32 *offset) {
+    CoopAnimationReadEntry *pool=0;
+    for (unsigned slot=0;slot<32;++slot)
+        if (coopAnimationReadEntries[slot].data && !coopAnimationReadEntries[slot].top)
+            { pool=&coopAnimationReadEntries[slot];break; }
+    if (!pool)return 0;
+    const CoopArchiveIndex *row=(const CoopArchiveIndex *)coopNarcIndex;
+    const u32 *extent=(const u32 *)(coopNarcIndex+row->extentOffset);
+    u32 packed=0;
+    for (unsigned member=0;member<(unsigned)(row->limit-row->first);++member) {
+        if (!(coopAnimationCacheMask[member>>3]&(1u<<(member&7))))continue;
+        u32 length=extent[member*2+1]-extent[member*2];
+        if (row->romTop+extent[member*2]==top && length==size &&
+            packed<=pool->length && size<=pool->length-packed) { *offset=packed;return pool; }
+        packed+=(length+3)&~3u;
+    }
+    return 0;
+}
+static u32 CoopAnimationPayloadBudget() {
+    for (unsigned slot=0;slot<32;++slot) {
+        const CoopAnimationReadEntry *entry=&coopAnimationReadEntries[slot];
+        if (entry->data && entry->top<=1)return 65536+entry->bytes;
+    }
+    return 65536;
+}
+#else
+#define CoopAnimationPayloadBudget() 65536u
+#endif
+
 static unsigned CoopOldestAnimationRead() {
     unsigned oldest=32;
+#ifdef COOP_EXPERIMENTAL_PACKED_ANIMATION_CACHE
+    unsigned pool=32;
+#endif
     u32 age=0;
     for (unsigned i=0;i<32;++i)
         if (coopAnimationReadEntries[i].data) {
+#ifdef COOP_EXPERIMENTAL_PACKED_ANIMATION_CACHE
+            if (coopAnimationReadEntries[i].top<=1) { pool=i;continue; }
+#endif
             u32 elapsed=coopAnimationReadClock-coopAnimationReadEntries[i].age;
             if (oldest==32 || elapsed>age) { oldest=i; age=elapsed; }
         }
+#ifdef COOP_EXPERIMENTAL_PACKED_ANIMATION_CACHE
+    if (oldest==32)return pool;
+#endif
     return oldest;
 }
 
@@ -1845,6 +1893,16 @@ static bool CoopCopyAnimationRead(void *file,u32 top,void *destination,u32 size)
         _ZN3IRQ7RestoreEj(irq);
         return false;
     }
+#ifdef COOP_EXPERIMENTAL_PACKED_ANIMATION_CACHE
+    u32 packedOffset=0;
+    CoopAnimationReadEntry *pool=CoopPackedAnimationView(top,size,&packedOffset);
+    if (pool) {
+        CpuCopy8(pool->data+packedOffset,destination,size);
+        pool->age=++coopAnimationReadClock;
+        ++coopAnimationCacheStats[0];++coopPackedAnimationStats[2];
+        _ZN3IRQ7RestoreEj(irq);return true;
+    }
+#endif
     for (unsigned i=0;i<32;++i) {
         CoopAnimationReadEntry *entry=&coopAnimationReadEntries[i];
         if (entry->data && entry->top==top && entry->length==size) {
@@ -1865,6 +1923,11 @@ static void CoopStoreAnimationRead(u32 top,void *source,u32 size) {
     mHeap::Heap_t *root=data_020a0e9c;
     if (!root)return;
     u32 irq=_ZN3IRQ7DisableEv();
+#ifdef COOP_EXPERIMENTAL_PACKED_ANIMATION_CACHE
+    u32 packedOffset=0;
+    CoopAnimationReadEntry *pool=CoopPackedAnimationView(top,size,&packedOffset);
+    if (pool) { pool->age=++coopAnimationReadClock;_ZN3IRQ7RestoreEj(irq);return; }
+#endif
     unsigned empty=32;
     for (unsigned i=0;i<32;++i) {
         CoopAnimationReadEntry *entry=&coopAnimationReadEntries[i];
@@ -1875,7 +1938,7 @@ static void CoopStoreAnimationRead(u32 top,void *source,u32 size) {
         }
         if (!entry->data)empty=i;
     }
-    while (empty==32 || coopAnimationCacheStats[4]+((size+3)&~3u)>65536) {
+    while (empty==32 || coopAnimationCacheStats[4]+((size+3)&~3u)>CoopAnimationPayloadBudget()) {
         unsigned oldest=CoopOldestAnimationRead();
         if (oldest==32)break;
         CoopEvictAnimationRead(oldest);
@@ -1890,7 +1953,7 @@ static void CoopStoreAnimationRead(u32 top,void *source,u32 size) {
     u8 *copy=(u8 *)root->VAllocate(size,32);
     if (copy) {
         u32 bytes=root->_Sizeof(copy);
-        while (coopAnimationCacheStats[4]+bytes>65536) {
+        while (coopAnimationCacheStats[4]+bytes>CoopAnimationPayloadBudget()) {
             unsigned oldest=CoopOldestAnimationRead();
             if (oldest==32)break;
             CoopEvictAnimationRead(oldest);
@@ -1911,6 +1974,87 @@ static void CoopStoreAnimationRead(u32 top,void *source,u32 size) {
     }
     _ZN3IRQ7RestoreEj(irq);
 }
+
+#ifdef COOP_EXPERIMENTAL_PACKED_ANIMATION_CACHE
+void func_0204ee10(void *archive); // Native unmount half of func_02018908.
+static void CoopUnloadCommonWithPackedPoses() {
+    ++coopPackedAnimationStats[0];
+    CoopArchiveEntry *source=&data_0208ecf4[0];
+    u8 *image=(u8 *)source->image;
+    mHeap::Heap_t *owner=source->heap;
+    if (!image || !coopEnabled || data_0209fc68!=4 || owner!=data_020a0e9c || coopFileWaiting ||
+        data_020a613c!=data_020a621c || (u32)image<0x02000000 || (u32)image>0x023fff90) {
+        ++coopPackedAnimationStats[4];UnloadArchive(0);return;
+    }
+    const CoopArchiveIndex *row=(const CoopArchiveIndex *)coopNarcIndex;
+    const u32 *extent=(const u32 *)(coopNarcIndex+row->extentOffset);
+    u32 sourceBytes=*(u32 *)(image+0x68),packed=0;
+    bool valid=*(u32 *)(image+0x60)==0x4352414e && sourceBytes>=16 &&
+        sourceBytes<=0x02400000-(u32)image-0x60 && owner->_Sizeof(image)>=sourceBytes+0x60;
+    if (valid)for (unsigned member=0;member<(unsigned)(row->limit-row->first);++member) {
+        if (!(coopAnimationCacheMask[member>>3]&(1u<<(member&7))))continue;
+        u32 begin=extent[member*2],end=extent[member*2+1];
+        if (end<begin || end>sourceBytes || end-begin<8 || end-begin>16384 ||
+            packed>begin+0x60 || *(u32 *)(image+0x60+begin)!=0x37375a4c ||
+            image[0x60+begin+4]!=0x10) { valid=false;break; }
+        packed+=(end-begin+3)&~3u;
+    }
+    if (!valid || !packed) { ++coopPackedAnimationStats[4];UnloadArchive(0);return; }
+    u32 irq=_ZN3IRQ7DisableEv();
+    unsigned slot=32;
+    for (unsigned i=0;i<32;++i) {
+        CoopAnimationReadEntry *entry=&coopAnimationReadEntries[i];
+        if (entry->data && !entry->top) {
+            ++coopPackedAnimationStats[3];_ZN3IRQ7RestoreEj(irq);UnloadArchive(0);return;
+        }
+        if (!entry->data)slot=i;
+    }
+    if (slot==32) { slot=CoopOldestAnimationRead();CoopEvictAnimationRead(slot); }
+    _ZN3IRQ7RestoreEj(irq);
+    // Preserve native mount/unmount/name teardown. Defer only freeing its
+    // already-owned block; the normal ARC record no longer points at it.
+    func_0204ee10(image);
+    irq=_ZN3IRQ7DisableEv();
+    source->image=0;source->heap=0;
+    CoopAnimationReadEntry *pool=&coopAnimationReadEntries[slot];
+    pool->top=1;pool->length=pool->bytes=owner->_Sizeof(image);
+    pool->age=++coopAnimationReadClock;pool->owner=owner;pool->data=image;
+    coopAnimationCacheStats[4]+=pool->bytes;++coopAnimationCacheStats[5];
+    _ZN3IRQ7RestoreEj(irq);
+    u32 destination=0;
+    for (unsigned member=0;member<(unsigned)(row->limit-row->first);++member) {
+        if (!(coopAnimationCacheMask[member>>3]&(1u<<(member&7))))continue;
+        irq=_ZN3IRQ7DisableEv();
+        // Optional ownership is visible between copies. A native pressure
+        // allocation may reclaim it; never touch a reclaimed/reused block.
+        if (pool->data!=image || pool->top!=1) {
+            ++coopPackedAnimationStats[5];_ZN3IRQ7RestoreEj(irq);return;
+        }
+        u32 length=extent[member*2+1]-extent[member*2];
+        CpuCopy8(image+0x60+extent[member*2],image+destination,length);
+        destination+=(length+3)&~3u;
+        _ZN3IRQ7RestoreEj(irq); // At most16KB masked per native copy.
+    }
+    irq=_ZN3IRQ7DisableEv();
+    if (pool->data!=image || pool->top!=1) {
+        ++coopPackedAnimationStats[5];_ZN3IRQ7RestoreEj(irq);return;
+    }
+    u32 previous=pool->bytes;
+    owner->Reallocate(image,packed);
+    u32 actual=owner->_Sizeof(image);
+    if (actual<packed || actual>packed+16) {
+        ++coopPackedAnimationStats[6];CoopEvictAnimationRead(slot);
+        _ZN3IRQ7RestoreEj(irq);return;
+    }
+    pool->length=packed;pool->bytes=actual;pool->top=0;
+    coopAnimationCacheStats[4]=coopAnimationCacheStats[4]-previous+actual;
+    if (coopAnimationCacheStats[4]>coopAnimationCacheStats[6])
+        coopAnimationCacheStats[6]=coopAnimationCacheStats[4];
+    ++coopAnimationCacheStats[2];++coopPackedAnimationStats[1];
+    coopPackedAnimationStats[7]+=actual;
+    _ZN3IRQ7RestoreEj(irq);
+}
+#endif
 
 #ifdef COOP_EXPERIMENTAL_ANIMATION_PREFETCH
 extern const u32 coopAnimationPrefetchIndex[];
@@ -1939,6 +2083,10 @@ void CoopPrefetchAnimationReads(void) {
             if (coopAnimationReadEntries[slot].data &&
                 coopAnimationReadEntries[slot].top==top &&
                 coopAnimationReadEntries[slot].length==size) { cached=true;break; }
+#ifdef COOP_EXPERIMENTAL_PACKED_ANIMATION_CACHE
+        u32 packedOffset=0;
+        if (!cached && CoopPackedAnimationView(top,size,&packedOffset))cached=true;
+#endif
         bool fits=data_020a0e9c && CoopAlignedFree(data_020a0e9c,32)>=size;
         _ZN3IRQ7RestoreEj(irq);
         if (cached) { ++coopAnimationPrefetchStats[1];continue; }

@@ -1275,3 +1275,96 @@ also pass in actual wireless play. The earlier2ac three-system retest image is
 independently rebuilt after these source additions and remains byte-identical;
 its14 boot/relocation/minimap proof checks pass. Neither new option is enabled
 in that image, so the published hardware test instructions/hash stay valid.
+
+## Wireless coin-shadow result and retained-pause timeout
+
+Candidatef74354c3 PASSES normal four-Yoshi6–23, four controllers, shared pause,
+actual loading animation, native graphics/IRQ restoration and per-stage paused
+coin gameplay comparison. Every comparable paused coin set matches across all
+four consoles, including68 in BoB,102 in14 and50 in23. The same image's later
+return/save attempt finds the retained session already ended. First retained
+reason is0x101 (native input-exchange retry exhaustion, bit0), on all consoles
+at tick183074, stage23, pause1, loop phase4, no file wait. This occurred during
+an extended unattended pause after the matrix finished, not within a passing
+matrix checkpoint. It is NOT established as a checksum or coin-state failure.
+The failure captures remain in `local-coin-shadow-stage23-return-save/`.
+Save & Quit is not verified for this image. Its frontend is explicitly closed
+and actual exit verified; repeat/control and long-pause stability remain open.
+
+With the same elapsed actor-class diagnostics enabled on both images, guest
+BoB steady cadence changes from1 interval at2 VBlanks/607 at3 on7f10 to
+885 at2/14 at3 plus one boundary1 onf743. Yellow coin elapsed per stage render
+falls4.37→0.856ms; all nonplayer behaviors13.93→9.93ms.13 improves from
+603x2/187x3/13x4 plus boundary1 to797x2/66x3/5x4 plus boundary1.14 changes
+little (382x2/342x3/7x4 versus388x2/335x3/9x4). Boot/trajectories can differ;
+these are instrumented emulator samples, not physical full-speed acceptance.
+The class profiler itself adds work and is absent from normal builds. Do not
+compare its cadence directly against older images without that instrumentation.
+
+## Optional adoption of packed common animations
+
+`--experimental-packed-animation-cache` requires the animation cache and lazy
+capacity-query support. It replaces, and cannot be combined with, the two-pose
+`--experimental-animation-prewarm` option. It is disabled by default.
+
+The native common NARC has already been downloaded for stage resources. At the
+existing source-release boundary, preserve its original unmount/name teardown,
+clear its native ARC owner record, then adopt its existing ROOT allocation as
+optional read-cache ownership. Compact the132 eligible compressed BCA
+members in place and shrink with the native allocator to202512 bytes. This
+includes126 player poses and six cap/star poses. No new
+buffer, member transfer or file read is required. All original mounts before
+this boundary, ROM/archive extents and later raw member views remain native.
+This does not repeat the withdrawn whole-mount bypass experiment.
+
+One of the existing32 cache records owns the entire packed block; regular reads
+retain an additional64KB budget and at most31 other records. Native pressure,
+growth, capacity queries and teardown can reclaim the block before making the
+same allocation decisions as an empty optional cache. Existing exact virtual
+capacity bookkeeping works for this single native allocation, including its
+original backward alignment. Common read hits copy exact original bytes and
+retain the original file cursor/readiness/error/thread checks. Generic running,
+jumping, landing and wall poses can remain hot instead of requiring separate
+wireless first-use reads. Separate direct NitroFS poses still use the ordinary
+read cache/prefetch policy and need broader action coverage.
+
+Packing uses a temporary reserved cache key and exposes that optional ownership
+between copies, masking IRQs for at most one16KB native copy. If an intervening
+allocation reclaims the block, packing stops before touching it again. Validation
+or shrink failure retains native unmount/free behavior. The settled cache block
+contains no borrowed model, actor or SDK archive pointers.
+
+Six new ARM cases cover every original member byte/native hit cursor with zero
+physical reads, exact virtual/native capacity, pool plus31 regular cache records,
+source validation fallback, interrupted ownership and foreign/async views. Existing
+model-work, painting and stage-source tests now explicitly evict optional cache
+ownership before asserting restoration of the complete original free block.
+Two old immediate-free assertions failed until that lifetime distinction was
+made explicit; their stronger native cleanup checks and the repeated full suite
+pass. Full321 discovered tests PASS (304 executed,17 skipped, including the
+mutually excluded prewarm configuration). Body/tables53764 bytes;64KiB cap stays.
+
+Candidatef8c7a49a6a22b800f320559626a48f9436cef31d6215cff69c737732f88f81da
+passed the normal four-Yoshi wireless route through6–23. This earlier
+configuration packs126 player poses into200740 bytes. The block remains on every
+sampled guest, common hits accumulate, steady physical read counts do not grow,
+and validation/interruption/shrink error counts are zero. Heavy13/14 model/heap
+and paused coin/gameplay checks pass. The first return/save check stopped on a
+test-only requirement for Goombas in stage23; its retry compares available enemy
+and coin states instead. The retry passed native course return, Save & Quit,
+host cartridge persistence/title initialization and all three guest shutdowns.
+Explicit frontend shutdown and actual process exit were verified.
+
+The newer132-pose build also prefetches the direct swimming-damage pose, bringing
+its direct prefetch list to15; the non-packed configuration retains its original14.
+Candidatef759a3778d5ddea71b84173c061112763e9da94db2e7b5d7c4675fb8e4f46143
+omits the actor-cost profiler so cadence can be measured without its overhead.
+Fourteen focused packed/prefetch cases pass. The full321 discovered native
+suite also passes (293 executed,28 skipped, including disabled actor-cost and
+mutually excluded prewarm checks). Its actual wireless comparison is underway.
+With packed mode off, the default integrated cartridge rebuilds byte-identically
+to publishedde4be02f; the existing three-system hardware candidate also rebuilds
+byte-identically to2ac1e988. More stages, direct first-use actions, mixed
+characters and physical acceptance remain open.
+Private evidence: `packed-animation-adoption-feasibility.json`,
+`packed-animation-all-native-tests.log`, `packed-animation-{matrix,performance}/`.

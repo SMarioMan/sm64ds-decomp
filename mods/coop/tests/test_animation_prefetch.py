@@ -19,6 +19,7 @@ class AnimationPrefetchTests(AnimationReadCacheHarness,unittest.TestCase):
         self.write(self.runtime['coopSceneInitializing'],1)
         self.opens=[];self.closes=[];self.flushes=[]
         self.open_failure=False
+        self.pose_count=15 if 'coopPackedAnimationStats' in self.runtime else 14
         table=self.runtime['coopAnimationPrefetchIndex']
         self.expected=[struct.unpack('<3I',self.cpu.mem_read(table+4+i*12,12))
                        for i in range(self.word(table))]
@@ -47,14 +48,14 @@ class AnimationPrefetchTests(AnimationReadCacheHarness,unittest.TestCase):
     def test_every_pose_is_read_once_and_second_loading_pass_reuses_exact_cache(self):
         before_game=self.largest(self.game_heap)
         self.invoke('CoopPrefetchAnimationReads')
-        self.assertEqual(len(self.expected),14)
+        self.assertEqual(len(self.expected),self.pose_count)
         self.assertEqual(self.opens,self.expected)
         self.assertEqual(self.closes,[x[0] for x in self.expected])
-        self.assertEqual(self.prefetch_stats(),(1,0,14,14,0,0,0,0))
-        self.assertEqual(len(self.reads),14)
+        self.assertEqual(self.prefetch_stats(),(1,0,self.pose_count,self.pose_count,0,0,0,0))
+        self.assertEqual(len(self.reads),self.pose_count)
         self.assertEqual([size for address,size in self.flushes],[x[1] for x in self.expected])
         self.assertTrue(all(not address%32 for address,size in self.flushes))
-        self.assertEqual(self.read_irq,[0]*14)
+        self.assertEqual(self.read_irq,[0]*self.pose_count)
         self.assertEqual(self.largest(self.game_heap),before_game)
         for name in ('data/player/Y_wait.bca','data/player/Y_walk.bca',
                      'data/player/Y_sleep_start.bca','data/player/Y_sleep_wait.bca',
@@ -64,10 +65,11 @@ class AnimationPrefetchTests(AnimationReadCacheHarness,unittest.TestCase):
                      'data/player/swim_wait.bca','data/player/paddle_1.bca',
                      'data/player/paddle_2.bca','data/player/paddle_end.bca'):
             self.load(name)
-        self.assertEqual(len(self.reads),14) # Exact bytes and native cursors, no IO.
+        if self.pose_count==15:self.load('data/player/swim_damage.bca')
+        self.assertEqual(len(self.reads),self.pose_count) # Exact bytes and native cursors, no IO.
         self.invoke('CoopPrefetchAnimationReads')
-        self.assertEqual(self.prefetch_stats(),(2,14,14,14,0,0,0,0))
-        self.assertEqual(len(self.opens),14)
+        self.assertEqual(self.prefetch_stats(),(2,self.pose_count,self.pose_count,self.pose_count,0,0,0,0))
+        self.assertEqual(len(self.opens),self.pose_count)
         self.invoke('CoopFlushAnimationReadCache')
         self.assertTrue(self.intact(self.root));self.assertTrue(self.intact(self.game_heap))
 
@@ -81,7 +83,7 @@ class AnimationPrefetchTests(AnimationReadCacheHarness,unittest.TestCase):
     def test_open_failures_do_not_read_close_or_leak_game_scratch(self):
         before=self.largest(self.game_heap);self.open_failure=True
         self.invoke('CoopPrefetchAnimationReads')
-        self.assertEqual(self.prefetch_stats(),(1,0,0,0,14,0,0,0))
+        self.assertEqual(self.prefetch_stats(),(1,0,0,0,self.pose_count,0,0,0))
         self.assertEqual(self.reads,[]);self.assertEqual(self.closes,[])
         self.assertEqual(self.largest(self.game_heap),before)
         self.assertTrue(self.intact(self.game_heap))
@@ -89,8 +91,8 @@ class AnimationPrefetchTests(AnimationReadCacheHarness,unittest.TestCase):
     def test_short_reads_are_closed_without_storing_partial_poses(self):
         before=self.largest(self.game_heap);self.read_limit=1
         self.invoke('CoopPrefetchAnimationReads')
-        self.assertEqual(self.prefetch_stats(),(1,0,14,0,0,14,0,0))
-        self.assertEqual(len(self.closes),14)
+        self.assertEqual(self.prefetch_stats(),(1,0,self.pose_count,0,0,self.pose_count,0,0))
+        self.assertEqual(len(self.closes),self.pose_count)
         self.assertEqual(self.stats()[2],0)
         self.assertEqual(self.largest(self.game_heap),before)
         self.assertTrue(self.intact(self.game_heap))
@@ -112,9 +114,9 @@ class AnimationPrefetchTests(AnimationReadCacheHarness,unittest.TestCase):
     def test_existing_idle_walk_cache_entries_do_not_issue_new_reads(self):
         self.load('data/player/Y_wait.bca');self.load('data/player/Y_walk.bca')
         self.invoke('CoopPrefetchAnimationReads')
-        self.assertEqual(self.prefetch_stats(),(1,2,12,12,0,0,0,0))
+        self.assertEqual(self.prefetch_stats(),(1,2,self.pose_count-2,self.pose_count-2,0,0,0,0))
         self.assertEqual(self.opens,self.expected[2:])
-        self.assertEqual(self.stats()[2],14)
+        self.assertEqual(self.stats()[2],self.pose_count)
 
     def test_unready_or_error_archive_never_opens_optional_files(self):
         address=self.word(0x0209d3b4)+16;old=self.word(address)
@@ -132,7 +134,7 @@ class AnimationPrefetchTests(AnimationReadCacheHarness,unittest.TestCase):
             self.assertTrue(p);ballast.append(p)
         self.assertLess(self.largest(self.root),512)
         self.invoke('CoopPrefetchAnimationReads')
-        self.assertEqual(self.prefetch_stats(),(1,0,0,0,0,0,0,14));self.assertEqual(self.opens,[])
+        self.assertEqual(self.prefetch_stats(),(1,0,0,0,0,0,0,self.pose_count));self.assertEqual(self.opens,[])
         for p in reversed(ballast):self.call(self.game['_ZN5mHeap6Heap_t10DeallocateEPv'],self.root,p)
         self.assertEqual((self.largest(self.root),self.largest(self.game_heap)),before)
         self.assertTrue(self.intact(self.root));self.assertTrue(self.intact(self.game_heap))

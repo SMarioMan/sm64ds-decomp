@@ -31,7 +31,7 @@ class StageCacheReleaseTests(HeapHarness,unittest.TestCase):
     def test_native_cache_is_released_before_skybox_loading(self):
         self.call('CoopLoadSkybox',0)
         self.assertEqual(self.cache_at_skybox,[0])
-        if 'coopAnimationPrewarmStats' in self.runtime:
+        if 'coopAnimationPrewarmStats' in self.runtime or 'coopPackedAnimationStats' in self.runtime:
             self.call('CoopFlushAnimationReadCache')
         self.assertGreaterEqual(self.largest(self.root),321224)
         self.assertEqual(self.word(self.runtime['coopStageCacheEvictions']),1)
@@ -51,7 +51,7 @@ class StageCacheReleaseTests(HeapHarness,unittest.TestCase):
         cache_bytes=self.word(self.archive-12)
         self.assertFalse(self.archive<=result<self.archive+cache_bytes)
         self.call('CoopLoadSkybox',0)
-        if 'coopAnimationPrewarmStats' in self.runtime:
+        if 'coopAnimationPrewarmStats' in self.runtime or 'coopPackedAnimationStats' in self.runtime:
             self.call('CoopFlushAnimationReadCache')
         reused=self.call(self.game['_ZN6Memory8AllocateEj'],cache_bytes)
         self.assertEqual(reused,self.archive)

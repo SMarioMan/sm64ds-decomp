@@ -159,6 +159,8 @@ def main():
                         help='EXPERIMENTAL: animated loading text with temporary sub-OBJ ownership')
     parser.add_argument('--experimental-animation-prefetch',action='store_true',
                         help='EXPERIMENTAL: read Yoshi idle/sleep and cold poses during loading')
+    parser.add_argument('--experimental-packed-animation-cache',action='store_true',
+                        help='EXPERIMENTAL: adopt compacted native common animation bytes without new reads')
     parser.add_argument('--experimental-animation-prewarm',action='store_true',
                         help='EXPERIMENTAL: retain native Yoshi idle/walk bytes before source release')
     parser.add_argument('--experimental-lz-window',action='store_true',
@@ -194,6 +196,8 @@ def main():
         parser.error('--diagnostic-stage-cycle requires --diagnostic-start-level')
     if args.baseline and (args.diagnostic_render_cost or args.diagnostic_player_cost or args.experimental_animation_cache or args.experimental_collision_broadphase or args.experimental_collision_plan or args.experimental_painting_math or args.experimental_lz_window or args.experimental_loading_screen):
         parser.error('--baseline cannot enable runtime experiments or diagnostics')
+    if args.experimental_packed_animation_cache and (not args.experimental_animation_cache or not args.experimental_lazy_animation_eviction or args.experimental_animation_prewarm):
+        parser.error('Packed animation caching requires animation cache/lazy eviction and excludes two-pose prewarming')
     if args.experimental_animation_prefetch and not args.experimental_animation_cache:
         parser.error('Animation prefetch requires --experimental-animation-cache')
     if args.experimental_animation_prewarm and not args.experimental_animation_cache:
@@ -400,7 +404,10 @@ def main():
             mask=bytearray((len(common.files)+7)//8)
             for member in range(len(common.files)):
                 name=common.filenames.filenameOf(member)
-                if name and name.startswith('data/player/') and name.endswith('.bca'):
+                if name and name.endswith('.bca') and (name.startswith('data/player/') or args.experimental_packed_animation_cache):
+                    data=common.files[member]
+                    if args.experimental_packed_animation_cache and (not 8<=len(data)<=16384 or data[:5]!=b'LZ77\x10'):
+                        raise RuntimeError('Unexpected packed common animation format')
                     mask[member//8]|=1<<(member%8)
             if not any(mask):raise RuntimeError('No verified player animations')
             if args.experimental_animation_prewarm:
@@ -436,9 +443,11 @@ def main():
                     raise RuntimeError('Unexpected common prefetch pose')
                 top,end=struct.unpack_from('<II',narc_index,common_extents+member*8)
                 prefetch_animations.append((common_top+top,end-top,common_id))
-            for name in ('Y_sleep_start','Y_sleep_wait','Y_sleep_end','Y_sleep_to_lie',
+            direct_prefetch_names=('Y_sleep_start','Y_sleep_wait','Y_sleep_end','Y_sleep_to_lie',
                          'cold_wait_start','cold_wait','cold_wait_end','swim_in','swim_wait',
-                         'paddle_1','paddle_2','paddle_end'):
+                         'paddle_1','paddle_2','paddle_end')
+            if args.experimental_packed_animation_cache:direct_prefetch_names+=('swim_damage',)
+            for name in direct_prefetch_names:
                 file_id=rom.filenames.idOf(f'data/player/{name}.bca')
                 top,end=struct.unpack_from('<II',original,fat+file_id*8)
                 prefetch_animations.append((top,end-top,file_id))
@@ -452,6 +461,7 @@ def main():
         if args.experimental_painting_normals:defines.append('COOP_EXPERIMENTAL_PAINTING_NORMALS=1')
         if args.experimental_painting_visibility:defines.append('COOP_EXPERIMENTAL_PAINTING_VISIBILITY=1')
         if args.experimental_lz_window:defines.append('COOP_EXPERIMENTAL_LZ_WINDOW=1')
+        if args.experimental_packed_animation_cache:defines.append('COOP_EXPERIMENTAL_PACKED_ANIMATION_CACHE=1')
         if args.experimental_animation_prewarm:defines.append('COOP_EXPERIMENTAL_ANIMATION_PREWARM=1')
         if args.experimental_animation_prefetch:defines.append('COOP_EXPERIMENTAL_ANIMATION_PREFETCH=1')
         if args.experimental_loading_screen:defines.append('COOP_EXPERIMENTAL_LOADING_SCREEN=1')
@@ -690,6 +700,13 @@ def main():
                 'wantedOffset':emitted['coopLoadingWanted']-PAYLOAD_ADDRESS,
                 'tileBytes':256,'oamObjects':8,'nativeVBlankPreserved':True,
                 'fields':['starts','stops','vblankDraws','assetPauses','bankSkips','contextSkips','ownershipFaults']}
+        if args.experimental_packed_animation_cache:
+            module_report['experimentalPackedAnimationCache']={'defaultEnabled':False,
+                'statsOffset':emitted['coopPackedAnimationStats']-PAYLOAD_ADDRESS,
+                'fields':['attempts','adoptions','hits','reuses','invalid','interrupted','shrinkFailures','adoptedBytes'],
+                'commonMembers':sum(bool(mask[i//8]&(1<<(i%8))) for i in range(len(common.files))),
+                'packedBytes':sum((len(data)+3)&~3 for i,data in enumerate(common.files) if mask[i//8]&(1<<(i%8))),
+                'additionalReadCacheBudget':65536,'totalCacheEntries':32,'maximumMaskedCopyBytes':16384}
         if args.experimental_animation_prefetch:
             module_report['experimentalAnimationPrefetch']={'defaultEnabled':False,
                 'statsOffset':emitted['coopAnimationPrefetchStats']-PAYLOAD_ADDRESS,

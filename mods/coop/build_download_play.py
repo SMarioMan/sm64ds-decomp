@@ -33,6 +33,8 @@ def main():
                         help='EXPERIMENTAL: animated loading text with temporary sub-OBJ ownership')
     parser.add_argument('--experimental-animation-prefetch',action='store_true',
                         help='EXPERIMENTAL: read Yoshi idle/sleep and cold poses during loading')
+    parser.add_argument('--experimental-packed-animation-cache',action='store_true',
+                        help='EXPERIMENTAL: adopt compacted native common animation bytes without new reads')
     parser.add_argument('--experimental-animation-prewarm',action='store_true',
                         help='EXPERIMENTAL: retain native Yoshi idle/walk bytes before source release')
     parser.add_argument('--experimental-lz-window',action='store_true',
@@ -66,6 +68,8 @@ def main():
                         help='Explicitly enable acknowledged entry closure with the legacy restart-parent strategy')
     parser.add_argument('--output',type=Path,default=ROOT/'build/coop/bootstrap/sm64ds-haxxstation-game-handoff.nds')
     args=parser.parse_args()
+    if args.experimental_packed_animation_cache and (not args.experimental_animation_cache or not args.experimental_lazy_animation_eviction or args.experimental_animation_prewarm):
+        parser.error('Packed animation caching requires animation cache/lazy eviction and excludes two-pose prewarming')
     if args.experimental_animation_prefetch and not args.experimental_animation_cache:
         parser.error('Animation prefetch requires --experimental-animation-cache')
     if args.experimental_animation_prewarm and not args.experimental_animation_cache:
@@ -121,6 +125,7 @@ def main():
     if args.experimental_painting_normals:diagnostic+=('--experimental-painting-normals',)
     if args.experimental_painting_visibility:diagnostic+=('--experimental-painting-visibility',)
     if args.experimental_lz_window:diagnostic+=('--experimental-lz-window',)
+    if args.experimental_packed_animation_cache:diagnostic+=('--experimental-packed-animation-cache',)
     if args.experimental_animation_prewarm:diagnostic+=('--experimental-animation-prewarm',)
     if args.experimental_animation_prefetch:diagnostic+=('--experimental-animation-prefetch',)
     if args.experimental_loading_screen:diagnostic+=('--experimental-loading-screen',)

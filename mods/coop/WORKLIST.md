@@ -35,7 +35,9 @@ not establish campaign completion or real-hardware compatibility.
   coins4.37ms, Goombas3.57ms and Bob-ombs1.93ms per stage render. Optional line
   sphere rejection preserves all captured results, while a separate local coin
   shadow-probe visibility hook removes83% of captured offscreen coin work with
-  complete actor parity. Both need wireless/hardware comparison. Continue17–51,
+  complete actor parity. Thef743 combination PASSES6–23 with matching paused
+  coin states; BoB coin elapsed4.37→0.856ms and cadence mostly3→mostly2 VBlanks
+  with the same profiler.14 still needs work. Hardware acceptance remains open. Continue17–51,
   repeated loads, moving/visible paintings, missions, bosses and final combined
   hardware performance acceptance. Exact evidence and older results are in
   [PERFORMANCE.md](PERFORMANCE.md) and [EMULATOR-HANDOFF.md](tests/EMULATOR-HANDOFF.md).
@@ -48,6 +50,11 @@ not establish campaign completion or real-hardware compatibility.
   all Yoshi heads visible, no missing geometry observed, but very slow play
   and frequent movement hitches with at most slight gain. Hardware performance
   FAILED on that image. Long nondescript black/white loads also remain poor.
+- [ ] Investigate the retained paused-session disconnect after thef7436–23
+  matrix: all peers record native input-exchange retry exhaustion0x101 at
+  tick183074, stage23, pause1, no file wait. The later return/save check finds
+  the party already ended. Preserve captures; compare with a control and
+  physical pause behavior before attributing a cause or closing stability.
 - [ ] Finish acceptance of optional loading and first-use IO improvements.
   `--experimental-lz-window` uses optional4KB ROOT/GAME input storage after
   output allocation, with the original512-byte stack fallback. Eight native
@@ -67,7 +74,13 @@ not establish campaign completion or real-hardware compatibility.
   existing32-entry/64KB reclaimable cache. Eight native cases pass, including
   exact bytes/cursors, repeat hits, native close, short reads, readiness and
   both heap-pressure paths. Compare gameplay stalls and total loading time
-  on5bf, all stages, both guests and host. All performance options remain off
+  on5bf, all stages, both guests and host. The optional packed-source cache
+  adopts132 common animations into202512 bytes without added reads, preserving
+  native mounts, unmounts and reclaimable allocation ownership. Six new ARM
+  cases and the full321 suite pass (304 executed,17 skips). Wirelessf8c7a49a
+  passes6–23 with its earlier126-pose pool retained and no added steady reads;
+  the132-pose/no-cost-profiler build awaits wireless comparison. Finish all
+  regions/actions and immediate return/save. All performance options remain off
   by default pending acceptance.
 
 - [ ] Replace long black loading periods with visible, animated loading

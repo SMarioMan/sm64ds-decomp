@@ -49,6 +49,9 @@ class PaintingMeshHeapTests(HeapHarness,unittest.TestCase):
             # Their explicit cache teardown must restore the original block.
             self.assertEqual(self.word(self.runtime['coopAnimationPrewarmStats']+12),2)
             self.call('CoopFlushAnimationReadCache')
+        if 'coopPackedAnimationStats' in self.runtime:
+            self.assertEqual(self.word(self.runtime['coopPackedAnimationStats']+4),1)
+            self.call('CoopFlushAnimationReadCache')
         self.assertEqual(self.largest(self.root),321328)
         self.assertEqual(self.largest(self.game_heap),game_before)
         self.assertTrue(self.intact(self.root))

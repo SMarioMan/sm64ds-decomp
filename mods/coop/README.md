@@ -904,3 +904,13 @@ Coin AI, collection and physics still use the shared simulation flags. Six
 captured ARM checks cover visible behavior, local visual parity, ABI and becoming
 visible again. Both options remain off by default pending wireless and physical
 performance comparison; they are not in the2ac hardware retest candidate.
+
+`--experimental-packed-animation-cache` requires animation caching and lazy
+eviction, and replaces `--experimental-animation-prewarm`. It compacts132
+already-downloaded common animations into one optional202512-byte ROOT
+cache block while preserving native unmount and memory-pressure behavior. It
+adds no member reads; the ordinary read cache keeps a separate64KB budget.
+The321-test native suite passes (293 executed,28 skips without cost profiling).
+The earlier126-pose version passes four-console stages6–23, course return and
+Save & Quit; the expanded132-pose version is in wireless testing. The option stays off
+by default and is absent from the2ac hardware retest image.

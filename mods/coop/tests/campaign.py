@@ -671,7 +671,9 @@ def check_course_return(ds):
     # dumps allow enemy positions/timers to be compared without mistaking
     # ordinary movement between serial console snapshots for a divergence.
     snapshot(ds,'course-return-pause')
-    check_paused_course_enemies(ds,'course-return-pause')
+    check_paused_course_enemies(ds,'course-return-pause',require_present=False)
+    if getattr(ds,'shared_course_coins',False):
+        check_paused_coin_gameplay(ds,'course-return-pause')
     # PS_Update case3 ignores touch edges while its opening cooldown is
     # nonzero. Pause flags become true earlier; wait for the actual menu on
     # every replica, then hold the physical touch until its action is accepted.
@@ -736,7 +738,7 @@ def check_course_return(ds):
     raise RuntimeError('Course exit did not return every console to active castle gameplay')
 
 
-def check_paused_course_enemies(ds, checkpoint):
+def check_paused_course_enemies(ds, checkpoint, require_present=True):
     """Compare Goomba simulation fields in already captured, paused RAM."""
     parties=[]
     for console in range(ds.count):
@@ -765,7 +767,7 @@ def check_paused_course_enemies(ds, checkpoint):
                     'timers':ram[offset+0x450:offset+0x45e].hex()})
             node=word(node+4)
         enemies.sort(key=lambda enemy:(enemy['kind'],enemy['home']))
-        if not enemies:
+        if require_present and not enemies:
             raise RuntimeError('No Goombas found in the actual course checkpoint')
         parties.append(enemies)
     (ds.output/f'{checkpoint}-enemies.json').write_text(json.dumps(parties,indent=2)+'\n')

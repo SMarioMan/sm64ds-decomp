@@ -1,5 +1,36 @@
 # Download Play handoff investigation
 
+CURRENT OVERRIDE: previous f8c7a49a packed126 party CLOSED after6–23 PASS,
+native course return and Save & Quit PASS. Host persisted the earned key and
+returned to title; all3 guests ended, explicit shutdown acknowledged and actual
+frontend PID247314 exited. Return test initially required Goombas in stage23;
+fixed test compares available Goombas and shared coin gameplay (50 matched).
+Full native321 suite passed304 executed/17 skips for that instrumented image.
+
+New f759a3778d5ddea71b84173c061112763e9da94db2e7b5d7c4675fb8e4f46143
+/tmp/sm64ds-coop-runs/packed132-no-cost-yoshi-host.nds packs132 animations into
+202512 bytes, prefetches15 direct poses (adds swim_damage), no actor-cost profiler.
+Focused14 tests PASS. Full native321 suite PASS293 executed/28 skips in
+packed132-no-cost-all-native-tests.log. New party launched after old actual exit;
+queue reports parent249025, follower249026, immediate-return follower249027.
+Actual active frontend249029. Only this party is running.
+Queue /workspace/runtime/queue-packed132-no-cost.py checks old party closed+actual
+exit AND native-suite PASS before starting the only next party. Its log records
+launch PIDs. New parent packed132-no-cost-matrix/socket, follower
+packed132-no-cost-performance, immediate return/save follower
+packed132-no-cost-stage23-return-save. Scripts reproduce/continue-packed132-no-cost.py.
+Frozen native ELF/bin/build.json/base.nds/provisional files in
+/tmp/sm64ds-coop-runs/packed132-no-cost-native-build; authoritative played ROM/JSON
+are separate from globals. New counters allow absent player-cost metadata.
+
+f7436–23 earlier PASS, but long unattended pause later ended native input exchange
+error0x101 before return/save; cause unestablished. Stability soak remains open.
+Hardware2ac retest pending, no new hardware acceptance claim. Flag-disabled defaultde4be02f and hardware2ac1e988 rebuild BYTE-IDENTICALLY.
+GLOBAL ELF/base now match2ac hardware proof, not playedf759; frozen132 artifacts
+above preserve native-suite correspondence. Commit/push packed feature next.
+Continue full-speed priority,24–51/actions/mixed characters and remaining worklist.
+Older CURRENT/ACTIVE notes below are historical and superseded here.
+
 CURRENT OVERRIDE: ONLY ACTIVE7f10e660ea86ab60c55c8918cf4c183d0440f31c4a93d99eb4edd562379c7248
 corrected repeat actor-profile-retry-matrix, socket
 /workspace/runtime/actor-profile-retry-matrix.sock, parent exec85003, actual

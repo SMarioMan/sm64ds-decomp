@@ -48,7 +48,10 @@ class ModelWorkHeapTests(HeapHarness,unittest.TestCase):
         self.assertEqual(bytes(self.cpu.mem_read(self.model,128)),before)
         self.assertEqual(self.largest(self.game_heap),before_game)
         self.call(self.game['_ZN6Memory10DeallocateEPv'],result)
-        if 'coopAnimationPrewarmStats' in self.runtime:self.call('CoopFlushAnimationReadCache')
+        if 'coopPackedAnimationStats' in self.runtime:
+            self.assertEqual(self.word(self.runtime['coopPackedAnimationStats']+4),1)
+        if 'coopAnimationPrewarmStats' in self.runtime or 'coopPackedAnimationStats' in self.runtime:
+            self.call('CoopFlushAnimationReadCache')
         self.assertGreaterEqual(self.largest(self.root),321000)
         self.assertTrue(self.intact(self.root));self.assertTrue(self.intact(self.game_heap))
 
