@@ -235,6 +235,9 @@ changes the output hash, so retain the adjacent build report with test results.
 
 The output is `build/coop/bootstrap/sm64ds-haxxstation-game-handoff.nds`.
 
+For the optional combined three-system performance/loading candidate and its
+exact flags/hash, see [PERFORMANCE-RETEST.md](PERFORMANCE-RETEST.md).
+
 The current default slot-A/four-console build has SHA-256
 `de4be02f1e8a4067265457a7d1894a9f8fb3c3454cf51aaa101e6c3e2edac881`.
 It includes the verified Bob-omb Battlefield shadow/head rendering fix.
@@ -887,5 +890,5 @@ The option is disabled by default. It is independent of the archive-copy
 temporary sub-OBJ lease and native VBlank handling. Thirteen native ownership,
 fade/window and asset-restoration checks and the296-test suite pass. Actual
 four-console screenshots verify the letters and changing spinner phases through
-normal stage transitions. Subsequent gameplay/save checks are underway. It is off by default and
+normal stage transitions. Normal6–16 gameplay, native course return and four-system Save & Quit also pass. It is off by default and
 currently covers native stage initialization, not every firmware/menu screen.

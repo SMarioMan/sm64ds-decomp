@@ -189,6 +189,21 @@ def snapshot(ds, name):
             values['playerCosts']={'stageIdentity':struct.unpack_from('<I',ram,
                 base+player_cost['stageOffset']-0x02000000)[0],
                 'exclusiveCpuCycles':False,'drainsGeometry':False,'samples':samples}
+        if player_cost and player_cost.get('actorProfiles'):
+            profile=player_cost['actorProfiles'];samples=[]
+            offset=base+profile['costsOffset']-0x02000000
+            for index in range(profile['capacity']):
+                row=dict(zip(profile['fields'],struct.unpack_from('<7I',ram,offset+index*28)))
+                if not row['key'] or row['sequence']&1 or not row['count']:continue
+                total=row['totalTicksLow']+(row['totalTicksHigh']<<32)
+                row.update(actorID=(row['key']-1)&65535,paused=bool((row['key']-1)>>16),
+                           totalMs=total*1000/player_cost['clockHz'],
+                           meanMs=total*1000/player_cost['clockHz']/row['count'],
+                           maxMs=row['maxTicks']*1000/player_cost['clockHz'])
+                samples.append(row)
+            values['actorProfileCosts']={'samples':samples,
+                'overflows':struct.unpack_from('<I',ram,base+profile['overflowsOffset']-0x02000000)[0],
+                'exclusiveCpuCycles':False,'scope':profile['scope']}
         if render_cost:
             offsets=module['diagnosticOffsets']
             count=struct.unpack_from('<I',ram,base+offsets['coopDiagnosticRenderCount']-0x02000000)[0]

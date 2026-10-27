@@ -31,6 +31,13 @@ movement reads on105a. All exact original file bytes are retained; cache entry
 and byte budgets are unchanged. Broader actions,17–51 and physical speed
 acceptance remain open;6/13/14/16 still show intervals above two VBlanks.
 
+The105a party PASSES6–16,600 more steady16 frames, native course return
+and four-system Save & Quit. Actual frontend exit is verified. Every steady
+and short movement sample in6–16 has zero new physical gameplay reads on
+all four consoles. Host steady14 still has717 two-VBlank,126 three-VBlank
+and one six-VBlank interval (plus a boundary one-VBlank sample), so removing
+IO does not finish the full-speed requirement.
+
 The loading indicator now has actual four-console screenshot evidence: custom
 LOADING glyphs and two distinct spinner phases appear during each observed
 transition. It releases its VRAM/OAM/IRQ leases at playable entry with zero
@@ -1174,3 +1181,25 @@ LOADING letters and two spinner phases per console during native transitions,
 plus zero ownership faults, released state and native IRQ at playable stages.
 The observer's9-frame sampling delay is test capture spacing, not a runtime
 or human timing requirement. Live UI/heap/save acceptance remains pending.
+
+## Bounded actor-class elapsed profiling
+
+`--diagnostic-player-cost` now also measures successful nonplayer dActor_c
+behavior spans, from the return of the original BeforeBehavior guard until
+entry to AfterBehavior. It excludes the guard and cleanup themselves, and does
+not cover dBase-only HUD classes or subclasses which override those hooks.
+The aggregate is separate from player behavior. A64-slot linear-probed table
+also groups these spans by native16-bit actorID and pause state; saturation
+increments an overflow counter instead of overwriting another class. All rows
+reset at stage identity changes. Counts,64-bit elapsed total, minimum and
+maximum use the same SDK clock and sequence protocol as the existing scopes.
+They include interrupts/waits and cannot be called exclusive CPU-cycle costs.
+
+Native tests cover exact elapsed totals, class hash collisions, pause separation,
+saturation, maximum actorID encoding, stage reset, rejected behavior and existing
+player/render delegates. The source changes are diagnostic-only; no actor
+behavior, animation, clipping, file IO or packet contents are altered. The
+soft linked code/data ceiling is48KiB to accommodate diagnostic arrays; actual
+allocation stays at the emitted size and the64KiB final-module limit remains.
+Use before/after totals in a stable stage and compare class totals against
+aggregate spans; last-actor pointers at frame boundaries are not elapsed time.

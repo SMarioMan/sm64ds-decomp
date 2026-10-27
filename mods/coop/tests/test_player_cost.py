@@ -44,7 +44,7 @@ class PlayerCostTests(HeapHarness,unittest.TestCase):
         self.cpu.hook_add(UC_HOOK_CODE,adapter)
 
     def rows(self):
-        return [struct.unpack('<6I',self.cpu.mem_read(self.runtime['coopPlayerCosts']+i*24,24)) for i in range(16)]
+        return [struct.unpack('<6I',self.cpu.mem_read(self.runtime['coopPlayerCosts']+i*24,24)) for i in range(18)]
 
     def test_stage_delegate_arguments_return_and_elapsed_ticks(self):
         self.assertEqual(self.call('CoopCostStageRender',0x023f0000),0xabcdef01)
@@ -64,11 +64,11 @@ class PlayerCostTests(HeapHarness,unittest.TestCase):
         self.cpu.mem_write(0x0209f2c4,b'\1')
         self.ticks=iter((0xfffffff0,0x20))
         self.call('CoopCostStageRender',1)
-        self.assertEqual(self.rows()[11],(2,1,48,0,48,48))
-        self.write(self.runtime['coopPlayerCosts']+11*24+8,0xfffffff0)
+        self.assertEqual(self.rows()[12],(2,1,48,0,48,48))
+        self.write(self.runtime['coopPlayerCosts']+12*24+8,0xfffffff0)
         self.ticks=iter((50,150))
         self.call('CoopCostStageRender',1)
-        self.assertEqual(self.rows()[11],(4,2,84,1,100,48))
+        self.assertEqual(self.rows()[12],(4,2,84,1,100,48))
 
     def test_changed_stage_resets_and_does_not_mix_costs(self):
         self.call('CoopCostStageRender',1)
@@ -88,7 +88,7 @@ class PlayerCostTests(HeapHarness,unittest.TestCase):
                 self.cpu.mem_write(address,value.to_bytes(width,'little'))
                 self.ticks=iter(()) # A clock access would fail this check.
                 self.assertEqual(self.call('CoopCostStageRender',1),0xabcdef01)
-                self.assertEqual(self.rows(),[(0,)*6]*16)
+                self.assertEqual(self.rows(),[(0,)*6]*18)
                 self.cpu.mem_write(address,old)
 
     def test_spans_crossing_tick_stage_or_loading_are_discarded(self):
@@ -99,7 +99,7 @@ class PlayerCostTests(HeapHarness,unittest.TestCase):
                 self.change=lambda:self.cpu.mem_write(address,value.to_bytes(width,'little'))
                 self.ticks=iter((100,150))
                 self.call('CoopCostStageRender',1)
-                self.assertEqual(self.rows(),[(0,)*6]*16)
+                self.assertEqual(self.rows(),[(0,)*6]*18)
                 self.cpu.mem_write(address,old)
 
     def test_successful_player_behavior_scope_counts_once_and_restores_context(self):
@@ -127,3 +127,50 @@ class PlayerCostTests(HeapHarness,unittest.TestCase):
             self.assertEqual(self.rows()[kind],(2,1,kind,0,kind,kind))
         self.assertEqual(self.delegates[0][0],0x023f0000)
         self.assertEqual(self.delegates[2][0],0x023f0000)
+
+    def actor_scope(self, actor_id, ticks=(100,150), paused=False, result=1):
+        actor=0x023f2000
+        self.cpu.mem_write(actor,b'\0'*0x200)
+        self.cpu.mem_write(actor+12,struct.pack('<H',actor_id))
+        self.cpu.mem_write(0x0209f2c4,bytes((int(paused),)))
+        self.ticks=iter(ticks)
+        def before(cpu,address,size,user):
+            if address!=self.runtime['CoopOriginalActorBefore']:return
+            cpu.reg_write(UC_ARM_REG_R0,result)
+            cpu.reg_write(UC_ARM_REG_PC,cpu.reg_read(UC_ARM_REG_LR))
+        hook=self.cpu.hook_add(UC_HOOK_CODE,before)
+        self.assertEqual(self.call('CoopActorBefore',actor),result)
+        if result:self.call('CoopActorAfter',actor,1)
+        self.cpu.hook_del(hook)
+
+    def profiles(self):
+        return [struct.unpack('<7I',self.cpu.mem_read(self.runtime['coopActorProfileCosts']+i*28,28))
+                for i in range(64)]
+
+    def test_nonplayer_classes_collisions_pause_and_exact_elapsed_totals(self):
+        self.actor_scope(7)
+        self.actor_scope(71,(200,220)) # Same initial hash slot; preserve both.
+        self.actor_scope(7,(300,330))
+        self.actor_scope(7,(400,410),paused=True)
+        records={r[0]:r[1:] for r in self.profiles() if r[0]}
+        self.assertEqual(records,{8:(4,2,80,0,50,30),72:(2,1,20,0,20,20),
+                                  65544:(2,1,10,0,10,10)})
+        self.assertEqual(self.rows()[8],(6,3,100,0,50,20))
+        self.assertEqual(self.rows()[17],(2,1,10,0,10,10))
+
+    def test_full_class_table_preserves_records_and_resets_on_stage(self):
+        for actor_id in range(64):self.actor_scope(actor_id)
+        before=self.profiles()
+        self.actor_scope(1000)
+        self.assertEqual(self.profiles(),before)
+        self.assertEqual(self.word(self.runtime['coopActorProfileCostOverflows']),1)
+        self.assertEqual(self.rows()[8][1],65) # Aggregate never loses the span.
+        self.write(self.runtime['coopStageIdentity'],124)
+        self.actor_scope(65535) # Encoding must not alias a paused actor0.
+        self.assertEqual([r for r in self.profiles() if r[0]],[(65536,2,1,50,0,50,50)])
+        self.assertEqual(self.word(self.runtime['coopActorProfileCostOverflows']),0)
+
+    def test_rejected_nonplayer_behavior_does_not_read_clock_or_record(self):
+        self.actor_scope(7,ticks=(),result=0)
+        self.assertEqual(self.profiles(),[(0,)*7]*64)
+        self.assertEqual(self.rows(),[(0,)*6]*18)

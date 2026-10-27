@@ -85,9 +85,9 @@ def link(source, prefix, address, game_symbols, launcher, cc, ld, defines=()):
     end = max([address + len(payload)] + [emitted[n] + sizes[n] for n in defined])
     payload.extend(bytes(end - address - len(payload)))
     # The runtime is dynamically allocated in ROOT; the loader accepts 64 KiB.
-    # Keep code/data below 44 KiB; the final module (including tables) is
+    # Keep code/data below 48 KiB; the final module (including tables) is
     # checked separately against the loader's 64 KiB limit.
-    if not payload or end > address + 0xb000:
+    if not payload or end > address + 0xc000:
         raise RuntimeError('Invalid linked payload span')
     return payload, emitted
 
@@ -154,7 +154,7 @@ def main():
     parser.add_argument('--diagnostic-render-cost',action='store_true',
                         help='TEST ONLY: drain geometry to measure terrain/body/head polygon costs; changes timing')
     parser.add_argument('--diagnostic-player-cost',action='store_true',
-                        help='TEST ONLY: elapsed SDK ticks for player behavior/models and stage rendering')
+                        help='TEST ONLY: elapsed SDK ticks for actor/player behavior, models and stage rendering')
     parser.add_argument('--experimental-loading-screen',action='store_true',
                         help='EXPERIMENTAL: animated loading text with temporary sub-OBJ ownership')
     parser.add_argument('--experimental-animation-prefetch',action='store_true',
@@ -749,9 +749,15 @@ def main():
                 'costsOffset':emitted['coopPlayerCosts']-PAYLOAD_ADDRESS,
                 'stageOffset':emitted['coopPlayerCostStage']-PAYLOAD_ADDRESS,
                 'kinds':['player-behavior','player-body','yoshi-head','stage-render',
-                         'terrain-opaque','shadows','terrain-transparent','actor-collision'],
+                         'terrain-opaque','shadows','terrain-transparent','actor-collision',
+                         'nonplayer-actor-behavior'],
+                'actorProfiles':{'costsOffset':emitted['coopActorProfileCosts']-PAYLOAD_ADDRESS,
+                    'overflowsOffset':emitted['coopActorProfileCostOverflows']-PAYLOAD_ADDRESS,
+                    'capacity':64,'keyEncoding':'1 + actorID + (paused << 16)',
+                    'fields':['key','sequence','count','totalTicksLow','totalTicksHigh','maxTicks','minTicks'],
+                    'scope':'successful dActor_c BeforeBehavior to AfterBehavior entry; excludes guard/cleanup'},
                 'fields':['sequence','count','totalTicksLow','totalTicksHigh','maxTicks','minTicks'],
-                'buckets':16,'resetOnStageIdentity':True}
+                'buckets':18,'resetOnStageIdentity':True}
         if args.experimental_collision_broadphase:
             module_report['experimentalCollisionBroadphase']={
                 'callsite':'0x02014bb4','preservesPairOrder':True,

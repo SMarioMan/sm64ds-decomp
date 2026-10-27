@@ -1,5 +1,32 @@
 # Download Play handoff investigation
 
+CURRENT OVERRIDE: ONLY ACTIVE7f10e660ea86ab60c55c8918cf4c183d0440f31c4a93d99eb4edd562379c7248
+raw /tmp/sm64ds-coop-runs/actor-profile-yoshi-host.nds; parent
+/workspace/runtime/actor-profile-matrix, socket /workspace/runtime/actor-profile-matrix.sock,
+exec38717, actual frontend PID228794. Follower actor-profile-performance exec4169
+samples6–23 (long6/13/14/16–23, short other already-checked scenes). No return/save
+follower yet. Same normal castle/interior/native BoB painting all-Yoshi route;
+new diagnostic actor-class elapsed table64 slots. Full299 native tests PASS
+(289 executed,10 skipped), eleven elapsed-scope checks. Code/data soft bound48KiB,
+hard module64KiB unchanged. Frozen driver captures before/after actor-class
+costs separately, and costs metadata now18 aggregate buckets/nine kinds.
+No competing party, live RAM/packet changes or savestates. Finish or diagnose
+this party and explicitly shut it down/verify exit before another.
+
+105a loading party PASSES6–16,600 extra steady16 frames, course return and
+four-system Save & Quit. Explicit shutdown and actual frontend exit verified.
+Steady AND movement physical reads are0 on all4 in all6–16 samples. Text and
+multiple spinner phases PASS on all4 transitions; native IRQ/leases restored.
+Still slower intervals:14 host717x2/126x3/1x6 plus boundary1, not full speed.
+
+GLOBAL BUILD OVERRIDE: ELF/base/raw provisional host now match the NONDIAGNOSTIC
+three-system performance/loading candidate2ac1e9888c2067a4b1dbaf85d80f3d6e560c701e3f445e859e0102cfa1f3d5d2,
+raw /tmp/sm64ds-coop-runs/coop-performance-loading-3p.nds,44 checks PASS. Frozen
+active7f10 drivers and adjacent JSON remain authoritative. No3p actual party yet;
+physical test instructions are mods/coop/PERFORMANCE-RETEST.md. Source changes
+for actor profiling compile out of that ROM. Preserve current active party.
+Older CURRENT/ACTIVE paragraphs below are historical and superseded here.
+
 CURRENT OVERRIDE: ONLY ACTIVE105a389d43dcf763a3616a0650380aac129990775f512cfc02d0dc43cf66bcc8
 raw /tmp/sm64ds-coop-runs/loading-ui-scanout-yoshi-host.nds; parent
 /workspace/runtime/loading-ui-scanout-matrix (symlink to /tmp), socket

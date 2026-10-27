@@ -3119,10 +3119,14 @@ __asm void CoopShadowFlagsRead(void) {
 // SDK Timer0 is initialized by retail. Observe it; never reconfigure it.
 // Elapsed ticks include interrupts and native I/O/GPU waits, not CPU cycles.
 u32 coopPlayerCostStage=0;
-enum { COOP_COST_KINDS=8 };
+enum { COOP_COST_KINDS=9 };
 u32 coopPlayerCosts[COOP_COST_KINDS*2][6]={{0}};
-struct CoopCostScope { u32 active,start,stage,tick,bucket; };
-static CoopCostScope coopPlayerBehaviorCost={0,0,0,0,0};
+// Bounded diagnostic-only actor-class totals, separate for shared pause.
+// These measure elapsed behavior spans, including IRQ/waits, not CPU cycles.
+u32 coopActorProfileCosts[64][7]={{0}};
+u32 coopActorProfileCostOverflows=0;
+struct CoopCostScope { u32 active,start,stage,tick,bucket,profile; };
+static CoopCostScope coopPlayerBehaviorCost={0,0,0,0,0,0};
 static void *coopPlayerCostActor=0;
 
 static bool CoopCostReady() {
@@ -3133,10 +3137,14 @@ static bool CoopCostReady() {
 }
 static void CoopCostBegin(CoopCostScope *scope,unsigned kind) {
     scope->active=0;
+    scope->profile=0;
     if (!CoopCostReady())return;
     if (coopPlayerCostStage!=coopStageIdentity) {
         for (unsigned row=0;row<COOP_COST_KINDS*2;++row)
             for (unsigned field=0;field<6;++field)coopPlayerCosts[row][field]=0;
+        for (unsigned actor=0;actor<64;++actor)
+            for (unsigned field=0;field<7;++field)coopActorProfileCosts[actor][field]=0;
+        coopActorProfileCostOverflows=0;
         coopPlayerCostStage=coopStageIdentity;
     }
     scope->stage=coopStageIdentity;
@@ -3145,13 +3153,7 @@ static void CoopCostBegin(CoopCostScope *scope,unsigned kind) {
     scope->active=1;
     scope->start=(u32)func_02059650();
 }
-static void CoopCostFinish(CoopCostScope *scope) {
-    if (!scope->active)return;
-    u32 elapsed=(u32)func_02059650()-scope->start;
-    scope->active=0;
-    if (!CoopCostReady() || scope->stage!=coopStageIdentity ||
-        scope->tick!=data_020a1154[0])return;
-    volatile u32 *row=coopPlayerCosts[scope->bucket];
+static void CoopCostRecord(volatile u32 *row,u32 elapsed) {
     ++row[0]; // Odd while updating; RAM observers discard partial records.
     u32 low=row[2]+elapsed;
     row[3]+=low<row[2];
@@ -3160,6 +3162,26 @@ static void CoopCostFinish(CoopCostScope *scope) {
     if (!row[1] || elapsed<row[5])row[5]=elapsed;
     ++row[1];
     ++row[0];
+}
+static void CoopCostFinish(CoopCostScope *scope) {
+    if (!scope->active)return;
+    u32 elapsed=(u32)func_02059650()-scope->start;
+    scope->active=0;
+    if (!CoopCostReady() || scope->stage!=coopStageIdentity ||
+        scope->tick!=data_020a1154[0])return;
+    CoopCostRecord(coopPlayerCosts[scope->bucket],elapsed);
+    if (!scope->profile)return;
+    u32 key=scope->profile+(scope->bucket>=COOP_COST_KINDS ? 65536 : 0);
+    unsigned first=(scope->profile-1)&63;
+    for (unsigned probe=0;probe<64;++probe) {
+        volatile u32 *row=coopActorProfileCosts[(first+probe)&63];
+        if (!row[0] || row[0]==key) {
+            row[0]=key;
+            CoopCostRecord(row+1,elapsed);
+            return;
+        }
+    }
+    ++coopActorProfileCostOverflows; // Never overwrite another class's totals.
 }
 static void CoopCostPlayerPart(void *model,const Vector3 *scale,unsigned kind) {
     CoopCostScope scope;
@@ -3278,12 +3300,14 @@ int CoopActorBefore(void *actor) {
         data_0209f250 = data_020a0f10;
     }
 #ifdef COOP_DIAGNOSTIC_PLAYER_COST
-    if (result)for (unsigned slot=0;slot<4;++slot)
-        if (data_0209f394[slot]==actor) {
-            coopPlayerCostActor=actor;
-            CoopCostBegin(&coopPlayerBehaviorCost,0);
-            break;
-        }
+    if (result) {
+        unsigned kind=8;
+        for (unsigned slot=0;slot<4;++slot)
+            if (data_0209f394[slot]==actor) { kind=0; break; }
+        coopPlayerCostActor=actor;
+        CoopCostBegin(&coopPlayerBehaviorCost,kind);
+        if (kind==8)coopPlayerBehaviorCost.profile=((dActor_c *)actor)->actorID+1;
+    }
 #endif
     return result;
 }

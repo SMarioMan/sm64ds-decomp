@@ -27,7 +27,11 @@ not establish campaign completion or real-hardware compatibility.
   Save & Quit. Every steady stage sample has zero physical gameplay reads;
   the expanded fourteen-pose105a candidate eliminates the three stage9 swimming
   movement reads as well.6/13/14/16 retain slower intervals.
-  Continue17–51,
+  The105a repeat also PASSES6–16,600 steady16 frames, native course return
+  and four-system Save & Quit, with zero physical reads in every steady and
+  short movement sample. Loading letters/spinner are visible on all peers.
+  Bounded diagnostic actor-class elapsed totals now target the remaining CPU
+  work; preserve geometry and actor update semantics. Continue17–51,
   repeated loads, moving/visible paintings, missions, bosses and final combined
   hardware performance acceptance. Exact evidence and older results are in
   [PERFORMANCE.md](PERFORMANCE.md) and [EMULATOR-HANDOFF.md](tests/EMULATOR-HANDOFF.md).
@@ -71,7 +75,7 @@ not establish campaign completion or real-hardware compatibility.
   The opt-in stage-loading LOADING/spinner passes13 native lease/fade/window/
   restoration checks and the296-test suite. Actual105a389d screenshots verify
   letters and multiple spinner phases on all four consoles during normal
-  transitions; gameplay/heap and save checks are running. Thedf0b anddd47
+  transitions; normal6–16 gameplay/heap, course return and four-system Save & Quit also pass. Thedf0b anddd47
   prototypes had invisible text under native darkening; they are superseded. Initial firmware/menu
   loading phases and final hardware visual acceptance remain open.
 - [ ] Improve loading performance as well as steady gameplay speed. Measure

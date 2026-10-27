@@ -28,7 +28,7 @@ def main():
     parser.add_argument('--diagnostic-render-cost',action='store_true',
                         help='TEST ONLY: measure geometry costs with FIFO drains; not a performance benchmark')
     parser.add_argument('--diagnostic-player-cost',action='store_true',
-                        help='TEST ONLY: elapsed SDK ticks for player behavior/models and stage rendering')
+                        help='TEST ONLY: elapsed SDK ticks for actor/player behavior, models and stage rendering')
     parser.add_argument('--experimental-loading-screen',action='store_true',
                         help='EXPERIMENTAL: animated loading text with temporary sub-OBJ ownership')
     parser.add_argument('--experimental-animation-prefetch',action='store_true',
