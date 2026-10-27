@@ -1,5 +1,20 @@
 # Download Play handoff investigation
 
+CURRENT OVERRIDE: ONLY ACTIVE167a680a2aaa42e6d33197471ed4431722cdd3cf3350d25822da7bf6907da927
+raw /runtime/model-work-yoshi-cost-host.nds; parent model-work-yoshi-matrix,
+socket /workspace/runtime/model-work-yoshi-matrix.sock, exec89451; follower
+model-work-yoshi-performance, exec57955; return/save follower exec17979 waits
+for its matrix success. Drivers reproduce/continue-model-work-yoshi.py and
+continue-model-work-yoshi-stage16-return-save.py. All frozen at launch.
+No competing parties or live state changes.0c52 is closed and its original
+failure captures remain raw; completed snapshots/ROM are verified gzip in
+closed-failed-lz-window-yoshi-compression.json. Global ELF/base/default bootstrap
+fixture match167a with the model-work fix and prewarm ON. Full275 native tests
+PASS (265 executed,10 skipped), including nine captured-model pressure cases.
+Soft code/data bound40KiB; final64KiB cap unchanged. Finish normal6–16 and
+return/save before shutting down via RemoteEmulators; verify actual exit.
+Older CURRENT/ACTIVE paragraphs below are historical and superseded here.
+
 CURRENT: No active party.0c52 normal four-Yoshi PASSES6–12 but FAILS12→13
 on all guests in native1048-byte model-work allocation at02016c20. Original
 failure RAM/DTCM/screens retained in lz-window-yoshi-performance/06-level-12.

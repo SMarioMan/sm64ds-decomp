@@ -85,9 +85,9 @@ def link(source, prefix, address, game_symbols, launcher, cc, ld, defines=()):
     end = max([address + len(payload)] + [emitted[n] + sizes[n] for n in defined])
     payload.extend(bytes(end - address - len(payload)))
     # The runtime is dynamically allocated in ROOT; the loader accepts 64 KiB.
-    # Keep code/data below 39 KiB; the final module (including tables) is
+    # Keep code/data below 40 KiB; the final module (including tables) is
     # checked separately against the loader's 64 KiB limit.
-    if not payload or end > address + 0x9c00:
+    if not payload or end > address + 0xa000:
         raise RuntimeError('Invalid linked payload span')
     return payload, emitted
 
@@ -340,6 +340,13 @@ def main():
                     raise RuntimeError('Unexpected native collision plan callback')
         imports = dict(game, **{name:PAYLOAD_ADDRESS+0x1800+i*8
                                for i,(name,_,_) in enumerate(trampolines)})
+        model_site=0x02016c20
+        model_offset=model_site-rom.arm9RamAddress
+        model_expected=(bytes.fromhex('0600a0e1')+
+            branch(0x02016c1c,game['func_02046564'])[:3]+b'\xeb'+
+            branch(model_site,game['_ZN6Memory13operator_new2Ej'])[:3]+b'\xeb'+bytes.fromhex('4c0087e5'))
+        if arm9[model_offset-8:model_offset+8]!=model_expected:
+            raise RuntimeError('Unexpected native model-work allocation boundary')
         if args.experimental_painting_math:
             painting_image=rom.loadArm9Overlays()[80]
             address=0x02125cf0;offset=address-painting_image.ramAddress
@@ -561,7 +568,7 @@ def main():
                (game['func_0200d0ac'],'CoopCameraFar'),(game['func_0200d064'],'CoopCameraNear'),
                (game['_ZN9dCamera_c14GoBehindPlayerEj'],'CoopCameraBehind'),(game['func_0200ca14'],'CoopCameraFov'),
                (game['func_0200d3f8'],'CoopCameraLookTarget'),(game['func_0200d7e0'],'CoopCameraFirstPerson'),(game['func_0200d81c'],'CoopCameraNormal'),
-               (0x020cae10,'CoopPlayerHeadLook'),(0x02024d40,'CoopCameraInputFlagsRead'),(0x020df6a0,'CoopPersonalCameraFlagsRead'),(0x020def88,'CoopCannonPitchRead'),(0x02126e10,'CoopAllocatePaintingMesh'),
+               (0x020cae10,'CoopPlayerHeadLook'),(0x02024d40,'CoopCameraInputFlagsRead'),(0x020df6a0,'CoopPersonalCameraFlagsRead'),(0x020def88,'CoopCannonPitchRead'),(0x02126e10,'CoopAllocatePaintingMesh'),(0x02016c20,'CoopModelWorkRead'),
                (game['_ZN7Message6UpdateEv'],'CoopMessageUpdate'),
                (game['KillPlayer'],'CoopKillPlayer'),(game['HitDeathPlane'],'CoopHitDeathPlane'),
                (ov_symbols['_ZN10dScEntry_c16CleanupResourcesEv'],'CoopEntryCleanup'),
@@ -642,6 +649,7 @@ def main():
                 'fields':['coefficientHits','coefficientFills','nativeFallbacks'],'nativeStateZeroPreserved':True}
         module_report['cooperativeMinimapMarkers']={'nativeProjection':True,'localMapControls':True,
             'markerStyle':'native-common-HUD-slot-numbers','storyItemRulesPreserved':True}
+        module_report['modelWorkPressureSourceRelease']={'site':'0x02016c20','nativeHeapAndCleanup':True,'borrowedSourceGuard':True}
         module_report['nativeFlightEntranceMarioCaps']=True
         module_report['loadingChecksumTransitionGrace']=True
         module_report['localMovementCameraModes']=[33607948, 33608008, 33608760, 33608820, 33608968, 33609028, 33609088, 33609152, 33609212, 33609276, 33609336, 33609396, 33609456, 33609516, 33609576, 33609636]

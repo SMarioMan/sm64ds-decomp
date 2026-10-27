@@ -978,3 +978,29 @@ lz-window-yoshi-performance/06-level-12. A later read-only frontend regs command
 terminated the frontend; the original game-failure captures predate that harness
 failure. Actual frontend exit is verified; no party remains active. A fresh
 same-source window-off control is still required to isolate loading changes.
+
+## Guarded model-work source pressure boundary
+
+Normal four-Yoshi failure0c52 requested1048 bytes in native DoSetFile at02016c20.
+The original source remained mounted while ROOT could not fit that work buffer.
+The guarded replacement keeps native allocation and cleanup, releasing common
+source only when cooperative ROOT pressure requires it, no file IO is active,
+and the supplied BMD is outside the mounted archive allocation. The caller's
+r6 BMD is forwarded through a ROM-verified bridge; its other argument registers
+are restored. Native mounting remains intact. The owned ten-bone BMD from the
+failure is0232bdfc, not the unrelated saved caller value021891c4.
+
+Nine native checks reproduce the failure, exercise full native model setup and
+destruction, preserve BMD bytes and heap ownership, verify fitting/private-heap/
+offline/borrowed-source/active-IO guards and bridge arguments. Full275 tests pass
+(265 executed,10 skipped). The first build exceeded the39KiB soft code/data
+bound; it is now40KiB, with the same hard64KiB module limit and no padding.
+Combined body/tables44932 bytes. Tests accidentally
+started against the failed build had mismatched ELF/image and are invalid;
+the corrected build-and-test command is serialized and stops on build failure.
+The initial full-model test also used the wrong saved BMD pointer; the corrected
+case identifies the exact1048-byte ten-bone model from the native registry.
+
+The167a680a cartridge combines the guarded fix, idle/walk prewarm and other
+performance options. A fresh four-console normal-route6–16 run is active;
+acceptance through the failed12→13 transition and return/save is pending.

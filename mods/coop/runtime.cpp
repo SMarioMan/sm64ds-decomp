@@ -2467,6 +2467,30 @@ nativePair:
 }
 #endif
 
+void *CoopAllocateModelWork(u32 size,const void *model) {
+    // DoSetFile has completed the shared-file copy/decompression and model
+    // registration. Do not release a source if an unusual caller supplied a
+    // model borrowed directly from that mounted source, or during file IO.
+    const u8 *image=(const u8 *)data_0208ecf4[0].image;
+    bool owned=true;
+    if (image) {
+        u32 begin=(u32)image,end=begin+0x60+*(const u32 *)(image+0x68);
+        owned=(u32)model<begin || (u32)model>=end;
+    }
+    if (coopEnabled && data_0209fc68 && !coopFileWaiting && owned &&
+        Memory::defaultHeapPtr==data_020a0e9c &&
+        CoopAlignedFree(Memory::defaultHeapPtr,4)<size)
+        CoopReleaseStageSourceCache();
+    return _ZN6Memory13operator_new2Ej(size);
+}
+
+__asm void CoopModelWorkRead(void) {
+    stmfd sp!, {r1-r3, lr}
+    mov r1, r6
+    bl CoopAllocateModelWork
+    ldmfd sp!, {r1-r3, pc}
+}
+
 void *CoopAllocatePaintingMesh(u32 size) {
     // PicGate allocates its cells before opening its texture. Prior synchronous
     // resource reads have closed their source views and own their model copies.
@@ -3325,6 +3349,7 @@ void CoopRuntimeDispatch(unsigned operation, u32 argument) {
     Patch(0x02023178,(void *)CoopAllocateParticleChunk);
     PatchCall(0x02022f88,(void *)CoopAllocateParticlePool);
     PatchCall(0x020231bc,(void *)CoopFreeParticlePool);
+    PatchCall(0x02016c20,(void *)CoopModelWorkRead);
     PatchCall(0x02017c98,(void *)CoopAllocateResource);
     PatchCall(0x02017cd8,(void *)CoopAllocateAlignedResource);
     PatchCall(0x02017d40,(void *)CoopAllocateAlignedResource);

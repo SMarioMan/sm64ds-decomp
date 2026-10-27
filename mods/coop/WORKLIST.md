@@ -7,7 +7,9 @@ not establish campaign completion or real-hardware compatibility.
   Eight native cases and the259-discovered-test suite pass; one captured asset
   needs7 reads instead of48. Four-Yoshi normal-route wireless stage testing is
   failed12→13 on0c52c505 after passing6–12. Diagnose native model-work
-  allocation pressure; measure same-source window-off loading transitions before
+  allocation pressure: a guarded model-work boundary now passes nine native
+  cases and the275-test suite; fresh167a normal-route wireless run is active.
+  Measure same-source window-off loading transitions before
   claiming a causal load-time gain. Animated loading feedback remains open.
 - [ ] Validate opt-in idle/walk animation prewarming in wireless play. Full266
   native tests pass, including exact bytes and temporary GAME/ROOT ownership.
