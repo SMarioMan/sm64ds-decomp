@@ -5,6 +5,7 @@ stage compatibility checks, not evidence that its access/unlocks were earned.
 All live emulator control is physical input; observations are read-only.
 """
 import json
+import os
 import struct
 
 from campaign import (advance_message, assert_party_synchronized, check_controller_movement, finish_messages,
@@ -191,6 +192,11 @@ def next_stage(ds):
     expected=current+1
     if expected==41:expected+=1
     if expected>=52:expected=1
+    capture=None
+    if (os.environ.get('COOP_CAPTURE_LOADING_SCREEN')=='1' and
+            getattr(ds,'runtime_module',{}).get('experimentalLoadingScreen')):
+        from loading_feedback import LoadingFeedbackCapture
+        capture=LoadingFeedbackCapture(ds,f'{current:02d}-to-{expected:02d}')
     resume_stage(ds)
     chord=getattr(ds,'runtime_module',{}).get('diagnosticStageChord',0x700)
     ds.set_input(0,0xfff)
@@ -199,6 +205,7 @@ def next_stage(ds):
     wait_controller_buttons(ds,0,chord,held=True)
     ds.set_input(0,0xfff)
     for attempt in range(360):
+        if capture:capture.sample()
         exceptions=[i for i in range(ds.count) if ds.word(i,0x0209cddc)]
         if exceptions:
             snapshot(ds,'diagnostic-transition-native-exception')
@@ -234,6 +241,7 @@ def next_stage(ds):
             # Loading suspends ordinary input decoding. Observe release after
             # arrival, rather than imposing a short deadline during WFS reads.
             wait_controller_buttons(ds,0,chord)
+            if capture:capture.finish()
             return expected
         if len(arrived)==ds.count and len(set(arrived))==1 and arrived[0] not in (current,expected):
             snapshot(ds,'diagnostic-transition-unexpected-arrival')

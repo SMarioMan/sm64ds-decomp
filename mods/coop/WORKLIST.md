@@ -3,143 +3,72 @@
 The mod is experimental. A passing unit test or stage-entry diagnostic does
 not establish campaign completion or real-hardware compatibility.
 
-- [ ] Finish validation of the optional4KB compressed-input loading window.
-  Eight native cases and the259-discovered-test suite pass; one captured asset
-  needs7 reads instead of48. Four-Yoshi normal-route wireless stage testing is
-  failed12→13 on0c52c505 after passing6–12. Diagnose native model-work
-  allocation pressure: a guarded model-work boundary now passes nine native
-  cases and the275-test suite; fresh167a normal-route wireless run is active.
-  Measure same-source window-off loading transitions before
-  claiming a causal load-time gain. Animated loading feedback remains open.
-- [ ] Validate opt-in idle/walk animation prewarming in wireless play. Full266
-  native tests pass, including exact bytes and temporary GAME/ROOT ownership.
-  No new reads are added. A separate loading-only prefetch option now covers
-  nine idle/walk/sleep/cold poses; eight native cases and283-test suite pass.
-  Compare wireless first-use hitches and total loading time before acceptance.
-- [ ] PRIORITY: optimize steady gameplay speed and eliminate significant
-  hitches on real hardware across every level and supported party size.
-  Latest56b combined four-console diagnostic PASSES short6–16, course return,
-  and Save & Quit. Level14 collision elapsed falls from~6.7ms to~3.6ms;
-  steady cadence252 intervals at2 VBlanks/33 at3, versus179/83 previously.
-  Scene trajectories differ between runs; this is not an exact causal FPS
-  comparison or physical acceptance. Level13 remains mostly3 VBlanks.
-  An optional exact painting-wave coefficient experiment matches native
-  arithmetic and reduces a private400-cell ARM replay from89200 to64929
-  instructions and1200 to3 divisions. Live f67 passes13–16 and course
-  return/save/quit; its13 cadence gain is modest and not full speed.
-  A separate exact regular-grid-normal candidate passes seven full-mesh ARM
-  comparisons and the247-test suite;90153→75864 instructions,400→324 native
-  normalizations. Live timing is pending. A Yoshi sleep-start cold read also
-  needs loading-time warming; it can span phase measurement boundaries.
-  Normals7f9 passes13–16 and return/save/quit but13 is still mostly3 VBlanks.
-  Its native flags reject the expensive painting mesh in these views. A new
-  opt-in reject-only mesh path preserves hit testing/sliding/phase and visible
-  bytes; nine native cases plus the256-test suite pass. Live timing is pending.
-  The user tested the pinned89505d400 normal ROM, SHA-256
-  `aea94b7bc8a51986b02c258cb779934bd200f269e05ad4d193282237be4baedf`,
-  and reports functional physical multiplayer with parity to melonDS behavior,
-  but significant slowdown and occasional hitches on both, worse on hardware.
-  Record this as physical multiplayer evidence for that exact image; the
-  tested system count and campaign coverage were not specified. Profile
-  native frame/VBlank cadence, worst-frame stalls, CPU/render work and
-  synchronous wireless reads before selecting optimizations. Compare against
-  retail single-player cadence in the same scenes; do not use host emulator
-  wall-clock speed as proof of full-speed DS gameplay. Evaluate cold and warm
-  assets, moving cameras, enemies, effects, pause/resume and repeated course
-  transitions. Preserve synchronization, original content and standard colors.
-  Require final combined-image physical performance acceptance as well as
-  stock-core emulator regression coverage. See [PERFORMANCE.md](PERFORMANCE.md)
-  for measurement definitions and the traced animation-read latency.
-  The isolated timer-reset experiment14ab0ad99 showed no useful matched BoB
-  gain and was removed. Main phase4 dominates steady samples but contains both
-  behavior and rendering; new read-only process histograms distinguish those.
-  Camera acceptance now uses native player slots even when guest association
-  order differs from console order.
-  An optional64KB compressed animation-read cache now passes16 native ARM
-  checks and caches on all three Download Play guests as well as the host.
-  The274084aa BoB warm sample reduces the longest observed input interval
-  from34 to4 VBlanks, but steady cadence remains approximately3 VBlanks.
-  It is not enabled by default and needs wider stage/memory/physical coverage.
-  An optional existing-SDK-clock profiler measures Player Behavior/body/head
-  and whole Stage Render without FIFO drains; eight ARM checks pass. Use it
-  to quantify the remaining steady-play bottleneck before selecting changes.
-  Completed native elapsed profiles identify whole Stage Render at~11.4ms
-  versus~4.2ms for all four Player Behavior updates in steady BoB. Split its
-  terrain/shadow/collision spans: collision takes9.4–9.7ms per frame. The
-  optional leaf cylinder guard passes six native and live movement/pause checks
-  but saves only~0.1ms and leaves cadence near3 VBlanks. Keep it disabled.
-  Investigate ordered spatial candidates to avoid scanning distant pairs;
-  isolated native replay matches contact/list state, with final ROM memory,
-  callback and performance validation still required. Retail Adventure BoB
-  baseline is confirmed near2 VBlanks.
-  Ordered spatial candidates pass native four-console coin and course
-  exit/reentry checks. Validated reuse with selective moving-object envelopes
-  reduces steady collision cost to2.16–2.37ms and stage rendering to4.06–4.22ms;
-  steady cadence is predominantly2 VBlanks, but warm movement still includes
-  117 of313 intervals at3. The next candidate validates plans after callbacks
-  and refreshes unchanged node lists in place with bounded sorting. All29 native
-  checks and198 executed tests pass (208 discovered,10 documented skips).
-  Its four-console speed test passes; warm slow intervals fall to22 of357,
-  with104 validated callbacks, five full builds and16 incremental refreshes.
-  Guest2 coin and course exit/reentry pass. An unprofiled four-console level
-  matrix passes levels6–11 for entrance/short-motion compatibility, but includes
-  a33-VBlank first-motion hitch from a2219-byte native guest read after stage
-  cache flush. A separate optional persistent-cache experiment has200 native/
-  other applicable tests passing and is starting a fresh four-console comparison.
-  All-level exploration, hardware cadence and remaining slow intervals are open.
-  Both cache and spatial planning remain
-  optional; broader stage/party-size/physical validation and full-game performance
-  acceptance are still required. Retail Adventure BoB cadence is near2 VBlanks.
-  The four-console persistent-cache diagnostic passes short checks on6–23;
-  level24 stops on a fatal controller route. Retention alone does not fix cold
-  reads: a native ROOT capacity query is confirmed to evict30828 bytes in a
-  three-system trace. Level14 also exposes repeated spatial preparation aborts.
-  A bounded alternate-axis preflight and null-plan assembly fast path now pass
-  31 native collision tests and203 applicable full-suite checks. Three-system
-  direct14–16/exit/save/quit passes; normal four-console BoB speed is under test.
-  Native frozen-list replay preserves contacts but full construction alone is
-  more instructions than native; evaluate reuse, not square-root counts alone.
-  Normal four-console3413b389 additionally passes guest2 coin and native course
-  exit/reentry. Its warm cadence has339 intervals at2 VBlanks and22 at3.
-  An allocation-free refresh for at most eight escaped envelopes now passes
-  35 native collision checks and207 applicable full-suite checks. Pair work
-  is capped at1024 and sorting at256 shifts; excess work retains full refresh
-  or native processing. The first four-node live profile is a modest gain,
-  not full-speed acceptance. Fresh eight-node profiling/gameplay checks are
-  tracked in `edge-budget-cost-profile` and `edge-budget-gameplay-regression`.
-  Both now PASS: steady/warm/pause, guest2 shared coin and native exit/reentry.
-  Warm cadence is339 intervals at2 VBlanks,18 at3 and one at4. This does not
-  establish a further cadence improvement or resolve cold-read hitches.
-  An unmodified four-console retail VS reference also runs predominantly at
-  two VBlanks with occasional jitter; its lighter scene is not a matched BoB
-  CPU baseline. Cold-read hitches remain open.
-  Guarded virtual capacity queries now preserve owned raw animation bytes
-  without lowering native query results. Native pressure/growth still evict;
-  unknown ownership/layout or bounded traversal failure uses the original policy.
-  All24 animation-cache and212 applicable full-suite checks pass. Four-console
-  d320a980 short checks6–16 and four-system return/save/quit now PASS. At7 there are four virtual-query
-  successes/no fallback per peer,14 retained entries, and first movement has
-  four cache hits/no new misses:163 intervals at2 VBlanks, one at3. The earlier
-  33-VBlank Y_walk movement hitch is absent on this route. Initial stage6 cold
-  entry still has a41-VBlank Y_wait guest read; this is not an all-hitch fix.
-  The31-VBlank/2219-byte read is Yoshi's walking animation. A separate optional common-archive streaming build passes215 applicable native
-  checks; matched wireless loading tests are starting. It avoids repeated whole mounts: its321224 bytes contain285814 bytes of
-  player assets, while only the current characters may be needed at entry.
-  Preserve every original file and native content if testing streamed loading.
-  Remaining movement hitches include direct player paddle_end.bca reads outside
-  the common-only raw-cache mask. An exact original FAT index of154 direct
-  player poses now passes214 applicable native checks; fresh four-system6–9
-  and second warm swimming checks are running with original mounting.
-  Level14 still has collision6.68–7.23ms:194 last-frame nodes exceed192, and
-  both axis windows exceed1024 despite327 actual envelope pairs. A cap-only
-  private experiment is rejected. Separate bounded window work/candidate budgets
-  need native and live validation before increasing these limits.
+- [x] Write a detailed generalized HaxxStation/Download Play integration guide
+  for future game mods. [HAXXSTATION-PORTING.md](HAXXSTATION-PORTING.md) documents
+  authentication, packaging, host ports, reconnects, WFS and porting boundaries.
+- [ ] PRIORITY: attain full-speed steady gameplay and eliminate hitches on
+  real hardware in every level and supported party size. Preserve native
+  geometry, animation, actors, synchronization and standard Yoshi colors.
+  Measure native VBlanks/input cadence, worst stalls, CPU/render spans and
+  synchronous wireless reads; host wall-clock speed does not prove DS speed.
+  Optional ordered collision plans and exact painting math/normals/reject-only
+  mesh work pass native tests and earlier mixed-character13–16 diagnostics.
+  Several four-Yoshi stages reach mostly2-VBlank cadence, but first-use pose
+  reads still cause30–42-VBlank guest stalls and BoB still has3-VBlank samples.
+  This is not full-speed or full-campaign acceptance. Full283 tests pass
+  (273 executed,10 skipped) on the latest prefetch candidate5bf388b2.
+  The normal four-Yoshi0c52 run passes6–12 but crashes guests on12→13 in a
+  native1048-byte model-work allocation. A guarded source-release boundary
+  preserves native model data, allocation and cleanup; nine captured ARM
+  cases and the full275-test intermediate suite pass. The167a repeat passes
+  6–11 and reaches12 before capture storage ENOSPC interrupts the harness;
+  that is not a native game failure and does not validate13. The5bf repeat
+  now uses separate scratch storage and PASSES6–16, course return and four-system
+  Save & Quit. Every steady stage sample has zero physical gameplay reads;
+  stage9 movement still has three reads, and6/13/14/16 retain slower intervals.
+  Continue17–51,
+  repeated loads, moving/visible paintings, missions, bosses and final combined
+  hardware performance acceptance. Exact evidence and older results are in
+  [PERFORMANCE.md](PERFORMANCE.md) and [EMULATOR-HANDOFF.md](tests/EMULATOR-HANDOFF.md).
+  The user's physical confirmation applies to old normal89505d400 image
+  `aea94b7bc8a51986b02c258cb779934bd200f269e05ad4d193282237be4baedf`:
+  functional physical multiplayer, with substantial slowdown/hitches. Newer
+  images have no equivalent physical performance acceptance yet.
+  The user also tested requested3-systembe682ed7f performance image
+  `f7fc1a0118fadfde2aa16ea64b3a53c7d510659ab50c5388fad36caefc50967d`:
+  all Yoshi heads visible, no missing geometry observed, but very slow play
+  and frequent movement hitches with at most slight gain. Hardware performance
+  FAILED on that image. Long nondescript black/white loads also remain poor.
+- [ ] Finish acceptance of optional loading and first-use IO improvements.
+  `--experimental-lz-window` uses optional4KB ROOT/GAME input storage after
+  output allocation, with the original512-byte stack fallback. Eight native
+  cases pass; one captured asset requires7 reads instead of48. Same-source
+  window-on rebuild reproduces167a exactly; window-off8cbf93be passes21
+  discovered checks (18 executed,3 skipped). Measure actual matched loading
+  transitions before claiming whole-level improvement. Native mounting and
+  original archive/file extents must stay intact; the earlier mount-bypass
+  experiment was withdrawn after a wireless crash.
+  `--experimental-animation-prewarm` copies verified Yoshi idle/walk members
+  before common-source release without additional reads; native heap/lifetime
+  tests pass. It does not remove the direct sleep/cold first-use hitches.
+  `--experimental-animation-prefetch` moves nine missing idle/walk/sleep/cold
+  reads after native skybox loading using optional8KB GAME scratch and the
+  existing32-entry/64KB reclaimable cache. Eight native cases pass, including
+  exact bytes/cursors, repeat hits, native close, short reads, readiness and
+  both heap-pressure paths. Compare gameplay stalls and total loading time
+  on5bf, all stages, both guests and host. All performance options remain off
+  by default pending acceptance.
+
 - [ ] Replace long black loading periods with visible, animated loading
   feedback on the host and guests. Keep a resident indicator responsive during
   Download Play handoff, wireless file reads and stage changes. Show real byte
   or phase progress where measurable; use an animated indicator when no honest
   total is available. Validate that feedback preserves native loading barriers,
   input acknowledgments, geometry/VRAM ownership and the retail hardware boot fix.
+  An opt-in stage-loading LOADING/spinner prototype passes10 native lease/
+  restoration checks and the293-test suite. Its actual four-console animation,
+  gameplay/heap and save checks are running ondf0b76ee. Initial firmware/menu
+  loading phases and final hardware visual acceptance remain open.
 - [ ] Improve loading performance as well as steady gameplay speed. Measure
   cold/warm boot, castle/course transitions and guest file reads separately.
   Investigate redundant archive loading, repeated resource reads, prefetch and
@@ -208,6 +137,10 @@ not establish campaign completion or real-hardware compatibility.
   the parent loader into overlay 75. BIOS/firmware startup and four image-layout
   checks also pass. The user also reports functional physical multiplayer
   on this pinned image. Newer-image physical and campaign acceptance remain open.
+- [x] Confirm the reported missing Yoshi heads at spawn are fixed on the
+  user's three-system R4 test ofbe682ed7f/f7fc1a0: every head is visible and no
+  missing geometry observed. Broader camera/level/final-image rendering
+  acceptance remains part of the performance and campaign checks.
 - [ ] Give each player independent camera controls and state, including zoom,
   recentering, and personal movement camera modes. Keep shared story decisions
   synchronized without consuming player 1's camera controls on other consoles.

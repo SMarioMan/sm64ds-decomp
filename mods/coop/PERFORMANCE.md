@@ -1038,3 +1038,105 @@ The default flags-off slot-A integrated cartridge independently reproduces
 in two complete builds. Its9 model-work tests and14 boot/layout/relocation/map
 checks pass. Older35d8be5d is the pre-model-pressure normal image. No new
 hardware performance or complete-campaign acceptance is claimed.
+
+Diagnostic clarification: the later0c52 frontend exit came from an invalid
+`regs` request without its required console index (`regs 1`, for example).
+The frontend reported "Bad console index" and exited. This was an operator
+command error, separate from the retained native12→13 game crash. No register
+command was used to modify state; the original failure RAM predates that error.
+
+Infrastructure interruption:167a PASSED6–11 and reached12 but the runner could
+not create its12 output folder because the workspace filled. Its subsequent
+failure screenshot command ended the frontend. This is not a native game-crash
+result and does not validate12→13 or return/save. Original results are retained.
+Historical compression copied files from an immutable lower layer, consuming
+space instead of reclaiming it. Those verified archives and closed167a outputs
+now live on the separate /tmp filesystem with their original paths preserved by
+symlinks. Inputs, native default RAM fixtures and source files were not moved.
+New5bf prefetch runs write captures directly to that separate filesystem.
+
+The same-source window-disabled control builds as8cbf93be78729e861cbc19e2c588941986ac19f909656fe02bc36b77cf038599.
+Its21 boot/LZ/model checks pass (18 executed,3 large-window-specific skips).
+Re-enabling the window with the same current source exactly reproduces167a,
+recorded in model-work-window-control-source-proof.json. Thus its pending
+wireless comparison can isolate the input-window option. No control party has
+started; only5bf is active. Global ELF/base/default bootstrap now match that
+167a source-reproduction build, not the active5bf prefetch image. Original raw
+ROMs and frozen build reports remain separate.
+
+## Physical three-system follow-up: be682ed7f
+
+The user tested the requested three-system R4 performance build atbe682ed7f,
+expected SHA-256f7fc1a0118fadfde2aa16ea64b3a53c7d510659ab50c5388fad36caefc50967d,
+with --clients2 --experimental-animation-cache --experimental-collision-plan.
+All Yoshi heads are visible and no missing geometry was observed. This is
+positive physical rendering evidence for that image and configuration.
+Speed remains very slow, with frequent hitches especially during movement;
+any gain is slight. Long loads show nondescript black/white screens. Record
+hardware performance and loading UX acceptance as FAILED, not pending or passed.
+This does not validate later direct-pose, expanded-plan, painting,4KB-window,
+model-pressure or loading-prefetch candidates. The active5bf emulator regression
+continues; new final-image physical speed and loading acceptance are required.
+
+## Normal four-Yoshi prefetch acceptance and matched loading control
+
+5bf388b2 PASSES normal castle→BoB, diagnostic6–16, four controllers, shared
+pause/world checks,600 further steady16 frames, native course return and
+four-system Save & Quit (other host files remain protected by the save test).
+It has been shut down and actual frontend exit verified. Every steady6–16
+sample records zero new physical gameplay reads. Stages7/8/9/10/11/15 are almost
+entirely2 VBlanks/input tick;6/13/14/16 still have slower intervals. Host steady14
+is747 at2,110 at3, plus one boundary1. BoB is842 at2,44 at3,one4 and boundary1.
+These are stock-core native cadence measurements, not rendered FPS or physical
+acceptance. The earlier30–42-VBlank sleep/cold stalls disappear in these samples.
+Stage9 movement still reads paddle_1/2/end (922/767/1011 bytes); the last guest
+read takes29 VBlanks. These need further first-use handling.
+
+Window-OFF8cbf93be PASSES the same normal route through6–8 and is closed with
+actual frontend exit verified. Its source-equivalent window-ON build reproduces
+167a exactly. One pair of loading measurements, including input/poll overhead:
+
+| Native transition |512-byte window OFF control|4KB window ON167a|Reduction|
+|---|---:|---:|---:|
+|1→2|2733 VBlanks|1500 VBlanks|45.1%|
+|6→7|5139|4304|16.2%|
+|7→8|4898|4095|16.4%|
+
+This establishes a gain in these emulated transitions, not a universal load-time
+claim or hardware result. Loading is still very long.9-pose prefetch5bf records
+1555/4387/3949 respectively; its different cache/startup state is not the matched
+window-only control. Preserve each exact image/report rather than mixing runs.
+
+## Experimental animated stage feedback
+
+`--experimental-loading-screen` is independently opt-in. It leases256 bytes at
+the end of native16KB sub-OBJ bankI, two regular OBJ palette colors and8 OAM
+objects while native stage initialization is pending. A black-outlined white
+LOADING word and clock-driven spinner use the original native VBlank handler;
+IRQ registration is restored when the lease ends. No heap buffer or content
+reduction is introduced. Unused bankI may be borrowed temporarily only if the
+SDK and hardware both show it unowned; its prior ownership/mapping is returned.
+Unknown OBJ layouts/IRQ handlers/owners are left alone.
+
+Native bank disable, OBJ decompression, OBJ palette copies and direct file
+writes suspend and restore the lease BEFORE native asset writes, then snapshot
+the newly written data before resuming. Skybox/prefetch completion releases it
+before native final display configuration; pending group waits can reacquire
+with that new configuration. Gameplay readiness and connection-error display
+release it. Stage loading is the current coverage; initial firmware/Station
+screens and arbitrary other scene-loading screens are separate.
+
+Ten compiled ARM cases pass: tile animation, exact tile/palette/OAM/
+brightness/IRQ restoration, unrelated display-bit preservation, native bank
+ownership, fresh asset snapshots, writer arguments/results, guards and offline
+behavior. Original IRQ registration/bank SDK code executes in private mappings;
+asset producers/VBlank bodies are adapted. Full293 tests pass (283 executed,
+10 skipped). Combineddf0b76ee body/tables49116 bytes; code/data soft bound44KiB,
+hard64KiB module cap unchanged without padding. The first compile rejected an
+include path; the corrected explicit repository-relative include builds.
+
+Onlydf0b UI party is now active. Its controller observer checks actual rendered
+LOADING letters and two spinner phases per console during native transitions,
+plus zero ownership faults, released state and native IRQ at playable stages.
+The observer's9-frame sampling delay is test capture spacing, not a runtime
+or human timing requirement. Live UI/heap/save acceptance remains pending.

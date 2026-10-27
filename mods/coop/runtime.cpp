@@ -11,6 +11,9 @@
 #include "dCamera_c.h"
 #include "dMap_c.h"
 #include "OAM.h"
+#ifdef COOP_EXPERIMENTAL_LOADING_SCREEN
+#include "IRQ.h"
+#endif
 #ifdef COOP_EXPERIMENTAL_PAINTING_MATH
 #include "daPicGate_c.h"
 #endif
@@ -38,6 +41,9 @@ extern "C" u16 data_020a0e58[];
 #endif
 
 extern "C" {
+#ifdef COOP_EXPERIMENTAL_LOADING_SCREEN
+void CoopLoadingEnd(void);
+#endif
 void PrepareVsMode(void);
 void SetPlayerGlobals(void);
 void SetNumPlayers(int count);
@@ -820,6 +826,9 @@ static void CoopSessionEndedScreen() {
 }
 
 static void CoopConnectionLost() {
+#ifdef COOP_EXPERIMENTAL_LOADING_SCREEN
+    CoopLoadingEnd();
+#endif
 #ifdef COOP_DIAGNOSTIC_STAGE_CYCLE
     if (coopEnabled) {
         // Preserve the first native reason before SDK teardown can replace it.
@@ -995,6 +1004,10 @@ void CoopSceneAfterInit(dScene_c *scene, u32 success) {
 
 static void CoopReserveParticlePool(unsigned level);
 
+#ifdef COOP_EXPERIMENTAL_LOADING_SCREEN
+#include "mods/coop/loading_screen.inc"
+#endif
+
 int CoopStageInit(void *scene) {
     if (coopEnabled && data_0209fc68==6)CoopConnectionLost();
     dScStage_c *stage = (dScStage_c *)scene;
@@ -1004,6 +1017,9 @@ int CoopStageInit(void *scene) {
         if (!CoopLoadHostSave())return -1;
         return CoopOriginalStageInit(scene);
     }
+#ifdef COOP_EXPERIMENTAL_LOADING_SCREEN
+    CoopLoadingAllow();
+#endif
     // The native all-loading acknowledgement stops MP data sharing. Publish
     // and acknowledge the host file while the normal packet clock is alive,
     // before advertising that this console is ready for the loading barrier.
@@ -1028,7 +1044,13 @@ int CoopStageInit(void *scene) {
         // Reserve the larger particle array only after temporary files free.
         CoopReserveParticlePool((u8)data_02092110);
     coopStageLoading = 2;
+#ifdef COOP_EXPERIMENTAL_LOADING_SCREEN
+    CoopLoadingSuspend();
+#endif
     int result = CoopOriginalStageInit(scene);
+#ifdef COOP_EXPERIMENTAL_LOADING_SCREEN
+    if (result<0)CoopLoadingBegin();else CoopLoadingEnd();
+#endif
     coopStageLoading = 0;
     if (stage->mWaitingForLoad)
         func_0203d930();
@@ -1041,6 +1063,9 @@ u32 coopFileWaiting = 0;
 int CoopReadFileUncached(void *file, void *destination, int size, int async) {
 #else
 int CoopReadFile(void *file, void *destination, int size, int async) {
+#endif
+#ifdef COOP_EXPERIMENTAL_LOADING_SCREEN
+    if (!async && data_020a613c==data_020a621c)CoopLoadingBegin();
 #endif
 #ifdef COOP_DIAGNOSTIC_STAGE_CYCLE
     if (coopEnabled && data_0209fc68==4 && !async && !coopFileWaiting &&
@@ -1449,6 +1474,9 @@ void CoopLoadSkybox(void *scene) {
     CoopOriginalLoadSkybox(scene);
 #ifdef COOP_EXPERIMENTAL_ANIMATION_PREFETCH
     CoopPrefetchAnimationReads();
+#endif
+#ifdef COOP_EXPERIMENTAL_LOADING_SCREEN
+    CoopLoadingSuspend();
 #endif
 }
 
@@ -3379,6 +3407,12 @@ void CoopRuntimeDispatch(unsigned operation, u32 argument) {
     Patch(0x0201834c,(void *)CoopLoadDiskFile);
     Patch(0x02062200,(void *)CoopWirelessReset);
     Patch(0x02030e4c,(void *)CoopConnectionUpdate);
+#ifdef COOP_EXPERIMENTAL_LOADING_SCREEN
+    Patch(0x0202e78c,(void *)CoopLoadingDisableBanks);
+    Patch(0x0205a754,(void *)CoopLoadingDecompress);
+    Patch(0x02056738,(void *)CoopLoadingObjPalette);
+    Patch(0x020184e0,(void *)CoopLoadingReadAt);
+#endif
     Patch(0x0202b0fc,(void *)CoopLoadSkybox);
     PatchCall(0x02024d40,(void *)CoopCameraInputFlagsRead);
     Patch(0x0200d0ac,(void *)CoopCameraFar);

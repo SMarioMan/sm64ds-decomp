@@ -1,5 +1,74 @@
 # Download Play handoff investigation
 
+CURRENT OVERRIDE: ONLY ACTIVEdf0b76ee7a368f82ea5bb14188889a74fa54c2c8c172d5c777220d6fc5cc6a82
+raw /tmp/sm64ds-coop-runs/loading-ui-yoshi-host.nds; parent
+/workspace/runtime/loading-ui-yoshi-matrix (symlink to /tmp), socket
+/workspace/runtime/loading-ui-yoshi-matrix.sock, exec14232; performance follower
+loading-ui-yoshi-performance exec59761; return/save follower exec63279 waits.
+Scripts reproduce/continue-loading-ui-yoshi.py and
+continue-loading-ui-yoshi-stage16-return-save.py. Frozen source includes
+loading_screen.inc and read-only loading_feedback.py screenshot checks.
+COOP_CAPTURE_LOADING_SCREEN=1 requires rendered LOADING letters and two spinner
+phases on every console per diagnostic transition. Driver also asserts UI
+active/wanted0, original IRQ0201a534 and zero ownership faults at playable entry.
+No competing party or live RAM/packet changes. Global ELF/base/default bootstrap
+matchdf0b;10 new UI native cases and full293 PASS (283 executed,10 skips).
+Soft code/data44KiB, module64KiB cap unchanged; body/tables49116 bytes.
+
+5bf prefetch party PASSES normal6–16,600 steady16, native course return and
+four-system Save & Quit. It is explicitly closed and actual frontend exit
+verified. Zero new physical gameplay reads in EVERY steady6–16 sample; no
+30–42-VBlank sleep/cold stalls.6/13/14/16 still have slower intervals. Stage9
+movement has3 cold paddle reads; last1011-byte read takes29 guest VBlanks.
+Window-off8cb control PASSES normal6–8 and is closed with actual exit verified.
+Matched load OFF→ON167a SDK VBlanks:1→2 2733→1500;6→7 5139→4304;
+7→8 4898→4095. One pair, includes input/polling; no physical-time acceptance.
+User'sbe682/f7fc1a0 physical heads/geometry PASS, performance FAIL remains valid.
+Detailed generalized HaxxStation guide is committed/pushed ateb12d6215,
+mods/coop/HAXXSTATION-PORTING.md. User asked to keep working through all tasks.
+Older CURRENT/ACTIVE notes below are historical and superseded here.
+
+NEW HARDWARE FEEDBACK: User's3-system R4 test ofbe682ed7f/f7fc1a0 reports
+all Yoshi heads visible and no missing geometry. Performance still VERY SLOW
+with frequent movement hitches and at most slight improvement; long black/white
+loads persist. Hardware PERFORMANCE/LOADING UX acceptance FAILED on that image.
+Do not transfer rendering evidence or claim speed acceptance for newer builds.
+No new hardware question needed now; continue priority optimization and5bf run.
+
+BUILD UPDATE: ONLY ACTIVE remains5bf prefetch party described immediately below.
+Global ELF/base/raw default bootstrap now match167a (window-on source-proof
+rebuild), not5bf or the earlier normalde4. Same-source window-OFF8cbf93be raw
+ROM/JSON are /tmp/sm64ds-coop-runs/model-work-lz-off-control-host.*;21 checks
+PASS (18 executed,3 skips). Window-ON proof raw/JSON are there as
+model-work-lz-on-proof-host.* and reproduce played167a exactly; proof manifest
+/workspace/runtime/model-work-window-control-source-proof.json. NO control
+party yet. Complete5bf and close actual frontend before starting another.
+Current5bf output/ROM symlinks resolve to /tmp storage with ample space.
+
+CURRENT OVERRIDE: ONLY ACTIVE5bf388b28c7e78df6aa76ba653cd4dabf8e77b0423860b7eab2d971b5ea59483
+prefetch-yoshi-matrix socket /workspace/runtime/prefetch-yoshi-matrix.sock,
+parent exec41487; continuation prefetch-yoshi-performance exec17398; return/save
+follower exec47428. Drivers reproduce/continue-prefetch-yoshi.py and
+continue-prefetch-yoshi-stage16-return-save.py. ROM at
+/workspace/runtime/prefetch-yoshi-cost-host.nds is a symlink into
+/tmp/sm64ds-coop-runs/. Output directories are symlinks there too; they retain
+frozen drivers and all normal castle/BoB/Yoshi assertions,6–16 samples and
+prewarm/prefetch counters. No competing party; use physical controls/read-only
+observation only. Actual167a frontend exit verified before this start.
+
+167a PASSES6–11 and reaches12, then is INTERRUPTED by workspace ENOSPC while
+creating the12 capture folder; no native game crash in that run. A subsequent
+failed screenshot request ends the frontend. Return/save follower aborts.
+Results retained in model-work-yoshi-* directory symlinks into /tmp storage.
+Historical20-image compression had copied immutable lower-layer files, using
+space rather than freeing it. Their verified gzip files are now in
+/tmp/sm64ds-coop-artifact-archives with original gzip paths symlinked; manifest
+closed-historical-host-rom-second-batch-compression.json records storage paths.
+Inputs and all default native RAM fixtures remain untouched in /workspace.
+The new outputs use the separate17GB /tmp filesystem. Keep this storage split.
+A same-source167a window-OFF control is building in /tmp; no control party yet.
+Older CURRENT/ACTIVE paragraphs below are historical and superseded here.
+
 LATEST SOURCE/BUILD NOTE: ONLY ACTIVE party remains167a model-work-yoshi above
 (the CURRENT OVERRIDE below lists its scripts/socket/execs). It has passed6–8
 on the normal four-Yoshi route; return/save follower still waits. Never start a
@@ -1730,3 +1799,9 @@ session is starting in `/workspace/runtime/persistent-party/`, socket
 `/workspace/runtime/persistent-party.sock`. Read `control-session.json` for
 readiness before connecting. Its ordinary startup report remains running until
 the controller session is explicitly shut down.
+
+Diagnostic clarification: the later0c52 frontend exit came from an invalid
+`regs` request without its required console index (`regs 1`, for example).
+The frontend reported "Bad console index" and exited. This was an operator
+command error, separate from the retained native12→13 game crash. No register
+command was used to modify state; the original failure RAM predates that error.

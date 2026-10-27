@@ -29,6 +29,8 @@ def main():
                         help='TEST ONLY: measure geometry costs with FIFO drains; not a performance benchmark')
     parser.add_argument('--diagnostic-player-cost',action='store_true',
                         help='TEST ONLY: elapsed SDK ticks for player behavior/models and stage rendering')
+    parser.add_argument('--experimental-loading-screen',action='store_true',
+                        help='EXPERIMENTAL: animated loading text with temporary sub-OBJ ownership')
     parser.add_argument('--experimental-animation-prefetch',action='store_true',
                         help='EXPERIMENTAL: read Yoshi idle/sleep and cold poses during loading')
     parser.add_argument('--experimental-animation-prewarm',action='store_true',
@@ -115,6 +117,7 @@ def main():
     if args.experimental_lz_window:diagnostic+=('--experimental-lz-window',)
     if args.experimental_animation_prewarm:diagnostic+=('--experimental-animation-prewarm',)
     if args.experimental_animation_prefetch:diagnostic+=('--experimental-animation-prefetch',)
+    if args.experimental_loading_screen:diagnostic+=('--experimental-loading-screen',)
     if args.experimental_collision_broadphase:diagnostic+=('--experimental-collision-broadphase',)
     if args.experimental_animation_cache:diagnostic+=('--experimental-animation-cache',)
     if args.experimental_persistent_animation_cache:diagnostic+=('--experimental-persistent-animation-cache',)

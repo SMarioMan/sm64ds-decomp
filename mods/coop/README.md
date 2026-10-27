@@ -878,3 +878,9 @@ cached. Existing cache entries add no reads. Eight native cases and the283-test
 suite pass; wireless hitch and loading-time comparisons are still pending.
 The option is disabled by default. It is independent of the archive-copy
 `--experimental-animation-prewarm` option.
+
+`--experimental-loading-screen` tests animated stage-loading feedback using a
+temporary sub-OBJ lease and native VBlank handling. Ten native ownership/asset
+restoration tests and the293-test suite pass; rendered four-console loading
+and subsequent gameplay/save checks are underway. It is off by default and
+currently covers native stage initialization, not every firmware/menu screen.

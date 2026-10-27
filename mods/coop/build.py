@@ -85,9 +85,9 @@ def link(source, prefix, address, game_symbols, launcher, cc, ld, defines=()):
     end = max([address + len(payload)] + [emitted[n] + sizes[n] for n in defined])
     payload.extend(bytes(end - address - len(payload)))
     # The runtime is dynamically allocated in ROOT; the loader accepts 64 KiB.
-    # Keep code/data below 41 KiB; the final module (including tables) is
+    # Keep code/data below 44 KiB; the final module (including tables) is
     # checked separately against the loader's 64 KiB limit.
-    if not payload or end > address + 0xa400:
+    if not payload or end > address + 0xb000:
         raise RuntimeError('Invalid linked payload span')
     return payload, emitted
 
@@ -155,6 +155,8 @@ def main():
                         help='TEST ONLY: drain geometry to measure terrain/body/head polygon costs; changes timing')
     parser.add_argument('--diagnostic-player-cost',action='store_true',
                         help='TEST ONLY: elapsed SDK ticks for player behavior/models and stage rendering')
+    parser.add_argument('--experimental-loading-screen',action='store_true',
+                        help='EXPERIMENTAL: animated loading text with temporary sub-OBJ ownership')
     parser.add_argument('--experimental-animation-prefetch',action='store_true',
                         help='EXPERIMENTAL: read Yoshi idle/sleep and cold poses during loading')
     parser.add_argument('--experimental-animation-prewarm',action='store_true',
@@ -186,7 +188,7 @@ def main():
         parser.error('--baseline cannot select a diagnostic stage')
     if args.diagnostic_stage_cycle and args.diagnostic_start_level is None:
         parser.error('--diagnostic-stage-cycle requires --diagnostic-start-level')
-    if args.baseline and (args.diagnostic_render_cost or args.diagnostic_player_cost or args.experimental_animation_cache or args.experimental_collision_broadphase or args.experimental_collision_plan or args.experimental_painting_math or args.experimental_lz_window):
+    if args.baseline and (args.diagnostic_render_cost or args.diagnostic_player_cost or args.experimental_animation_cache or args.experimental_collision_broadphase or args.experimental_collision_plan or args.experimental_painting_math or args.experimental_lz_window or args.experimental_loading_screen):
         parser.error('--baseline cannot enable runtime experiments or diagnostics')
     if args.experimental_animation_prefetch and not args.experimental_animation_cache:
         parser.error('Animation prefetch requires --experimental-animation-cache')
@@ -306,6 +308,11 @@ def main():
         fov=game['func_0200ca14']-rom.arm9RamAddress
         if arm9[fov:fov+60]!=bytes.fromhex('30309fe50030d3e5030051e11eff2f11000052e3551f8002000091050208800300008105551f80120000911501088013000081151eff2fe150f20902'):
             raise RuntimeError('Unexpected native player camera FOV helper')
+        if args.experimental_loading_screen:
+            trampolines += [('CoopLoadingOriginalDisableBanks',0x0202e78c,bytes.fromhex('00402de9')),
+                ('CoopLoadingOriginalDecompress',0x0205a754,bytes.fromhex('f0472de9')),
+                ('CoopLoadingOriginalObjPalette',0x02056738,bytes.fromhex('30402de9')),
+                ('CoopLoadingOriginalReadAt',0x020184e0,bytes.fromhex('f0402de9'))]
         if args.experimental_painting_math:
             trampolines += [('CoopOriginalPaintingHeight',0x02125bb0,bytes.fromhex('f0402de9'))]
         if args.experimental_animation_cache:
@@ -375,6 +382,9 @@ def main():
 
         if args.experimental_collision_plan:
             imports.update(CoopCollisionPairContinue=0x02014b10,CoopCollisionPairDone=0x02014f14)
+        if args.experimental_loading_screen:
+            imports['CoopLoadingOriginalVBlank']=game['_ZN3IRQ13VBlankHandlerEv']
+            imports['CoopLoadingSetSubObjBank']=game['_ZN2GX16SetBankForSubOBJEt']
         imports['coopNarcIndex']=PAYLOAD_ADDRESS+0x1800
         narc_index=narc_member_index(rom,arm9,original)
         animation_mask=b'';animation_direct_index=b'';direct_animations=[]
@@ -439,6 +449,7 @@ def main():
         if args.experimental_lz_window:defines.append('COOP_EXPERIMENTAL_LZ_WINDOW=1')
         if args.experimental_animation_prewarm:defines.append('COOP_EXPERIMENTAL_ANIMATION_PREWARM=1')
         if args.experimental_animation_prefetch:defines.append('COOP_EXPERIMENTAL_ANIMATION_PREFETCH=1')
+        if args.experimental_loading_screen:defines.append('COOP_EXPERIMENTAL_LOADING_SCREEN=1')
         if args.experimental_animation_cache:
             defines.append('COOP_EXPERIMENTAL_ANIMATION_CACHE=1')
         if args.experimental_persistent_animation_cache:
@@ -652,6 +663,13 @@ def main():
         module_report['evictCommonStageSourceCache']=True
         module_report['evictStageCacheForPaintingMesh']=True
         module_report['localCameraControls']=True
+        if args.experimental_loading_screen:
+            module_report['experimentalLoadingScreen']={'defaultEnabled':False,
+                'statsOffset':emitted['coopLoadingScreenStats']-PAYLOAD_ADDRESS,
+                'activeOffset':emitted['coopLoadingActive']-PAYLOAD_ADDRESS,
+                'wantedOffset':emitted['coopLoadingWanted']-PAYLOAD_ADDRESS,
+                'tileBytes':256,'oamObjects':8,'nativeVBlankPreserved':True,
+                'fields':['starts','stops','vblankDraws','assetPauses','bankSkips','contextSkips','ownershipFaults']}
         if args.experimental_animation_prefetch:
             module_report['experimentalAnimationPrefetch']={'defaultEnabled':False,
                 'statsOffset':emitted['coopAnimationPrefetchStats']-PAYLOAD_ADDRESS,
