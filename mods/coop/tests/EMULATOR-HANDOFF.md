@@ -9,57 +9,44 @@ all levels. The tested party size and campaign coverage were not specified;
 newer-image physical acceptance and campaign completion remain open. Read the current regressions first; later sections preserve
 historical checkpoints and failures rather than release acceptance.
 
-## Current direct-player cache regression (supersedes older parties)
+## Current combined performance regression
 
-Published9712c2876 contains an experimental common-mount bypass that MUST be
-withdrawn:474f41cb FAILS6→7 with native guest Crash() on consoles1–3. Its1→2
-transition also regresses to2905 SDK VBlanks vs2722 control. All candidate/control
-parties are CLOSED. The corrected d320 control PASSES6–8 and measured1→2,
-6→7,7→8 at2722,5240,4826 SDK VBlanks per console, including input/poll overhead.
-The first control failed only on an out-of-range frontend read; physical mirror
-023ffc3c fixed it. Failed attempts remain failures in their reports.
+Published7efc134e5 withdraws the unsafe common-archive bypass and caches all154
+direct player BCA files. The f66 normal-mount four-console regression PASSES6–9
+and a second swimming traversal. First swimming motion has three cold physical
+reads; the second has12 cache hits, no reads and163 intervals at2 VBlanks on
+all four consoles. The f66 party is CLOSED. Original archive mounting is retained.
+The failed474f common-bypass image remains rejected after6→7 guest crashes.
 
-Current local source removes that hook/build option and adds exact indexing of
-154 direct player BCA files. Paddle_end.bca (1011 bytes at ROM7021840) caused
-repeated29–31-VBlank swimming reads outside the former common-only whitelist.
-Native224-discovered/214-executed/10-skipped tests PASS. Every direct pose is
-checked against original bytes/native cursor semantics. No partial reads cached.
-The old274084aa cache-only hash predates this index and no longer describes a
-current cache build. Normal no-cache behavior is intended unchanged; rebuild it.
+ONLY ACTIVE party is56b1796f023d070644930e76bdb92866a4c4f9e669f7c230e3433a6e8100ca71,
+`animation-cache-direct-window-budget-cost-host.nds`. Parent
+`direct-window-budget-matrix/`, socket
+`/workspace/runtime/direct-window-budget-matrix.sock`; continuation
+`direct-window-budget-performance/` checks the native castle/painting route then
+short6–16 steady/motion/pause/synchronization. Read its result/log before RPC.
+No competing party, live RAM/packet edits, savestates or core modifications.
+Frozen driver sources match this image. Verify actual frontend exit before another.
 
-ONLY ACTIVE party is f66e880d0d11cd925dd4d781564ec0876fe5c598287898ea8fe02feb4502fcf5,
-`animation-cache-direct-player-normal-mount-cost-host.nds`. It uses ORIGINAL
-archive mounting. Parent `direct-player-normal-mount-matrix/`, exec71870,
-socket `/workspace/runtime/direct-player-normal-mount-matrix.sock`.
-Continuation `direct-player-normal-mount-performance/`, exec97809, takes the
-all-Yoshi castle/interior/painting route, then short6–9 checks and a second warm
-swimming pass at9. Read result/log before RPC. No competing client/party, live RAM
-or packet edits, savestates or core modifications. Frozen driver sources/hashes
-match f66 before later code edits. Verify actual parent exit before another party.
-Global build/test artifacts currently match f66.
-
-Earlier d320 virtual-capacity image PASSES all short6–16 checks plus four-system
-course return/save/quit with other files unchanged. These are compatibility,
-not full-campaign, physical speed or boss completion.13/14 remain slow.
-A retained194-node14 list exceeds192. Private cap256 alone FAILS because axis
-windows1398/1041 exceed1024 despite327 true2D pairs. A second isolated ARM replay
-raising node/window work to256/2048 creates327 candidates, matching native
-contacts/notification order and restoring heap free bytes. This is NOT production
-code. Preserve1024 candidate and edge-work budgets if implementing the change.
+Current collision source accepts256 nodes and2048 one-axis window checks while
+preserving the1024 actual-candidate and edge-refresh comparison limits.37 native
+collision tests PASS; the full suite PASS counts226 discovered/216 executed/10
+skipped. A production-code isolated replay of the retained194-node level14 list
+prepares327 candidates and preserves native contacts/callback order/heap bytes:
+287266 native instructions,233088 cold planned,78692 reused. No private ARM
+immediate patches are used in this replay. This is not hardware speed evidence.
 Fixture remains uncompressed at
 `/workspace/runtime/lazy-eviction-performance/08-level-14/diagnostic-stage-passed-0`.
+
+Earlier d320 virtual-capacity image PASSES short6–16 checks and four-system
+course return/save/quit with other files unchanged. These are compatibility,
+not full-campaign, physical speed or boss completion.13/14 remained slow.
 
 Build/native-test lock: `/workspace/runtime/coop-bootstrap-build.lock`; use `set -e`.
 Source-only recovery `/workspace/runtime/spatial-plan-source-recovery/` contains
 no ROM/BIOS/RAM/compiler; refresh after edits. Disk remains tight. Inputs/played
 artifacts/default test fixtures are preserved. Closed snapshots/ROMs are losslessly
 gzip-compressed with SHA manifests; restore `gzip -dk PATH.gz` before reuse.
-Latest manifests include `closed-generated-rom-compression.json` (d320,474f,106b),
-`failed-common-candidate-snapshot-compression.json`,
-`closed-control-v2-snapshot-compression.json`, `failed-control-snapshot-compression.json`,
-`completed-lazy-matrix-snapshot-compression.json`, `closed-lazy-party-snapshot-compression.json`.
-Unplayed d387 (direct index PLUS failed common bypass) was removed with its
-metadata/logs retained. f66 is the independent direct-cache candidate.
+Default no-cache build still requires a fresh hash check after these edits.
 
 ## Historical spatial-plan work (superseded by the current section above)
 

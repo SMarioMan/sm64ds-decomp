@@ -614,7 +614,7 @@ def main():
                 'coordinateLimit':0x1fffffff,'defaultEnabled':False}
         if args.experimental_collision_plan:
             module_report['experimentalCollisionPlan']={
-                'capacity':192,'minimumNodes':48,'pairCheckBudget':1024,'axisPolicy':'bounded-alternate-if-primary-window-exceeds-budget','envelopeMargin':32*4096,'maximumEnvelopeMargin':2048*4096,'velocityEnvelopeFactor':32,'defaultEnabled':False,
+                'capacity':256,'minimumNodes':48,'pairCheckBudget':1024,'windowCheckBudget':2048,'axisPolicy':'bounded-alternate-if-primary-window-exceeds-budget','envelopeMargin':32*4096,'maximumEnvelopeMargin':2048*4096,'velocityEnvelopeFactor':32,'defaultEnabled':False,
                 'reusesOffset':emitted['coopCollisionPlanReuses']-PAYLOAD_ADDRESS,
                 'refreshesOffset':emitted['coopCollisionPlanRefreshes']-PAYLOAD_ADDRESS,'refreshShiftBudget':256,
                 'edgeRefreshesOffset':emitted['coopCollisionPlanEdgeRefreshes']-PAYLOAD_ADDRESS,

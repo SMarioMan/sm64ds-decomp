@@ -813,3 +813,19 @@ notification order with intact heap/restored free bytes. This is not production
 code or a live edit. Any implementation must separately preserve the1024 true
 candidate limit, bounded refresh work and native fallback; see
 `stage14-bounded-window-work-probe.json`.
+
+## Direct player poses and crowded collision lists
+
+The normal-mount f66 four-console6–9 regression passes. The second swimming
+traversal performs12 cache hits with no physical reads, and all consoles record
+163 intervals at2 VBlanks. First traversal retains three cold reads. The direct
+index covers154 original player BCA files; original archive loading is preserved.
+The common-mount bypass is withdrawn after real integration crashes on6→7.
+
+The next combined candidate56b1796f uses256 collision nodes and2048 axis-window
+checks, with actual candidates and edge work still capped at1024. A retained
+194-node level14 replay produces327 candidates, identical native contacts and
+callback order, and restores heap free bytes. Instruction counts are287266
+native,233088 cold planned and78692 reused; this is isolated ARM evidence only.
+37 targeted collision tests and216 executed tests (226 discovered,10 skips) pass.
+Live6–16 and physical performance acceptance remain pending.

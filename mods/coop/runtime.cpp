@@ -1704,6 +1704,7 @@ int CoopReadFile(void *file,void *destination,int size,int async) {
 // Reclaimable conservative candidates are checked against fresh native nodes
 // and bounds every frame. Unknown types, domains or pressure retain retail.
 struct CoopCollisionRecord { int minX,maxX,minZ,maxZ; u32 index; };
+enum { CoopCollisionNodeLimit=256,CoopCollisionWindowBudget=2048,CoopCollisionCandidateBudget=1024 };
 struct CoopCollisionPlan {
     mHeap::Heap_t *owner;
     u32 count,words,outer,next;
@@ -1811,7 +1812,7 @@ static void CoopCollisionSort(CoopCollisionRecord *records,unsigned count) {
 static bool CoopCollisionWindowFits(CoopCollisionRecord *records,unsigned count,int *ends) {
     // Sorted starts plus a min-heap of active ends count exact 1D overlap
     // windows in bounded O(n log n), without first walking rejected pairs.
-    // The unpublished candidate bitmap provides scratch for at most192 ends.
+    // The unpublished candidate bitmap provides scratch for at most256 ends.
     unsigned active=0,checks=0;
     for (unsigned index=0;index<count;++index) {
         while (active && ends[0]<=records[index].minX) {
@@ -1825,7 +1826,7 @@ static bool CoopCollisionWindowFits(CoopCollisionRecord *records,unsigned count,
             if (active)ends[root]=tail;
         }
         checks+=active;
-        if (checks>1024)return false;
+        if (checks>CoopCollisionWindowBudget)return false;
         int value=records[index].maxX;unsigned position=active++;
         while (position && ends[(position-1)/2]>value) {
             ends[position]=ends[(position-1)/2];position=(position-1)/2;
@@ -1923,7 +1924,7 @@ static int CoopRefreshCollisionEdges(CoopCollisionPlan *plan) {
             }
         }
     }
-    if (plan->candidateCount>1024)return 0;
+    if (plan->candidateCount>CoopCollisionCandidateBudget)return 0;
     plan->outer=0xffffffff;plan->next=0;plan->last=0;
     coopCollisionPlanStats[2]+=plan->candidateCount;
     ++coopCollisionPlanRefreshes;++coopCollisionPlanEdgeRefreshes;
@@ -1993,11 +1994,12 @@ static int CoopRefreshCollisionPlan(CoopCollisionPlan *plan) {
             for (unsigned other=first+1;other<plan->count;++other) {
                 const CoopCollisionRecord *b=&records[other];
                 if (b->minX>=a->maxX)break;
-                if (++checks>1024) { valid=false;break; }
+                if (++checks>CoopCollisionWindowBudget) { valid=false;break; }
                 if (b->minZ>=a->maxZ || a->minZ>=b->maxZ)continue;
+                if (++candidates>CoopCollisionCandidateBudget) { valid=false;break; }
                 unsigned i=a->index,j=b->index;
                 if (i>j) { unsigned swap=i;i=j;j=swap; }
-                rows[i*plan->words+j/32]|=0x80000000u>>(j&31);++candidates;
+                rows[i*plan->words+j/32]|=0x80000000u>>(j&31);
             }
         }
     }
@@ -2036,7 +2038,7 @@ static void CoopPrepareCollisionPlan() {
     }
     void *head=*(void **)0x0209cee8,*node=head;
     unsigned count=0;
-    while (node && count<192) {
+    while (node && count<CoopCollisionNodeLimit) {
         if ((u32)node<0x02000000 || (u32)node>=0x023fffc0 || !CoopCollisionPosition(node))break;
         ++count;node=*(void **)((u8 *)node+0x2c);
     }
@@ -2124,15 +2126,18 @@ static void CoopPrepareCollisionPlan() {
             if (b->minX>=a->maxX)break;
             // Dense scenes retain native processing instead of extending the
             // IRQ-protected preparation into an unbounded quadratic pass.
-            if (++checks>1024) {
+            if (++checks>CoopCollisionWindowBudget) {
                 owner->Deallocate(plan);++coopCollisionPlanStats[1];++coopCollisionPlanStats[7];
                 _ZN3IRQ7RestoreEj(irq);return;
             }
             if (b->minZ>=a->maxZ || a->minZ>=b->maxZ)continue;
+            if (++candidates>CoopCollisionCandidateBudget) {
+                owner->Deallocate(plan);++coopCollisionPlanStats[1];++coopCollisionPlanStats[7];
+                _ZN3IRQ7RestoreEj(irq);return;
+            }
             unsigned i=a->index,j=b->index;
             if (i>j) { unsigned temp=i;i=j;j=temp; }
             rows[i*words+j/32]|=0x80000000u>>(j&31);
-            ++candidates;
         }
     }
     // Shrink away construction records before the native game runs. A failed

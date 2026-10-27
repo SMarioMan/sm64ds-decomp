@@ -210,9 +210,33 @@ class CollisionPlanTests(HeapHarness,unittest.TestCase):
         self.assertEqual(self.workspace(),0);self.assertEqual(self.native_nodes(),nodes)
         for pointer in reserves:self.call(self.game['_ZN5mHeap6Heap_t10DeallocateEPv'],self.root,pointer)
         self.assertEqual(self.largest(self.root),before)
-        specs=[(i*1000*4096,0,0,10*4096,100*4096,2,2,i+1,0) for i in range(193)]
+        specs=[(i*200*4096,0,0,10*4096,100*4096,2,2,i+1,0) for i in range(257)]
         nodes=self.synthetic(specs);self.prepare()
         self.assertEqual(self.workspace(),0);self.assertEqual(self.native_nodes(),nodes)
+
+    def test_full_256_node_bitmap_retains_last_word_contacts_and_native_order(self):
+        # Only the final two colliders respond. This exercises bitmap word7
+        # without spending the harness instruction budget on32640 square roots.
+        specs=[(i*200*4096,0,0,43*4096,200*4096,0,0,i+1,0) for i in range(256)]
+        specs[-2]=(0,0,0,43*4096,200*4096,2,2,1001,1)
+        specs[-1]=(20*4096,0,0,43*4096,200*4096,2,2,1002,1)
+        self.compare_synthetic(specs)
+        # A native response may invalidate the optional plan. Contact/order
+        # parity must hold through that fallback as well as the last-word read.
+        self.assertEqual(self.stats()[6],256)
+        self.assertGreater(self.stats()[0],0);self.assertGreater(self.stats()[3],0)
+        self.call('CoopReleaseCollisionPlan',0);self.assertTrue(self.intact(self.root))
+
+    def test_dense_refresh_keeps_candidate_limit_below_window_work_limit(self):
+        nodes=self.synthetic([(i*200*4096,0,0,40*4096,200*4096,0,0,i+1,0) for i in range(64)])
+        before=self.raw_free();self.prepare();self.assertTrue(self.workspace())
+        for node in nodes:self.write(node+4,30000*4096)
+        fields=[bytes(self.cpu.mem_read(node,0x50)) for node in nodes]
+        self.prepare()
+        self.assertEqual(self.workspace(),0)
+        self.assertEqual(self.native_nodes(),nodes)
+        self.assertEqual([bytes(self.cpu.mem_read(node,0x50)) for node in nodes],fields)
+        self.assertEqual(self.raw_free(),before);self.assertTrue(self.intact(self.root))
 
     def test_real_root_allocation_pressure_reclaims_workspace_and_preserves_heap(self):
         before=self.largest(self.root);reserves=[]
