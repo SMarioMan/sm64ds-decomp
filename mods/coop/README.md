@@ -275,6 +275,11 @@ tests check those limits, hook destinations, zeroed module state, the original
 original-instruction trampolines and the camera-read wrapper's register
 preservation. Gameplay is checked separately in melonDS.
 
+For a detailed explanation of the loader chain and adapting it to another DS
+game, see [Serving a modified DS game through Download Play with HaxxStation](HAXXSTATION-PORTING.md).
+It covers the reusable protocol, target-specific hooks, build dependencies,
+authentication, memory ownership and hardware debugging.
+
 ## Why the base image fails stock Download Play
 
 There are two independent authentication stages:
