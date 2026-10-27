@@ -894,3 +894,35 @@ cadence is pending. Code/data soft bound becomes38KiB; final64KiB cap remains.
 The diagnostic combined body/tables are43072 bytes. No polygon/mesh/actor detail
 is removed. A captured inner256-cell region has256 distinct normalization inputs;
 a speculative normalization-result cache was therefore not added.
+
+## Reject-only private mesh work
+
+Normals7f9 PASSES13–16, movement, pause, course return and four-system Save &
+Quit.13 steady is284 intervals at2 VBlanks/418 at3: still slow. The captured
+painting flags are0x38 in4604, f67 and7f9, so native BeforeRender rejects its
+mesh in all those views while behavior still computes400 heights/normals.
+
+`--experimental-painting-visibility` requires normals/math and is disabled by
+default. It skips only that known continuous20x20 private mesh when the exact
+native actor-render flags reject it. It uses saved local clip bits during the
+shared AI visibility scope. Native HitTest/slide/matrix/open-flag/phase code is
+still executed; the actual cell count is not changed. Native final flattening
+is retained. Visible frames regenerate native vertex bytes before rendering.
+Other geometry, state0 final-wave frames and offline/disabled modes retain work.
+The first count load at02126570 is ROM-verified and a branch bridge restores
+all non-result registers, CPSR flags, SP and native LR before resuming02126574.
+
+Nine private ARM cases verify actual native render-bit equivalence, shared actor
+fields, hit-test calls, native sliding/matrix/open-flag code, saved visibility,
+hidden→visible byte identity, native wave restart, state0 final frames, fallback
+and complete bridge ABI. Native wave distance refresh explicitly zeros local z,
+so old hidden heights cannot affect the next wave's planar distances; the test
+runs that original BeginWave path. Three hidden frames fall551346→31791 ARM
+instructions, height calls1200→0. This is private replay, not live frame rate.
+
+The fixed five-word coefficient comparison also avoids the compiler's counted
+boolean loop while checking every parameter.400-cell heights now use45766
+instructions (native89200, old optimized64929); all six arithmetic cases pass.
+Full256 tests pass (246 executed,10 skipped); the integrated visibility image's
+four retail boot/layout checks pass. Combined body/tables43476 bytes, still
+inside the38KiB code/data and64KiB final-module bounds. Live timing is pending.

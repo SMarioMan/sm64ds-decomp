@@ -842,3 +842,9 @@ opt-in. It does not reduce mesh detail, wave updates, actor simulation or conten
 also remains opt-in. It computes the same regular painting mesh normals using
 native normalization, then keeps native border flattening. Seven complete-mesh
 ARM comparisons and the247-test suite pass; live timing remains pending.
+
+`--experimental-painting-visibility` additionally requires the normals option.
+It avoids a continuous painting's private mesh work only while the native
+renderer rejects it; native interaction, sliding and wave timing continue.
+Visible vertex identity and shared state pass nine ARM checks; live timing is
+pending. It remains opt-in with the other painting experiments.

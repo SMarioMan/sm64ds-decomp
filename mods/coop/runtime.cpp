@@ -493,6 +493,10 @@ void CoopLoadLevelOverlays(int level) {
             extern void CoopPaintingNormals(daPicGate_c *);
             PatchCall(0x021265b4,(void *)CoopPaintingNormals);
             PatchCall(0x02126a24,(void *)CoopPaintingNormals);
+#ifdef COOP_EXPERIMENTAL_PAINTING_VISIBILITY
+            extern void CoopPaintingCellCountRead(void);
+            Patch(0x02126570,(void *)CoopPaintingCellCountRead);
+#endif
 #endif
 #endif
         }
@@ -572,8 +576,12 @@ int CoopPaintingHeight(daPicGate_c *painting,int distance) {
         return CoopOriginalPaintingHeight(painting,distance);
     }
     CoopPaintingCoefficients *cache=&coopPaintingCoefficients;
-    bool same=cache->valid && cache->timer==timer;
-    for (unsigned i=0;i<5 && same;++i)same=cache->params[i]==params[i];
+    // This fixed five-word key is checked for every cell. Avoid the native
+    // compiler's counted bool loop while retaining every parameter check.
+    bool same=cache->valid && cache->timer==timer &&
+        cache->params[0]==params[0] && cache->params[1]==params[1] &&
+        cache->params[2]==params[2] && cache->params[3]==params[3] &&
+        cache->params[4]==params[4];
     if (!same) {
         cache->valid=0;
         cache->timer=timer;
@@ -593,6 +601,43 @@ int CoopPaintingHeight(daPicGate_c *painting,int distance) {
 }
 #endif
 
+#ifdef COOP_EXPERIMENTAL_PAINTING_VISIBILITY
+extern u32 coopBehaviorActor,coopBehaviorVisibility;
+extern "C" void CoopPaintingCellCountContinue(void);
+u32 coopPaintingVisibilityStats[2]={0}; // rejected private meshes, visible/unknown meshes.
+static bool CoopPaintingSkipMesh(daPicGate_c *painting) {
+    // This is only the known continuous20x20 visual mesh. Other painting
+    // states/counts retain all native work, including final state0 wave frames.
+    u32 cells=(u32)painting->mCells;
+    if (!coopEnabled || data_0209fc68!=4 || ((painting->param1>>13)&3)!=1 ||
+        painting->mRows!=20 || painting->mCols!=20 || painting->mNumCells!=400 ||
+        (cells&3) || cells<0x02000000 || cells>0x02400000-400*24)return false;
+    u32 flags=painting->mFlags;
+    if (coopBehaviorActor==(u32)painting)
+        flags=(flags&~0x38u)|coopBehaviorVisibility;
+    // Exactly the actor-bit rejection in native dActor::BeforeRender. The
+    // caller's HitTest/slide already ran; phase advancement remains native.
+    return (flags&0x20) || ((flags&8) && (flags&2));
+}
+u32 CoopPaintingVisibleCells(daPicGate_c *painting) {
+    if (CoopPaintingSkipMesh(painting)) { ++coopPaintingVisibilityStats[0];return 0; }
+    ++coopPaintingVisibilityStats[1];return painting->mNumCells;
+}
+// Replace LDRH r0,[r6,#0xb8] without changing any other register or flags.
+// A plain branch preserves the native LR; return to the verified next word.
+__asm void CoopPaintingCellCountRead(void) {
+    stmfd sp!, {r1-r3, r12, lr}
+    mrs r1, cpsr
+    stmfd sp!, {r1}
+    mov r0, r5
+    bl CoopPaintingVisibleCells
+    ldmfd sp!, {r1}
+    msr cpsr_f, r1
+    ldmfd sp!, {r1-r3, r12, lr}
+    b CoopPaintingCellCountContinue
+}
+#endif
+
 #ifdef COOP_EXPERIMENTAL_PAINTING_NORMALS
 struct CoopPaintingVector { s32 x,y,z; };
 // Private ABI aliases to the unchanged native vector/painting routines.
@@ -603,6 +648,9 @@ static s32 CoopPaintingNegativeMultiply(s32 a,s32 b) {
     return (s32)((-((s64)a*b)+0x800)>>12);
 }
 void CoopPaintingNormals(daPicGate_c *painting) {
+#ifdef COOP_EXPERIMENTAL_PAINTING_VISIBILITY
+    if (CoopPaintingSkipMesh(painting))return;
+#endif
     unsigned rows=painting->mRows,cols=painting->mCols,count=painting->mNumCells;
     daPicGate_c::Vertex *cells=painting->mCells;
     u32 pointer=(u32)cells;

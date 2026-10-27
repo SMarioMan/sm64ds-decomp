@@ -13,13 +13,40 @@ historical checkpoints and failures rather than release acceptance.
 
 Published HEADd6b06fc18; normal optimization is currently LOCAL. Numbered minimap markers and optional painting
 coefficients are pushed; no claim of campaign completion/full speed.
-ONLY ACTIVE party is normals7f9ace211f92e02c5d24aae429d5bce7bd9eb9fd9cf84e4092428ea68d3cf53d,
-`painting-normals-stage13-cost-host.nds`. Parent `painting-normals-matrix/`,
-socket `/workspace/runtime/painting-normals-matrix.sock`, exec43713;
-continuation `painting-normals-performance/`, exec65039. It measures1800 steady
-frames and four-player movement/pause on direct13→16, recording coefficient and
-normal counters. Check result/log before RPC; no competing party or live edits.
-The full image passes four retail boot/secure-area/layout checks.
+ONLY ACTIVE party is visibility8ccff3ca9b6194a1e9f77aa055dc5e9aac72deead9339159f610e3bdc916e8ad,
+`painting-visibility-stage13-cost-host.nds`. Parent `painting-visibility-matrix/`,
+socket `/workspace/runtime/painting-visibility-matrix.sock`, exec68700;
+continuation `painting-visibility-performance/`, exec25460. Direct13→16,
+1800 steady frames, four controls/pause/world checks, coefficient/normal and
+visibility counters. Frozen sources match8cc. Check result/log before RPC;
+no competing party or live state edits. ALL earlier parties are CLOSED.
+
+Normals7f9 PASSES direct13–16,
+600 steady16, course return, world sync and four-system Save & Quit.
+`painting-normals-performance/` and `painting-normals-stage16-return-save/`
+contain results; parent socket is closed and actual frontend210862 exited.
+13 still mostly3 VBlanks:284 at2/418 at3; only a modest gain. Captured actor307
+flags are0x38 in control4604, coefficientf67 and normals7f9: the native renderer
+rejects this painting on all these views, yet its400-cell behavior still ran.
+
+LOCAL --experimental-painting-visibility (requires normals/math) now skips ONLY
+the known continuous20x20 private mesh when exact native BeforeRender actor bits
+reject it. HitTest, sliding/matrices, shared open flag, clock and native final
+flatten remain; visible frames refresh the exact native mesh before rendering.
+State0 final-wave frames, other geometry, offline/disabled modes retain work.
+A branch hook at02126570 replaces only the first cell-count LDRH, restoring all
+other registers, CPSR flags, SP and native LR, then resumes02126574.
+Nine private native tests PASS (including actual BeginWave planar restart): hidden→visible byte identity, shared fields,
+actual native render-bit equivalence, saved local visibility, state0 final frames,
+native sliding/matrix/open-flag code, fallback and complete bridge ABI.
+Hidden3-frame instructions551346→31791;1200 height calls→0. The five-word
+coefficient key is also unrolled without dropping checks:400-cell height work
+89200 native /45766 optimized (old coefficient code64929). Six math tests PASS.
+Full256 tests PASS (246 executed,10 skipped) in
+`painting-visibility-all-native-tests-v2.log`; the first255 also passed.
+Global ELF/base ROM/build.json now match visibility ON and the unrolled key;
+the integrated8cc image is built and passes four retail boot/layout checks.
+Its party is active above. Combined body43476 bytes. Source recovery includes all edits.
 
 All earlier parties are CLOSED. f67dd4ca coefficients PASSES13–16
 plus600 steady16, course return, shared world and four-system Save & Quit.

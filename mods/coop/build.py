@@ -155,6 +155,8 @@ def main():
                         help='TEST ONLY: drain geometry to measure terrain/body/head polygon costs; changes timing')
     parser.add_argument('--diagnostic-player-cost',action='store_true',
                         help='TEST ONLY: elapsed SDK ticks for player behavior/models and stage rendering')
+    parser.add_argument('--experimental-painting-visibility',action='store_true',
+                        help='EXPERIMENTAL: skip continuous private meshes rejected by native rendering')
     parser.add_argument('--experimental-painting-normals',action='store_true',
                         help='EXPERIMENTAL: exact regular-grid painting normals with native fallback')
     parser.add_argument('--experimental-painting-math',action='store_true',
@@ -170,6 +172,8 @@ def main():
     parser.add_argument('--experimental-animation-cache',action='store_true',
                         help='EXPERIMENTAL: expendable ROOT cache for compressed animation reads')
     args = parser.parse_args()
+    if args.experimental_painting_visibility and not args.experimental_painting_normals:
+        parser.error('Painting visibility requires --experimental-painting-normals')
     if args.experimental_painting_normals and not args.experimental_painting_math:
         parser.error('Painting normals require --experimental-painting-math')
     if args.baseline and args.diagnostic_start_level is not None:
@@ -345,6 +349,12 @@ def main():
                 if painting_image.data[offset:offset+12]!=expected:
                     raise RuntimeError('Unexpected painting normal/flatten call pair')
             imports.update(CoopOriginalPaintingNormals=0x02125940,CoopPaintingNormalize=game['NormalizeVec3'])
+        if args.experimental_painting_visibility:
+            painting_image=rom.loadArm9Overlays()[80];offset=0x02126570-painting_image.ramAddress
+            if painting_image.data[offset:offset+16]!=bytes.fromhex('b80bd6e10040a0e3000050e30b0000da'):
+                raise RuntimeError('Unexpected continuous painting initial cell-count read')
+            imports['CoopPaintingCellCountContinue']=0x02126574
+
 
         if args.experimental_collision_plan:
             imports.update(CoopCollisionPairContinue=0x02014b10,CoopCollisionPairDone=0x02014f14)
@@ -380,6 +390,7 @@ def main():
         defines=[f'COOP_SAVE_SLOT={ord(args.save_slot)-ord("A") if args.save_slot else -1}']
         if args.experimental_painting_math:defines.append('COOP_EXPERIMENTAL_PAINTING_MATH=1')
         if args.experimental_painting_normals:defines.append('COOP_EXPERIMENTAL_PAINTING_NORMALS=1')
+        if args.experimental_painting_visibility:defines.append('COOP_EXPERIMENTAL_PAINTING_VISIBILITY=1')
         if args.experimental_animation_cache:
             defines.append('COOP_EXPERIMENTAL_ANIMATION_CACHE=1')
         if args.experimental_persistent_animation_cache:
@@ -591,6 +602,11 @@ def main():
         module_report['evictCommonStageSourceCache']=True
         module_report['evictStageCacheForPaintingMesh']=True
         module_report['localCameraControls']=True
+        if args.experimental_painting_visibility:
+            module_report['experimentalPaintingVisibility']={'defaultEnabled':False,
+                'statsOffset':emitted['coopPaintingVisibilityStats']-PAYLOAD_ADDRESS,
+                'fields':['rejectedMeshes','visibleOrUnknownMeshes'],'countRead':hex(0x02126570),
+                'nativeHitTestAndPhase':True,'nativeRenderRejection':True,'continuousOnly':True}
         if args.experimental_painting_normals:
             module_report['experimentalPaintingNormals']={'defaultEnabled':False,
                 'statsOffset':emitted['coopPaintingNormalStats']-PAYLOAD_ADDRESS,

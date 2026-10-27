@@ -11,7 +11,7 @@ from unicorn import UC_HOOK_CODE,UC_HOOK_MEM_READ
 from test_particle_heap import HeapHarness
 
 
-class PaintingNormalTests(HeapHarness,unittest.TestCase):
+class PaintingMeshHarness(HeapHarness):
     def setUp(self):
         super().setUp()
         if 'CoopPaintingNormals' not in self.runtime:
@@ -25,7 +25,8 @@ class PaintingNormalTests(HeapHarness,unittest.TestCase):
         self.instructions=0;self.normalizations=0
         def hardware(cpu,access,address,size,value,user):
             if address==0x040002b4:
-                n=int.from_bytes(cpu.mem_read(0x040002b8,8),'little')
+                mode=int.from_bytes(cpu.mem_read(0x040002b0,2),'little')&1
+                n=int.from_bytes(cpu.mem_read(0x040002b8,8 if mode else 4),'little')
                 cpu.mem_write(address,struct.pack('<I',math.isqrt(n)))
             if address not in (0x040002a0,0x040002a4,0x040002a8,0x040002ac):return
             mode=int.from_bytes(cpu.mem_read(0x04000280,2),'little')&3
@@ -73,6 +74,9 @@ class PaintingNormalTests(HeapHarness,unittest.TestCase):
 
     def stats(self):return struct.unpack('<3I',self.cpu.mem_read(self.runtime['coopPaintingNormalStats'],12))
 
+
+
+class PaintingNormalTests(PaintingMeshHarness,unittest.TestCase):
     def test_wave_mesh_matches_native_without_overwriting_neighbour_border_heights(self):
         raw=self.grid();native,optimized=self.compare(raw)
         self.assertEqual(self.stats(),(1,0,76))

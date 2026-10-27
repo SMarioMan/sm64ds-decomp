@@ -18,6 +18,10 @@ not establish campaign completion or real-hardware compatibility.
   comparisons and the247-test suite;90153→75864 instructions,400→324 native
   normalizations. Live timing is pending. A Yoshi sleep-start cold read also
   needs loading-time warming; it can span phase measurement boundaries.
+  Normals7f9 passes13–16 and return/save/quit but13 is still mostly3 VBlanks.
+  Its native flags reject the expensive painting mesh in these views. A new
+  opt-in reject-only mesh path preserves hit testing/sliding/phase and visible
+  bytes; nine native cases plus the256-test suite pass. Live timing is pending.
   The user tested the pinned89505d400 normal ROM, SHA-256
   `aea94b7bc8a51986b02c258cb779934bd200f269e05ad4d193282237be4baedf`,
   and reports functional physical multiplayer with parity to melonDS behavior,
