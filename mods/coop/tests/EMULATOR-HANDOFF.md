@@ -1,5 +1,32 @@
 # Download Play handoff investigation
 
+CURRENT OVERRIDE (newest): ONLY ACTIVEf759a3778d5ddea71b84173c061112763e9da94db2e7b5d7c4675fb8e4f46143,
+actual frontend249029, socket /workspace/runtime/packed132-no-cost-matrix.sock.
+Normal4-Yoshi6–23 matrix has PASSED through21; later follower
+/workspace/runtime/continue-packed132-no-cost-late-stages.py waits then24–51,
+return/native Save & Quit/explicit shutdown. Actual late output
+/workspace/runtime/packed132-no-cost-late-stages. Keep no competing party.
+Old stage23-return follower249027 was stopped BEFORE RPC, superseded result.
+
+NEW queued /workspace/runtime/queue-bootstrap-multicast.py waits for late-stage
+PASS + shutdown acknowledgment + actual249029 exit before starting a new party.
+Failure retains f759 for diagnosis and prevents launch. New native-validated but
+UNPLAYED ROM5db570d18224942544dd8f00977a8ef6cd6dea8a230d0a1431ad26dd44e564a5
+/tmp/sm64ds-coop-runs/bootstrap-multicast-yoshi-host.nds adds optional reliable
+port15 grouping for identical nonterminal execution blocks.7 actual native ARM
+SDK-adapter cases PASS; default-off rebuild BYTE-IDENTICAL tof759.
+Frozen host ELF/bin/package: /tmp/sm64ds-coop-runs/bootstrap-multicast-native-build.
+Root runtime ELF/base matchf759; bootstrap host ELF/bin currently restored to
+multicast fixture for its7 tests (mixed globals deliberately frozen separately).
+Queue starts reproduce-bootstrap-multicast.py then continue-bootstrap-multicast.py;
+parent/bootstrap-multicast-matrix, follower/bootstrap-multicast-acceptance.
+Goal signed/native startup, actual grouping counters, castle→nativeBoB, controls,
+pause/coin/UI checks, course return/SaveQuit/explicit shutdown. New source smoke
+records read-only SDK VBlank/offset/counter samples AFTER menu confirmations;
+transfer may already have begun, so do not label it complete load duration.
+No multiplayer test has yet established grouping speed or reliability.
+Older CURRENT/ACTIVE notes below are historical and superseded here.
+
 CURRENT OVERRIDE: previous f8c7a49a packed126 party CLOSED after6–23 PASS,
 native course return and Save & Quit PASS. Host persisted the earned key and
 returned to title; all3 guests ended, explicit shutdown acknowledged and actual

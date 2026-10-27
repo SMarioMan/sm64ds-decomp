@@ -63,6 +63,11 @@ static u16 *transmitBuffer = 0;
 static u8 *mpSendWork = 0;
 static volatile u32 transmitBusy = 0;
 static u32 transmitAid, transmitPhase, transmitBytes, transmitGeneration, nextAid = 1;
+#ifdef COOP_EXPERIMENTAL_BOOTSTRAP_MULTICAST
+static u32 transmitTargets,transmitOffset,transmitChunk,transmitGenerations[4];
+u32 coopBootstrapMulticastStats[4]={0}; // completed groups, recipient advances, saved payload bytes, stale recipients.
+#endif
+
 static u32 payloadDone = 0;
 static u32 stationChildren = 0;
 static u32 stationAssociations = 0;
@@ -287,6 +292,26 @@ static u8 *ReadAsset(unsigned id, unsigned size) {
     return ok ? buffer : 0;
 }
 
+
+#ifdef COOP_EXPERIMENTAL_BOOTSTRAP_MULTICAST
+u32 CoopBootstrapPayloadTargets(unsigned aid) {
+    if (!aid || aid>COOP_EXPECTED_CLIENTS || !data_020a9db4 ||
+        !(WM_WORK->childBitmap&(1u<<aid)))return 0;
+    const Peer *first=&peers[aid];
+    u32 targets=1u<<aid;
+    // Only identical nonterminal execution-payload blocks share a send.
+    // Length/menu/start/execute messages keep their original per-peer path.
+    if (first->phase!=8 || first->offset>=COOP_PAYLOAD_SIZE || first->cooldown)return targets;
+    for (unsigned other=1;other<=COOP_EXPECTED_CLIENTS;++other) {
+        const Peer *peer=&peers[other];
+        if ((WM_WORK->childBitmap&(1u<<other)) && peer->phase==8 &&
+            peer->offset==first->offset && peer->chunk==first->chunk && !peer->cooldown)
+            targets|=1u<<other;
+    }
+    return targets;
+}
+#endif
+
 void CoopStationSent(u8 *result) {
     u16 error=*(u16 *)(result+2);
     transmitBusy=0;
@@ -296,6 +321,26 @@ void CoopStationSent(u8 *result) {
     if (error)
         return; // retry on the next parent tick, not recursively in the IRQ
     ++debug[26];
+#ifdef COOP_EXPERIMENTAL_BOOTSTRAP_MULTICAST
+    if (transmitTargets) {
+        unsigned advanced=0;
+        for (unsigned aid=1;aid<=COOP_EXPECTED_CLIENTS;++aid) {
+            if (!(transmitTargets&(1u<<aid)))continue;
+            Peer *recipient=&peers[aid];
+            // A reconnect/request may replace a peer while the SDK owns the
+            // send. Its success must never acknowledge that new transaction.
+            if (recipient->phase!=8 || recipient->generation!=transmitGenerations[aid] ||
+                recipient->offset!=transmitOffset || recipient->chunk!=transmitChunk) {
+                ++coopBootstrapMulticastStats[3];continue;
+            }
+            recipient->offset+=transmitBytes;++recipient->chunk;recipient->repeats=0;
+            ++advanced;
+        }
+        ++coopBootstrapMulticastStats[0];coopBootstrapMulticastStats[1]+=advanced;
+        if (advanced>1)coopBootstrapMulticastStats[2]+=(advanced-1)*transmitBytes;
+        Pump();return;
+    }
+#endif
     if (peer->phase==transmitPhase && peer->generation==transmitGeneration) {
         if (peer->phase==1 || peer->phase==5) {
             if (++peer->repeats>=1) {
@@ -398,9 +443,21 @@ static void Pump() {
         transmitAid=aid;
         transmitPhase=phase;
         transmitGeneration=peer->generation;
+#ifdef COOP_EXPERIMENTAL_BOOTSTRAP_MULTICAST
+        u16 destinations=(u16)CoopBootstrapPayloadTargets(aid);
+        transmitTargets=destinations&(destinations-1) ? destinations : 0;
+        transmitOffset=peer->offset;transmitChunk=peer->chunk;
+        for (unsigned recipient=1;recipient<=COOP_EXPECTED_CLIENTS;++recipient)
+            transmitGenerations[recipient]=peers[recipient].generation;
+#endif
         transmitBusy=1;
         int error=func_02062428((void *)CoopStationSent,0,transmitBuffer,length,
-                                (u16)(1u<<aid),(u16)port,0);
+#ifdef COOP_EXPERIMENTAL_BOOTSTRAP_MULTICAST
+                                destinations,
+#else
+                                (u16)(1u<<aid),
+#endif
+                                (u16)port,0);
         debug[28]=error;
         if (error!=2)
             transmitBusy=0;

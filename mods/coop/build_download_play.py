@@ -59,6 +59,8 @@ def main():
                         help='EXPERIMENTAL: preserve cached bytes during exact virtual capacity queries')
     parser.add_argument('--experimental-animation-cache',action='store_true',
                         help='EXPERIMENTAL: expendable compressed player-animation read cache')
+    parser.add_argument('--experimental-bootstrap-multicast',action='store_true',
+                        help='EXPERIMENTAL: group identical reliable execution-payload blocks')
     parser.add_argument('--clients',type=int,choices=(1,2,3),default=3)
     parser.add_argument('--channel',type=int,choices=(1,7,13),default=1)
     parser.add_argument('--beacon-period',type=int,default=100)
@@ -91,7 +93,7 @@ def main():
     args.output=args.output.resolve()
     if args.diagnostic_stage_cycle and args.diagnostic_start_level is None:
         parser.error('--diagnostic-stage-cycle requires --diagnostic-start-level')
-    if (args.diagnostic_start_level is not None or args.diagnostic_render_cost or args.diagnostic_player_cost or args.experimental_animation_cache or args.experimental_collision_broadphase or args.experimental_collision_plan or args.experimental_line_broadphase or args.experimental_local_coin_shadows) and args.output==ROOT/'build/coop/bootstrap/sm64ds-haxxstation-game-handoff.nds':
+    if (args.diagnostic_start_level is not None or args.diagnostic_render_cost or args.diagnostic_player_cost or args.experimental_animation_cache or args.experimental_collision_broadphase or args.experimental_collision_plan or args.experimental_line_broadphase or args.experimental_local_coin_shadows or args.experimental_bootstrap_multicast) and args.output==ROOT/'build/coop/bootstrap/sm64ds-haxxstation-game-handoff.nds':
         parser.error('Diagnostic builds require --output to keep the normal cartridge separate')
     if args.runtime_placement=='prefix' and args.output==ROOT/'build/coop/bootstrap/sm64ds-haxxstation-game-handoff.nds':
         parser.error('Experimental prefix placement requires a separate --output')
@@ -114,6 +116,7 @@ def main():
         strategy+=('--close-entry-before-boot',)
     radio=('--clients',args.clients,*strategy,'--channel',args.channel,
            '--beacon-period',args.beacon_period,'--station',args.station)
+    if args.experimental_bootstrap_multicast:radio+=('--experimental-bootstrap-multicast',)
     diagnostic=('--diagnostic-start-level',args.diagnostic_start_level) if args.diagnostic_start_level is not None else ()
     if args.diagnostic_stage_cycle:diagnostic+=('--diagnostic-stage-cycle',)
     if args.diagnostic_render_cost:diagnostic+=('--diagnostic-render-cost',)

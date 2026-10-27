@@ -914,3 +914,12 @@ The321-test native suite passes (293 executed,28 skips without cost profiling).
 The earlier126-pose version passes four-console stages6–23, course return and
 Save & Quit; the expanded132-pose version is in wireless testing. The option stays off
 by default and is absent from the2ac hardware retest image.
+
+
+`--experimental-bootstrap-multicast` groups identical nonterminal payload blocks
+for ready Download Play guests using the existing native port15 sender. SDK
+completion advances only the recorded peer generations, offsets and chunk IDs;
+menu, start and execution messages retain their individual path and the complete
+body barrier. Seven isolated native ARM cases pass. Wireless speed, reconnect and
+hardware acceptance are pending, so this option remains off by default. It
+changes initial executable transfer, not in-level wireless file loading.

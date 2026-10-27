@@ -33,6 +33,8 @@ def main():
                         help='Output ROM path; defaults to the experimental native host')
     parser.add_argument('--clients', type=int, choices=(1,2,3), default=3,
                         help='Number of Download Play clients to bootstrap before changing sessions')
+    parser.add_argument('--experimental-bootstrap-multicast',action='store_true',
+                        help='EXPERIMENTAL: group identical reliable execution-payload blocks')
     parser.add_argument('--handoff', action='store_true',
                         help='Return to the native game lobby after every payload finishes')
     parser.add_argument('--rearm-mp-after-boot', action='store_true',
@@ -95,6 +97,7 @@ def main():
               f'COOP_SIGNED_BOOT_FILE={ids[1]}', f'COOP_SIGNED_BOOT_SIZE={boot_size}',
               f'COOP_MENU_FILE={ids[2]}', f'COOP_MENU_SIZE={len(menu)}',
               f'COOP_PAYLOAD_FILE={ids[3]}', f'COOP_PAYLOAD_SIZE={len(probe)}']
+    if args.experimental_bootstrap_multicast:define.append('COOP_EXPERIMENTAL_BOOTSTRAP_MULTICAST=1')
     body, exports = link(ROOT/'mods/coop/bootstrap/host.cpp', root/'host', base, game, launcher, cc, ld, define)
     game['CoopOriginalMBTick'] = base+len(body)
     game['CoopOriginalMBReceive'] = base+len(body)+8
@@ -218,6 +221,11 @@ def main():
             'signedClientSha256':hashlib.sha256(signed).hexdigest()}
     if args.restart_station_parent:
         report['bootstrapDiagnostics']['stationRestartedOffset']=exports['stationRestarted']-base
+    if args.experimental_bootstrap_multicast:
+        report['experimentalBootstrapMulticast']={'defaultEnabled':False,
+            'scope':'identical nonterminal execution-payload blocks on native reliable port15',
+            'statsOffset':exports['coopBootstrapMulticastStats']-base,
+            'fields':['completedGroups','recipientAdvances','savedPayloadBytes','staleRecipients']}
     story_report=json.loads((ROOT/'build/coop/build.json').read_text())
     report['experimentalHostSaveSlot']=story_report.get('experimentalHostSaveSlot')
     report['runtimeModule']=story_report['runtimeModule']

@@ -83,6 +83,12 @@ not establish campaign completion or real-hardware compatibility.
   regions/actions and immediate return/save. All performance options remain off
   by default pending acceptance.
 
+  An optional bootstrap payload-grouping prototype sends identical execution
+  blocks through one native reliable port15 submission. Seven native ARM cases
+  pass, including stale generations, SDK errors and the complete-body/execute
+  barrier. It remains disabled and unplayed; measure actual transfer speed and
+  reconnect/2–4-party behavior before acceptance. It does not change stage WFS.
+
 - [ ] Replace long black loading periods with visible, animated loading
   feedback on the host and guests. Keep a resident indicator responsive during
   Download Play handoff, wireless file reads and stage changes. Show real byte

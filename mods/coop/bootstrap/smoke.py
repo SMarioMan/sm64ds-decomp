@@ -105,6 +105,7 @@ def main():
     boot_timeout=int(os.environ.get('COOP_BOOT_MP_TIMEOUT_MS','25'))
     game_timeout=int(os.environ.get('COOP_MP_TIMEOUT_MS','25'))
     game_timeout_applied=False
+    payload_observations=[]
     def report(status='running', error=None):
         args.output.mkdir(parents=True,exist_ok=True)
         (args.output/'result.json').write_text(json.dumps({
@@ -124,6 +125,8 @@ def main():
             'expectedWirelessTableBytes':table_size,
             'checks':checks,'status':status,'error':error,
             'firmwareConfirmationRetries':firmware_confirmations,
+            'bootstrapPayloadObservations':payload_observations,
+            'bootstrapPayloadObservationScope':'SDK VBlank samples after menu confirmations; transfer may already have begun; not hardware time',
             'menuSelectionDelaysFrames':selection_delays,
             'persistentCartSaveDirectory':os.environ.get('COOP_SAVE_DIR'),
             'experimentalHostSaveSlot':metadata.get('experimentalHostSaveSlot'),
@@ -273,6 +276,16 @@ def main():
                     break
                 if args.parent=='native':
                     current=struct.unpack('<32I',ds.read(0,0x02000000,128))
+                    observation={'sdkVblank':ds.word(0,0x023ffc3c),
+                        'peerPhases':list(current[20:23]),'peer1PayloadOffset':current[29],
+                        'sdkSendResult':current[28]}
+                    if group:=metadata.get('experimentalBootstrapMulticast'):
+                        base=current[24]-metadata['bootstrapDiagnostics']['tickOffset']
+                        if not 0x02000000<=base<=0x02400000-metadata['bodyBytes']:
+                            raise RuntimeError('Invalid bootstrap counter owner address')
+                        raw=ds.read(0,base+group['statsOffset'],len(group['fields'])*4)
+                        observation['multicast']=dict(zip(group['fields'],struct.unpack('<'+str(len(group['fields']))+'I',raw)))
+                    payload_observations.append(observation)
                     if args.game and current[14]==5 and all(
                             ds.read(i,0x020a0f04,1)==b'\x02' for i in range(1,ds.count)):
                         break

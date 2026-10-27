@@ -1398,3 +1398,34 @@ combined-collision-all-native-tests.log, combined-collision-plan-recheck.log,
 combined-collision-goomba-tests.log. A first multi-mode private benchmark reused
 a workspace pointer after restoring its heap fixture; explicitly releasing the
 private plan between trials fixed that probe. No live console was modified.
+
+
+## Optional bootstrap payload grouping
+
+`--experimental-bootstrap-multicast` changes only initial unsigned execution-
+payload data sends. The signed station's existing native reliable port15 path
+can address multiple associated guests. Group only phase8 peers with identical
+nonterminal offset/chunk and zero cooldown; keep menu/length/start/execute
+messages individual. Capture each selected generation before submission. On
+SDK success advance only matching phase/generation/offset/chunk records. Errors
+advance none; stale recipients cannot acknowledge a replacement transaction.
+The existing complete-body barrier still precedes every execute terminator.
+No user timing, custom emulator core, new client protocol or larger packet is
+required. It is disabled by default and does not accelerate stage WFS reads.
+
+The native fixtures use the default three-guest parent and exercise singleton,
+two-member and three-member destination bitmaps. Seven private native ARM cases
+execute the actual compiled selection, Pump and
+completion code with isolated SDK submission:1–3 target membership/readiness,
+control/terminal exclusions, exact grouped packet bytes and per-peer advancement,
+SDK submission/completion errors, generation/phase/offset/chunk changes, duplicate
+completion, and slow-body/individual-execute barriers. The first terminal test
+used the outer HaxxStation package size instead of its embedded execution body;
+correcting that private fixture makes all seven pass. No live packets were edited.
+
+Candidate5db570d18224942544dd8f00977a8ef6cd6dea8a230d0a1431ad26dd44e564a5
+is built but UNPLAYED. Full image/overlay audits pass. With the new option off,
+the build is BYTE-IDENTICAL to playedf759. Actual wireless transfer speed,
+full-body execution and physical behavior remain unverified. Counters report
+completed groups, actual recipient advances, potential repeated payload bytes
+saved and stale recipients; these are not measured wall-clock savings.
